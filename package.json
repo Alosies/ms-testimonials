@@ -1,0 +1,24 @@
+{
+  "name": "ms-testimonials",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Testimonial collection and display widget - AI-powered smart prompts",
+  "scripts": {
+    "dev": "pnpm -r --parallel dev",
+    "dev:web": "pnpm --filter @testimonials/web dev",
+    "dev:api": "pnpm --filter @testimonials/api dev",
+    "build": "pnpm -r build",
+    "build:web": "pnpm --filter @testimonials/web build",
+    "build:api": "pnpm --filter @testimonials/api build",
+    "lint": "pnpm -r lint",
+    "test": "pnpm -r test",
+    "typecheck": "pnpm -r typecheck",
+    "codegen:web": "pnpm --filter @testimonials/web codegen",
+    "codegen:web:watch": "pnpm --filter @testimonials/web codegen:watch"
+  },
+  "engines": {
+    "node": ">=22.0.0",
+    "pnpm": ">=10.0.0"
+  },
+  "packageManager": "pnpm@10.10.0"
+}

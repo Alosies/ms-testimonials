@@ -1,0 +1,7 @@
+version: 3
+endpoint: https://graphql.testimonial.brownforge.com
+admin_secret: E+xaqPaCIbSkRunnnZwXBrAZOLttOzusaQjASOX5ANA=
+metadata_directory: metadata
+actions:
+  kind: synchronous
+  handler_webhook_baseurl: http://host.docker.internal:4000
