@@ -191,7 +191,8 @@ Normalized role definitions with explicit permissions.
 ```sql
 CREATE TABLE public.roles (
     id              TEXT PRIMARY KEY DEFAULT generate_nanoid_12(),
-    name            VARCHAR(50) NOT NULL,
+    unique_name     VARCHAR(50) NOT NULL,   -- Slug for code comparisons (owner, admin)
+    name            VARCHAR(100) NOT NULL,  -- Display label for UI (Owner, Admin)
     description     TEXT,
     -- Explicit permission columns instead of JSONB
     can_manage_forms        BOOLEAN NOT NULL DEFAULT false,
@@ -206,19 +207,21 @@ CREATE TABLE public.roles (
     created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
-    CONSTRAINT roles_name_unique UNIQUE (name)
+    CONSTRAINT roles_unique_name_unique UNIQUE (unique_name)
 );
 
 SELECT add_updated_at_trigger('roles');
 
--- Seed default roles
-INSERT INTO roles (id, name, description, can_manage_forms, can_manage_testimonials, can_manage_widgets, can_manage_members, can_manage_billing, can_delete_org, is_viewer, is_system_role) VALUES
-    ('role_owner', 'owner', 'Full access including billing and org deletion', true, true, true, true, true, true, false, true),
-    ('role_admin', 'admin', 'Full access except billing', true, true, true, true, false, false, false, true),
-    ('role_member', 'member', 'Can manage forms, testimonials, and widgets', true, true, true, false, false, false, false, true),
-    ('role_viewer', 'viewer', 'Read-only access to all resources', false, false, false, false, false, false, true, true);
+-- Seed default roles (NanoID auto-generated, use unique_name for lookups)
+INSERT INTO roles (unique_name, name, description, can_manage_forms, can_manage_testimonials, can_manage_widgets, can_manage_members, can_manage_billing, can_delete_org, is_viewer, is_system_role) VALUES
+    ('owner', 'Owner', 'Full access including billing and org deletion', true, true, true, true, true, true, false, true),
+    ('admin', 'Admin', 'Full access except billing', true, true, true, true, false, false, false, true),
+    ('member', 'Member', 'Can manage forms, testimonials, and widgets', true, true, true, false, false, false, false, true),
+    ('viewer', 'Viewer', 'Read-only access to all resources', false, false, false, false, false, false, true, true);
 
 COMMENT ON TABLE roles IS 'Permission definitions - explicit boolean columns, not JSONB';
+COMMENT ON COLUMN roles.unique_name IS 'Slug for code comparisons (owner, admin, member, viewer)';
+COMMENT ON COLUMN roles.name IS 'Display-ready label for UI (Owner, Admin, Member, Viewer)';
 ```
 
 ---
@@ -231,8 +234,9 @@ Normalized plan definitions with explicit limit columns.
 
 ```sql
 CREATE TABLE public.plans (
-    id                  TEXT PRIMARY KEY,  -- 'free', 'pro', 'team' - semantic IDs
-    name                VARCHAR(50) NOT NULL,
+    id                  TEXT PRIMARY KEY DEFAULT generate_nanoid_12(),
+    unique_name         VARCHAR(50) NOT NULL,   -- Slug for code comparisons (free, pro, team)
+    name                VARCHAR(100) NOT NULL,  -- Display label for UI (Free, Pro, Team)
     description         TEXT,
     -- Explicit limit columns instead of JSONB
     max_testimonials    INTEGER NOT NULL,  -- -1 = unlimited
@@ -246,18 +250,22 @@ CREATE TABLE public.plans (
     price_lifetime      INTEGER,                     -- Cents, NULL if not offered
     is_active           BOOLEAN NOT NULL DEFAULT true,
     created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+    CONSTRAINT plans_unique_name_unique UNIQUE (unique_name)
 );
 
 SELECT add_updated_at_trigger('plans');
 
--- Seed default plans
-INSERT INTO plans (id, name, description, max_testimonials, max_forms, max_widgets, max_members, show_branding, price_monthly, price_yearly, price_lifetime) VALUES
+-- Seed default plans (NanoID auto-generated, use unique_name for lookups)
+INSERT INTO plans (unique_name, name, description, max_testimonials, max_forms, max_widgets, max_members, show_branding, price_monthly, price_yearly, price_lifetime) VALUES
     ('free', 'Free', 'Get started with testimonials', 50, 1, 1, 1, true, 0, 0, NULL),
     ('pro', 'Pro', 'For growing businesses', -1, 5, -1, 1, false, 0, 0, 4900),
     ('team', 'Team', 'For teams with multiple members', -1, -1, -1, 3, false, 0, 0, 9900);
 
 COMMENT ON TABLE plans IS 'Subscription plan definitions - explicit columns for queryable limits';
+COMMENT ON COLUMN plans.unique_name IS 'Slug for code comparisons (free, pro, team)';
+COMMENT ON COLUMN plans.name IS 'Display-ready label for UI (Free, Pro, Team)';
 COMMENT ON COLUMN plans.max_testimonials IS '-1 means unlimited';
 ```
 
@@ -271,7 +279,7 @@ CREATE TABLE public.organizations (
     name            TEXT NOT NULL,
     slug            VARCHAR(100) NOT NULL,
     logo_url        TEXT,
-    plan_id         TEXT NOT NULL DEFAULT 'free',
+    plan_id         TEXT NOT NULL,  -- No default; app must lookup plan by unique_name
     -- Usage counters (denormalized for performance, updated via triggers)
     testimonial_count   INTEGER NOT NULL DEFAULT 0,
     form_count          INTEGER NOT NULL DEFAULT 0,
@@ -311,7 +319,7 @@ CREATE TABLE public.organization_roles (
     id                  TEXT PRIMARY KEY DEFAULT generate_nanoid_12(),
     user_id             TEXT NOT NULL,
     organization_id     TEXT NOT NULL,
-    role_id             TEXT NOT NULL DEFAULT 'role_member',
+    role_id             TEXT NOT NULL,  -- No default; app must lookup role by unique_name
     is_default_org      BOOLEAN NOT NULL DEFAULT false,  -- User's default organization
     is_active           BOOLEAN NOT NULL DEFAULT true,
     invited_by          TEXT,
@@ -342,6 +350,7 @@ CREATE UNIQUE INDEX idx_org_roles_one_default
 SELECT add_updated_at_trigger('organization_roles');
 
 COMMENT ON TABLE organization_roles IS 'User-Organization-Role junction - users can have different roles in different orgs';
+COMMENT ON COLUMN organization_roles.role_id IS 'FK to roles - app must lookup role.id by role.unique_name';
 ```
 
 ---
