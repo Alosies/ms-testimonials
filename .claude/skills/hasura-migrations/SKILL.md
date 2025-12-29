@@ -166,30 +166,45 @@ curl -X POST \
 hasura metadata export
 ```
 
+## NanoID Variants
+
+Use the appropriate NanoID length based on security requirements:
+
+| Function | Length | Use Case |
+|----------|--------|----------|
+| `generate_nanoid_12()` | 12 chars | Standard entities (users, forms, testimonials) |
+| `generate_nanoid_16()` | 16 chars | Security-critical (user_identities, API keys, tokens) |
+
 ## Entity Patterns (Testimonials)
 
-### Users Table
-- Links to Supabase auth via `supabase_id`
-- Stores business owner profile
-- Plan/subscription info
+### Layer 1: Authentication (No FKs)
+- **users** - Provider-agnostic user profiles (email, display_name, locale)
+- **user_identities** - Federated auth (provider, provider_user_id) - uses `generate_nanoid_16()`
+- **roles** - Permission definitions with explicit boolean columns (can_manage_*)
 
-### Forms Table
-- Owned by user (`user_id`)
-- Unique `slug` for public URLs
-- JSONB `questions` for smart prompts
-- JSONB `settings` for configuration
+### Layer 2: Multi-Tenancy (Users FK)
+- **plans** - Subscription tiers with explicit limit columns
+- **organizations** - Multi-tenant workspaces (owned by user)
+- **organization_roles** - Junction: user + organization + role
 
-### Testimonials Table
-- Owned by form (`form_id`)
-- Status: pending | approved | rejected
-- JSONB `answers` for raw responses
-- AI-assembled `content`
+### Layer 3: Business Entities (Org FK)
+- **forms** - Collection forms with slug for public URLs
+- **form_questions** - Normalized questions (not JSONB)
+- **testimonials** - Customer testimonials with status workflow
+- **testimonial_answers** - Normalized answers linked to questions
+- **widgets** - Embeddable display widgets
+- **widget_testimonials** - Junction table with display_order
 
-### Widgets Table
-- Owned by user (`user_id`)
-- Type: wall_of_love | carousel | single_quote
-- Theme: light | dark
-- JSONB `testimonials` for selected IDs
+### JSONB Policy
+Only use JSONB for:
+- Provider metadata from auth providers (truly dynamic)
+- Third-party webhook payloads
+- Configuration blobs that are write-once, read-whole
+
+**Never use JSONB for:**
+- Queryable business data (questions, answers)
+- Data requiring constraints/validation
+- Data needing foreign key relationships
 
 ## Naming Conventions
 
