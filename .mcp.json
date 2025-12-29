@@ -1,0 +1,22 @@
+{
+    "mcpServers": {
+      "playwright-alosies": {
+        "command": "npx",
+        "args": ["@playwright/mcp@latest", "--extension"],
+        "env": {
+          "PLAYWRIGHT_MCP_EXTENSION_TOKEN": "7iFFBC_P12e51WaW3VX3PXqWNZnEGmBd-JzHlA_3lUY"
+        }
+      },
+      "playwright-coursepads": {
+        "command": "npx",
+        "args": ["@playwright/mcp@latest", "--extension"],
+        "env": {
+          "PLAYWRIGHT_MCP_EXTENSION_TOKEN": "I0T7W9OZLnlYaGtAC82EbAgPSC96XuCzvV0HNnnHz6o"
+        }
+      },
+      "Context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp"]
+    }
+    }
+  }
