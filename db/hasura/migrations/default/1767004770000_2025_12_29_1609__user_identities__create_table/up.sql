@@ -70,3 +70,5 @@ COMMENT ON COLUMN public.user_identities.provider_email IS 'Email from the auth 
 COMMENT ON COLUMN public.user_identities.provider_metadata IS 'Provider-specific data (tokens, claims) - JSONB appropriate here';
 COMMENT ON COLUMN public.user_identities.is_primary IS 'Whether this is the primary login method for the user';
 COMMENT ON COLUMN public.user_identities.verified_at IS 'When this identity was verified';
+COMMENT ON COLUMN public.user_identities.created_at IS 'Timestamp when record was created';
+COMMENT ON COLUMN public.user_identities.updated_at IS 'Timestamp when record was last updated';

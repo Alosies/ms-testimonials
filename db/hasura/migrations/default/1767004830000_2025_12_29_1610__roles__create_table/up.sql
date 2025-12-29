@@ -109,3 +109,5 @@ COMMENT ON COLUMN public.roles.can_manage_billing IS 'Permission to view and man
 COMMENT ON COLUMN public.roles.can_delete_org IS 'Permission to delete the organization';
 COMMENT ON COLUMN public.roles.is_viewer IS 'Read-only access - can view all resources but cannot modify anything';
 COMMENT ON COLUMN public.roles.is_system_role IS 'System roles cannot be deleted or modified by users';
+COMMENT ON COLUMN public.roles.created_at IS 'Timestamp when record was created';
+COMMENT ON COLUMN public.roles.updated_at IS 'Timestamp when record was last updated';

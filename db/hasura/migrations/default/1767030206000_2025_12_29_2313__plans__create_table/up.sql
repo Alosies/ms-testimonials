@@ -40,4 +40,12 @@ COMMENT ON TABLE public.plans IS 'Plan templates - features/limits only, pricing
 COMMENT ON COLUMN public.plans.id IS 'Primary key (NanoID 12-char)';
 COMMENT ON COLUMN public.plans.unique_name IS 'Slug for code comparisons (free, pro, team)';
 COMMENT ON COLUMN public.plans.name IS 'Display-ready label for UI (Free, Pro, Team)';
-COMMENT ON COLUMN public.plans.max_testimonials IS '-1 means unlimited';
+COMMENT ON COLUMN public.plans.description IS 'Human-readable description of the plan';
+COMMENT ON COLUMN public.plans.max_testimonials IS 'Maximum testimonials allowed (-1 = unlimited)';
+COMMENT ON COLUMN public.plans.max_forms IS 'Maximum collection forms allowed (-1 = unlimited)';
+COMMENT ON COLUMN public.plans.max_widgets IS 'Maximum display widgets allowed (-1 = unlimited)';
+COMMENT ON COLUMN public.plans.max_members IS 'Maximum team members allowed (-1 = unlimited)';
+COMMENT ON COLUMN public.plans.show_branding IS 'Whether to show "Powered by" branding on widgets';
+COMMENT ON COLUMN public.plans.is_active IS 'Whether plan is available for new subscriptions';
+COMMENT ON COLUMN public.plans.created_at IS 'Timestamp when record was created';
+COMMENT ON COLUMN public.plans.updated_at IS 'Timestamp when record was last updated';

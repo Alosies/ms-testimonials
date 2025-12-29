@@ -45,5 +45,13 @@ SELECT add_updated_at_trigger('organization_roles', 'public');
 -- Documentation
 COMMENT ON TABLE public.organization_roles IS 'User-Organization-Role junction - one role per user per org';
 COMMENT ON COLUMN public.organization_roles.id IS 'Primary key (NanoID 12-char)';
-COMMENT ON COLUMN public.organization_roles.role_id IS 'FK to roles - app must lookup role.id by role.unique_name';
-COMMENT ON COLUMN public.organization_roles.is_default_org IS 'User default organization (only one per user)';
+COMMENT ON COLUMN public.organization_roles.user_id IS 'User who has this role';
+COMMENT ON COLUMN public.organization_roles.organization_id IS 'Organization where user has this role';
+COMMENT ON COLUMN public.organization_roles.role_id IS 'Role assigned to user - app must lookup by role.unique_name';
+COMMENT ON COLUMN public.organization_roles.is_default_org IS 'Whether this is the user default organization (only one per user)';
+COMMENT ON COLUMN public.organization_roles.is_active IS 'Soft delete flag - false means membership is revoked';
+COMMENT ON COLUMN public.organization_roles.invited_by IS 'User who invited this member to the organization';
+COMMENT ON COLUMN public.organization_roles.invited_at IS 'When the invitation was sent';
+COMMENT ON COLUMN public.organization_roles.joined_at IS 'When the user joined the organization';
+COMMENT ON COLUMN public.organization_roles.created_at IS 'Timestamp when record was created';
+COMMENT ON COLUMN public.organization_roles.updated_at IS 'Timestamp when record was last updated';

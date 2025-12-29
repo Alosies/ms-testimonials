@@ -61,3 +61,5 @@ COMMENT ON COLUMN public.users.locale IS 'User language preference (e.g., en, en
 COMMENT ON COLUMN public.users.timezone IS 'User timezone (e.g., UTC, America/New_York)';
 COMMENT ON COLUMN public.users.is_active IS 'Soft delete flag - false means user is deactivated';
 COMMENT ON COLUMN public.users.last_login_at IS 'Timestamp of last successful login';
+COMMENT ON COLUMN public.users.created_at IS 'Timestamp when record was created';
+COMMENT ON COLUMN public.users.updated_at IS 'Timestamp when record was last updated';

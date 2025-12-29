@@ -46,5 +46,11 @@ SELECT id, 'INR', 0, 0, 199900 FROM plans WHERE unique_name = 'team';
 -- Documentation
 COMMENT ON TABLE public.plan_prices IS 'Multi-currency pricing - prices in smallest currency unit';
 COMMENT ON COLUMN public.plan_prices.id IS 'Primary key (NanoID 12-char)';
+COMMENT ON COLUMN public.plan_prices.plan_id IS 'Reference to the plan this price belongs to';
 COMMENT ON COLUMN public.plan_prices.currency_code IS 'ISO 4217 currency code (USD, INR, EUR)';
-COMMENT ON COLUMN public.plan_prices.price_monthly_in_base_unit IS 'Price in smallest unit: 4900 = $49.00 USD or 49.00 INR paise';
+COMMENT ON COLUMN public.plan_prices.price_monthly_in_base_unit IS 'Monthly price in smallest currency unit (cents/paise)';
+COMMENT ON COLUMN public.plan_prices.price_yearly_in_base_unit IS 'Yearly price in smallest currency unit (cents/paise)';
+COMMENT ON COLUMN public.plan_prices.price_lifetime_in_base_unit IS 'Lifetime price in smallest currency unit (NULL if not offered)';
+COMMENT ON COLUMN public.plan_prices.is_active IS 'Whether this price is currently active';
+COMMENT ON COLUMN public.plan_prices.created_at IS 'Timestamp when record was created';
+COMMENT ON COLUMN public.plan_prices.updated_at IS 'Timestamp when record was last updated';

@@ -33,5 +33,11 @@ SELECT add_updated_at_trigger('organizations', 'public');
 -- Documentation
 COMMENT ON TABLE public.organizations IS 'Tenant boundary - plan subscription via organization_plans';
 COMMENT ON COLUMN public.organizations.id IS 'Primary key (NanoID 12-char)';
-COMMENT ON COLUMN public.organizations.slug IS 'URL-friendly unique identifier';
+COMMENT ON COLUMN public.organizations.name IS 'Organization display name';
+COMMENT ON COLUMN public.organizations.slug IS 'URL-friendly unique identifier for public URLs';
+COMMENT ON COLUMN public.organizations.logo_url IS 'Organization logo image URL';
 COMMENT ON COLUMN public.organizations.settings IS 'UI preferences only (theme, locale) - not business logic';
+COMMENT ON COLUMN public.organizations.is_active IS 'Soft delete flag - false means organization is deactivated';
+COMMENT ON COLUMN public.organizations.created_by IS 'User who created this organization';
+COMMENT ON COLUMN public.organizations.created_at IS 'Timestamp when record was created';
+COMMENT ON COLUMN public.organizations.updated_at IS 'Timestamp when record was last updated';
