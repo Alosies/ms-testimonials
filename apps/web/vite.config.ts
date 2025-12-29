@@ -17,6 +17,7 @@ export default defineConfig({
       '@testimonials/core': fileURLToPath(new URL('../../packages/libs/core/src', import.meta.url)),
       '@testimonials/ui': fileURLToPath(new URL('../../packages/libs/ui/src', import.meta.url)),
       '@testimonials/icons': fileURLToPath(new URL('../../packages/libs/icons/src', import.meta.url)),
+      '@ui': fileURLToPath(new URL('../../packages/libs/ui/src', import.meta.url)),
     },
   },
   server: {
