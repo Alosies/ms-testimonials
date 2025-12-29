@@ -73,30 +73,30 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION remove_updated_at_trigger(table_name text, schema_name text DEFAULT 'public')
 RETURNS boolean AS $$
 DECLARE
-    trigger_name text;
-    full_table_name text;
-    trigger_exists boolean;
+    v_trigger_name text;
+    v_full_table_name text;
+    v_trigger_exists boolean;
 BEGIN
-    -- Construct names
-    full_table_name := schema_name || '.' || table_name;
-    trigger_name := table_name || '_updated_at_trigger';
+    -- Construct names (v_ prefix avoids ambiguity with information_schema columns)
+    v_full_table_name := schema_name || '.' || table_name;
+    v_trigger_name := table_name || '_updated_at_trigger';
 
     -- Check if trigger exists
     SELECT EXISTS (
         SELECT 1
         FROM information_schema.triggers t
-        WHERE t.trigger_schema = remove_updated_at_trigger.schema_name
-        AND t.event_object_table = remove_updated_at_trigger.table_name
-        AND t.trigger_name = remove_updated_at_trigger.trigger_name
-    ) INTO trigger_exists;
+        WHERE t.trigger_schema = schema_name
+        AND t.event_object_table = table_name
+        AND t.trigger_name = v_trigger_name
+    ) INTO v_trigger_exists;
 
     -- If trigger exists, drop it
-    IF trigger_exists THEN
-        EXECUTE format('DROP TRIGGER IF EXISTS %I ON %s', trigger_name, full_table_name);
-        RAISE NOTICE 'Removed updated_at trigger from table: %', full_table_name;
+    IF v_trigger_exists THEN
+        EXECUTE format('DROP TRIGGER IF EXISTS %I ON %s', v_trigger_name, v_full_table_name);
+        RAISE NOTICE 'Removed updated_at trigger from table: %', v_full_table_name;
         RETURN true;
     ELSE
-        RAISE NOTICE 'No updated_at trigger found on table: %', full_table_name;
+        RAISE NOTICE 'No updated_at trigger found on table: %', v_full_table_name;
         RETURN false;
     END IF;
 END;
