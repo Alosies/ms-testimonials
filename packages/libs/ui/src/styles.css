@@ -1,0 +1,97 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Teal - Trustworthy, modern, differentiated */
+    --background: 0 0% 100%;
+    --foreground: 224 71% 4%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 224 71% 4%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 224 71% 4%;
+
+    /* Primary: Teal - fresh and modern */
+    --primary: 175 84% 32%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary: Cool slate for secondary actions */
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 220 9% 12%;
+
+    /* Muted: Soft cool backgrounds */
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 46%;
+
+    /* Accent: Lighter teal for hover states */
+    --accent: 175 77% 40%;
+    --accent-foreground: 0 0% 100%;
+
+    /* Semantic: Status colors */
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+
+    /* UI Elements */
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 175 84% 32%;
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 224 71% 4%;
+    --foreground: 0 0% 98%;
+
+    --card: 224 64% 6%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 224 64% 6%;
+    --popover-foreground: 0 0% 98%;
+
+    /* Primary: Teal - vibrant on dark */
+    --primary: 175 77% 40%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 215 28% 14%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 215 28% 14%;
+    --muted-foreground: 217 10% 60%;
+
+    --accent: 175 70% 45%;
+    --accent-foreground: 0 0% 100%;
+
+    /* Semantic colors stay vibrant in dark mode */
+    --success: 142 70% 40%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 0%;
+
+    --destructive: 0 72% 55%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 215 28% 16%;
+    --input: 215 28% 16%;
+    --ring: 175 77% 40%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
