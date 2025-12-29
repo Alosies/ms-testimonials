@@ -1,0 +1,53 @@
+{
+  "metadata": {
+    "generated": "2025-12-29T16:30:00+05:30",
+    "totalTables": 3,
+    "statusCounts": {
+      "current": 3,
+      "behind": 0,
+      "critical": 0
+    },
+    "lastGlobalUpdate": "2025-12-29-1630"
+  },
+  "tables": {
+    "users": {
+      "lastMigration": "1767004710000_2025_12_29_1608__users__create_table",
+      "status": "current",
+      "lastUpdated": "2025-12-29-1630",
+      "timezone": "GMT+5:30",
+      "migrationHistory": [
+        {
+          "migration": "1767004710000_2025_12_29_1608__users__create_table",
+          "date": "2025-12-29",
+          "summary": "Initial table creation with provider-agnostic design, NanoID primary key, email verification, locale/timezone support"
+        }
+      ]
+    },
+    "user_identities": {
+      "lastMigration": "1767004770000_2025_12_29_1609__user_identities__create_table",
+      "status": "current",
+      "lastUpdated": "2025-12-29-1630",
+      "timezone": "GMT+5:30",
+      "migrationHistory": [
+        {
+          "migration": "1767004770000_2025_12_29_1609__user_identities__create_table",
+          "date": "2025-12-29",
+          "summary": "Initial table creation with federated auth support, 16-char NanoID for security, multiple provider support"
+        }
+      ]
+    },
+    "roles": {
+      "lastMigration": "1767004830000_2025_12_29_1610__roles__create_table",
+      "status": "current",
+      "lastUpdated": "2025-12-29-1630",
+      "timezone": "GMT+5:30",
+      "migrationHistory": [
+        {
+          "migration": "1767004830000_2025_12_29_1610__roles__create_table",
+          "date": "2025-12-29",
+          "summary": "Initial table creation with unique_name+name pattern, explicit permission columns, is_viewer flag, system role seeds"
+        }
+      ]
+    }
+  }
+}
