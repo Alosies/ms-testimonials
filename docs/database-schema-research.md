@@ -93,12 +93,14 @@ This document presents a **scalable, provider-agnostic, properly normalized** da
 | `user_identities` | Federated auth providers | `provider_metadata` (appropriate) |
 | `roles` | Permission definitions | None |
 
-### Layer 2: Multi-Tenancy (3 tables)
+### Layer 2: Multi-Tenancy (5 tables)
 
 | Table | Purpose | JSONB Fields |
 |-------|---------|--------------|
-| `plans` | Subscription plan definitions | None |
+| `plans` | Plan templates (features/limits) | None |
+| `plan_prices` | Multi-currency pricing | None |
 | `organizations` | Tenant/workspace | `settings` (UI prefs only) |
+| `organization_plans` | Subscription records with overrides | None |
 | `organization_roles` | User ↔ Org ↔ Role junction | None |
 
 ### Layer 3: Business Entities (6 tables)
@@ -112,7 +114,7 @@ This document presents a **scalable, provider-agnostic, properly normalized** da
 | `widgets` | Embeddable displays | `settings` (UI prefs only) |
 | `widget_testimonials` | Widget ↔ Testimonial junction | None |
 
-**Total: 12 tables** (properly normalized)
+**Total: 14 tables** (properly normalized)
 
 ---
 
@@ -230,7 +232,7 @@ COMMENT ON COLUMN roles.name IS 'Display-ready label for UI (Owner, Admin, Membe
 
 ### 2.1 Plans Table
 
-Normalized plan definitions with explicit limit columns.
+Plan templates defining features and limits only. Pricing is in `plan_prices` table.
 
 ```sql
 CREATE TABLE public.plans (
@@ -244,10 +246,6 @@ CREATE TABLE public.plans (
     max_widgets         INTEGER NOT NULL,
     max_members         INTEGER NOT NULL,
     show_branding       BOOLEAN NOT NULL DEFAULT true,
-    -- Pricing
-    price_monthly       INTEGER NOT NULL DEFAULT 0,  -- Cents
-    price_yearly        INTEGER NOT NULL DEFAULT 0,  -- Cents
-    price_lifetime      INTEGER,                     -- Cents, NULL if not offered
     is_active           BOOLEAN NOT NULL DEFAULT true,
     created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -257,21 +255,68 @@ CREATE TABLE public.plans (
 
 SELECT add_updated_at_trigger('plans');
 
--- Seed default plans (NanoID auto-generated, use unique_name for lookups)
-INSERT INTO plans (unique_name, name, description, max_testimonials, max_forms, max_widgets, max_members, show_branding, price_monthly, price_yearly, price_lifetime) VALUES
-    ('free', 'Free', 'Get started with testimonials', 50, 1, 1, 1, true, 0, 0, NULL),
-    ('pro', 'Pro', 'For growing businesses', -1, 5, -1, 1, false, 0, 0, 4900),
-    ('team', 'Team', 'For teams with multiple members', -1, -1, -1, 3, false, 0, 0, 9900);
+-- Seed default plans
+INSERT INTO plans (unique_name, name, description, max_testimonials, max_forms, max_widgets, max_members, show_branding) VALUES
+    ('free', 'Free', 'Get started with testimonials', 50, 1, 1, 1, true),
+    ('pro', 'Pro', 'For growing businesses', -1, 5, -1, 1, false),
+    ('team', 'Team', 'For teams with multiple members', -1, -1, -1, 3, false);
 
-COMMENT ON TABLE plans IS 'Subscription plan definitions - explicit columns for queryable limits';
+COMMENT ON TABLE plans IS 'Plan templates - features/limits only, pricing in plan_prices';
 COMMENT ON COLUMN plans.unique_name IS 'Slug for code comparisons (free, pro, team)';
 COMMENT ON COLUMN plans.name IS 'Display-ready label for UI (Free, Pro, Team)';
 COMMENT ON COLUMN plans.max_testimonials IS '-1 means unlimited';
 ```
 
-### 2.2 Organizations Table
+### 2.2 Plan Prices Table
 
-Tenant boundary. Only `settings` JSONB for UI preferences.
+Multi-currency pricing for plans. Prices stored in smallest currency unit (cents for USD, paise for INR).
+
+```sql
+CREATE TABLE public.plan_prices (
+    id                              TEXT PRIMARY KEY DEFAULT generate_nanoid_12(),
+    plan_id                         TEXT NOT NULL,
+    currency_code                   VARCHAR(3) NOT NULL DEFAULT 'USD',  -- ISO 4217
+    -- Prices in smallest currency unit (cents, paise, etc.)
+    price_monthly_in_base_unit      INTEGER NOT NULL DEFAULT 0,
+    price_yearly_in_base_unit       INTEGER NOT NULL DEFAULT 0,
+    price_lifetime_in_base_unit     INTEGER,  -- NULL if not offered
+    is_active                       BOOLEAN NOT NULL DEFAULT true,
+    created_at                      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at                      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+    CONSTRAINT plan_prices_plan_fk
+        FOREIGN KEY (plan_id) REFERENCES plans(id) ON DELETE CASCADE,
+    CONSTRAINT plan_prices_unique
+        UNIQUE (plan_id, currency_code),
+    CONSTRAINT plan_prices_currency_check
+        CHECK (currency_code ~ '^[A-Z]{3}$')
+);
+
+CREATE INDEX idx_plan_prices_plan ON plan_prices(plan_id);
+CREATE INDEX idx_plan_prices_currency ON plan_prices(currency_code);
+
+SELECT add_updated_at_trigger('plan_prices');
+
+-- Seed pricing (after plans are seeded)
+INSERT INTO plan_prices (plan_id, currency_code, price_monthly_in_base_unit, price_yearly_in_base_unit, price_lifetime_in_base_unit)
+SELECT id, 'USD', 0, 0, NULL FROM plans WHERE unique_name = 'free'
+UNION ALL
+SELECT id, 'USD', 0, 0, 4900 FROM plans WHERE unique_name = 'pro'
+UNION ALL
+SELECT id, 'INR', 0, 0, 99900 FROM plans WHERE unique_name = 'pro'  -- ₹999
+UNION ALL
+SELECT id, 'USD', 0, 0, 9900 FROM plans WHERE unique_name = 'team'
+UNION ALL
+SELECT id, 'INR', 0, 0, 199900 FROM plans WHERE unique_name = 'team';  -- ₹1999
+
+COMMENT ON TABLE plan_prices IS 'Multi-currency pricing - prices in smallest currency unit';
+COMMENT ON COLUMN plan_prices.currency_code IS 'ISO 4217 currency code (USD, INR, EUR)';
+COMMENT ON COLUMN plan_prices.price_monthly_in_base_unit IS 'Price in smallest unit: 4900 = $49.00 USD or ₹49.00 INR';
+```
+
+### 2.3 Organizations Table
+
+Tenant boundary. Plan subscription managed via `organization_plans` table.
 
 ```sql
 CREATE TABLE public.organizations (
@@ -279,7 +324,6 @@ CREATE TABLE public.organizations (
     name            TEXT NOT NULL,
     slug            VARCHAR(100) NOT NULL,
     logo_url        TEXT,
-    plan_id         TEXT NOT NULL,  -- No default; app must lookup plan by unique_name
     -- Usage counters (denormalized for performance, updated via triggers)
     testimonial_count   INTEGER NOT NULL DEFAULT 0,
     form_count          INTEGER NOT NULL DEFAULT 0,
@@ -294,23 +338,92 @@ CREATE TABLE public.organizations (
 
     CONSTRAINT organizations_slug_unique UNIQUE (slug),
     CONSTRAINT organizations_slug_format CHECK (slug ~ '^[a-z0-9]([a-z0-9-]*[a-z0-9])?$'),
-    CONSTRAINT organizations_plan_fk
-        FOREIGN KEY (plan_id) REFERENCES plans(id),
     CONSTRAINT organizations_created_by_fk
         FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
 );
 
 CREATE UNIQUE INDEX idx_organizations_slug ON organizations(slug);
-CREATE INDEX idx_organizations_plan ON organizations(plan_id);
 CREATE INDEX idx_organizations_active ON organizations(id) WHERE is_active = true;
 
 SELECT add_updated_at_trigger('organizations');
 
-COMMENT ON TABLE organizations IS 'Tenant boundary - all business data scoped here';
+COMMENT ON TABLE organizations IS 'Tenant boundary - plan subscription via organization_plans';
 COMMENT ON COLUMN organizations.settings IS 'UI preferences only (theme, locale) - not business logic';
 ```
 
-### 2.3 Organization Roles Table
+### 2.4 Organization Plans Table
+
+Subscription records with plan values copied at subscription time. Supports overrides for custom deals.
+
+```sql
+CREATE TABLE public.organization_plans (
+    id                  TEXT PRIMARY KEY DEFAULT generate_nanoid_12(),
+    organization_id     TEXT NOT NULL,
+    plan_id             TEXT NOT NULL,  -- Reference to original plan (for analytics)
+
+    -- Subscription status
+    status              TEXT NOT NULL DEFAULT 'active',
+    billing_cycle       TEXT NOT NULL,
+    currency_code       VARCHAR(3) NOT NULL DEFAULT 'USD',
+
+    -- Timeline
+    starts_at           TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    current_period_ends_at TIMESTAMPTZ,  -- NULL for lifetime
+    trial_ends_at       TIMESTAMPTZ,
+    cancelled_at        TIMESTAMPTZ,
+
+    -- COPIED from plan at subscription time (source of truth for this org)
+    max_forms           INTEGER NOT NULL,
+    max_testimonials    INTEGER NOT NULL,
+    max_widgets         INTEGER NOT NULL,
+    max_members         INTEGER NOT NULL,
+    show_branding       BOOLEAN NOT NULL,
+    price_in_base_unit  INTEGER NOT NULL,  -- Actual price paid in currency_code
+
+    -- Override audit trail
+    has_overrides       BOOLEAN NOT NULL DEFAULT false,
+    override_reason     TEXT,
+    overridden_by       TEXT,
+    overridden_at       TIMESTAMPTZ,
+
+    created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+    CONSTRAINT org_plans_org_fk
+        FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE,
+    CONSTRAINT org_plans_plan_fk
+        FOREIGN KEY (plan_id) REFERENCES plans(id),
+    CONSTRAINT org_plans_overridden_by_fk
+        FOREIGN KEY (overridden_by) REFERENCES users(id) ON DELETE SET NULL,
+    CONSTRAINT org_plans_status_check
+        CHECK (status IN ('trial', 'active', 'cancelled', 'expired')),
+    CONSTRAINT org_plans_billing_check
+        CHECK (billing_cycle IN ('monthly', 'yearly', 'lifetime')),
+    CONSTRAINT org_plans_currency_check
+        CHECK (currency_code ~ '^[A-Z]{3}$')
+);
+
+-- Only one active/trial plan per organization
+CREATE UNIQUE INDEX idx_org_plans_active
+    ON organization_plans(organization_id)
+    WHERE status IN ('trial', 'active');
+
+CREATE INDEX idx_org_plans_org ON organization_plans(organization_id);
+CREATE INDEX idx_org_plans_status ON organization_plans(status);
+CREATE INDEX idx_org_plans_expiring ON organization_plans(current_period_ends_at)
+    WHERE status = 'active' AND current_period_ends_at IS NOT NULL;
+
+SELECT add_updated_at_trigger('organization_plans');
+
+COMMENT ON TABLE organization_plans IS 'Subscription records - plan values copied at subscription time';
+COMMENT ON COLUMN organization_plans.plan_id IS 'Reference to original plan for analytics/reporting';
+COMMENT ON COLUMN organization_plans.max_forms IS 'Copied from plan, may be overridden for custom deals';
+COMMENT ON COLUMN organization_plans.has_overrides IS 'True if any limits differ from original plan';
+COMMENT ON COLUMN organization_plans.override_reason IS 'Audit trail: why overrides were applied';
+COMMENT ON COLUMN organization_plans.price_in_base_unit IS 'Actual price in smallest currency unit (cents/paise)';
+```
+
+### 2.5 Organization Roles Table
 
 User ↔ Organization ↔ Role junction table. A user can have different roles in different organizations.
 
@@ -613,7 +726,7 @@ COMMENT ON TABLE widget_testimonials IS 'Widget-Testimonial junction with orderi
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────────────┐
 │                              DATABASE SCHEMA v3                                          │
-│                        (Properly Normalized - 12 Tables)                                 │
+│                        (Properly Normalized - 14 Tables)                                 │
 └─────────────────────────────────────────────────────────────────────────────────────────┘
 
                                     AUTHENTICATION
@@ -642,16 +755,25 @@ COMMENT ON TABLE widget_testimonials IS 'Widget-Testimonial junction with orderi
                                                │
                               MULTI-TENANCY    │
                                                │
-         ┌─────────────┐                       │         ┌───────────────────┐
-         │    PLANS    │                       │         │   ORGANIZATIONS   │
-         ├─────────────┤                       │         ├───────────────────┤
-         │ id (PK)     │◄──────────────────────┼─────────│ plan_id (FK)      │
-         │ name        │                       └────────►│ id (PK)           │
-         │ max_*       │ ← Explicit columns              │ name              │
-         │ show_brand  │                                 │ slug (UNIQUE)     │
-         │ price_*     │                                 │ *_count           │ ← Denormalized
-         └─────────────┘                                 │ settings          │ ← JSONB (UI only)
-                                                         └─────────┬─────────┘
+         ┌─────────────┐    ┌───────────────┐  │         ┌───────────────────┐
+         │    PLANS    │    │  PLAN_PRICES  │  │         │   ORGANIZATIONS   │
+         ├─────────────┤    ├───────────────┤  │         ├───────────────────┤
+         │ id (PK)     │◄───│ plan_id (FK)  │  └────────►│ id (PK)           │
+         │ unique_name │    │ currency_code │            │ name              │
+         │ name        │    │ price_*       │            │ slug (UNIQUE)     │
+         │ max_*       │    └───────────────┘            │ *_count           │ ← Denormalized
+         │ show_brand  │                                 │ settings          │ ← JSONB (UI only)
+         └──────┬──────┘                                 └─────────┬─────────┘
+                │                                                  │
+                │         ┌─────────────────────┐                  │
+                └────────►│  ORGANIZATION_PLANS │◄─────────────────┘
+                          ├─────────────────────┤
+                          │ plan_id (FK)        │ ← Reference to plan
+                          │ organization_id (FK)│
+                          │ status, billing_*   │
+                          │ max_*, show_*       │ ← Copied from plan
+                          │ override_*, has_*   │ ← Audit trail
+                          └─────────────────────┘
                                                                    │
                               BUSINESS ENTITIES                    │
                                                                    │
@@ -723,20 +845,22 @@ Phase 2: Authentication
 
 Phase 3: Multi-Tenancy
   6. plans__create_table
-  7. organizations__create_table
-  8. organization_roles__create_table
+  7. plan_prices__create_table
+  8. organizations__create_table
+  9. organization_plans__create_table
+  10. organization_roles__create_table
 
 Phase 4: Business Entities
-  9.  forms__create_table
-  10. form_questions__create_table
-  11. testimonials__create_table
-  12. testimonial_answers__create_table
-  13. widgets__create_table
-  14. widget_testimonials__create_table
+  11. forms__create_table
+  12. form_questions__create_table
+  13. testimonials__create_table
+  14. testimonial_answers__create_table
+  15. widgets__create_table
+  16. widget_testimonials__create_table
 
 Phase 5: Triggers & Functions
-  15. organizations__usage_count_triggers
-  16. testimonials__auto_org_id_trigger
+  17. organizations__usage_count_triggers
+  18. testimonials__auto_org_id_trigger
 ```
 
 ---
@@ -868,15 +992,15 @@ GROUP BY w.id;
 ### Check Plan Limits Before Insert
 
 ```sql
--- Check if org can add more testimonials
+-- Check if org can add more testimonials (using organization_plans)
 SELECT
     CASE
-        WHEN p.max_testimonials = -1 THEN true
-        WHEN o.testimonial_count < p.max_testimonials THEN true
+        WHEN op.max_testimonials = -1 THEN true
+        WHEN o.testimonial_count < op.max_testimonials THEN true
         ELSE false
     END AS can_add_testimonial
 FROM organizations o
-JOIN plans p ON p.id = o.plan_id
+JOIN organization_plans op ON op.organization_id = o.id AND op.status IN ('trial', 'active')
 WHERE o.id = $1;
 ```
 
