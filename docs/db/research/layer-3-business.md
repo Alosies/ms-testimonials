@@ -27,23 +27,35 @@ Collection forms - questions are normalized to separate table.
 
 ```sql
 CREATE TABLE public.forms (
-    id                  TEXT PRIMARY KEY DEFAULT generate_nanoid_12(),
-    organization_id     TEXT NOT NULL,
-    created_by          TEXT NOT NULL,
-    name                TEXT NOT NULL,
-    slug                TEXT NOT NULL,
-    product_name        TEXT NOT NULL,
-    product_description TEXT,  -- AI context: used for "Infer, Don't Ask" question generation
-    -- Submission settings as explicit columns
-    collect_rating      BOOLEAN NOT NULL DEFAULT true,
-    require_email       BOOLEAN NOT NULL DEFAULT true,
-    require_company     BOOLEAN NOT NULL DEFAULT false,
-    -- UI preferences only
-    settings            JSONB NOT NULL DEFAULT '{}'::jsonb,
-    is_active           BOOLEAN NOT NULL DEFAULT true,
-    created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    -- Primary key
+    id                  TEXT PRIMARY KEY DEFAULT generate_nanoid_12(),  -- NanoID 12-char unique identifier
 
+    -- Ownership & multi-tenancy
+    organization_id     TEXT NOT NULL,      -- FK: Tenant boundary for isolation
+    created_by          TEXT NOT NULL,      -- FK: User who created this form
+
+    -- Form identity
+    name                TEXT NOT NULL,      -- Display name in dashboard (e.g., "Product Feedback Form")
+    slug                TEXT NOT NULL,      -- URL-friendly identifier for /f/{slug}. Lowercase alphanumeric + hyphens
+
+    -- AI context (Infer, Don't Ask philosophy)
+    product_name        TEXT NOT NULL,      -- Product being reviewed - used in question templates
+    product_description TEXT,               -- AI infers industry, audience, tone from this description
+
+    -- Submission settings (explicit columns, not JSONB)
+    collect_rating      BOOLEAN NOT NULL DEFAULT true,   -- Show star rating question
+    require_email       BOOLEAN NOT NULL DEFAULT true,   -- Email mandatory for follow-up
+    require_company     BOOLEAN NOT NULL DEFAULT false,  -- Company name mandatory (reduces friction if false)
+
+    -- UI preferences (JSONB appropriate - truly dynamic)
+    settings            JSONB NOT NULL DEFAULT '{}'::jsonb,  -- Theme colors, branding - NOT business logic
+
+    -- State & timestamps
+    is_active           BOOLEAN NOT NULL DEFAULT true,   -- Soft delete: false = 404 on public link
+    created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),  -- Immutable creation timestamp
+    updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),  -- Auto-updated by trigger
+
+    -- Constraints
     CONSTRAINT forms_org_fk
         FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE,
     CONSTRAINT forms_created_by_fk
@@ -54,15 +66,31 @@ CREATE TABLE public.forms (
         CHECK (slug ~ '^[a-z0-9]([a-z0-9-]*[a-z0-9])?$')
 );
 
-CREATE INDEX idx_forms_org ON forms(organization_id);
-CREATE INDEX idx_forms_slug ON forms(organization_id, slug);
-CREATE INDEX idx_forms_active ON forms(organization_id) WHERE is_active = true;
+-- Indexes
+CREATE INDEX idx_forms_org ON forms(organization_id);           -- Filter by organization
+CREATE INDEX idx_forms_slug ON forms(organization_id, slug);    -- Lookup by slug within org
+CREATE INDEX idx_forms_active ON forms(organization_id) WHERE is_active = true;  -- Active forms only
 
 SELECT add_updated_at_trigger('forms');
 
+-- Table comment
 COMMENT ON TABLE forms IS 'Testimonial collection forms - questions normalized to form_questions table';
-COMMENT ON COLUMN forms.product_description IS 'AI context for question generation - enables "Infer, Don''t Ask" philosophy';
-COMMENT ON COLUMN forms.settings IS 'UI preferences only (theme, colors) - not business logic';
+
+-- Column comments
+COMMENT ON COLUMN forms.id IS 'Primary key - NanoID 12-char unique identifier';
+COMMENT ON COLUMN forms.organization_id IS 'FK to organizations - tenant boundary for multi-tenancy isolation';
+COMMENT ON COLUMN forms.created_by IS 'FK to users - user who created this form';
+COMMENT ON COLUMN forms.name IS 'Form display name shown in dashboard (e.g., "Product Feedback Form")';
+COMMENT ON COLUMN forms.slug IS 'URL-friendly identifier for public form link (/f/{slug}). Lowercase alphanumeric with hyphens';
+COMMENT ON COLUMN forms.product_name IS 'Name of product being reviewed - used in question templates (e.g., "How did {product} help?")';
+COMMENT ON COLUMN forms.product_description IS 'AI context for question generation - enables "Infer, Don''t Ask" philosophy. AI infers industry, audience, tone from this';
+COMMENT ON COLUMN forms.collect_rating IS 'Whether to show star rating question on form. Default true';
+COMMENT ON COLUMN forms.require_email IS 'Whether customer email is mandatory. Default true for follow-up capability';
+COMMENT ON COLUMN forms.require_company IS 'Whether company name is mandatory. Default false - reduces friction';
+COMMENT ON COLUMN forms.settings IS 'UI preferences only (theme colors, branding) - NOT business logic. JSONB appropriate here';
+COMMENT ON COLUMN forms.is_active IS 'Soft delete flag. False = form disabled, public link returns 404';
+COMMENT ON COLUMN forms.created_at IS 'Timestamp when form was created. Immutable after insert';
+COMMENT ON COLUMN forms.updated_at IS 'Timestamp of last modification. Auto-updated by trigger';
 ```
 
 ### Column Reference
@@ -89,34 +117,39 @@ Defines available question types with their validation rules and constraints. Th
 
 ```sql
 CREATE TABLE public.question_types (
-    id                  TEXT PRIMARY KEY DEFAULT generate_nanoid_12(),
-    unique_name         VARCHAR(50) NOT NULL,   -- Code identifier (text_short, rating_star)
-    name                VARCHAR(100) NOT NULL,  -- Display label (Short Text, Star Rating)
-    category            VARCHAR(30) NOT NULL,   -- Grouping (text, rating, choice, media, special)
-    description         TEXT,
+    -- Primary key
+    id                  TEXT PRIMARY KEY DEFAULT generate_nanoid_12(),  -- NanoID 12-char unique identifier
 
-    -- Input characteristics
-    input_component     VARCHAR(50) NOT NULL,   -- Vue component name (TextInput, StarRating, etc.)
-    answer_data_type    VARCHAR(20) NOT NULL,   -- How answer is stored (text, integer, boolean, json)
+    -- Type identity
+    unique_name         VARCHAR(50) NOT NULL,   -- Code identifier for lookups (text_short, rating_star)
+    name                VARCHAR(100) NOT NULL,  -- Display label for UI (Short Text, Star Rating)
+    category            VARCHAR(30) NOT NULL,   -- Grouping: text, rating, choice, media, special
+    description         TEXT,                   -- Brief explanation shown in form builder tooltip
 
-    -- Validation rule applicability (which rules can be configured)
-    supports_min_length     BOOLEAN NOT NULL DEFAULT false,
-    supports_max_length     BOOLEAN NOT NULL DEFAULT false,
-    supports_min_value      BOOLEAN NOT NULL DEFAULT false,
-    supports_max_value      BOOLEAN NOT NULL DEFAULT false,
-    supports_pattern        BOOLEAN NOT NULL DEFAULT false,  -- Regex validation
-    supports_options        BOOLEAN NOT NULL DEFAULT false,  -- Has predefined choices
-    supports_file_types     BOOLEAN NOT NULL DEFAULT false,  -- File upload restrictions
-    supports_max_file_size  BOOLEAN NOT NULL DEFAULT false,
+    -- Frontend mapping
+    input_component     VARCHAR(50) NOT NULL,   -- Vue component name (TextInput, StarRating, RadioGroup)
+    answer_data_type    VARCHAR(20) NOT NULL,   -- Answer storage type: text, integer, boolean, json, url
 
-    -- Defaults
-    default_min_value   INTEGER,
-    default_max_value   INTEGER,
+    -- Validation rule applicability flags (determines which rules can be configured per type)
+    supports_min_length     BOOLEAN NOT NULL DEFAULT false,  -- Text types: minimum character count
+    supports_max_length     BOOLEAN NOT NULL DEFAULT false,  -- Text types: maximum character count
+    supports_min_value      BOOLEAN NOT NULL DEFAULT false,  -- Rating types: minimum value (e.g., 1)
+    supports_max_value      BOOLEAN NOT NULL DEFAULT false,  -- Rating types: maximum value (e.g., 5, 10)
+    supports_pattern        BOOLEAN NOT NULL DEFAULT false,  -- Text types: regex validation (email, URL)
+    supports_options        BOOLEAN NOT NULL DEFAULT false,  -- Choice types: has predefined options
+    supports_file_types     BOOLEAN NOT NULL DEFAULT false,  -- Media types: allowed MIME types
+    supports_max_file_size  BOOLEAN NOT NULL DEFAULT false,  -- Media types: file size limit
 
-    is_active           BOOLEAN NOT NULL DEFAULT true,
-    display_order       SMALLINT NOT NULL,
-    created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    -- Default values (pre-populated when creating question of this type)
+    default_min_value   INTEGER,    -- Default min (e.g., 1 for star, 0 for NPS)
+    default_max_value   INTEGER,    -- Default max (e.g., 5 for star, 10 for NPS)
 
+    -- State & display
+    is_active           BOOLEAN NOT NULL DEFAULT true,   -- False = hidden from form builder
+    display_order       SMALLINT NOT NULL,               -- Order in type picker (lower = first)
+    created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),  -- Seed timestamp (immutable)
+
+    -- Constraints
     CONSTRAINT question_types_unique_name_unique UNIQUE (unique_name),
     CONSTRAINT question_types_category_check
         CHECK (category IN ('text', 'rating', 'choice', 'media', 'special')),
@@ -124,12 +157,33 @@ CREATE TABLE public.question_types (
         CHECK (answer_data_type IN ('text', 'integer', 'boolean', 'decimal', 'json', 'url'))
 );
 
-CREATE INDEX idx_question_types_category ON question_types(category);
+-- Indexes
+CREATE INDEX idx_question_types_category ON question_types(category);  -- Filter by category in UI
 
-COMMENT ON TABLE question_types IS 'Question type definitions - seed data, not user-modifiable';
-COMMENT ON COLUMN question_types.unique_name IS 'Code identifier for type lookups';
-COMMENT ON COLUMN question_types.input_component IS 'Frontend component name for rendering';
-COMMENT ON COLUMN question_types.answer_data_type IS 'Data type for storing answers';
+-- Table comment
+COMMENT ON TABLE question_types IS 'Question type definitions - seed data, system-defined, not user-modifiable';
+
+-- Column comments
+COMMENT ON COLUMN question_types.id IS 'Primary key - NanoID 12-char unique identifier';
+COMMENT ON COLUMN question_types.unique_name IS 'Code identifier for type lookups (text_short, rating_star). Use in code comparisons';
+COMMENT ON COLUMN question_types.name IS 'Display label for UI (Short Text, Star Rating). Human-readable';
+COMMENT ON COLUMN question_types.category IS 'Type grouping: text, rating, choice, media, special. Used for UI organization';
+COMMENT ON COLUMN question_types.description IS 'Brief explanation of type purpose shown in form builder tooltip';
+COMMENT ON COLUMN question_types.input_component IS 'Vue component name for rendering (TextInput, StarRating). Maps to frontend';
+COMMENT ON COLUMN question_types.answer_data_type IS 'Data type for storing answers: text, integer, boolean, decimal, json, url';
+COMMENT ON COLUMN question_types.supports_min_length IS 'Whether min_length validation is applicable (true for text types)';
+COMMENT ON COLUMN question_types.supports_max_length IS 'Whether max_length validation is applicable (true for text types)';
+COMMENT ON COLUMN question_types.supports_min_value IS 'Whether min_value validation is applicable (true for rating types)';
+COMMENT ON COLUMN question_types.supports_max_value IS 'Whether max_value validation is applicable (true for rating types)';
+COMMENT ON COLUMN question_types.supports_pattern IS 'Whether regex validation is applicable (true for email, URL types)';
+COMMENT ON COLUMN question_types.supports_options IS 'Whether predefined choices are applicable (true for choice types)';
+COMMENT ON COLUMN question_types.supports_file_types IS 'Whether file type restrictions are applicable (true for media types)';
+COMMENT ON COLUMN question_types.supports_max_file_size IS 'Whether file size limit is applicable (true for media types)';
+COMMENT ON COLUMN question_types.default_min_value IS 'Default minimum value when creating question (e.g., 1 for star rating)';
+COMMENT ON COLUMN question_types.default_max_value IS 'Default maximum value when creating question (e.g., 5 for star rating, 10 for NPS)';
+COMMENT ON COLUMN question_types.is_active IS 'Whether type is available for new questions. False hides from form builder';
+COMMENT ON COLUMN question_types.display_order IS 'Order in form builder type picker. Lower = appears first';
+COMMENT ON COLUMN question_types.created_at IS 'Timestamp when type was seeded. Immutable';
 ```
 
 ### Seed Data
@@ -211,62 +265,86 @@ Questions linked to forms with typed validation rules. Each question references 
 
 ```sql
 CREATE TABLE public.form_questions (
-    id                  TEXT PRIMARY KEY DEFAULT generate_nanoid_12(),
-    form_id             TEXT NOT NULL,
-    question_type_id    TEXT NOT NULL,
+    -- Primary key
+    id                  TEXT PRIMARY KEY DEFAULT generate_nanoid_12(),  -- NanoID 12-char unique identifier
+
+    -- Relationships
+    form_id             TEXT NOT NULL,          -- FK: Parent form this question belongs to
+    question_type_id    TEXT NOT NULL,          -- FK: Determines input component & validation rules
 
     -- Question content
-    question_key        VARCHAR(50) NOT NULL,   -- Semantic key (problem, solution, result)
-    question_text       TEXT NOT NULL,          -- Display text shown to user
-    placeholder         TEXT,                   -- Input placeholder
-    help_text           TEXT,                   -- Help tooltip
+    question_key        VARCHAR(50) NOT NULL,   -- Semantic identifier (problem, solution, result, name, email)
+    question_text       TEXT NOT NULL,          -- Display text shown to customer
+    placeholder         TEXT,                   -- Input placeholder hint (e.g., "Describe your challenge...")
+    help_text           TEXT,                   -- Tooltip explaining expected answer
 
     -- Display
-    display_order       SMALLINT NOT NULL,
+    display_order       SMALLINT NOT NULL,      -- Order on form (unique per form, starts at 1)
 
-    -- Validation rules (applicable based on question_type)
-    is_required         BOOLEAN NOT NULL DEFAULT true,
-    min_length          INTEGER,                -- For text types
-    max_length          INTEGER,                -- For text types
-    min_value           INTEGER,                -- For rating/choice types
-    max_value           INTEGER,                -- For rating/choice types
-    validation_pattern  TEXT,                   -- Regex for text_short, text_email, text_url
+    -- Validation rules (use based on question_type.supports_* flags)
+    is_required         BOOLEAN NOT NULL DEFAULT true,  -- Mandatory field - validation enforced on submit
+    min_length          INTEGER,                -- Text types: minimum character count (NULL = no min)
+    max_length          INTEGER,                -- Text types: maximum character count (NULL = no max)
+    min_value           INTEGER,                -- Rating types: minimum value (e.g., 1 for stars)
+    max_value           INTEGER,                -- Rating types: maximum value (e.g., 5 for stars)
+    validation_pattern  TEXT,                   -- Text types: regex pattern (email, URL, custom)
 
-    -- File upload rules (for media types - Post-MVP)
-    allowed_file_types  TEXT[],                 -- Array: ['image/jpeg', 'image/png']
-    max_file_size_kb    INTEGER,                -- Max file size in KB
+    -- File upload rules (Post-MVP - media types only)
+    allowed_file_types  TEXT[],                 -- MIME types array: ['image/jpeg', 'image/png']
+    max_file_size_kb    INTEGER,                -- Maximum file size in kilobytes
 
-    -- State
-    is_active           BOOLEAN NOT NULL DEFAULT true,
-    created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    -- State & timestamps
+    is_active           BOOLEAN NOT NULL DEFAULT true,   -- Soft delete: false = hidden but answers preserved
+    created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),  -- Immutable creation timestamp
+    updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),  -- Auto-updated by trigger
 
+    -- Constraints
     CONSTRAINT form_questions_form_fk
         FOREIGN KEY (form_id) REFERENCES forms(id) ON DELETE CASCADE,
     CONSTRAINT form_questions_type_fk
         FOREIGN KEY (question_type_id) REFERENCES question_types(id),
     CONSTRAINT form_questions_key_per_form_unique
-        UNIQUE (form_id, question_key),
+        UNIQUE (form_id, question_key),           -- Each key appears once per form
     CONSTRAINT form_questions_order_per_form_unique
-        UNIQUE (form_id, display_order),
+        UNIQUE (form_id, display_order),          -- Each order position once per form
     CONSTRAINT form_questions_key_format
-        CHECK (question_key ~ '^[a-z][a-z0-9_]*$'),
+        CHECK (question_key ~ '^[a-z][a-z0-9_]*$'),  -- Lowercase alphanumeric + underscore
     CONSTRAINT form_questions_length_check
         CHECK (min_length IS NULL OR max_length IS NULL OR min_length <= max_length),
     CONSTRAINT form_questions_value_check
         CHECK (min_value IS NULL OR max_value IS NULL OR min_value <= max_value)
 );
 
-CREATE INDEX idx_form_questions_form ON form_questions(form_id);
-CREATE INDEX idx_form_questions_type ON form_questions(question_type_id);
-CREATE INDEX idx_form_questions_order ON form_questions(form_id, display_order);
+-- Indexes
+CREATE INDEX idx_form_questions_form ON form_questions(form_id);              -- Filter by form
+CREATE INDEX idx_form_questions_type ON form_questions(question_type_id);     -- Filter by type
+CREATE INDEX idx_form_questions_order ON form_questions(form_id, display_order);  -- Ordered fetch
 
 SELECT add_updated_at_trigger('form_questions');
 
+-- Table comment
 COMMENT ON TABLE form_questions IS 'Form questions with typed validation - explicit columns, not JSONB';
-COMMENT ON COLUMN form_questions.question_key IS 'Semantic identifier (problem, solution, result, name, email)';
-COMMENT ON COLUMN form_questions.question_type_id IS 'FK to question_types - determines applicable validation rules';
-COMMENT ON COLUMN form_questions.validation_pattern IS 'Regex pattern for text validation (email, URL, custom)';
+
+-- Column comments
+COMMENT ON COLUMN form_questions.id IS 'Primary key - NanoID 12-char unique identifier';
+COMMENT ON COLUMN form_questions.form_id IS 'FK to forms - parent form this question belongs to';
+COMMENT ON COLUMN form_questions.question_type_id IS 'FK to question_types - determines input component and applicable validation rules';
+COMMENT ON COLUMN form_questions.question_key IS 'Semantic identifier unique per form (problem, solution, result, name, email). Used for answer lookup';
+COMMENT ON COLUMN form_questions.question_text IS 'Display text shown to customer (e.g., "What problem were you trying to solve?")';
+COMMENT ON COLUMN form_questions.placeholder IS 'Input placeholder hint (e.g., "Describe your challenge...")';
+COMMENT ON COLUMN form_questions.help_text IS 'Tooltip help text explaining what kind of answer is expected';
+COMMENT ON COLUMN form_questions.display_order IS 'Order in which question appears on form. Unique per form, starts at 1';
+COMMENT ON COLUMN form_questions.is_required IS 'Whether answer is mandatory. Validation enforced on submission';
+COMMENT ON COLUMN form_questions.min_length IS 'Minimum character count for text answers. NULL = no minimum. Only for text types';
+COMMENT ON COLUMN form_questions.max_length IS 'Maximum character count for text answers. NULL = no maximum. Only for text types';
+COMMENT ON COLUMN form_questions.min_value IS 'Minimum numeric value for rating answers. Used with rating types (e.g., 1 for stars)';
+COMMENT ON COLUMN form_questions.max_value IS 'Maximum numeric value for rating answers. Used with rating types (e.g., 5 for stars, 10 for NPS)';
+COMMENT ON COLUMN form_questions.validation_pattern IS 'Regex pattern for text validation. Used for email, URL, or custom format validation';
+COMMENT ON COLUMN form_questions.allowed_file_types IS 'Array of allowed MIME types for file uploads (e.g., ["image/jpeg", "image/png"]). Post-MVP';
+COMMENT ON COLUMN form_questions.max_file_size_kb IS 'Maximum file size in kilobytes for uploads. Post-MVP';
+COMMENT ON COLUMN form_questions.is_active IS 'Soft delete flag. False = question hidden from form but answers preserved';
+COMMENT ON COLUMN form_questions.created_at IS 'Timestamp when question was created. Immutable after insert';
+COMMENT ON COLUMN form_questions.updated_at IS 'Timestamp of last modification. Auto-updated by trigger';
 ```
 
 ### Column Reference
@@ -313,29 +391,49 @@ Predefined choices for choice-type questions (single_choice, multiple_choice, dr
 
 ```sql
 CREATE TABLE public.question_options (
-    id              TEXT PRIMARY KEY DEFAULT generate_nanoid_12(),
-    question_id     TEXT NOT NULL,
-    option_value    VARCHAR(100) NOT NULL,  -- Stored value
-    option_label    TEXT NOT NULL,          -- Display text
-    display_order   SMALLINT NOT NULL,
-    is_default      BOOLEAN NOT NULL DEFAULT false,  -- Pre-selected option
-    is_active       BOOLEAN NOT NULL DEFAULT true,
-    created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    -- Primary key
+    id              TEXT PRIMARY KEY DEFAULT generate_nanoid_12(),  -- NanoID 12-char unique identifier
 
+    -- Relationship
+    question_id     TEXT NOT NULL,          -- FK: Parent question (must be choice type)
+
+    -- Option content
+    option_value    VARCHAR(100) NOT NULL,  -- Stored value (yes, no, maybe) - saved in answers
+    option_label    TEXT NOT NULL,          -- Display text (Yes!, No, Maybe later) - shown to user
+
+    -- Display & defaults
+    display_order   SMALLINT NOT NULL,      -- Order in option list (unique per question)
+    is_default      BOOLEAN NOT NULL DEFAULT false,  -- Pre-selected option when form loads
+
+    -- State & timestamps
+    is_active       BOOLEAN NOT NULL DEFAULT true,   -- Soft delete: false = hidden but preserved
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),  -- Immutable creation timestamp
+
+    -- Constraints
     CONSTRAINT question_options_question_fk
         FOREIGN KEY (question_id) REFERENCES form_questions(id) ON DELETE CASCADE,
     CONSTRAINT question_options_value_per_question_unique
-        UNIQUE (question_id, option_value),
+        UNIQUE (question_id, option_value),           -- Each value once per question
     CONSTRAINT question_options_order_per_question_unique
-        UNIQUE (question_id, display_order)
+        UNIQUE (question_id, display_order)           -- Each order position once per question
 );
 
-CREATE INDEX idx_question_options_question ON question_options(question_id);
-CREATE INDEX idx_question_options_order ON question_options(question_id, display_order);
+-- Indexes
+CREATE INDEX idx_question_options_question ON question_options(question_id);  -- Filter by question
+CREATE INDEX idx_question_options_order ON question_options(question_id, display_order);  -- Ordered fetch
 
-COMMENT ON TABLE question_options IS 'Predefined choices for choice-type questions';
-COMMENT ON COLUMN question_options.option_value IS 'Stored value (yes, no, maybe) - used in answers';
-COMMENT ON COLUMN question_options.option_label IS 'Display text (Yes!, No, Maybe later)';
+-- Table comment
+COMMENT ON TABLE question_options IS 'Predefined choices for choice-type questions (radio, checkbox, dropdown)';
+
+-- Column comments
+COMMENT ON COLUMN question_options.id IS 'Primary key - NanoID 12-char unique identifier';
+COMMENT ON COLUMN question_options.question_id IS 'FK to form_questions - must be a choice-type question';
+COMMENT ON COLUMN question_options.option_value IS 'Stored value saved in testimonial_answers (e.g., "yes", "no", "maybe")';
+COMMENT ON COLUMN question_options.option_label IS 'Display text shown to customer (e.g., "Yes, definitely!", "Not right now")';
+COMMENT ON COLUMN question_options.display_order IS 'Order in option list. Unique per question, starts at 1';
+COMMENT ON COLUMN question_options.is_default IS 'Pre-selected when form loads. Only one per question should be true';
+COMMENT ON COLUMN question_options.is_active IS 'Soft delete flag. False = option hidden but existing answers preserved';
+COMMENT ON COLUMN question_options.created_at IS 'Timestamp when option was created. Immutable after insert';
 ```
 
 ### Example: "Would you recommend?" Question
@@ -361,33 +459,43 @@ Customer testimonials - answers normalized to separate table.
 
 ```sql
 CREATE TABLE public.testimonials (
-    id                      TEXT PRIMARY KEY DEFAULT generate_nanoid_12(),
-    organization_id         TEXT NOT NULL,
-    form_id                 TEXT NOT NULL,
-    -- Workflow
-    status                  TEXT NOT NULL DEFAULT 'pending',
-    -- AI-assembled content
-    content                 TEXT,
-    rating                  SMALLINT,
-    -- Customer info (denormalized for display performance)
-    customer_name           TEXT NOT NULL,
-    customer_email          TEXT NOT NULL,
-    customer_title          TEXT,
-    customer_company        TEXT,
-    customer_avatar_url     TEXT,
-    -- Source tracking
-    source                  TEXT NOT NULL DEFAULT 'form',
-    source_metadata         JSONB,  -- Appropriate: import-specific, varies by source
-    -- Approval audit
-    approved_by             TEXT,
-    approved_at             TIMESTAMPTZ,
-    rejected_by             TEXT,
-    rejected_at             TIMESTAMPTZ,
-    rejection_reason        TEXT,
-    -- Timestamps
-    created_at              TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at              TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    -- Primary key
+    id                      TEXT PRIMARY KEY DEFAULT generate_nanoid_12(),  -- NanoID 12-char unique identifier
 
+    -- Ownership & relationships
+    organization_id         TEXT NOT NULL,      -- FK: Tenant boundary for multi-tenancy
+    form_id                 TEXT NOT NULL,      -- FK: Form that collected this testimonial
+
+    -- Workflow status
+    status                  TEXT NOT NULL DEFAULT 'pending',  -- pending → approved/rejected
+
+    -- AI-assembled content
+    content                 TEXT,               -- Final assembled testimonial text (AI-generated from answers)
+    rating                  SMALLINT,           -- Star rating 1-5 (denormalized for quick display)
+
+    -- Customer info (denormalized for widget display performance)
+    customer_name           TEXT NOT NULL,      -- Customer's full name
+    customer_email          TEXT NOT NULL,      -- Customer's email (for follow-up, not displayed)
+    customer_title          TEXT,               -- Job title (e.g., "Product Manager")
+    customer_company        TEXT,               -- Company name (e.g., "Acme Inc")
+    customer_avatar_url     TEXT,               -- Profile photo URL (from Gravatar or upload)
+
+    -- Source tracking
+    source                  TEXT NOT NULL DEFAULT 'form',  -- How testimonial was collected
+    source_metadata         JSONB,              -- Import-specific data: tweet ID, LinkedIn URL, etc.
+
+    -- Approval audit trail
+    approved_by             TEXT,               -- FK: User who approved
+    approved_at             TIMESTAMPTZ,        -- When approved
+    rejected_by             TEXT,               -- FK: User who rejected
+    rejected_at             TIMESTAMPTZ,        -- When rejected
+    rejection_reason        TEXT,               -- Why rejected (internal note)
+
+    -- Timestamps
+    created_at              TIMESTAMPTZ NOT NULL DEFAULT NOW(),  -- When submitted
+    updated_at              TIMESTAMPTZ NOT NULL DEFAULT NOW(),  -- Last modification
+
+    -- Constraints
     CONSTRAINT testimonials_org_fk
         FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE,
     CONSTRAINT testimonials_form_fk
@@ -406,19 +514,41 @@ CREATE TABLE public.testimonials (
         CHECK (customer_email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$')
 );
 
-CREATE INDEX idx_testimonials_org ON testimonials(organization_id);
-CREATE INDEX idx_testimonials_form ON testimonials(form_id);
-CREATE INDEX idx_testimonials_status ON testimonials(organization_id, status);
-CREATE INDEX idx_testimonials_created ON testimonials(organization_id, created_at DESC);
--- Partial index for approved (most common query)
-CREATE INDEX idx_testimonials_approved
+-- Indexes
+CREATE INDEX idx_testimonials_org ON testimonials(organization_id);  -- Filter by org
+CREATE INDEX idx_testimonials_form ON testimonials(form_id);         -- Filter by form
+CREATE INDEX idx_testimonials_status ON testimonials(organization_id, status);  -- Dashboard filters
+CREATE INDEX idx_testimonials_created ON testimonials(organization_id, created_at DESC);  -- Recent first
+CREATE INDEX idx_testimonials_approved  -- Widget queries (most common)
     ON testimonials(organization_id, created_at DESC)
     WHERE status = 'approved';
 
 SELECT add_updated_at_trigger('testimonials');
 
+-- Table comment
 COMMENT ON TABLE testimonials IS 'Customer testimonials - answers normalized to testimonial_answers';
-COMMENT ON COLUMN testimonials.source_metadata IS 'Import-specific data (tweet ID, LinkedIn URL) - JSONB appropriate';
+
+-- Column comments
+COMMENT ON COLUMN testimonials.id IS 'Primary key - NanoID 12-char unique identifier';
+COMMENT ON COLUMN testimonials.organization_id IS 'FK to organizations - tenant boundary for isolation';
+COMMENT ON COLUMN testimonials.form_id IS 'FK to forms - which form collected this testimonial';
+COMMENT ON COLUMN testimonials.status IS 'Workflow status: pending (new), approved (published), rejected (hidden)';
+COMMENT ON COLUMN testimonials.content IS 'AI-assembled testimonial text from customer answers. Editable by owner';
+COMMENT ON COLUMN testimonials.rating IS 'Star rating 1-5. Denormalized from answers for quick widget display';
+COMMENT ON COLUMN testimonials.customer_name IS 'Customer full name. Displayed on widgets';
+COMMENT ON COLUMN testimonials.customer_email IS 'Customer email for follow-up. NOT displayed publicly';
+COMMENT ON COLUMN testimonials.customer_title IS 'Job title like "Product Manager". Displayed on widgets';
+COMMENT ON COLUMN testimonials.customer_company IS 'Company name like "Acme Inc". Displayed on widgets';
+COMMENT ON COLUMN testimonials.customer_avatar_url IS 'Profile photo URL. From Gravatar hash or direct upload';
+COMMENT ON COLUMN testimonials.source IS 'How collected: form (web form), import (Twitter/LinkedIn), manual (entered by owner)';
+COMMENT ON COLUMN testimonials.source_metadata IS 'Import-specific data - JSONB appropriate. E.g., {"twitter_id": "123", "url": "..."}';
+COMMENT ON COLUMN testimonials.approved_by IS 'FK to users - who clicked approve. NULL if pending/rejected';
+COMMENT ON COLUMN testimonials.approved_at IS 'When approved. NULL if pending/rejected';
+COMMENT ON COLUMN testimonials.rejected_by IS 'FK to users - who clicked reject. NULL if pending/approved';
+COMMENT ON COLUMN testimonials.rejected_at IS 'When rejected. NULL if pending/approved';
+COMMENT ON COLUMN testimonials.rejection_reason IS 'Internal note explaining rejection. Not shown to customer';
+COMMENT ON COLUMN testimonials.created_at IS 'When testimonial was submitted. Immutable';
+COMMENT ON COLUMN testimonials.updated_at IS 'Last modification timestamp. Auto-updated by trigger';
 ```
 
 ### Status Workflow
@@ -451,30 +581,33 @@ Normalized answers with typed columns based on question type. Each answer uses t
 
 ```sql
 CREATE TABLE public.testimonial_answers (
-    id                  TEXT PRIMARY KEY DEFAULT generate_nanoid_12(),
-    testimonial_id      TEXT NOT NULL,
-    question_id         TEXT NOT NULL,
+    -- Primary key
+    id                  TEXT PRIMARY KEY DEFAULT generate_nanoid_12(),  -- NanoID 12-char unique identifier
+
+    -- Relationships
+    testimonial_id      TEXT NOT NULL,      -- FK: Parent testimonial
+    question_id         TEXT NOT NULL,      -- FK: Which question this answers
 
     -- Typed answer columns (use based on question_type.answer_data_type)
-    answer_text         TEXT,           -- For text_short, text_long, text_email, text_url, choice_single, choice_dropdown
-    answer_integer      INTEGER,        -- For rating_star, rating_nps, rating_scale
-    answer_boolean      BOOLEAN,        -- For special_consent
-    answer_json         JSONB,          -- For choice_multiple (array of selected values)
-    answer_url          TEXT,           -- For media_image, media_video (file URL)
+    answer_text         TEXT,               -- text_short, text_long, text_email, choice_single, choice_dropdown
+    answer_integer      INTEGER,            -- rating_star (1-5), rating_nps (0-10), rating_scale
+    answer_boolean      BOOLEAN,            -- special_consent (true/false)
+    answer_json         JSONB,              -- choice_multiple: ["option_a", "option_c"]
+    answer_url          TEXT,               -- media_image, media_video, text_url: file/page URL
 
     -- Metadata
-    answered_at         TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    answered_at         TIMESTAMPTZ NOT NULL DEFAULT NOW(),  -- When customer answered
+    created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),  -- Record creation
+    updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),  -- Last modification
 
+    -- Constraints
     CONSTRAINT testimonial_answers_testimonial_fk
         FOREIGN KEY (testimonial_id) REFERENCES testimonials(id) ON DELETE CASCADE,
     CONSTRAINT testimonial_answers_question_fk
         FOREIGN KEY (question_id) REFERENCES form_questions(id) ON DELETE CASCADE,
     CONSTRAINT testimonial_answers_unique
-        UNIQUE (testimonial_id, question_id),
-    -- At least one answer column must be filled
-    CONSTRAINT testimonial_answers_has_value
+        UNIQUE (testimonial_id, question_id),     -- One answer per question per testimonial
+    CONSTRAINT testimonial_answers_has_value      -- At least one answer column must be filled
         CHECK (
             answer_text IS NOT NULL OR
             answer_integer IS NOT NULL OR
@@ -484,20 +617,30 @@ CREATE TABLE public.testimonial_answers (
         )
 );
 
-CREATE INDEX idx_testimonial_answers_testimonial ON testimonial_answers(testimonial_id);
-CREATE INDEX idx_testimonial_answers_question ON testimonial_answers(question_id);
--- Index for rating analysis
-CREATE INDEX idx_testimonial_answers_rating ON testimonial_answers(question_id, answer_integer)
+-- Indexes
+CREATE INDEX idx_testimonial_answers_testimonial ON testimonial_answers(testimonial_id);  -- Get all answers for testimonial
+CREATE INDEX idx_testimonial_answers_question ON testimonial_answers(question_id);        -- Analytics by question
+CREATE INDEX idx_testimonial_answers_rating                                               -- Rating analysis queries
+    ON testimonial_answers(question_id, answer_integer)
     WHERE answer_integer IS NOT NULL;
 
 SELECT add_updated_at_trigger('testimonial_answers');
 
+-- Table comment
 COMMENT ON TABLE testimonial_answers IS 'Typed answers - explicit columns based on question_type.answer_data_type';
-COMMENT ON COLUMN testimonial_answers.answer_text IS 'Text answers (short, long, email, url, single choice value)';
-COMMENT ON COLUMN testimonial_answers.answer_integer IS 'Numeric answers (star rating 1-5, NPS 0-10, scale)';
-COMMENT ON COLUMN testimonial_answers.answer_boolean IS 'Boolean answers (consent checkbox)';
-COMMENT ON COLUMN testimonial_answers.answer_json IS 'JSON answers (multiple choice selected values array)';
-COMMENT ON COLUMN testimonial_answers.answer_url IS 'URL answers (uploaded file URLs)';
+
+-- Column comments
+COMMENT ON COLUMN testimonial_answers.id IS 'Primary key - NanoID 12-char unique identifier';
+COMMENT ON COLUMN testimonial_answers.testimonial_id IS 'FK to testimonials - parent testimonial this answer belongs to';
+COMMENT ON COLUMN testimonial_answers.question_id IS 'FK to form_questions - which question this answers';
+COMMENT ON COLUMN testimonial_answers.answer_text IS 'Text answers: short text, long text, email, single choice value, dropdown value';
+COMMENT ON COLUMN testimonial_answers.answer_integer IS 'Numeric answers: star rating (1-5), NPS score (0-10), scale value';
+COMMENT ON COLUMN testimonial_answers.answer_boolean IS 'Boolean answers: consent checkbox (true = agreed)';
+COMMENT ON COLUMN testimonial_answers.answer_json IS 'JSON answers: multiple choice selected values array ["opt_a", "opt_c"]';
+COMMENT ON COLUMN testimonial_answers.answer_url IS 'URL answers: uploaded file URL, or validated URL input';
+COMMENT ON COLUMN testimonial_answers.answered_at IS 'When customer submitted this specific answer';
+COMMENT ON COLUMN testimonial_answers.created_at IS 'Record creation timestamp. Usually same as answered_at';
+COMMENT ON COLUMN testimonial_answers.updated_at IS 'Last modification timestamp. Auto-updated by trigger';
 ```
 
 ### Answer Column Usage by Question Type
@@ -544,24 +687,34 @@ Embeddable widgets - testimonial selections in junction table.
 
 ```sql
 CREATE TABLE public.widgets (
-    id                  TEXT PRIMARY KEY DEFAULT generate_nanoid_12(),
-    organization_id     TEXT NOT NULL,
-    created_by          TEXT NOT NULL,
-    name                TEXT NOT NULL,
-    type                TEXT NOT NULL,
-    theme               TEXT NOT NULL DEFAULT 'light',
-    -- Display settings as explicit columns
-    show_ratings        BOOLEAN NOT NULL DEFAULT true,
-    show_dates          BOOLEAN NOT NULL DEFAULT false,
-    show_company        BOOLEAN NOT NULL DEFAULT true,
-    show_avatar         BOOLEAN NOT NULL DEFAULT true,
-    max_display         SMALLINT,  -- NULL = show all
-    -- Type-specific settings (UI only)
-    settings            JSONB NOT NULL DEFAULT '{}'::jsonb,
-    is_active           BOOLEAN NOT NULL DEFAULT true,
-    created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    -- Primary key
+    id                  TEXT PRIMARY KEY DEFAULT generate_nanoid_12(),  -- NanoID 12-char unique identifier
 
+    -- Ownership
+    organization_id     TEXT NOT NULL,      -- FK: Tenant boundary for multi-tenancy
+    created_by          TEXT NOT NULL,      -- FK: User who created this widget
+
+    -- Widget identity
+    name                TEXT NOT NULL,      -- Display name in dashboard (e.g., "Homepage Carousel")
+    type                TEXT NOT NULL,      -- Widget layout type: wall_of_love, carousel, single_quote
+    theme               TEXT NOT NULL DEFAULT 'light',  -- Color scheme: light or dark
+
+    -- Display settings (explicit columns, not JSONB)
+    show_ratings        BOOLEAN NOT NULL DEFAULT true,   -- Show star ratings on cards
+    show_dates          BOOLEAN NOT NULL DEFAULT false,  -- Show submission dates
+    show_company        BOOLEAN NOT NULL DEFAULT true,   -- Show customer company name
+    show_avatar         BOOLEAN NOT NULL DEFAULT true,   -- Show customer avatar/photo
+    max_display         SMALLINT,           -- Max testimonials to show. NULL = show all selected
+
+    -- Type-specific settings (JSONB appropriate - truly varies by type)
+    settings            JSONB NOT NULL DEFAULT '{}'::jsonb,  -- carousel_speed, columns, animation, etc.
+
+    -- State & timestamps
+    is_active           BOOLEAN NOT NULL DEFAULT true,   -- Soft delete: false = embed returns empty
+    created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),  -- Immutable creation timestamp
+    updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),  -- Auto-updated by trigger
+
+    -- Constraints
     CONSTRAINT widgets_org_fk
         FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE,
     CONSTRAINT widgets_created_by_fk
@@ -572,13 +725,31 @@ CREATE TABLE public.widgets (
         CHECK (theme IN ('light', 'dark'))
 );
 
-CREATE INDEX idx_widgets_org ON widgets(organization_id);
-CREATE INDEX idx_widgets_active ON widgets(organization_id) WHERE is_active = true;
+-- Indexes
+CREATE INDEX idx_widgets_org ON widgets(organization_id);  -- Filter by org
+CREATE INDEX idx_widgets_active ON widgets(organization_id) WHERE is_active = true;  -- Active widgets only
 
 SELECT add_updated_at_trigger('widgets');
 
+-- Table comment
 COMMENT ON TABLE widgets IS 'Embeddable widgets - testimonial selections in junction table';
-COMMENT ON COLUMN widgets.settings IS 'Type-specific UI settings (carousel speed, columns) - not business logic';
+
+-- Column comments
+COMMENT ON COLUMN widgets.id IS 'Primary key - NanoID 12-char unique identifier. Used in embed code';
+COMMENT ON COLUMN widgets.organization_id IS 'FK to organizations - tenant boundary for isolation';
+COMMENT ON COLUMN widgets.created_by IS 'FK to users - user who created this widget';
+COMMENT ON COLUMN widgets.name IS 'Display name in dashboard (e.g., "Homepage Carousel", "Footer Wall")';
+COMMENT ON COLUMN widgets.type IS 'Layout type: wall_of_love (grid), carousel (slider), single_quote (featured)';
+COMMENT ON COLUMN widgets.theme IS 'Color scheme: light (white bg) or dark (dark bg)';
+COMMENT ON COLUMN widgets.show_ratings IS 'Whether to display star ratings on testimonial cards';
+COMMENT ON COLUMN widgets.show_dates IS 'Whether to display submission dates. Usually false for evergreen feel';
+COMMENT ON COLUMN widgets.show_company IS 'Whether to display customer company name below name';
+COMMENT ON COLUMN widgets.show_avatar IS 'Whether to display customer avatar/photo';
+COMMENT ON COLUMN widgets.max_display IS 'Maximum testimonials to display. NULL = show all selected';
+COMMENT ON COLUMN widgets.settings IS 'Type-specific UI settings - JSONB appropriate. E.g., carousel_speed, columns';
+COMMENT ON COLUMN widgets.is_active IS 'Soft delete flag. False = embed script returns empty widget';
+COMMENT ON COLUMN widgets.created_at IS 'Timestamp when widget was created. Immutable';
+COMMENT ON COLUMN widgets.updated_at IS 'Last modification timestamp. Auto-updated by trigger';
 ```
 
 ### Widget Types
@@ -597,14 +768,22 @@ Proper many-to-many with ordering.
 
 ```sql
 CREATE TABLE public.widget_testimonials (
-    id                  TEXT PRIMARY KEY DEFAULT generate_nanoid_12(),
-    widget_id           TEXT NOT NULL,
-    testimonial_id      TEXT NOT NULL,
-    display_order       SMALLINT NOT NULL,
-    is_featured         BOOLEAN NOT NULL DEFAULT false,  -- Highlighted in UI
-    added_at            TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    added_by            TEXT,
+    -- Primary key
+    id                  TEXT PRIMARY KEY DEFAULT generate_nanoid_12(),  -- NanoID 12-char unique identifier
 
+    -- Relationships (many-to-many junction)
+    widget_id           TEXT NOT NULL,          -- FK: Widget containing this testimonial
+    testimonial_id      TEXT NOT NULL,          -- FK: Testimonial displayed in widget
+
+    -- Display settings
+    display_order       SMALLINT NOT NULL,      -- Order in widget (unique per widget)
+    is_featured         BOOLEAN NOT NULL DEFAULT false,  -- Highlighted/pinned in UI
+
+    -- Audit trail
+    added_at            TIMESTAMPTZ NOT NULL DEFAULT NOW(),  -- When added to widget
+    added_by            TEXT,                   -- FK: User who added (NULL if auto-added)
+
+    -- Constraints
     CONSTRAINT widget_testimonials_widget_fk
         FOREIGN KEY (widget_id) REFERENCES widgets(id) ON DELETE CASCADE,
     CONSTRAINT widget_testimonials_testimonial_fk
@@ -612,14 +791,25 @@ CREATE TABLE public.widget_testimonials (
     CONSTRAINT widget_testimonials_added_by_fk
         FOREIGN KEY (added_by) REFERENCES users(id) ON DELETE SET NULL,
     CONSTRAINT widget_testimonials_unique
-        UNIQUE (widget_id, testimonial_id),
+        UNIQUE (widget_id, testimonial_id),       -- Each testimonial once per widget
     CONSTRAINT widget_testimonials_order_unique
-        UNIQUE (widget_id, display_order)
+        UNIQUE (widget_id, display_order)         -- Each position once per widget
 );
 
-CREATE INDEX idx_widget_testimonials_widget ON widget_testimonials(widget_id);
-CREATE INDEX idx_widget_testimonials_testimonial ON widget_testimonials(testimonial_id);
-CREATE INDEX idx_widget_testimonials_order ON widget_testimonials(widget_id, display_order);
+-- Indexes
+CREATE INDEX idx_widget_testimonials_widget ON widget_testimonials(widget_id);  -- Get testimonials for widget
+CREATE INDEX idx_widget_testimonials_testimonial ON widget_testimonials(testimonial_id);  -- Find widgets containing testimonial
+CREATE INDEX idx_widget_testimonials_order ON widget_testimonials(widget_id, display_order);  -- Ordered fetch
 
-COMMENT ON TABLE widget_testimonials IS 'Widget-Testimonial junction with ordering and featured flag';
+-- Table comment
+COMMENT ON TABLE widget_testimonials IS 'Widget-Testimonial many-to-many junction with ordering and featured flag';
+
+-- Column comments
+COMMENT ON COLUMN widget_testimonials.id IS 'Primary key - NanoID 12-char unique identifier';
+COMMENT ON COLUMN widget_testimonials.widget_id IS 'FK to widgets - which widget contains this testimonial';
+COMMENT ON COLUMN widget_testimonials.testimonial_id IS 'FK to testimonials - which testimonial is displayed';
+COMMENT ON COLUMN widget_testimonials.display_order IS 'Order in widget display. Unique per widget, starts at 1';
+COMMENT ON COLUMN widget_testimonials.is_featured IS 'Highlighted/pinned testimonial. Shows differently in UI (e.g., larger card)';
+COMMENT ON COLUMN widget_testimonials.added_at IS 'When testimonial was added to widget';
+COMMENT ON COLUMN widget_testimonials.added_by IS 'FK to users - who added this. NULL if auto-added on approval';
 ```
