@@ -15,8 +15,12 @@
         }
       },
       "Context7": {
-      "command": "npx",
-      "args": ["-y", "@upstash/context7-mcp"]
-    }
+        "command": "npx",
+        "args": ["-y", "@upstash/context7-mcp"]
+      },
+      "tm-graph": {
+        "command": "/Users/alosiesgeorge/CodeRepositories/Fork/micro-saas/proj-testimonials/ms-testimonials/MCPs/graphql/venv/bin/python",
+        "args": ["/Users/alosiesgeorge/CodeRepositories/Fork/micro-saas/proj-testimonials/ms-testimonials/MCPs/graphql/src/main.py"]
+      }
     }
   }
