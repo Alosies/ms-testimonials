@@ -180,11 +180,11 @@ User                    Form                     Testimonial
 ├── created_at          ├── product_description  ├── answers{} (raw prompt answers)
                         ├── questions[]          ├── customer_name
                         ├── settings{}           ├── customer_title
-                        ├── created_at
-                                                 ├── customer_company
-Widget                                           ├── customer_email
-├── id                                           ├── created_at
-├── user_id
+                        ├── created_at           ├── customer_company
+                                                 ├── customer_email
+Widget                                           ├── customer_linkedin_url
+├── id                                           ├── customer_twitter_url
+├── user_id                                      ├── created_at
 ├── name
 ├── type
 ├── theme
@@ -192,6 +192,19 @@ Widget                                           ├── customer_email
 ├── settings{}
 ├── created_at
 ```
+
+### Testimonial Collection: Anonymous Submission
+
+**Industry Standard:** All leading platforms (Testimonial.to, Senja, Famewall) use anonymous form submission - no customer login required.
+
+| Decision | Rationale |
+|----------|-----------|
+| **No login required** | Friction kills conversion - every extra step = fewer testimonials |
+| **Customer info in form** | Name, email, title, company captured as form fields |
+| **Social proof via URLs** | Optional LinkedIn/Twitter profile URLs for credibility |
+| **No OAuth verification (MVP)** | Simple URL fields; OAuth "Verified on LinkedIn" is post-MVP |
+
+**Post-MVP:** Customer portal with magic link login to view/edit submitted testimonials.
 
 ---
 

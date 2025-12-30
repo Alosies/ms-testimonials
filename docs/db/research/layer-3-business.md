@@ -496,6 +496,10 @@ CREATE TABLE public.testimonials (
     customer_company        TEXT,               -- Company name (e.g., "Acme Inc")
     customer_avatar_url     TEXT,               -- Profile photo URL (from Gravatar or upload)
 
+    -- Social proof URLs (optional - for credibility, displayed as links)
+    customer_linkedin_url   TEXT,               -- LinkedIn profile URL (e.g., https://linkedin.com/in/johndoe)
+    customer_twitter_url    TEXT,               -- Twitter/X profile URL (e.g., https://twitter.com/johndoe)
+
     -- Source tracking
     source                  TEXT NOT NULL DEFAULT 'form',  -- How testimonial was collected
     source_metadata         JSONB,              -- Import-specific data: tweet ID, LinkedIn URL, etc.
@@ -530,7 +534,11 @@ CREATE TABLE public.testimonials (
     CONSTRAINT testimonials_source_check
         CHECK (source IN ('form', 'import', 'manual')),
     CONSTRAINT testimonials_email_format
-        CHECK (customer_email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$')
+        CHECK (customer_email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'),
+    CONSTRAINT testimonials_linkedin_url_format
+        CHECK (customer_linkedin_url IS NULL OR customer_linkedin_url ~* '^https?://(www\.)?linkedin\.com/'),
+    CONSTRAINT testimonials_twitter_url_format
+        CHECK (customer_twitter_url IS NULL OR customer_twitter_url ~* '^https?://(www\.)?(twitter\.com|x\.com)/')
 );
 
 -- Indexes
@@ -559,6 +567,8 @@ COMMENT ON COLUMN testimonials.customer_email IS 'Customer email for follow-up. 
 COMMENT ON COLUMN testimonials.customer_title IS 'Job title like "Product Manager". Displayed on widgets';
 COMMENT ON COLUMN testimonials.customer_company IS 'Company name like "Acme Inc". Displayed on widgets';
 COMMENT ON COLUMN testimonials.customer_avatar_url IS 'Profile photo URL. From Gravatar hash or direct upload';
+COMMENT ON COLUMN testimonials.customer_linkedin_url IS 'LinkedIn profile URL for social proof. Displayed as clickable link on widgets';
+COMMENT ON COLUMN testimonials.customer_twitter_url IS 'Twitter/X profile URL for social proof. Displayed as clickable link on widgets';
 COMMENT ON COLUMN testimonials.source IS 'How collected: form (web form), import (Twitter/LinkedIn), manual (entered by owner)';
 COMMENT ON COLUMN testimonials.source_metadata IS 'Import-specific data - JSONB appropriate. E.g., {"twitter_id": "123", "url": "..."}';
 COMMENT ON COLUMN testimonials.approved_by IS 'FK to users - who clicked approve. NULL if pending/rejected';
