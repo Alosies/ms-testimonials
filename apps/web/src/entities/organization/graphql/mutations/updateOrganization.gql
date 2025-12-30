@@ -1,0 +1,12 @@
+mutation UpdateOrganization($id: String!, $changes: organizations_set_input!) {
+  update_organizations_by_pk(pk_columns: { id: $id }, _set: $changes) {
+    id
+    name
+    slug
+    logo_url
+    setup_status
+    is_active
+    settings
+    updated_at
+  }
+}

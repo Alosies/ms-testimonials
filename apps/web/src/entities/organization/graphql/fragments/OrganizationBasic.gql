@@ -1,0 +1,11 @@
+fragment OrganizationBasic on organizations {
+  id
+  name
+  slug
+  logo_url
+  setup_status
+  is_active
+  settings
+  created_at
+  updated_at
+}
