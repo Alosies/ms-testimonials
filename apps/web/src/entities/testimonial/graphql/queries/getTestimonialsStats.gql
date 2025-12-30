@@ -1,0 +1,39 @@
+query GetTestimonialsStats($organizationId: String!) {
+  total: testimonials_aggregate(
+    where: { organization_id: { _eq: $organizationId } }
+  ) {
+    aggregate {
+      count
+    }
+  }
+  pending: testimonials_aggregate(
+    where: {
+      organization_id: { _eq: $organizationId }
+      status: { _eq: "pending" }
+    }
+  ) {
+    aggregate {
+      count
+    }
+  }
+  approved: testimonials_aggregate(
+    where: {
+      organization_id: { _eq: $organizationId }
+      status: { _eq: "approved" }
+    }
+  ) {
+    aggregate {
+      count
+    }
+  }
+  rejected: testimonials_aggregate(
+    where: {
+      organization_id: { _eq: $organizationId }
+      status: { _eq: "rejected" }
+    }
+  ) {
+    aggregate {
+      count
+    }
+  }
+}

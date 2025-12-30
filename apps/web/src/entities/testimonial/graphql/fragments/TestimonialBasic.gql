@@ -1,0 +1,23 @@
+fragment TestimonialBasic on testimonials {
+  id
+  organization_id
+  submission_id
+  status
+  content
+  rating
+  customer_name
+  customer_email
+  customer_title
+  customer_company
+  customer_avatar_url
+  customer_linkedin_url
+  customer_twitter_url
+  source
+  approved_by
+  approved_at
+  rejected_by
+  rejected_at
+  rejection_reason
+  created_at
+  updated_at
+}

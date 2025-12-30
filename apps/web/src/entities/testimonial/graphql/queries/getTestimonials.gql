@@ -1,0 +1,11 @@
+#import "../fragments/TestimonialBasic.gql"
+
+query GetTestimonials($organizationId: String!, $limit: Int) {
+  testimonials(
+    where: { organization_id: { _eq: $organizationId } }
+    order_by: { created_at: desc }
+    limit: $limit
+  ) {
+    ...TestimonialBasic
+  }
+}

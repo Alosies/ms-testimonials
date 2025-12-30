@@ -1,0 +1,7 @@
+#import "../fragments/TestimonialBasic.gql"
+
+query GetTestimonial($testimonialId: String!) {
+  testimonials_by_pk(id: $testimonialId) {
+    ...TestimonialBasic
+  }
+}
