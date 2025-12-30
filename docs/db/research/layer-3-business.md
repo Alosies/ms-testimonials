@@ -57,9 +57,9 @@ CREATE TABLE public.forms (
     CONSTRAINT forms_org_fk
         FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE,
     CONSTRAINT forms_created_by_fk
-        FOREIGN KEY (created_by) REFERENCES users(id),
+        FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
     CONSTRAINT forms_updated_by_fk
-        FOREIGN KEY (updated_by) REFERENCES users(id),
+        FOREIGN KEY (updated_by) REFERENCES users(id) ON DELETE SET NULL,
     CONSTRAINT forms_slug_per_org_unique
         UNIQUE (organization_id, slug),
     CONSTRAINT forms_slug_format
@@ -277,7 +277,8 @@ CREATE TABLE public.form_questions (
     -- Primary key
     id                  TEXT PRIMARY KEY DEFAULT generate_nanoid_12(),  -- NanoID 12-char unique identifier
 
-    -- Relationships
+    -- Ownership & relationships
+    organization_id     TEXT NOT NULL,          -- FK: Tenant boundary for Hasura permissions
     form_id             TEXT NOT NULL,          -- FK: Parent form this question belongs to
     question_type_id    TEXT NOT NULL,          -- FK: Determines input component & validation rules
 
@@ -309,12 +310,14 @@ CREATE TABLE public.form_questions (
     updated_by          TEXT,               -- FK: Who last modified (NULL until first update)
 
     -- Constraints
+    CONSTRAINT form_questions_org_fk
+        FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE,
     CONSTRAINT form_questions_form_fk
         FOREIGN KEY (form_id) REFERENCES forms(id) ON DELETE CASCADE,
     CONSTRAINT form_questions_type_fk
-        FOREIGN KEY (question_type_id) REFERENCES question_types(id),
+        FOREIGN KEY (question_type_id) REFERENCES question_types(id) ON DELETE RESTRICT,
     CONSTRAINT form_questions_updated_by_fk
-        FOREIGN KEY (updated_by) REFERENCES users(id),
+        FOREIGN KEY (updated_by) REFERENCES users(id) ON DELETE SET NULL,
     CONSTRAINT form_questions_key_per_form_unique
         UNIQUE (form_id, question_key),           -- Each key appears once per form
     CONSTRAINT form_questions_order_per_form_unique
@@ -328,6 +331,7 @@ CREATE TABLE public.form_questions (
 );
 
 -- Indexes
+CREATE INDEX idx_form_questions_org ON form_questions(organization_id);       -- Tenant isolation filter
 CREATE INDEX idx_form_questions_form ON form_questions(form_id);              -- Filter by form
 CREATE INDEX idx_form_questions_type ON form_questions(question_type_id);     -- Filter by type
 CREATE INDEX idx_form_questions_order ON form_questions(form_id, display_order);  -- Ordered fetch
@@ -339,6 +343,7 @@ COMMENT ON TABLE form_questions IS 'Form questions with typed validation - expli
 
 -- Column comments
 COMMENT ON COLUMN form_questions.id IS 'Primary key - NanoID 12-char unique identifier';
+COMMENT ON COLUMN form_questions.organization_id IS 'FK to organizations - tenant boundary for Hasura row-level permissions';
 COMMENT ON COLUMN form_questions.form_id IS 'FK to forms - parent form this question belongs to';
 COMMENT ON COLUMN form_questions.question_type_id IS 'FK to question_types - determines input component and applicable validation rules';
 COMMENT ON COLUMN form_questions.question_key IS 'Semantic identifier unique per form (problem, solution, result, name, email). Used for answer lookup';
@@ -365,7 +370,8 @@ COMMENT ON COLUMN form_questions.updated_by IS 'FK to users - who last modified.
 | Column | Type | Constraints | Description |
 |--------|------|-------------|-------------|
 | `id` | TEXT | PK | NanoID 12-char |
-| `form_id` | TEXT | FK | Parent form |
+| `organization_id` | TEXT | FK → organizations | Tenant boundary |
+| `form_id` | TEXT | FK → forms | Parent form |
 | `question_type_id` | TEXT | FK → question_types | Question type definition |
 | `question_key` | VARCHAR(50) | NOT NULL, UNIQUE per form | Semantic identifier |
 | `question_text` | TEXT | NOT NULL | Display question text |
@@ -410,7 +416,8 @@ CREATE TABLE public.question_options (
     -- Primary key
     id              TEXT PRIMARY KEY DEFAULT generate_nanoid_12(),  -- NanoID 12-char unique identifier
 
-    -- Relationship
+    -- Ownership & relationship
+    organization_id TEXT NOT NULL,          -- FK: Tenant boundary for Hasura permissions
     question_id     TEXT NOT NULL,          -- FK: Parent question (must be choice type)
 
     -- Option content
@@ -421,13 +428,18 @@ CREATE TABLE public.question_options (
     display_order   SMALLINT NOT NULL,      -- Order in option list (unique per question)
     is_default      BOOLEAN NOT NULL DEFAULT false,  -- Pre-selected option when form loads
 
-    -- State & timestamps
+    -- State & audit
     is_active       BOOLEAN NOT NULL DEFAULT true,   -- Soft delete: false = hidden but preserved
     created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),  -- Immutable creation timestamp
+    created_by      TEXT NOT NULL,          -- FK: User who created this option
 
     -- Constraints
+    CONSTRAINT question_options_org_fk
+        FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE,
     CONSTRAINT question_options_question_fk
         FOREIGN KEY (question_id) REFERENCES form_questions(id) ON DELETE CASCADE,
+    CONSTRAINT question_options_created_by_fk
+        FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
     CONSTRAINT question_options_value_per_question_unique
         UNIQUE (question_id, option_value),           -- Each value once per question
     CONSTRAINT question_options_order_per_question_unique
@@ -435,6 +447,7 @@ CREATE TABLE public.question_options (
 );
 
 -- Indexes
+CREATE INDEX idx_question_options_org ON question_options(organization_id);   -- Tenant isolation filter
 CREATE INDEX idx_question_options_question ON question_options(question_id);  -- Filter by question
 CREATE INDEX idx_question_options_order ON question_options(question_id, display_order);  -- Ordered fetch
 
@@ -443,6 +456,7 @@ COMMENT ON TABLE question_options IS 'Predefined choices for choice-type questio
 
 -- Column comments
 COMMENT ON COLUMN question_options.id IS 'Primary key - NanoID 12-char unique identifier';
+COMMENT ON COLUMN question_options.organization_id IS 'FK to organizations - tenant boundary for Hasura row-level permissions';
 COMMENT ON COLUMN question_options.question_id IS 'FK to form_questions - must be a choice-type question';
 COMMENT ON COLUMN question_options.option_value IS 'Stored value saved in form_question_responses (e.g., "yes", "no", "maybe")';
 COMMENT ON COLUMN question_options.option_label IS 'Display text shown to customer (e.g., "Yes, definitely!", "Not right now")';
@@ -450,21 +464,22 @@ COMMENT ON COLUMN question_options.display_order IS 'Order in option list. Uniqu
 COMMENT ON COLUMN question_options.is_default IS 'Pre-selected when form loads. Only one per question should be true';
 COMMENT ON COLUMN question_options.is_active IS 'Soft delete flag. False = option hidden but existing answers preserved';
 COMMENT ON COLUMN question_options.created_at IS 'Timestamp when option was created. Immutable after insert';
+COMMENT ON COLUMN question_options.created_by IS 'FK to users - user who created this option';
 ```
 
 ### Example: "Would you recommend?" Question
 
 ```sql
 -- Question
-INSERT INTO form_questions (form_id, question_type_id, question_key, question_text, display_order)
-SELECT 'form_abc', qt.id, 'recommend', 'Would you recommend us to a friend?', 5
+INSERT INTO form_questions (organization_id, form_id, question_type_id, question_key, question_text, display_order)
+SELECT 'org_abc', 'form_abc', qt.id, 'recommend', 'Would you recommend us to a friend?', 5
 FROM question_types qt WHERE qt.unique_name = 'choice_single';
 
 -- Options
-INSERT INTO question_options (question_id, option_value, option_label, display_order) VALUES
-    ('question_xyz', 'yes', 'Yes, definitely!', 1),
-    ('question_xyz', 'maybe', 'Maybe', 2),
-    ('question_xyz', 'no', 'Not right now', 3);
+INSERT INTO question_options (organization_id, question_id, option_value, option_label, display_order, created_by) VALUES
+    ('org_abc', 'question_xyz', 'yes', 'Yes, definitely!', 1, 'user_123'),
+    ('org_abc', 'question_xyz', 'maybe', 'Maybe', 2, 'user_123'),
+    ('org_abc', 'question_xyz', 'no', 'Not right now', 3, 'user_123');
 ```
 
 ---
@@ -505,7 +520,7 @@ CREATE TABLE public.form_submissions (
     CONSTRAINT form_submissions_updated_by_fk
         FOREIGN KEY (updated_by) REFERENCES users(id) ON DELETE SET NULL,
     CONSTRAINT form_submissions_email_format
-        CHECK (submitter_email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'),
+        CHECK (submitter_email ~* '^.+@.+\..+$'),  -- Permissive safety net; app does real validation
     CONSTRAINT form_submissions_linkedin_url_format
         CHECK (submitter_linkedin_url IS NULL OR submitter_linkedin_url ~* '^https?://(www\.)?linkedin\.com/'),
     CONSTRAINT form_submissions_twitter_url_format
@@ -560,7 +575,8 @@ CREATE TABLE public.form_question_responses (
     -- Primary key
     id                  TEXT PRIMARY KEY DEFAULT generate_nanoid_12(),  -- NanoID 12-char unique identifier
 
-    -- Relationships
+    -- Ownership & relationships
+    organization_id     TEXT NOT NULL,      -- FK: Tenant boundary for Hasura permissions
     submission_id       TEXT NOT NULL,      -- FK: Parent form submission
     question_id         TEXT NOT NULL,      -- FK: Which question this responds to
 
@@ -578,6 +594,8 @@ CREATE TABLE public.form_question_responses (
     updated_by          TEXT,               -- FK: User who last modified (NULL until first update)
 
     -- Constraints
+    CONSTRAINT form_question_responses_org_fk
+        FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE,
     CONSTRAINT form_question_responses_submission_fk
         FOREIGN KEY (submission_id) REFERENCES form_submissions(id) ON DELETE CASCADE,
     CONSTRAINT form_question_responses_question_fk
@@ -597,6 +615,7 @@ CREATE TABLE public.form_question_responses (
 );
 
 -- Indexes
+CREATE INDEX idx_form_question_responses_org ON form_question_responses(organization_id);         -- Tenant isolation filter
 CREATE INDEX idx_form_question_responses_submission ON form_question_responses(submission_id);    -- Get all responses for submission
 CREATE INDEX idx_form_question_responses_question ON form_question_responses(question_id);        -- Analytics by question
 CREATE INDEX idx_form_question_responses_rating                                          -- Rating analysis queries
@@ -610,6 +629,7 @@ COMMENT ON TABLE form_question_responses IS 'Raw form submission responses - int
 
 -- Column comments
 COMMENT ON COLUMN form_question_responses.id IS 'Primary key - NanoID 12-char unique identifier';
+COMMENT ON COLUMN form_question_responses.organization_id IS 'FK to organizations - tenant boundary for Hasura row-level permissions';
 COMMENT ON COLUMN form_question_responses.submission_id IS 'FK to form_submissions - parent submission this response belongs to';
 COMMENT ON COLUMN form_question_responses.question_id IS 'FK to form_questions - which question this responds to';
 COMMENT ON COLUMN form_question_responses.answer_text IS 'Text responses: short text, long text, email, single choice value, dropdown value';
@@ -724,7 +744,7 @@ CREATE TABLE public.testimonials (
     CONSTRAINT testimonials_source_check
         CHECK (source IN ('form', 'import', 'manual')),
     CONSTRAINT testimonials_email_format
-        CHECK (customer_email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'),
+        CHECK (customer_email ~* '^.+@.+\..+$'),  -- Permissive safety net; app does real validation
     CONSTRAINT testimonials_linkedin_url_format
         CHECK (customer_linkedin_url IS NULL OR customer_linkedin_url ~* '^https?://(www\.)?linkedin\.com/'),
     CONSTRAINT testimonials_twitter_url_format
@@ -842,7 +862,7 @@ CREATE TABLE public.widgets (
     CONSTRAINT widgets_org_fk
         FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE,
     CONSTRAINT widgets_created_by_fk
-        FOREIGN KEY (created_by) REFERENCES users(id),
+        FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
     CONSTRAINT widgets_updated_by_fk
         FOREIGN KEY (updated_by) REFERENCES users(id) ON DELETE SET NULL,
     CONSTRAINT widgets_type_check
@@ -898,7 +918,8 @@ CREATE TABLE public.widget_testimonials (
     -- Primary key
     id                  TEXT PRIMARY KEY DEFAULT generate_nanoid_12(),  -- NanoID 12-char unique identifier
 
-    -- Relationships (many-to-many junction)
+    -- Ownership & relationships (many-to-many junction)
+    organization_id     TEXT NOT NULL,          -- FK: Tenant boundary for Hasura permissions
     widget_id           TEXT NOT NULL,          -- FK: Widget containing this testimonial
     testimonial_id      TEXT NOT NULL,          -- FK: Testimonial displayed in widget
 
@@ -911,6 +932,8 @@ CREATE TABLE public.widget_testimonials (
     added_by            TEXT,                   -- FK: User who added (NULL if auto-added)
 
     -- Constraints
+    CONSTRAINT widget_testimonials_org_fk
+        FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE,
     CONSTRAINT widget_testimonials_widget_fk
         FOREIGN KEY (widget_id) REFERENCES widgets(id) ON DELETE CASCADE,
     CONSTRAINT widget_testimonials_testimonial_fk
@@ -924,6 +947,7 @@ CREATE TABLE public.widget_testimonials (
 );
 
 -- Indexes
+CREATE INDEX idx_widget_testimonials_org ON widget_testimonials(organization_id);            -- Tenant isolation filter
 CREATE INDEX idx_widget_testimonials_widget ON widget_testimonials(widget_id);  -- Get testimonials for widget
 CREATE INDEX idx_widget_testimonials_testimonial ON widget_testimonials(testimonial_id);  -- Find widgets containing testimonial
 CREATE INDEX idx_widget_testimonials_order ON widget_testimonials(widget_id, display_order);  -- Ordered fetch
@@ -933,6 +957,7 @@ COMMENT ON TABLE widget_testimonials IS 'Widget-Testimonial many-to-many junctio
 
 -- Column comments
 COMMENT ON COLUMN widget_testimonials.id IS 'Primary key - NanoID 12-char unique identifier';
+COMMENT ON COLUMN widget_testimonials.organization_id IS 'FK to organizations - tenant boundary for Hasura row-level permissions';
 COMMENT ON COLUMN widget_testimonials.widget_id IS 'FK to widgets - which widget contains this testimonial';
 COMMENT ON COLUMN widget_testimonials.testimonial_id IS 'FK to testimonials - which testimonial is displayed';
 COMMENT ON COLUMN widget_testimonials.display_order IS 'Order in widget display. Unique per widget, starts at 1';
