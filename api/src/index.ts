@@ -1,11 +1,11 @@
 import { serve } from '@hono/node-server';
-import { Hono } from 'hono';
+import { OpenAPIHono } from '@hono/zod-openapi';
+import { apiReference } from '@scalar/hono-api-reference';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
-import { prettyJSON } from 'hono/pretty-json';
 
-import { env } from '@/config/env';
-import { corsConfig } from '@/config/cors';
+import { env } from '@/shared/config/env';
+import { corsConfig } from '@/shared/config/cors';
 
 import authRoutes from '@/routes/auth';
 import testimonialRoutes from '@/routes/testimonials';
@@ -13,40 +13,151 @@ import formRoutes from '@/routes/forms';
 import widgetRoutes from '@/routes/widgets';
 import aiRoutes from '@/routes/ai';
 
-const app = new Hono();
+const app = new OpenAPIHono();
+
+// Register security schemes
+app.openAPIRegistry.registerComponent('securitySchemes', 'BearerAuth', {
+  type: 'http',
+  scheme: 'bearer',
+  bearerFormat: 'JWT',
+  description: 'JWT token for authentication. Obtain by calling /auth/enhance-token with a Supabase token.',
+});
 
 // Middleware
 app.use('*', logger());
-app.use('*', prettyJSON());
 app.use('*', cors(corsConfig));
 
-// Health check
+// Health check endpoint
 app.get('/', (c) => {
   return c.json({
     name: 'Testimonials API',
     version: '0.1.0',
     status: 'healthy',
+    timestamp: new Date().toISOString(),
+    environment: env.NODE_ENV,
   });
 });
 
 app.get('/health', (c) => {
-  return c.json({ status: 'ok' });
+  return c.json({
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    memory: process.memoryUsage(),
+    environment: env.NODE_ENV,
+  });
 });
 
-// Routes
+// API Routes
 app.route('/auth', authRoutes);
 app.route('/testimonials', testimonialRoutes);
 app.route('/forms', formRoutes);
 app.route('/widgets', widgetRoutes);
 app.route('/ai', aiRoutes);
 
+// OpenAPI Documentation
+app.doc('/openapi.json', {
+  openapi: '3.0.0',
+  info: {
+    version: '0.1.0',
+    title: 'Testimonials API',
+    description: 'REST API for Testimonials - AI-powered testimonial collection and display tool',
+    contact: {
+      name: 'Testimonials Support',
+      email: 'support@testimonials.app',
+    },
+  },
+  servers: [
+    {
+      url: env.API_URL,
+      description: env.NODE_ENV === 'production' ? 'Production server' : 'Development server',
+    },
+  ],
+  tags: [
+    {
+      name: 'Authentication',
+      description: 'User authentication and token management endpoints',
+    },
+    {
+      name: 'Forms',
+      description: 'Testimonial collection form management',
+    },
+    {
+      name: 'Testimonials',
+      description: 'Testimonial submission and management',
+    },
+    {
+      name: 'Widgets',
+      description: 'Embeddable widget configuration',
+    },
+    {
+      name: 'AI',
+      description: 'AI-powered testimonial assembly',
+    },
+    {
+      name: 'System',
+      description: 'Health checks and system status',
+    },
+  ],
+});
+
+// Scalar API Documentation UI
+app.get(
+  '/docs',
+  apiReference({
+    theme: 'purple',
+    spec: {
+      url: '/openapi.json',
+    },
+  })
+);
+
+// Global error handler
+app.onError((err, c) => {
+  console.error('Global error handler:', err);
+
+  return c.json(
+    {
+      error: 'Internal Server Error',
+      message: env.NODE_ENV === 'development' ? err.message : 'Something went wrong',
+      timestamp: new Date().toISOString(),
+    },
+    500
+  );
+});
+
+// 404 handler
+app.notFound((c) => {
+  return c.json(
+    {
+      error: 'Not Found',
+      message: 'The requested endpoint does not exist',
+      path: c.req.path,
+      method: c.req.method,
+      timestamp: new Date().toISOString(),
+    },
+    404
+  );
+});
+
 // Start server
 const port = env.PORT;
-console.log(`Server is running on http://localhost:${port}`);
 
-serve({
-  fetch: app.fetch,
-  port,
-});
+console.log(`Testimonials API Server starting...`);
+console.log(`Environment: ${env.NODE_ENV}`);
+console.log(`Port: ${port}`);
+
+serve(
+  {
+    fetch: app.fetch,
+    port,
+  },
+  (info) => {
+    console.log(`Server is running on http://localhost:${info.port}`);
+    console.log(`API Documentation: http://localhost:${info.port}/docs`);
+    console.log(`OpenAPI Spec: http://localhost:${info.port}/openapi.json`);
+    console.log(`Health Check: http://localhost:${info.port}/health`);
+  }
+);
 
 export default app;
