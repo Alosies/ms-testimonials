@@ -1,2 +1,6 @@
+// Re-export supabase client
 export { supabase } from './supabase';
-export { useAuth } from './useAuth';
+
+// Re-export useAuth from the auth feature for backwards compatibility
+// Prefer importing directly from @/features/auth
+export { useAuth } from '@/features/auth';
