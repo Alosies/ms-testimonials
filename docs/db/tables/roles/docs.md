@@ -1,17 +1,27 @@
 # Roles Table Documentation
 
+## Doc Connections
+**ID**: `table-roles`
+
+2025-12-30-1200 IST
+
+**Parent ReadMes**:
+- `db-layer-1-auth` - Layer 1 Authentication tables
+
+**Related ReadMes**:
+- `table-organization-roles` - Role assignments within organizations
+
+---
+
 ## Migration Sync
 **Last Migration**: `1767004830000_2025_12_29_1610__roles__create_table`
 **Status**: ✅ Current
-**Last Updated**: `2025-12-29-1630` (GMT+5:30)
 
 ### Migration History
 
 | Migration | Date | Summary |
 |-----------|------|----------|
 | `1767004830000_2025_12_29_1610__roles__create_table` | 2025-12-29 | Initial table creation with unique_name+name pattern, explicit permission columns, is_viewer flag, system role seeds (owner, admin, member, viewer) |
-
----
 
 ## Overview
 
@@ -34,7 +44,7 @@ The roles table defines permission sets using explicit boolean columns instead o
 
 ## Relationships
 
-**Will Be Referenced By** (Layer 2):
+**Referenced By** (Layer 2):
 - `organization_roles.role_id` - User role assignments within organizations
 
 ## Usage Pattern

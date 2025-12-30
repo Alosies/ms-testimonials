@@ -1,17 +1,27 @@
 # User Identities Table Documentation
 
+## Doc Connections
+**ID**: `table-user-identities`
+
+2025-12-30-1200 IST
+
+**Parent ReadMes**:
+- `db-layer-1-auth` - Layer 1 Authentication tables
+
+**Related ReadMes**:
+- `table-users` - Parent user account
+
+---
+
 ## Migration Sync
 **Last Migration**: `1767004770000_2025_12_29_1609__user_identities__create_table`
 **Status**: ✅ Current
-**Last Updated**: `2025-12-29-1630` (GMT+5:30)
 
 ### Migration History
 
 | Migration | Date | Summary |
 |-----------|------|----------|
 | `1767004770000_2025_12_29_1609__user_identities__create_table` | 2025-12-29 | Initial table creation with federated auth support, 16-char NanoID for security, multiple provider support |
-
----
 
 ## Overview
 
