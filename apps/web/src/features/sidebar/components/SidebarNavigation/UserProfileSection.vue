@@ -11,7 +11,7 @@ const isExpanded = ref(false)
 const isLoggingOut = ref(false)
 
 const displayName = computed(() => {
-  return currentUser.value?.name || currentUser.value?.email || 'User'
+  return currentUser.value?.display_name || currentUser.value?.email || 'User'
 })
 
 const userInitial = computed(() => {
@@ -48,7 +48,7 @@ const onLogout = async () => {
         <p class="text-sm font-medium text-gray-900 truncate">
           {{ displayName }}
         </p>
-        <p v-if="currentUser?.email && currentUser.name" class="text-xs text-gray-500 truncate">
+        <p v-if="currentUser?.email && currentUser.display_name" class="text-xs text-gray-500 truncate">
           {{ currentUser.email }}
         </p>
       </div>

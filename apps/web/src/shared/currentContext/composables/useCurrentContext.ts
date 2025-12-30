@@ -31,7 +31,7 @@ export function useCurrentContext() {
         contextStore.setCurrentUser({
           id: newUser.id,
           email: newUser.email,
-          name: newUser.name,
+          name: newUser.display_name,
         });
       } else {
         contextStore.reset();
