@@ -37,3 +37,6 @@ apps/web/src/shared/graphql/generated
 
 # Docker volumes
 postgres_data
+
+# Playwright
+.playwright-mcp/
