@@ -14,15 +14,19 @@
 
 ## Overview
 
-Testimonials uses a hybrid URL strategy that combines Notion's ID-based uniqueness with Linear's entity type clarity. This creates URLs that are human-readable, performance-optimized, and never break when content is renamed.
+Testimonials uses a hybrid URL strategy that combines Notion's ID-based uniqueness with Linear's entity type clarity. URLs contain human-readable slugs for readability, but **resolution happens exclusively via the ID**.
+
+**Key Principle**: The slug is cosmetic. Only the ID matters for data fetching.
 
 ## URL Pattern
 
 ### Dashboard URLs (Authenticated)
 
 ```
-/{org_slug}/{entity_type}/{entity_slug}_{entity_id}
+/{org_slug}/{entity_type}/{readable_slug}_{entity_id}
 ```
+
+The `readable_slug` is derived from entity names at URL generation time but **completely ignored** during resolution. Only the `entity_id` after the final underscore is used.
 
 ### Public URLs (Unauthenticated)
 
@@ -31,28 +35,77 @@ Testimonials uses a hybrid URL strategy that combines Notion's ID-based uniquene
 /w/{widget_id}                    # Widget embed/preview
 ```
 
-## Entity Types
+---
 
-### Business Entities (Dashboard)
-- `forms` - Testimonial collection forms
-- `testimonials` - Customer testimonials
-- `widgets` - Embeddable display widgets
-- `settings` - Organization settings
+## URL Resolution: ID-Only Approach
 
-### URL Entity Naming Convention: Plural Forms
+### Core Extraction Function
 
-Testimonials uses **plural entity names** in URLs, following REST API conventions.
+```typescript
+interface EntityUrlInfo {
+  slug: string;
+  entityId: string;
+  isValid: boolean;
+}
 
-#### Benefits of Plural URLs
-1. **Consistency**: Same pattern for collections and individual items
-2. **REST Alignment**: Matches API endpoint conventions developers expect
-3. **Direct Database Mapping**: Entity types match exact database table names (`forms`, `testimonials`, `widgets`)
+export function extractEntityIdFromSlug(urlSlug: string): EntityUrlInfo | null {
+  if (!urlSlug || typeof urlSlug !== 'string') {
+    return null;
+  }
 
-#### Implementation
+  // Find the last underscore in the slug
+  const lastUnderscoreIndex = urlSlug.lastIndexOf('_');
+
+  if (lastUnderscoreIndex === -1 || lastUnderscoreIndex === urlSlug.length - 1) {
+    return {
+      slug: urlSlug,
+      entityId: '',
+      isValid: false,
+    };
+  }
+
+  const slug = urlSlug.substring(0, lastUnderscoreIndex);
+  const entityId = urlSlug.substring(lastUnderscoreIndex + 1);
+
+  // Validate: entityId should be alphanumeric (NanoID format)
+  const isValidEntityId = entityId.length > 0 && /^[a-zA-Z0-9]+$/.test(entityId);
+
+  return {
+    slug,
+    entityId,
+    isValid: isValidEntityId,
+  };
+}
 ```
-✅ /acme-corp/forms/product-feedback_f7x8y9z0a1b2      (matches forms table)
-✅ /acme-corp/testimonials/john-doe_t1a2b3c4d5e6       (matches testimonials table)
-✅ /acme-corp/widgets/homepage-wall_w5d6e7f8g9h0       (matches widgets table)
+
+### Resolution Flow
+
+```
+URL: /acme-corp/forms/product-feedback_f7x8y9z0a1b2
+
+1. Extract: "product-feedback_f7x8y9z0a1b2"
+2. Parse: { slug: "product-feedback", entityId: "f7x8y9z0a1b2" }
+3. Query: forms_by_pk(id: "f7x8y9z0a1b2")  ← ONLY ID USED
+4. Slug "product-feedback" is IGNORED
+```
+
+### GraphQL Query
+
+```graphql
+# Resolution uses ONLY the ID - slug is never queried
+query GetForm($id: String!) {
+  forms_by_pk(id: $id) {
+    id
+    name
+    slug
+    product_name
+    is_active
+    form_questions(order_by: { display_order: asc }) {
+      id
+      question_text
+    }
+  }
+}
 ```
 
 ---
@@ -71,8 +124,9 @@ Testimonials uses **plural entity names** in URLs, following REST API convention
 /acme-corp/forms                                        // Forms list
 /acme-corp/widgets                                      // Widgets list
 
-// Entity detail views with slug_id pattern
-/acme-corp/forms/product-feedback_f7x8y9z0a1b2         // Form detail/builder
+// Entity detail views - slug is cosmetic, ID is what matters
+/acme-corp/forms/product-feedback_f7x8y9z0a1b2         // Form detail
+/acme-corp/forms/xyz_f7x8y9z0a1b2                      // SAME form (slug ignored)
 /acme-corp/testimonials/john-doe_t1a2b3c4d5e6          // Testimonial detail
 /acme-corp/widgets/homepage-wall_w5d6e7f8g9h0          // Widget editor
 
@@ -80,223 +134,95 @@ Testimonials uses **plural entity names** in URLs, following REST API convention
 /acme-corp/settings                                     // Organization settings
 /acme-corp/settings/team                                // Team management
 /acme-corp/settings/billing                             // Billing & plans
-/acme-corp/settings/branding                            // Brand customization
 ```
 
 ### Public URLs
 
 ```typescript
-// Form collection (customer-facing)
+// Form collection (customer-facing) - uses existing slug field
 /f/product-feedback                                     // Short form URL
 
-// Widget embed preview
-/w/w5d6e7f8g9h0                                        // Widget preview page
-
-// Embed endpoints (API-like, for script loading)
-/embed/w/w5d6e7f8g9h0                                  // Widget embed script
+// Widget embed preview - ID only
+/w/w5d6e7f8g9h0                                        // Widget preview
 ```
 
 ### Authentication URLs
 
 ```typescript
-/login                                                  // Sign in page
-/signup                                                 // Sign up page
+/login                                                  // Sign in
+/signup                                                 // Sign up
 /forgot-password                                        // Password reset
-/reset-password                                         // Password reset completion
-/verify-email                                           // Email verification
 ```
 
 ---
 
-## Database Schema Integration
+## URL Generation
 
-### Core Principles
-
-1. **Organization-Scoped**: Every business entity has `organization_id` foreign key
-2. **Slug Uniqueness**: Slugs are unique within organization scope
-3. **NanoID for IDs**: 12-character alphanumeric IDs (no UUID hyphens)
-4. **Single Query Resolution**: Direct lookup without URL parsing ambiguity
-
-### Existing Fields
-
-From the current database schema:
-
-```sql
--- Organizations table
-slug VARCHAR(100) UNIQUE NOT NULL  -- URL-friendly org identifier
-
--- Forms table
-slug TEXT NOT NULL,                -- URL identifier (/f/{slug})
-CONSTRAINT forms_slug_per_org_unique UNIQUE (organization_id, slug)
-
--- Testimonials & Widgets
-id TEXT PRIMARY KEY DEFAULT generate_nanoid_12()  -- 12-char alphanumeric ID
-```
-
-### Adding URL Slugs
-
-For dashboard entity URLs with the `{slug}_{id}` pattern, add computed `url_slug` fields:
-
-```sql
--- For testimonials: derive slug from customer name
-ALTER TABLE testimonials ADD COLUMN slug VARCHAR(100);
-ALTER TABLE testimonials ADD COLUMN url_slug VARCHAR(120)
-    GENERATED ALWAYS AS (COALESCE(slug, '') || '_' || id) STORED;
-
--- For widgets: derive slug from widget name
-ALTER TABLE widgets ADD COLUMN slug VARCHAR(100);
-ALTER TABLE widgets ADD COLUMN url_slug VARCHAR(120)
-    GENERATED ALWAYS AS (COALESCE(slug, '') || '_' || id) STORED;
-
--- For forms: add computed url_slug (slug already exists)
-ALTER TABLE forms ADD COLUMN url_slug VARCHAR(120)
-    GENERATED ALWAYS AS (slug || '_' || id) STORED;
-```
-
-### Field Definitions
-
-- **`id`** - 12-character alphanumeric identifier (e.g., "f7x8y9z0a1b2")
-- **`slug`** - Human-readable identifier derived from name (e.g., "product-feedback")
-- **`url_slug`** - Computed field combining slug + ID (e.g., "product-feedback_f7x8y9z0a1b2")
-
----
-
-## URL Resolution Strategy
-
-### Dashboard Entity Resolution
-
-Resolve any entity by parsing the URL slug:
+### Creating Slugs from Names
 
 ```typescript
-function parseUrlSlug(urlSlug: string): { slug: string; id: string } {
-  const lastUnderscoreIndex = urlSlug.lastIndexOf('_');
-
-  return {
-    slug: urlSlug.substring(0, lastUnderscoreIndex),
-    id: urlSlug.substring(lastUnderscoreIndex + 1)
-  };
-}
-
-// Examples:
-// "product-feedback_f7x8y9z0a1b2" -> { slug: "product-feedback", id: "f7x8y9z0a1b2" }
-// "john-doe_t1a2b3c4d5e6" -> { slug: "john-doe", id: "t1a2b3c4d5e6" }
-```
-
-### GraphQL Query Example
-
-```graphql
-# Resolve form by ID (primary resolution)
-query GetForm($id: String!) {
-  forms_by_pk(id: $id) {
-    id
-    name
-    slug
-    url_slug
-    product_name
-    is_active
-    form_questions(order_by: { display_order: asc }) {
-      id
-      question_text
-      question_type {
-        unique_name
-        input_component
-      }
-    }
-  }
-}
-```
-
-### Performance Characteristics
-
-- **Resolution Time**: ~5ms (single query by ID)
-- **Scalability**: O(1) regardless of data volume
-- **Cache Friendly**: Predictable URL patterns work well with CDNs
-- **No Cascading Updates**: Slugs can change without breaking URLs due to ID inclusion
-
----
-
-## Public URL Strategy
-
-### Short Form URLs
-
-Forms use simple slug-based URLs for customer-facing links:
-
-```
-/f/{form_slug}
-```
-
-**Resolution**: Query by `slug` within the form's organization context.
-
-```graphql
-query GetPublicForm($slug: String!) {
-  forms(where: { slug: { _eq: $slug }, is_active: { _eq: true } }) {
-    id
-    name
-    product_name
-    form_questions(where: { is_active: { _eq: true } }, order_by: { display_order: asc }) {
-      id
-      question_text
-      placeholder
-      is_required
-      question_type {
-        unique_name
-        input_component
-      }
-    }
-  }
-}
-```
-
-**Why simple slugs for forms**:
-- Customer-facing URLs should be short and memorable
-- Shared via email, social media, QR codes
-- Slug uniqueness enforced at organization level
-
-### Widget Embed URLs
-
-Widgets use ID-only URLs for embeds:
-
-```
-/w/{widget_id}                    # Preview page
-/embed/w/{widget_id}              # Embed script endpoint
-```
-
-**Why ID-only for widgets**:
-- Not human-shared (embedded via code)
-- Maximum brevity for embed scripts
-- No SEO benefit needed
-
----
-
-## Slug Generation Rules
-
-### Slug Creation
-
-```typescript
-function generateSlug(title: string): string {
-  return title
+export function createSlugFromString(input: string): string {
+  return input
     .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, '') // Remove special chars
-    .replace(/\s+/g, '-')         // Spaces to hyphens
-    .replace(/-+/g, '-')          // Multiple hyphens to single
+    .replace(/[^a-z0-9\s-]/g, '')  // Remove special chars
+    .replace(/\s+/g, '-')          // Spaces to hyphens
+    .replace(/-+/g, '-')           // Multiple hyphens to single
     .trim()
-    .substring(0, 50);            // Max length
+    .substring(0, 50);             // Max length
 }
-
-// Examples:
-// "Product Feedback Form" -> "product-feedback-form"
-// "John Doe - CEO" -> "john-doe-ceo"
-// "Homepage Wall of Love" -> "homepage-wall-of-love"
 ```
 
-### Slug Uniqueness
+### Creating Entity URLs
 
-| Entity | Slug Scope | Collision Handling |
-|--------|------------|-------------------|
-| Organizations | Global | Append random suffix |
-| Forms | Per organization | Append random suffix |
-| Testimonials | Per organization | Optional, ID is primary |
-| Widgets | Per organization | Optional, ID is primary |
+```typescript
+export function createEntityUrlSlug(title: string, entityId: string): string {
+  const slug = createSlugFromString(title);
+  return `${slug}_${entityId}`;
+}
+
+// Convenience functions
+export function createFormUrl(name: string, formId: string): string {
+  return `/forms/${createEntityUrlSlug(name, formId)}`;
+}
+
+export function createTestimonialUrl(customerName: string, testimonialId: string): string {
+  return `/testimonials/${createEntityUrlSlug(customerName, testimonialId)}`;
+}
+
+export function createWidgetUrl(name: string, widgetId: string): string {
+  return `/widgets/${createEntityUrlSlug(name, widgetId)}`;
+}
+```
+
+### Usage Example
+
+```typescript
+// In a Vue component
+import { createFormUrl } from '@/shared/urls';
+
+const formUrl = computed(() =>
+  createFormUrl(props.form.name, props.form.id)
+);
+// Result: "/forms/product-feedback_f7x8y9z0a1b2"
+```
+
+---
+
+## Database Schema: No Changes Needed
+
+The existing schema already supports this URL pattern:
+
+```sql
+-- Forms: already has slug for public /f/{slug} URLs
+forms.id       -- NanoID used for dashboard URLs
+forms.slug     -- Used only for public /f/{slug} URLs
+
+-- Testimonials & Widgets: ID is sufficient
+testimonials.id   -- NanoID, customer_name used for URL generation
+widgets.id        -- NanoID, name used for URL generation
+```
+
+**No `url_slug` computed columns needed** - slugs are generated at URL creation time from entity names, not stored.
 
 ---
 
@@ -305,20 +231,16 @@ function generateSlug(title: string): string {
 ### Vue Router Configuration
 
 ```typescript
-// File-based routing structure (FSD)
+// File-based routing structure
 // apps/web/src/pages/
 
 pages/
 ├── login.vue                           // /login
 ├── signup.vue                          // /signup
-├── forgot-password.vue                 // /forgot-password
 ├── f/
 │   └── [slug].vue                      // /f/:slug (public form)
 ├── w/
 │   └── [id].vue                        // /w/:id (widget preview)
-├── embed/
-│   └── w/
-│       └── [id].vue                    // /embed/w/:id
 └── [org]/
     ├── index.vue                       // /:org (redirect to dashboard)
     ├── dashboard.vue                   // /:org/dashboard
@@ -334,55 +256,99 @@ pages/
     └── settings/
         ├── index.vue                   // /:org/settings
         ├── team.vue                    // /:org/settings/team
-        ├── billing.vue                 // /:org/settings/billing
-        └── branding.vue                // /:org/settings/branding
+        └── billing.vue                 // /:org/settings/billing
+```
+
+### Route Resolution in Pages
+
+```typescript
+// apps/web/src/pages/[org]/forms/[urlSlug].vue
+<script setup lang="ts">
+import { useRoute } from 'vue-router';
+import { extractEntityIdFromSlug } from '@/shared/urls';
+
+const route = useRoute();
+
+// Extract ID from URL slug - slug text is ignored
+const urlSlug = route.params.urlSlug as string;
+const { entityId, isValid } = extractEntityIdFromSlug(urlSlug);
+
+if (!isValid) {
+  // Handle invalid URL
+  navigateTo('/404');
+}
+
+// Fetch using ONLY the ID
+const { data: form } = useGetFormByPkQuery({ id: entityId });
+</script>
 ```
 
 ---
 
-## Benefits of This Approach
+## Utility Module Structure
 
-### 1. Performance
-- **Single Query Resolution**: Direct ID lookup, no slug-to-ID mapping needed
-- **Predictable Performance**: O(1) lookup regardless of data volume
-- **Cache Friendly**: Static URL patterns work well with CDNs
-
-### 2. Maintainability
-- **No Cascading Updates**: Renaming forms/widgets doesn't break bookmarks
-- **Simple Debugging**: Entity type and ID clearly visible in URL
-- **Direct Database Mapping**: URL entity types match table names
-
-### 3. User Experience
-- **Bookmarkable URLs**: Never break due to ID-based resolution
-- **Readable**: Human-friendly slugs for better UX
-- **Short Public URLs**: Clean `/f/product-feedback` for sharing
-
-### 4. SEO Considerations
-- **Keyword Rich**: Entity slugs contain meaningful words
-- **Stable URLs**: Search engines can rely on permanent links
-- **Logical Structure**: Clear hierarchy for crawlers
+```
+apps/web/src/shared/urls/
+├── index.ts                    # Barrel export
+├── models/
+│   └── index.ts                # Type definitions
+├── functions/
+│   ├── extractors/
+│   │   ├── extractEntityIdFromSlug.ts
+│   │   └── getRouteType.ts
+│   ├── generators/
+│   │   ├── createSlugFromString.ts
+│   │   ├── createEntityUrlSlug.ts
+│   │   └── createEntityUrls.ts   # createFormUrl, createTestimonialUrl, etc.
+│   └── validators/
+│       └── isValidEntityUrl.ts
+└── utils/
+    └── routeAnalysis.ts        # analyzeRoute, extractEntityIds
+```
 
 ---
 
-## Implementation Steps
+## Benefits
 
-1. **Add slug/url_slug fields** to testimonials and widgets tables
-2. **Create database indexes** on url_slug fields for fast resolution
-3. **Update GraphQL schema** to expose slug fields
-4. **Implement URL parsing utility** in frontend shared utilities
-5. **Configure Vue Router** with file-based routing structure
-6. **Add slug generation** on entity creation (API layer)
-7. **Build navigation helpers** for generating entity URLs
+### 1. Simplicity
+- **No database changes**: Slugs generated at runtime from names
+- **No sync issues**: Slug in URL doesn't need to match anything
+- **Single query**: Always fetch by primary key (ID)
+
+### 2. Performance
+- **O(1) lookup**: Direct ID-based query
+- **No slug lookups**: Skip slug-to-ID resolution
+- **Cache friendly**: ID-based URLs are permanently cacheable
+
+### 3. Flexibility
+- **Rename freely**: Changing entity names doesn't break URLs
+- **Bookmarks never break**: ID is immutable
+- **SEO friendly**: Readable slugs in URL without complexity
+
+### 4. User Experience
+- **Readable URLs**: `/forms/product-feedback_abc123` vs `/forms/abc123`
+- **Shareable**: URLs make sense when shared
+- **Forgiving**: Even wrong slugs work if ID is correct
+
+---
+
+## Implementation Checklist
+
+1. **Create URL utility module** at `apps/web/src/shared/urls/`
+2. **Implement extractors**: `extractEntityIdFromSlug`, `getRouteType`
+3. **Implement generators**: `createSlugFromString`, `createEntityUrlSlug`, entity URL functions
+4. **Configure Vue Router** with `[urlSlug]` dynamic segments
+5. **Use in components**: Generate URLs with entity name + ID
+6. **Resolve in pages**: Extract ID from URL, fetch by primary key
 
 ---
 
 ## Conclusion
 
-This hybrid approach provides:
-- **Notion's reliability**: ID-based URLs that never break
+This approach provides:
+- **Notion's reliability**: ID-based resolution that never breaks
 - **Linear's clarity**: Entity types visible in URL structure
-- **Performance**: Single-query resolution
-- **Flexibility**: Easy reorganization without URL changes
-- **Clean public URLs**: Short, shareable form links
+- **Zero database overhead**: No stored slugs, no computed columns
+- **Maximum flexibility**: Slugs are cosmetic, IDs are authoritative
 
-The result is a URL system optimized for a testimonial collection SaaS, balancing dashboard usability with customer-facing simplicity.
+The slug exists purely for human readability. The system works identically whether the URL is `/forms/product-feedback_abc123` or `/forms/x_abc123`.
