@@ -9,11 +9,12 @@ export function buildRolesList(
   currentOrganizationId?: string
 ): string[] {
   if (!roles || roles.length === 0) {
-    return ['member']; // Default fallback
+    return ['user', 'member']; // Default fallback with user role for user-scoped queries
   }
 
   // Get unique role names
-  const roleSet = new Set<string>();
+  // Always include 'user' role for user-scoped queries (e.g., finding default org)
+  const roleSet = new Set<string>(['user']);
 
   for (const orgRole of roles) {
     // Only include roles from active organizations
