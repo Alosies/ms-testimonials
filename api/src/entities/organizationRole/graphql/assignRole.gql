@@ -1,0 +1,22 @@
+mutation AssignRole(
+  $organization_id: String!
+  $user_id: String!
+  $role_id: String!
+  $is_default_org: Boolean!
+) {
+  insert_organization_roles_one(
+    object: {
+      organization_id: $organization_id
+      user_id: $user_id
+      role_id: $role_id
+      is_default_org: $is_default_org
+      joined_at: "now()"
+    }
+  ) {
+    id
+    organization_id
+    user_id
+    role_id
+    is_default_org
+  }
+}

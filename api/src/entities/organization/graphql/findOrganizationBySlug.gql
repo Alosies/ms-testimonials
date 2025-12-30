@@ -1,0 +1,8 @@
+query FindOrganizationBySlug($slug: String!) {
+  organizations(where: { slug: { _eq: $slug }, is_active: { _eq: true } }, limit: 1) {
+    id
+    name
+    slug
+    is_active
+  }
+}

@@ -1,0 +1,14 @@
+query FindIdentity($provider: String!, $providerUserId: String!) {
+  user_identities(
+    where: { provider: { _eq: $provider }, provider_user_id: { _eq: $providerUserId } }
+    limit: 1
+  ) {
+    id
+    user_id
+    provider
+    provider_user_id
+    provider_email
+    is_primary
+    verified_at
+  }
+}

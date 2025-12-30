@@ -1,0 +1,12 @@
+query FindUserByEmail($email: String!) {
+  users(where: { email: { _eq: $email }, is_active: { _eq: true } }, limit: 1) {
+    id
+    email
+    email_verified
+    display_name
+    avatar_url
+    locale
+    timezone
+    is_active
+  }
+}

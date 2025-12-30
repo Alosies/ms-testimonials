@@ -1,0 +1,6 @@
+mutation UpdateUserLogin($id: String!) {
+  update_users_by_pk(pk_columns: { id: $id }, _set: { last_login_at: "now()" }) {
+    id
+    last_login_at
+  }
+}

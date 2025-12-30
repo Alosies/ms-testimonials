@@ -1,0 +1,7 @@
+query FindRoleByUniqueName($uniqueName: String!) {
+  roles(where: { unique_name: { _eq: $uniqueName } }, limit: 1) {
+    id
+    name
+    unique_name
+  }
+}

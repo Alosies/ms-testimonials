@@ -1,0 +1,27 @@
+query FetchUserRoles($userId: String!) {
+  organization_roles(where: { user_id: { _eq: $userId }, is_active: { _eq: true } }) {
+    id
+    organization_id
+    role_id
+    is_default_org
+    joined_at
+    organization {
+      id
+      name
+      slug
+      is_active
+    }
+    role {
+      id
+      name
+      unique_name
+      can_manage_forms
+      can_manage_testimonials
+      can_manage_widgets
+      can_manage_members
+      can_manage_billing
+      can_delete_org
+      is_viewer
+    }
+  }
+}

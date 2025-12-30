@@ -1,0 +1,9 @@
+mutation CreateOrganization($name: String!, $slug: String!, $created_by: String!) {
+  insert_organizations_one(object: { name: $name, slug: $slug, created_by: $created_by }) {
+    id
+    name
+    slug
+    created_by
+    is_active
+  }
+}

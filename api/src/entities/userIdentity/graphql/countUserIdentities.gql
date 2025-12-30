@@ -1,0 +1,7 @@
+query CountUserIdentities($userId: String!) {
+  user_identities_aggregate(where: { user_id: { _eq: $userId } }) {
+    aggregate {
+      count
+    }
+  }
+}

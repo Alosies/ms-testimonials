@@ -1,0 +1,13 @@
+query FindIdentityByEmail($provider: String!, $email: String!) {
+  user_identities(
+    where: { provider: { _eq: $provider }, provider_email: { _eq: $email } }
+    limit: 1
+  ) {
+    id
+    user_id
+    provider
+    provider_user_id
+    provider_email
+    is_primary
+  }
+}

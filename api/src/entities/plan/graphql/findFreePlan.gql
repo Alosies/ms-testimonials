@@ -1,0 +1,12 @@
+query FindFreePlan {
+  plans(where: { unique_name: { _eq: "free" } }, limit: 1) {
+    id
+    name
+    unique_name
+    max_forms
+    max_members
+    max_testimonials
+    max_widgets
+    show_branding
+  }
+}

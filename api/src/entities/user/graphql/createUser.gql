@@ -1,0 +1,24 @@
+mutation CreateUser(
+  $email: String!
+  $email_verified: Boolean!
+  $display_name: String
+  $avatar_url: String
+  $locale: String!
+) {
+  insert_users_one(
+    object: {
+      email: $email
+      email_verified: $email_verified
+      display_name: $display_name
+      avatar_url: $avatar_url
+      locale: $locale
+    }
+  ) {
+    id
+    email
+    email_verified
+    display_name
+    avatar_url
+    locale
+  }
+}

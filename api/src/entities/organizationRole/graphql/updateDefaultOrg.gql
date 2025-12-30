@@ -1,0 +1,9 @@
+mutation UpdateDefaultOrg($id: String!, $is_default_org: Boolean!) {
+  update_organization_roles_by_pk(
+    pk_columns: { id: $id }
+    _set: { is_default_org: $is_default_org }
+  ) {
+    id
+    is_default_org
+  }
+}

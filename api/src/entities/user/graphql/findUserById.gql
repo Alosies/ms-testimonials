@@ -1,0 +1,14 @@
+query FindUserById($id: String!) {
+  users_by_pk(id: $id) {
+    id
+    email
+    email_verified
+    display_name
+    avatar_url
+    locale
+    timezone
+    is_active
+    last_login_at
+    created_at
+  }
+}

@@ -1,0 +1,31 @@
+mutation CreateOrganizationPlan(
+  $organization_id: String!
+  $plan_id: String!
+  $max_forms: Int!
+  $max_members: Int!
+  $max_testimonials: Int!
+  $max_widgets: Int!
+  $show_branding: Boolean!
+) {
+  insert_organization_plans_one(
+    object: {
+      organization_id: $organization_id
+      plan_id: $plan_id
+      status: "active"
+      billing_cycle: "lifetime"
+      currency_code: "USD"
+      price_in_base_unit: 0
+      starts_at: "now()"
+      max_forms: $max_forms
+      max_members: $max_members
+      max_testimonials: $max_testimonials
+      max_widgets: $max_widgets
+      show_branding: $show_branding
+    }
+  ) {
+    id
+    organization_id
+    plan_id
+    status
+  }
+}

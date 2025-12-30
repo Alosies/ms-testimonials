@@ -1,0 +1,9 @@
+query FindOrganizationById($id: String!) {
+  organizations_by_pk(id: $id) {
+    id
+    name
+    slug
+    is_active
+    created_by
+  }
+}

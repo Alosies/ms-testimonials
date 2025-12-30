@@ -1,0 +1,10 @@
+mutation UpdateIdentity($id: String!, $provider_user_id: String!, $provider_metadata: jsonb) {
+  update_user_identities_by_pk(
+    pk_columns: { id: $id }
+    _set: { provider_user_id: $provider_user_id, provider_metadata: $provider_metadata }
+  ) {
+    id
+    user_id
+    provider
+  }
+}
