@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, toRefs } from 'vue';
+import { computed, toRefs } from 'vue';
 import { Icon } from '@testimonials/icons';
 import { useGetTestimonials } from '@/entities/testimonial';
 import { useCurrentContextStore } from '@/shared/currentContext';
@@ -13,7 +13,7 @@ const variables = computed(() => ({
   limit: 5,
 }));
 
-const { testimonials: pendingTestimonials, isLoading } = useGetTestimonials(ref(variables.value));
+const { testimonials: pendingTestimonials, isLoading } = useGetTestimonials(variables);
 </script>
 
 <template>

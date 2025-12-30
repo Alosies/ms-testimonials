@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, toRefs } from 'vue';
+import { computed, toRefs } from 'vue';
 import { useCurrentContextStore } from '@/shared/currentContext';
 import { useDashboardStats } from './composables';
 import {
@@ -19,7 +19,7 @@ const statsVariables = computed(() => ({
   organizationId: currentOrganizationId.value ?? '',
 }));
 
-const { stats, isLoading: isStatsLoading } = useDashboardStats(ref(statsVariables.value));
+const { stats, isLoading: isStatsLoading } = useDashboardStats(statsVariables);
 </script>
 
 <template>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, toRefs } from 'vue';
+import { computed, toRefs } from 'vue';
 import { Icon } from '@testimonials/icons';
 import { useGetForms } from '@/entities/form';
 import { useCurrentContextStore } from '@/shared/currentContext';
@@ -11,7 +11,7 @@ const variables = computed(() => ({
   organizationId: currentOrganizationId.value ?? '',
 }));
 
-const { forms, isLoading } = useGetForms(ref(variables.value));
+const { forms, isLoading } = useGetForms(variables);
 
 const displayForms = computed(() => forms.value.slice(0, 5));
 </script>

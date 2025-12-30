@@ -1,4 +1,4 @@
-import { watch, ref, computed } from 'vue';
+import { watch, computed } from 'vue';
 import { useCurrentContextStore } from '../store';
 import { useAuth } from '@/features/auth';
 import { useGetUserDefaultOrganization } from '@/entities/organization';
@@ -15,10 +15,13 @@ export function useCurrentContext() {
   const contextStore = useCurrentContextStore();
   const { currentUser, isAuthenticated, isInitialized } = useAuth();
 
-  const userId = computed(() => currentUser.value?.id ?? '');
-  const { organization: defaultOrg, isLoading: isOrgLoading } = useGetUserDefaultOrganization(
-    ref({ userId: userId.value }),
-  );
+  // Reactive variables that update when currentUser changes
+  const orgQueryVariables = computed(() => ({
+    userId: currentUser.value?.id ?? '',
+  }));
+
+  const { organization: defaultOrg, isLoading: isOrgLoading } =
+    useGetUserDefaultOrganization(orgQueryVariables);
 
   // Watch for auth changes and sync to context store
   watch(

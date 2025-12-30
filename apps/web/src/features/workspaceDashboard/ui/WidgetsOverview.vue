@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, toRefs } from 'vue';
+import { computed, toRefs } from 'vue';
 import { Icon } from '@testimonials/icons';
 import { useGetWidgets } from '@/entities/widget';
 import { useCurrentContextStore } from '@/shared/currentContext';
@@ -11,7 +11,7 @@ const variables = computed(() => ({
   organizationId: currentOrganizationId.value ?? '',
 }));
 
-const { widgets, isLoading } = useGetWidgets(ref(variables.value));
+const { widgets, isLoading } = useGetWidgets(variables);
 
 const displayWidgets = computed(() => widgets.value.slice(0, 5));
 
