@@ -1,0 +1,7 @@
+#import "../fragments/WidgetBasic.gql"
+
+query GetWidget($widgetId: String!) {
+  widgets_by_pk(id: $widgetId) {
+    ...WidgetBasic
+  }
+}

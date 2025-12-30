@@ -1,0 +1,10 @@
+#import "../fragments/WidgetBasic.gql"
+
+query GetWidgets($organizationId: String!) {
+  widgets(
+    where: { organization_id: { _eq: $organizationId } }
+    order_by: { created_at: desc }
+  ) {
+    ...WidgetBasic
+  }
+}
