@@ -1,0 +1,28 @@
+query GetDashboardStats($organizationId: String!) {
+  forms_aggregate(
+    where: { organization_id: { _eq: $organizationId }, is_active: { _eq: true } }
+  ) {
+    aggregate {
+      count
+    }
+  }
+  testimonials_aggregate(where: { organization_id: { _eq: $organizationId } }) {
+    aggregate {
+      count
+    }
+  }
+  pending_testimonials: testimonials_aggregate(
+    where: { organization_id: { _eq: $organizationId }, status: { _eq: "pending" } }
+  ) {
+    aggregate {
+      count
+    }
+  }
+  widgets_aggregate(
+    where: { organization_id: { _eq: $organizationId }, is_active: { _eq: true } }
+  ) {
+    aggregate {
+      count
+    }
+  }
+}
