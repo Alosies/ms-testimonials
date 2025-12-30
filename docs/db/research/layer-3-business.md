@@ -1,6 +1,6 @@
 # Layer 3: Business Entities
 
-**Tables:** forms, question_types, form_questions, question_options, form_submissions, form_responses, testimonials, widgets, widget_testimonials
+**Tables:** forms, question_types, form_questions, question_options, form_submissions, form_question_responses, testimonials, widgets, widget_testimonials
 
 ---
 
@@ -444,7 +444,7 @@ COMMENT ON TABLE question_options IS 'Predefined choices for choice-type questio
 -- Column comments
 COMMENT ON COLUMN question_options.id IS 'Primary key - NanoID 12-char unique identifier';
 COMMENT ON COLUMN question_options.question_id IS 'FK to form_questions - must be a choice-type question';
-COMMENT ON COLUMN question_options.option_value IS 'Stored value saved in form_responses (e.g., "yes", "no", "maybe")';
+COMMENT ON COLUMN question_options.option_value IS 'Stored value saved in form_question_responses (e.g., "yes", "no", "maybe")';
 COMMENT ON COLUMN question_options.option_label IS 'Display text shown to customer (e.g., "Yes, definitely!", "Not right now")';
 COMMENT ON COLUMN question_options.display_order IS 'Order in option list. Unique per question, starts at 1';
 COMMENT ON COLUMN question_options.is_default IS 'Pre-selected when form loads. Only one per question should be true';
@@ -471,7 +471,7 @@ INSERT INTO question_options (question_id, option_value, option_label, display_o
 
 ## 3.5 Form Submissions Table
 
-Raw form submission event capturing submitter info. This is the parent record for form_responses. A testimonial is created from a submission (for form source) or independently (for imports).
+Raw form submission event capturing submitter info. This is the parent record for form_question_responses. A testimonial is created from a submission (for form source) or independently (for imports).
 
 ```sql
 CREATE TABLE public.form_submissions (
@@ -520,7 +520,7 @@ CREATE INDEX idx_form_submissions_submitted ON form_submissions(organization_id,
 SELECT add_updated_at_trigger('form_submissions');
 
 -- Table comment
-COMMENT ON TABLE form_submissions IS 'Raw form submission event - submitter info lives here, responses in form_responses';
+COMMENT ON TABLE form_submissions IS 'Raw form submission event - submitter info lives here, responses in form_question_responses';
 
 -- Column comments
 COMMENT ON COLUMN form_submissions.id IS 'Primary key - NanoID 12-char unique identifier';
@@ -542,7 +542,7 @@ COMMENT ON COLUMN form_submissions.updated_by IS 'FK to users - who made admin e
 ### Relationship to Other Tables
 
 ```
-form_submissions (1) ────► form_responses (N)
+form_submissions (1) ────► form_question_responses (N)
        │                   Raw answers to each question
        │
        └────────────────► testimonials (0..1)
@@ -551,12 +551,12 @@ form_submissions (1) ────► form_responses (N)
 
 ---
 
-## 3.6 Form Responses Table
+## 3.6 Form Question Responses Table
 
 Raw form submission responses (internal data, not displayed). Each response uses typed columns based on question type - no JSONB dumps. These feed into AI assembly to create the displayable testimonial.
 
 ```sql
-CREATE TABLE public.form_responses (
+CREATE TABLE public.form_question_responses (
     -- Primary key
     id                  TEXT PRIMARY KEY DEFAULT generate_nanoid_12(),  -- NanoID 12-char unique identifier
 
@@ -578,15 +578,15 @@ CREATE TABLE public.form_responses (
     updated_by          TEXT,               -- FK: User who last modified (NULL until first update)
 
     -- Constraints
-    CONSTRAINT form_responses_submission_fk
+    CONSTRAINT form_question_responses_submission_fk
         FOREIGN KEY (submission_id) REFERENCES form_submissions(id) ON DELETE CASCADE,
-    CONSTRAINT form_responses_question_fk
+    CONSTRAINT form_question_responses_question_fk
         FOREIGN KEY (question_id) REFERENCES form_questions(id) ON DELETE CASCADE,
-    CONSTRAINT form_responses_unique
+    CONSTRAINT form_question_responses_unique
         UNIQUE (submission_id, question_id),      -- One response per question per submission
-    CONSTRAINT form_responses_updated_by_fk
+    CONSTRAINT form_question_responses_updated_by_fk
         FOREIGN KEY (updated_by) REFERENCES users(id) ON DELETE SET NULL,
-    CONSTRAINT form_responses_has_value           -- At least one response column must be filled
+    CONSTRAINT form_question_responses_has_value           -- At least one response column must be filled
         CHECK (
             answer_text IS NOT NULL OR
             answer_integer IS NOT NULL OR
@@ -597,30 +597,30 @@ CREATE TABLE public.form_responses (
 );
 
 -- Indexes
-CREATE INDEX idx_form_responses_submission ON form_responses(submission_id);    -- Get all responses for submission
-CREATE INDEX idx_form_responses_question ON form_responses(question_id);        -- Analytics by question
-CREATE INDEX idx_form_responses_rating                                          -- Rating analysis queries
-    ON form_responses(question_id, answer_integer)
+CREATE INDEX idx_form_question_responses_submission ON form_question_responses(submission_id);    -- Get all responses for submission
+CREATE INDEX idx_form_question_responses_question ON form_question_responses(question_id);        -- Analytics by question
+CREATE INDEX idx_form_question_responses_rating                                          -- Rating analysis queries
+    ON form_question_responses(question_id, answer_integer)
     WHERE answer_integer IS NOT NULL;
 
-SELECT add_updated_at_trigger('form_responses');
+SELECT add_updated_at_trigger('form_question_responses');
 
 -- Table comment
-COMMENT ON TABLE form_responses IS 'Raw form submission responses - internal data for AI assembly, not displayed on widgets';
+COMMENT ON TABLE form_question_responses IS 'Raw form submission responses - internal data for AI assembly, not displayed on widgets';
 
 -- Column comments
-COMMENT ON COLUMN form_responses.id IS 'Primary key - NanoID 12-char unique identifier';
-COMMENT ON COLUMN form_responses.submission_id IS 'FK to form_submissions - parent submission this response belongs to';
-COMMENT ON COLUMN form_responses.question_id IS 'FK to form_questions - which question this responds to';
-COMMENT ON COLUMN form_responses.answer_text IS 'Text responses: short text, long text, email, single choice value, dropdown value';
-COMMENT ON COLUMN form_responses.answer_integer IS 'Numeric responses: star rating (1-5), NPS score (0-10), scale value';
-COMMENT ON COLUMN form_responses.answer_boolean IS 'Boolean responses: consent checkbox (true = agreed)';
-COMMENT ON COLUMN form_responses.answer_json IS 'JSON responses: multiple choice selected values array ["opt_a", "opt_c"]';
-COMMENT ON COLUMN form_responses.answer_url IS 'URL responses: uploaded file URL, or validated URL input';
-COMMENT ON COLUMN form_responses.answered_at IS 'When customer submitted this specific response';
-COMMENT ON COLUMN form_responses.created_at IS 'Record creation timestamp. Usually same as answered_at';
-COMMENT ON COLUMN form_responses.updated_at IS 'Last modification timestamp. Auto-updated by trigger';
-COMMENT ON COLUMN form_responses.updated_by IS 'FK to users - who last modified. NULL until first update';
+COMMENT ON COLUMN form_question_responses.id IS 'Primary key - NanoID 12-char unique identifier';
+COMMENT ON COLUMN form_question_responses.submission_id IS 'FK to form_submissions - parent submission this response belongs to';
+COMMENT ON COLUMN form_question_responses.question_id IS 'FK to form_questions - which question this responds to';
+COMMENT ON COLUMN form_question_responses.answer_text IS 'Text responses: short text, long text, email, single choice value, dropdown value';
+COMMENT ON COLUMN form_question_responses.answer_integer IS 'Numeric responses: star rating (1-5), NPS score (0-10), scale value';
+COMMENT ON COLUMN form_question_responses.answer_boolean IS 'Boolean responses: consent checkbox (true = agreed)';
+COMMENT ON COLUMN form_question_responses.answer_json IS 'JSON responses: multiple choice selected values array ["opt_a", "opt_c"]';
+COMMENT ON COLUMN form_question_responses.answer_url IS 'URL responses: uploaded file URL, or validated URL input';
+COMMENT ON COLUMN form_question_responses.answered_at IS 'When customer submitted this specific response';
+COMMENT ON COLUMN form_question_responses.created_at IS 'Record creation timestamp. Usually same as answered_at';
+COMMENT ON COLUMN form_question_responses.updated_at IS 'Last modification timestamp. Auto-updated by trigger';
+COMMENT ON COLUMN form_question_responses.updated_by IS 'FK to users - who last modified. NULL until first update';
 ```
 
 ### Answer Column Usage by Question Type
@@ -650,7 +650,7 @@ SELECT
     f.name AS form_name,
     AVG(fr.answer_integer) AS avg_rating,
     COUNT(*) AS total_ratings
-FROM form_responses fr
+FROM form_question_responses fr
 JOIN form_questions fq ON fr.question_id = fq.id
 JOIN question_types qt ON fq.question_type_id = qt.id
 JOIN forms f ON fq.form_id = f.id
@@ -663,7 +663,7 @@ GROUP BY f.id, f.name;
 
 ## 3.7 Testimonials Table
 
-The displayable testimonial entity - the curated quote, rating, and customer info shown on widgets. Can be created from a form submission (has linked form_responses) or independently (imports, manual entry).
+The displayable testimonial entity - the curated quote, rating, and customer info shown on widgets. Can be created from a form submission (has linked form_question_responses) or independently (imports, manual entry).
 
 ```sql
 CREATE TABLE public.testimonials (
@@ -786,7 +786,7 @@ COMMENT ON COLUMN testimonials.updated_by IS 'FK to users - who last modified. N
 
 | Source | Has Submission? | Description |
 |--------|-----------------|-------------|
-| `form` | Yes | Created from form_submissions, has form_responses |
+| `form` | Yes | Created from form_submissions, has form_question_responses |
 | `import` | No | Imported from Twitter/LinkedIn, no submission |
 | `manual` | No | Manually entered by owner, no submission |
 
@@ -796,7 +796,7 @@ COMMENT ON COLUMN testimonials.updated_by IS 'FK to users - who last modified. N
 SOURCE = 'form':
   form_submissions ──► testimonials (submission_id set)
          │
-         └──► form_responses
+         └──► form_question_responses
 
 SOURCE = 'import' or 'manual':
   testimonials (submission_id = NULL, customer_* entered directly)
