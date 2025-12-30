@@ -1,16 +1,21 @@
 import { createMiddleware } from 'hono/factory';
 import { HTTPException } from 'hono/http-exception';
 import jwt from 'jsonwebtoken';
-import { env } from '@/config/env';
+import { env } from '@/shared/config/env';
+
+export interface HasuraClaimsFromJWT {
+  'x-hasura-user-id': string;
+  'x-hasura-default-role': string;
+  'x-hasura-allowed-roles': string[];
+  'x-hasura-organization-id'?: string;
+  'x-hasura-organization-slug'?: string;
+  'x-hasura-user-email'?: string;
+}
 
 export interface JWTPayload {
   sub: string;
   email: string;
-  'https://hasura.io/jwt/claims'?: {
-    'x-hasura-user-id': string;
-    'x-hasura-default-role': string;
-    'x-hasura-allowed-roles': string[];
-  };
+  'https://hasura.io/jwt/claims'?: HasuraClaimsFromJWT;
   iat: number;
   exp: number;
 }
@@ -19,6 +24,13 @@ export interface AuthContext {
   userId: string;
   email: string;
   role: string;
+  organizationId?: string;
+  organizationSlug?: string;
+}
+
+export interface AuthenticatedUser {
+  id: string;
+  email: string;
 }
 
 /**
@@ -28,6 +40,7 @@ export interface AuthContext {
 export const authMiddleware = createMiddleware<{
   Variables: {
     auth: AuthContext;
+    user: AuthenticatedUser;
   };
 }>(async (c, next) => {
   const authHeader = c.req.header('Authorization');
@@ -47,10 +60,19 @@ export const authMiddleware = createMiddleware<{
       throw new HTTPException(401, { message: 'Invalid token: missing Hasura claims' });
     }
 
+    // Set auth context with all claims
     c.set('auth', {
       userId: hasuraClaims['x-hasura-user-id'],
       email: decoded.email,
       role: hasuraClaims['x-hasura-default-role'],
+      organizationId: hasuraClaims['x-hasura-organization-id'],
+      organizationSlug: hasuraClaims['x-hasura-organization-slug'],
+    });
+
+    // Set user for backward compatibility
+    c.set('user', {
+      id: hasuraClaims['x-hasura-user-id'],
+      email: decoded.email,
     });
 
     await next();

@@ -14,6 +14,7 @@ function getEnvVar(key: string, defaultValue?: string): string {
 export const env = {
   NODE_ENV: getEnvVar('NODE_ENV', 'development'),
   PORT: parseInt(getEnvVar('PORT', '4000'), 10),
+  API_URL: getEnvVar('API_URL', 'http://localhost:4000'),
 
   // JWT
   JWT_SECRET: getEnvVar('JWT_SECRET', 'dev-secret-change-in-production'),
