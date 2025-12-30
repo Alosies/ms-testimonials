@@ -13,6 +13,7 @@ export interface Scalars {
   Int: { input: number; output: number; }
   Float: { input: number; output: number; }
   jsonb: { input: any; output: any; }
+  organization_setup_status: { input: 'pending_setup' | 'completed'; output: 'pending_setup' | 'completed'; }
   smallint: { input: number; output: number; }
   timestamptz: { input: string; output: string; }
 }
@@ -5352,6 +5353,19 @@ export interface Organization_Roles_Updates {
   where: Organization_Roles_Bool_Exp;
 }
 
+/** Boolean expression to compare columns of type "organization_setup_status". All fields are combined with logical 'AND'. */
+export interface Organization_Setup_Status_Comparison_Exp {
+  _eq?: InputMaybe<Scalars['organization_setup_status']['input']>;
+  _gt?: InputMaybe<Scalars['organization_setup_status']['input']>;
+  _gte?: InputMaybe<Scalars['organization_setup_status']['input']>;
+  _in?: InputMaybe<Array<Scalars['organization_setup_status']['input']>>;
+  _is_null?: InputMaybe<Scalars['Boolean']['input']>;
+  _lt?: InputMaybe<Scalars['organization_setup_status']['input']>;
+  _lte?: InputMaybe<Scalars['organization_setup_status']['input']>;
+  _neq?: InputMaybe<Scalars['organization_setup_status']['input']>;
+  _nin?: InputMaybe<Array<Scalars['organization_setup_status']['input']>>;
+}
+
 /** Tenant boundary - plan subscription via organization_plans */
 export interface Organizations {
   __typename?: 'organizations';
@@ -5383,6 +5397,8 @@ export interface Organizations {
   plans_aggregate: Organization_Plans_Aggregate;
   /** UI preferences only (theme, locale) - not business logic */
   settings: Scalars['jsonb']['output'];
+  /** Organization configuration state: pending_setup for auto-created orgs, completed after user setup */
+  setup_status: Scalars['organization_setup_status']['output'];
   /** URL-friendly unique identifier for public URLs */
   slug: Scalars['String']['output'];
   /** An array relationship */
@@ -5591,6 +5607,7 @@ export interface Organizations_Bool_Exp {
   plans?: InputMaybe<Organization_Plans_Bool_Exp>;
   plans_aggregate?: InputMaybe<Organization_Plans_Aggregate_Bool_Exp>;
   settings?: InputMaybe<Jsonb_Comparison_Exp>;
+  setup_status?: InputMaybe<Organization_Setup_Status_Comparison_Exp>;
   slug?: InputMaybe<String_Comparison_Exp>;
   testimonials?: InputMaybe<Testimonials_Bool_Exp>;
   testimonials_aggregate?: InputMaybe<Testimonials_Aggregate_Bool_Exp>;
@@ -5648,6 +5665,8 @@ export interface Organizations_Insert_Input {
   plans?: InputMaybe<Organization_Plans_Arr_Rel_Insert_Input>;
   /** UI preferences only (theme, locale) - not business logic */
   settings?: InputMaybe<Scalars['jsonb']['input']>;
+  /** Organization configuration state: pending_setup for auto-created orgs, completed after user setup */
+  setup_status?: InputMaybe<Scalars['organization_setup_status']['input']>;
   /** URL-friendly unique identifier for public URLs */
   slug?: InputMaybe<Scalars['String']['input']>;
   testimonials?: InputMaybe<Testimonials_Arr_Rel_Insert_Input>;
@@ -5669,6 +5688,8 @@ export interface Organizations_Max_Fields {
   logo_url: Maybe<Scalars['String']['output']>;
   /** Organization display name */
   name: Maybe<Scalars['String']['output']>;
+  /** Organization configuration state: pending_setup for auto-created orgs, completed after user setup */
+  setup_status: Maybe<Scalars['organization_setup_status']['output']>;
   /** URL-friendly unique identifier for public URLs */
   slug: Maybe<Scalars['String']['output']>;
   /** Timestamp when record was last updated */
@@ -5687,6 +5708,8 @@ export interface Organizations_Max_Order_By {
   logo_url?: InputMaybe<Order_By>;
   /** Organization display name */
   name?: InputMaybe<Order_By>;
+  /** Organization configuration state: pending_setup for auto-created orgs, completed after user setup */
+  setup_status?: InputMaybe<Order_By>;
   /** URL-friendly unique identifier for public URLs */
   slug?: InputMaybe<Order_By>;
   /** Timestamp when record was last updated */
@@ -5706,6 +5729,8 @@ export interface Organizations_Min_Fields {
   logo_url: Maybe<Scalars['String']['output']>;
   /** Organization display name */
   name: Maybe<Scalars['String']['output']>;
+  /** Organization configuration state: pending_setup for auto-created orgs, completed after user setup */
+  setup_status: Maybe<Scalars['organization_setup_status']['output']>;
   /** URL-friendly unique identifier for public URLs */
   slug: Maybe<Scalars['String']['output']>;
   /** Timestamp when record was last updated */
@@ -5724,6 +5749,8 @@ export interface Organizations_Min_Order_By {
   logo_url?: InputMaybe<Order_By>;
   /** Organization display name */
   name?: InputMaybe<Order_By>;
+  /** Organization configuration state: pending_setup for auto-created orgs, completed after user setup */
+  setup_status?: InputMaybe<Order_By>;
   /** URL-friendly unique identifier for public URLs */
   slug?: InputMaybe<Order_By>;
   /** Timestamp when record was last updated */
@@ -5766,6 +5793,7 @@ export interface Organizations_Order_By {
   name?: InputMaybe<Order_By>;
   plans_aggregate?: InputMaybe<Organization_Plans_Aggregate_Order_By>;
   settings?: InputMaybe<Order_By>;
+  setup_status?: InputMaybe<Order_By>;
   slug?: InputMaybe<Order_By>;
   testimonials_aggregate?: InputMaybe<Testimonials_Aggregate_Order_By>;
   updated_at?: InputMaybe<Order_By>;
@@ -5800,6 +5828,8 @@ export const Organizations_Select_Column = {
   Name: 'name',
   /** column name */
   Settings: 'settings',
+  /** column name */
+  SetupStatus: 'setup_status',
   /** column name */
   Slug: 'slug',
   /** column name */
@@ -5837,6 +5867,8 @@ export interface Organizations_Set_Input {
   name?: InputMaybe<Scalars['String']['input']>;
   /** UI preferences only (theme, locale) - not business logic */
   settings?: InputMaybe<Scalars['jsonb']['input']>;
+  /** Organization configuration state: pending_setup for auto-created orgs, completed after user setup */
+  setup_status?: InputMaybe<Scalars['organization_setup_status']['input']>;
   /** URL-friendly unique identifier for public URLs */
   slug?: InputMaybe<Scalars['String']['input']>;
   /** Timestamp when record was last updated */
@@ -5867,6 +5899,8 @@ export interface Organizations_Stream_Cursor_Value_Input {
   name?: InputMaybe<Scalars['String']['input']>;
   /** UI preferences only (theme, locale) - not business logic */
   settings?: InputMaybe<Scalars['jsonb']['input']>;
+  /** Organization configuration state: pending_setup for auto-created orgs, completed after user setup */
+  setup_status?: InputMaybe<Scalars['organization_setup_status']['input']>;
   /** URL-friendly unique identifier for public URLs */
   slug?: InputMaybe<Scalars['String']['input']>;
   /** Timestamp when record was last updated */
@@ -5889,6 +5923,8 @@ export const Organizations_Update_Column = {
   Name: 'name',
   /** column name */
   Settings: 'settings',
+  /** column name */
+  SetupStatus: 'setup_status',
   /** column name */
   Slug: 'slug',
   /** column name */

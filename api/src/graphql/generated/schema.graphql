@@ -6028,6 +6028,23 @@ input organization_roles_updates {
   where: organization_roles_bool_exp!
 }
 
+scalar organization_setup_status
+
+"""
+Boolean expression to compare columns of type "organization_setup_status". All fields are combined with logical 'AND'.
+"""
+input organization_setup_status_comparison_exp {
+  _eq: organization_setup_status
+  _gt: organization_setup_status
+  _gte: organization_setup_status
+  _in: [organization_setup_status!]
+  _is_null: Boolean
+  _lt: organization_setup_status
+  _lte: organization_setup_status
+  _neq: organization_setup_status
+  _nin: [organization_setup_status!]
+}
+
 """Tenant boundary - plan subscription via organization_plans"""
 type organizations {
   """Timestamp when record was created"""
@@ -6127,6 +6144,10 @@ type organizations {
     """JSON select path"""
     path: String
   ): jsonb!
+  """
+  Organization configuration state: pending_setup for auto-created orgs, completed after user setup
+  """
+  setup_status: organization_setup_status!
   """URL-friendly unique identifier for public URLs"""
   slug: String!
   """An array relationship"""
@@ -6274,6 +6295,7 @@ input organizations_bool_exp {
   plans: organization_plans_bool_exp
   plans_aggregate: organization_plans_aggregate_bool_exp
   settings: jsonb_comparison_exp
+  setup_status: organization_setup_status_comparison_exp
   slug: String_comparison_exp
   testimonials: testimonials_bool_exp
   testimonials_aggregate: testimonials_aggregate_bool_exp
@@ -6346,6 +6368,10 @@ input organizations_insert_input {
   plans: organization_plans_arr_rel_insert_input
   """UI preferences only (theme, locale) - not business logic"""
   settings: jsonb
+  """
+  Organization configuration state: pending_setup for auto-created orgs, completed after user setup
+  """
+  setup_status: organization_setup_status
   """URL-friendly unique identifier for public URLs"""
   slug: String
   testimonials: testimonials_arr_rel_insert_input
@@ -6366,6 +6392,10 @@ type organizations_max_fields {
   logo_url: String
   """Organization display name"""
   name: String
+  """
+  Organization configuration state: pending_setup for auto-created orgs, completed after user setup
+  """
+  setup_status: organization_setup_status
   """URL-friendly unique identifier for public URLs"""
   slug: String
   """Timestamp when record was last updated"""
@@ -6386,6 +6416,10 @@ input organizations_max_order_by {
   logo_url: order_by
   """Organization display name"""
   name: order_by
+  """
+  Organization configuration state: pending_setup for auto-created orgs, completed after user setup
+  """
+  setup_status: order_by
   """URL-friendly unique identifier for public URLs"""
   slug: order_by
   """Timestamp when record was last updated"""
@@ -6404,6 +6438,10 @@ type organizations_min_fields {
   logo_url: String
   """Organization display name"""
   name: String
+  """
+  Organization configuration state: pending_setup for auto-created orgs, completed after user setup
+  """
+  setup_status: organization_setup_status
   """URL-friendly unique identifier for public URLs"""
   slug: String
   """Timestamp when record was last updated"""
@@ -6424,6 +6462,10 @@ input organizations_min_order_by {
   logo_url: order_by
   """Organization display name"""
   name: order_by
+  """
+  Organization configuration state: pending_setup for auto-created orgs, completed after user setup
+  """
+  setup_status: order_by
   """URL-friendly unique identifier for public URLs"""
   slug: order_by
   """Timestamp when record was last updated"""
@@ -6471,6 +6513,7 @@ input organizations_order_by {
   name: order_by
   plans_aggregate: organization_plans_aggregate_order_by
   settings: order_by
+  setup_status: order_by
   slug: order_by
   testimonials_aggregate: testimonials_aggregate_order_by
   updated_at: order_by
@@ -6507,6 +6550,8 @@ enum organizations_select_column {
   name
   """column name"""
   settings
+  """column name"""
+  setup_status
   """column name"""
   slug
   """column name"""
@@ -6547,6 +6592,10 @@ input organizations_set_input {
   name: String
   """UI preferences only (theme, locale) - not business logic"""
   settings: jsonb
+  """
+  Organization configuration state: pending_setup for auto-created orgs, completed after user setup
+  """
+  setup_status: organization_setup_status
   """URL-friendly unique identifier for public URLs"""
   slug: String
   """Timestamp when record was last updated"""
@@ -6579,6 +6628,10 @@ input organizations_stream_cursor_value_input {
   name: String
   """UI preferences only (theme, locale) - not business logic"""
   settings: jsonb
+  """
+  Organization configuration state: pending_setup for auto-created orgs, completed after user setup
+  """
+  setup_status: organization_setup_status
   """URL-friendly unique identifier for public URLs"""
   slug: String
   """Timestamp when record was last updated"""
@@ -6603,6 +6656,8 @@ enum organizations_update_column {
   name
   """column name"""
   settings
+  """column name"""
+  setup_status
   """column name"""
   slug
   """column name"""

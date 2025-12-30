@@ -46,11 +46,12 @@ export async function createDefaultOrganization(
 
     const { data: orgData, error: orgError } = await executeGraphQL<
       { insert_organizations_one: Organization | null },
-      { name: string; slug: string; created_by: string }
+      { name: string; slug: string; created_by: string; setup_status: 'pending_setup' | 'completed' }
     >(CreateOrganizationDocument, {
       name: orgName,
       slug,
       created_by: userId,
+      setup_status: 'pending_setup',
     });
 
     if (orgError || !orgData?.insert_organizations_one) {
