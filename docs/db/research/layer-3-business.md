@@ -4,6 +4,23 @@
 
 ---
 
+## AI Context Philosophy: "Infer, Don't Ask"
+
+The forms table stores minimal context (`product_name` + `product_description`) that AI uses to:
+1. **Infer** industry, audience, tone, and value propositions
+2. **Generate** tailored testimonial questions without user dropdowns/selections
+
+This keeps form creation simple (2 fields) while enabling smart AI features.
+
+| User Input | AI Infers |
+|------------|-----------|
+| `product_name` | - |
+| `product_description` | Industry, audience, tone, value props |
+
+See `docs/mvp.md` → "AI Context Philosophy" section for full details.
+
+---
+
 ## 3.1 Forms Table
 
 Collection forms - questions are normalized to separate table.
@@ -16,6 +33,7 @@ CREATE TABLE public.forms (
     name                TEXT NOT NULL,
     slug                TEXT NOT NULL,
     product_name        TEXT NOT NULL,
+    product_description TEXT,  -- AI context: used for "Infer, Don't Ask" question generation
     -- Submission settings as explicit columns
     collect_rating      BOOLEAN NOT NULL DEFAULT true,
     require_email       BOOLEAN NOT NULL DEFAULT true,
@@ -43,6 +61,7 @@ CREATE INDEX idx_forms_active ON forms(organization_id) WHERE is_active = true;
 SELECT add_updated_at_trigger('forms');
 
 COMMENT ON TABLE forms IS 'Testimonial collection forms - questions normalized to form_questions table';
+COMMENT ON COLUMN forms.product_description IS 'AI context for question generation - enables "Infer, Don''t Ask" philosophy';
 COMMENT ON COLUMN forms.settings IS 'UI preferences only (theme, colors) - not business logic';
 ```
 
@@ -56,6 +75,7 @@ COMMENT ON COLUMN forms.settings IS 'UI preferences only (theme, colors) - not b
 | `name` | TEXT | NOT NULL | Form name |
 | `slug` | TEXT | NOT NULL | URL-friendly identifier |
 | `product_name` | TEXT | NOT NULL | Product being reviewed |
+| `product_description` | TEXT | NULL | AI context for question generation |
 | `collect_rating` | BOOLEAN | NOT NULL | Collect star rating |
 | `require_email` | BOOLEAN | NOT NULL | Email required |
 | `require_company` | BOOLEAN | NOT NULL | Company required |
