@@ -1,0 +1,147 @@
+#!/bin/sh
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Pre-Push Hook - Testimonials
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# Colors for terminal output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+CYAN='\033[0;36m'
+BOLD='\033[1m'
+DIM='\033[2m'
+NC='\033[0m' # No Color
+
+# Symbols
+CHECK="✓"
+CROSS="✗"
+ARROW="→"
+WARN="⚠"
+
+print_header() {
+  echo ""
+  echo "${BLUE}═══════════════════════════════════════════════════════════════${NC}"
+  echo "${BOLD}${CYAN}  Pre-Push Checks - Testimonials${NC}"
+  echo "${BLUE}═══════════════════════════════════════════════════════════════${NC}"
+  echo ""
+}
+
+print_step() {
+  echo "${BLUE}${ARROW}${NC} ${BOLD}$1${NC}"
+}
+
+print_success() {
+  echo "${GREEN}  ${CHECK} $1${NC}"
+}
+
+print_error() {
+  echo "${RED}  ${CROSS} $1${NC}"
+}
+
+print_warning() {
+  echo "${YELLOW}  ${WARN} $1${NC}"
+}
+
+print_footer_success() {
+  echo ""
+  echo "${GREEN}═══════════════════════════════════════════════════════════════${NC}"
+  echo "${GREEN}${BOLD}  ${CHECK} All checks passed! Pushing...${NC}"
+  echo "${GREEN}═══════════════════════════════════════════════════════════════${NC}"
+  echo ""
+}
+
+print_footer_error() {
+  echo ""
+  echo "${RED}═══════════════════════════════════════════════════════════════${NC}"
+  echo "${RED}${BOLD}  ${CROSS} Pre-push checks failed${NC}"
+  echo "${RED}═══════════════════════════════════════════════════════════════${NC}"
+  echo ""
+}
+
+# Track overall status
+FAILED=0
+
+print_header
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Check 1: TypeScript Type Checking (vue-tsc) - Web App
+# ─────────────────────────────────────────────────────────────────────────────
+
+print_step "Running TypeScript type check (vue-tsc)..."
+echo "${DIM}    This may take a moment...${NC}"
+
+# Change to web app directory and run type-check
+cd apps/web
+
+# Capture output and exit code
+TYPE_CHECK_OUTPUT=$(pnpm run typecheck 2>&1) || TYPE_CHECK_EXIT=$?
+TYPE_CHECK_EXIT=${TYPE_CHECK_EXIT:-0}
+
+cd ../..
+
+if [ $TYPE_CHECK_EXIT -eq 0 ]; then
+  print_success "TypeScript check passed - no type errors found"
+else
+  print_error "TypeScript errors found!"
+  echo ""
+  echo "${RED}────────────────────────────────────────────────────────────────${NC}"
+  echo "${BOLD}Type Errors:${NC}"
+  echo "${RED}────────────────────────────────────────────────────────────────${NC}"
+  # Filter and display only the actual error lines (skip npm output)
+  echo "$TYPE_CHECK_OUTPUT" | grep -E "(error TS|\.vue\(|\.ts\()" | head -50
+
+  # Count errors
+  ERROR_COUNT=$(echo "$TYPE_CHECK_OUTPUT" | grep -c "error TS" || true)
+  if [ "$ERROR_COUNT" -gt 0 ]; then
+    echo ""
+    echo "${RED}────────────────────────────────────────────────────────────────${NC}"
+    echo "${RED}${BOLD}  Total: $ERROR_COUNT type error(s)${NC}"
+    echo "${RED}────────────────────────────────────────────────────────────────${NC}"
+  fi
+  echo ""
+  print_warning "Fix type errors before pushing."
+  FAILED=1
+fi
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Check 2: TypeScript Type Checking - API
+# ─────────────────────────────────────────────────────────────────────────────
+
+echo ""
+print_step "Running TypeScript type check (API)..."
+
+cd api
+
+# Capture output and exit code
+API_TYPE_CHECK_OUTPUT=$(pnpm run typecheck 2>&1) || API_TYPE_CHECK_EXIT=$?
+API_TYPE_CHECK_EXIT=${API_TYPE_CHECK_EXIT:-0}
+
+cd ..
+
+if [ $API_TYPE_CHECK_EXIT -eq 0 ]; then
+  print_success "API TypeScript check passed"
+else
+  print_error "API TypeScript errors found!"
+  echo ""
+  echo "${RED}────────────────────────────────────────────────────────────────${NC}"
+  echo "${BOLD}API Type Errors:${NC}"
+  echo "${RED}────────────────────────────────────────────────────────────────${NC}"
+  echo "$API_TYPE_CHECK_OUTPUT" | grep -E "(error TS|\.ts\()" | head -30
+  echo ""
+  print_warning "Fix API type errors before pushing."
+  FAILED=1
+fi
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Final Result
+# ─────────────────────────────────────────────────────────────────────────────
+
+if [ $FAILED -eq 1 ]; then
+  print_footer_error
+  exit 1
+fi
+
+print_footer_success
+exit 0

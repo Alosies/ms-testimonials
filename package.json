@@ -13,8 +13,13 @@
     "lint": "pnpm -r lint",
     "test": "pnpm -r test",
     "typecheck": "pnpm -r typecheck",
+    "typecheck:web": "pnpm --filter @testimonials/web typecheck",
     "codegen:web": "pnpm --filter @testimonials/web codegen",
-    "codegen:web:watch": "pnpm --filter @testimonials/web codegen:watch"
+    "codegen:web:watch": "pnpm --filter @testimonials/web codegen:watch",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7"
   },
   "engines": {
     "node": ">=22.0.0",
