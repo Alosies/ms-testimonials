@@ -1,0 +1,16 @@
+#import "../fragments/OrganizationBasic.gql"
+
+query GetUserDefaultOrganization($userId: String!) {
+  organization_roles(
+    where: {
+      user_id: { _eq: $userId }
+      is_default_org: { _eq: true }
+      is_active: { _eq: true }
+    }
+    limit: 1
+  ) {
+    organization {
+      ...OrganizationBasic
+    }
+  }
+}
