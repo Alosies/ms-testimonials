@@ -1,40 +1,91 @@
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { createSharedComposable } from '@vueuse/core'
-import type { RoutingUtilities, NavigationOptions } from '../models'
+import { useCurrentContextStore } from '@/shared/currentContext'
+import { createEntityUrlSlug } from '@/shared/urls'
+import type {
+  RoutingUtilities,
+  NavigationOptions,
+  FormRef,
+  TestimonialRef,
+  WidgetRef,
+} from '../models'
 
 /**
  * Centralized routing composable for the Testimonials app
  * Provides type-safe navigation actions and path getters
  *
+ * Uses the slug_id URL pattern where slugs are cosmetic and only IDs are used for resolution.
+ *
  * Usage:
  * ```ts
  * const { goToDashboard, goToForm, formsPath } = useRouting()
- * goToForm('my-form-slug')
+ *
+ * // Navigate to a form using name + ID
+ * goToForm({ name: 'Product Feedback', id: 'f7x8y9z0a1b2' })
+ * // Results in: /acme-corp/forms/product-feedback_f7x8y9z0a1b2
  * ```
  */
 function useRoutingCore(): RoutingUtilities {
   const router = useRouter()
+  const contextStore = useCurrentContextStore()
 
   // ============================================
-  // Path Getters (Computed)
+  // Organization Context
   // ============================================
 
-  const dashboardPath = computed(() => '/dashboard')
-  const formsPath = computed(() => '/forms')
-  const testimonialsPath = computed(() => '/testimonials')
-  const widgetsPath = computed(() => '/widgets')
-  const settingsPath = computed(() => '/settings')
+  const organizationSlug = computed(() => contextStore.currentOrganizationSlug)
+
+  /**
+   * Helper to build organization-scoped paths
+   */
+  const withOrgPrefix = (path: string): string => {
+    const orgSlug = organizationSlug.value
+    if (!orgSlug) {
+      // Fallback to path without org prefix if not available
+      return path
+    }
+    return `/${orgSlug}${path}`
+  }
 
   // ============================================
-  // Dynamic Path Getters
+  // Path Getters (Computed - Organization Scoped)
   // ============================================
 
-  const getFormPath = (formSlug: string) => `/forms/${formSlug}`
-  const getFormResponsesPath = (formSlug: string) => `/forms/${formSlug}/responses`
-  const getFormSettingsPath = (formSlug: string) => `/forms/${formSlug}/settings`
-  const getTestimonialPath = (testimonialId: string) => `/testimonials/${testimonialId}`
-  const getWidgetPath = (widgetId: string) => `/widgets/${widgetId}`
+  const dashboardPath = computed(() => withOrgPrefix('/dashboard'))
+  const formsPath = computed(() => withOrgPrefix('/forms'))
+  const testimonialsPath = computed(() => withOrgPrefix('/testimonials'))
+  const widgetsPath = computed(() => withOrgPrefix('/widgets'))
+  const settingsPath = computed(() => withOrgPrefix('/settings'))
+
+  // ============================================
+  // Dynamic Path Getters (using slug_id pattern)
+  // ============================================
+
+  const getFormPath = (form: FormRef) => {
+    const urlSlug = createEntityUrlSlug(form.name, form.id)
+    return withOrgPrefix(`/forms/${urlSlug}`)
+  }
+
+  const getFormResponsesPath = (form: FormRef) => {
+    const urlSlug = createEntityUrlSlug(form.name, form.id)
+    return withOrgPrefix(`/forms/${urlSlug}/responses`)
+  }
+
+  const getFormSettingsPath = (form: FormRef) => {
+    const urlSlug = createEntityUrlSlug(form.name, form.id)
+    return withOrgPrefix(`/forms/${urlSlug}/settings`)
+  }
+
+  const getTestimonialPath = (testimonial: TestimonialRef) => {
+    const urlSlug = createEntityUrlSlug(testimonial.customerName, testimonial.id)
+    return withOrgPrefix(`/testimonials/${urlSlug}`)
+  }
+
+  const getWidgetPath = (widget: WidgetRef) => {
+    const urlSlug = createEntityUrlSlug(widget.name, widget.id)
+    return withOrgPrefix(`/widgets/${urlSlug}`)
+  }
 
   // ============================================
   // Navigation Actions
@@ -57,34 +108,37 @@ function useRoutingCore(): RoutingUtilities {
 
   // Forms
   const goToForms = () => navigate(formsPath.value)
-  const goToNewForm = () => navigate('/forms/new')
-  const goToForm = (formSlug: string, options?: NavigationOptions) =>
-    navigate(getFormPath(formSlug), options)
-  const goToFormResponses = (formSlug: string, options?: NavigationOptions) =>
-    navigate(getFormResponsesPath(formSlug), options)
-  const goToFormSettings = (formSlug: string, options?: NavigationOptions) =>
-    navigate(getFormSettingsPath(formSlug), options)
+  const goToNewForm = () => navigate(withOrgPrefix('/forms/new'))
+  const goToForm = (form: FormRef, options?: NavigationOptions) =>
+    navigate(getFormPath(form), options)
+  const goToFormResponses = (form: FormRef, options?: NavigationOptions) =>
+    navigate(getFormResponsesPath(form), options)
+  const goToFormSettings = (form: FormRef, options?: NavigationOptions) =>
+    navigate(getFormSettingsPath(form), options)
 
   // Testimonials
   const goToTestimonials = () => navigate(testimonialsPath.value)
-  const goToTestimonial = (testimonialId: string, options?: NavigationOptions) =>
-    navigate(getTestimonialPath(testimonialId), options)
+  const goToTestimonial = (testimonial: TestimonialRef, options?: NavigationOptions) =>
+    navigate(getTestimonialPath(testimonial), options)
 
   // Widgets
   const goToWidgets = () => navigate(widgetsPath.value)
-  const goToNewWidget = () => navigate('/widgets/new')
-  const goToWidget = (widgetId: string, options?: NavigationOptions) =>
-    navigate(getWidgetPath(widgetId), options)
+  const goToNewWidget = () => navigate(withOrgPrefix('/widgets/new'))
+  const goToWidget = (widget: WidgetRef, options?: NavigationOptions) =>
+    navigate(getWidgetPath(widget), options)
 
   // Settings
   const goToSettings = () => navigate(settingsPath.value)
-  const goToSettingsProfile = () => navigate('/settings/profile')
+  const goToSettingsProfile = () => navigate(withOrgPrefix('/settings/profile'))
 
   // Auth (for redirects after login/logout)
   const goToLogin = () => navigate('/auth/login')
   const goToSignup = () => navigate('/auth/signup')
 
   return {
+    // Organization context
+    organizationSlug,
+
     // Path getters
     dashboardPath,
     formsPath,

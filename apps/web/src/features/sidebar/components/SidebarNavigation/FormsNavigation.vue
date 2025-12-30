@@ -10,7 +10,6 @@ import { useRouting } from '@/shared/routing'
 interface Form {
   id: string
   name: string
-  slug: string
   status: 'active' | 'draft' | 'archived'
   testimonialCount?: number
 }
@@ -47,11 +46,11 @@ const toggleAllForms = () => {
 }
 
 const isFormActive = (form: Form) => {
-  return route.path.startsWith(getFormPath(form.slug))
+  return route.path.startsWith(getFormPath(form))
 }
 
 const isSubItemActive = (form: Form, segment: string) => {
-  const basePath = getFormPath(form.slug)
+  const basePath = getFormPath(form)
   return segment === ''
     ? route.path === basePath
     : route.path === `${basePath}/${segment}`
@@ -60,13 +59,13 @@ const isSubItemActive = (form: Form, segment: string) => {
 const navigateToSubItem = (form: Form, segment: string) => {
   switch (segment) {
     case 'responses':
-      goToFormResponses(form.slug)
+      goToFormResponses(form)
       break
     case 'settings':
-      goToFormSettings(form.slug)
+      goToFormSettings(form)
       break
     default:
-      goToForm(form.slug)
+      goToForm(form)
   }
 }
 

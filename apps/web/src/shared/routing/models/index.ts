@@ -9,36 +9,66 @@ export interface NavigationOptions {
 }
 
 /**
+ * Entity reference for URL generation
+ * Contains the entity name (for slug) and ID (for resolution)
+ */
+export interface EntityRef {
+  name: string
+  id: string
+}
+
+/**
+ * Form entity reference
+ */
+export interface FormRef extends EntityRef {}
+
+/**
+ * Testimonial entity reference
+ */
+export interface TestimonialRef {
+  customerName: string
+  id: string
+}
+
+/**
+ * Widget entity reference
+ */
+export interface WidgetRef extends EntityRef {}
+
+/**
  * Routing utilities interface
  * Provides type-safe navigation actions and path getters
  */
 export interface RoutingUtilities {
-  // Path getters (computed refs)
+  // Organization context
+  organizationSlug: ComputedRef<string | null>
+
+  // Path getters (computed refs - organization-scoped)
   dashboardPath: ComputedRef<string>
   formsPath: ComputedRef<string>
   testimonialsPath: ComputedRef<string>
   widgetsPath: ComputedRef<string>
   settingsPath: ComputedRef<string>
 
-  // Dynamic path getters
-  getFormPath: (formSlug: string) => string
-  getFormResponsesPath: (formSlug: string) => string
-  getFormSettingsPath: (formSlug: string) => string
-  getTestimonialPath: (testimonialId: string) => string
-  getWidgetPath: (widgetId: string) => string
+  // Dynamic path getters (using slug_id pattern)
+  getFormPath: (form: FormRef) => string
+  getFormResponsesPath: (form: FormRef) => string
+  getFormSettingsPath: (form: FormRef) => string
+  getTestimonialPath: (testimonial: TestimonialRef) => string
+  getWidgetPath: (widget: WidgetRef) => string
 
   // Navigation actions
   goToDashboard: () => void
   goToForms: () => void
   goToNewForm: () => void
-  goToForm: (formSlug: string, options?: NavigationOptions) => void
-  goToFormResponses: (formSlug: string, options?: NavigationOptions) => void
-  goToFormSettings: (formSlug: string, options?: NavigationOptions) => void
+  goToForm: (form: FormRef, options?: NavigationOptions) => void
+  goToFormResponses: (form: FormRef, options?: NavigationOptions) => void
+  goToFormSettings: (form: FormRef, options?: NavigationOptions) => void
   goToTestimonials: () => void
-  goToTestimonial: (testimonialId: string, options?: NavigationOptions) => void
+  goToTestimonial: (testimonial: TestimonialRef, options?: NavigationOptions) => void
   goToWidgets: () => void
   goToNewWidget: () => void
-  goToWidget: (widgetId: string, options?: NavigationOptions) => void
+  goToWidget: (widget: WidgetRef, options?: NavigationOptions) => void
   goToSettings: () => void
   goToSettingsProfile: () => void
 
