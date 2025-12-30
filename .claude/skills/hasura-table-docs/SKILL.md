@@ -21,6 +21,7 @@ You are a Database Documentation Specialist responsible for maintaining comprehe
 - **Quick Reference**: Focus on fast lookup over comprehensive guides
 - **Accuracy First**: Documentation must match actual database schema exactly
 - **Consistency**: Follow established patterns and formats strictly
+- **Connected**: All docs must include Doc Connections header for traceability
 
 ## File Locations
 
@@ -32,6 +33,7 @@ You are a Database Documentation Specialist responsible for maintaining comprehe
 - `docs/db/tables/{table_name}/docs.md` - Overview & navigation
 - `docs/db/tables/{table_name}/schema.md` - Schema reference
 - `docs/db/tables/{table_name}/graphql.md` - GraphQL examples
+- `docs/db/tables/{table_name}/ai_capabilities.md` - AI use cases
 
 ## Step-by-Step Workflow
 
@@ -70,10 +72,23 @@ Extract from YAML:
 
 #### File 1: docs.md (Main Hub)
 
+**IMPORTANT**: All docs.md files MUST include the Doc Connections header for traceability.
+
 ```markdown
 # {Table Name} Table Documentation
 
-**Last Updated**: {YYYY-MM-DD-HHMM} (GMT+5:30)
+## Doc Connections
+**ID**: `table-{table_name}`
+
+{YYYY-MM-DD-HHMM} IST
+
+**Parent ReadMes**:
+- `db-layer-{N}-{layer_name}` - Layer {N} database tables
+
+**Related ReadMes**:
+- `table-{related_table}` - {Brief description of relationship}
+
+---
 
 ## Overview
 
@@ -96,6 +111,7 @@ Extract from YAML:
 ## Documentation Files
 - [Schema Reference](schema.md) - Table structure and relationships
 - [GraphQL Examples](graphql.md) - Basic CRUD operations
+- [AI Capabilities](ai_capabilities.md) - AI use cases
 ```
 
 #### File 2: schema.md (Schema Reference)
@@ -183,6 +199,51 @@ mutation Delete{TableName}($id: String!) {
 \`\`\`
 ```
 
+#### File 4: ai_capabilities.md (AI Use Cases)
+
+```markdown
+# {Table Name} - AI Capabilities
+
+**Last Updated**: {YYYY-MM-DD-HHMM} (GMT+5:30)
+
+## Overview
+
+{1-2 sentence description of how AI can leverage this table's data}
+
+## Use Cases
+
+### 1. {Use Case Name}
+**Purpose**: {Brief description}
+
+**Pseudo-Code**:
+\`\`\`
+FUNCTION {functionName}({params}):
+    {table} = get{TableName}ById(id)
+    {logic}
+    RETURN {result}
+\`\`\`
+
+### 2. {Use Case Name}
+**Purpose**: {Brief description}
+
+**Pseudo-Code**:
+\`\`\`
+FUNCTION {functionName}({params}):
+    {logic}
+    RETURN {result}
+\`\`\`
+```
+
+## Table Layer Classification
+
+Determine the table's layer for Doc Connections:
+
+| Layer | Tables | Parent ID |
+|-------|--------|-----------|
+| Layer 1: Authentication | users, user_identities, roles | `db-layer-1-auth` |
+| Layer 2: Multi-Tenancy | plans, plan_prices, organizations, organization_plans, organization_roles | `db-layer-2-multitenancy` |
+| Layer 3: Business | forms, testimonials, widgets, etc. | `db-layer-3-business` |
+
 ## Migration Naming Convention
 
 ```
@@ -210,11 +271,13 @@ cat db/hasura/metadata/databases/default/tables/public_{table_name}.yaml
 Before completing, verify:
 
 ### Completeness
-- [ ] All 3 files exist (docs.md, schema.md, graphql.md)
+- [ ] All 4 files exist (docs.md, schema.md, graphql.md, ai_capabilities.md)
 - [ ] All required sections present in each file
 - [ ] Last updated timestamp current in all files
+- [ ] Doc Connections header present in docs.md
 
 ### Accuracy
 - [ ] Schema matches actual database structure from migration SQL
 - [ ] All foreign key constraints documented with correct names
 - [ ] GraphQL examples use correct table/field names
+- [ ] Doc Connections has correct parent layer and related tables
