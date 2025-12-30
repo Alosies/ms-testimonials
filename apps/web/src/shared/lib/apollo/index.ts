@@ -1,1 +1,1 @@
-export { apolloClient, setTokenGetter } from './client'
+export { apolloClient } from './client';
