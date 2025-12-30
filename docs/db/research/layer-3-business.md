@@ -1,6 +1,6 @@
 # Layer 3: Business Entities
 
-**Tables:** forms, question_types, form_questions, question_options, testimonials, form_responses, widgets, widget_testimonials
+**Tables:** forms, question_types, form_questions, question_options, form_submissions, form_responses, testimonials, widgets, widget_testimonials
 
 ---
 
@@ -469,139 +469,85 @@ INSERT INTO question_options (question_id, option_value, option_label, display_o
 
 ---
 
-## 3.5 Testimonials Table
+## 3.5 Form Submissions Table
 
-Customer testimonials - answers normalized to separate table.
+Raw form submission event capturing submitter info. This is the parent record for form_responses. A testimonial is created from a submission (for form source) or independently (for imports).
 
 ```sql
-CREATE TABLE public.testimonials (
+CREATE TABLE public.form_submissions (
     -- Primary key
-    id                      TEXT PRIMARY KEY DEFAULT generate_nanoid_12(),  -- NanoID 12-char unique identifier
+    id                  TEXT PRIMARY KEY DEFAULT generate_nanoid_12(),  -- NanoID 12-char unique identifier
 
     -- Ownership & relationships
-    organization_id         TEXT NOT NULL,      -- FK: Tenant boundary for multi-tenancy
-    form_id                 TEXT NOT NULL,      -- FK: Form that collected this testimonial
+    organization_id     TEXT NOT NULL,      -- FK: Tenant boundary for multi-tenancy
+    form_id             TEXT NOT NULL,      -- FK: Which form was submitted
 
-    -- Workflow status
-    status                  TEXT NOT NULL DEFAULT 'pending',  -- pending → approved/rejected
+    -- Submitter info (captured at submission time - source of truth)
+    submitter_name      TEXT NOT NULL,      -- Full name of person submitting
+    submitter_email     TEXT NOT NULL,      -- Email for follow-up (not displayed publicly)
+    submitter_title     TEXT,               -- Job title (e.g., "Product Manager")
+    submitter_company   TEXT,               -- Company name (e.g., "Acme Inc")
+    submitter_avatar_url TEXT,              -- Profile photo URL
+    submitter_linkedin_url TEXT,            -- LinkedIn profile for social proof
+    submitter_twitter_url TEXT,             -- Twitter/X profile for social proof
 
-    -- AI-assembled content
-    content                 TEXT,               -- Final assembled testimonial text (AI-generated from answers)
-    rating                  SMALLINT,           -- Star rating 1-5 (denormalized for quick display)
-
-    -- Customer info (denormalized for widget display performance)
-    customer_name           TEXT NOT NULL,      -- Customer's full name
-    customer_email          TEXT NOT NULL,      -- Customer's email (for follow-up, not displayed)
-    customer_title          TEXT,               -- Job title (e.g., "Product Manager")
-    customer_company        TEXT,               -- Company name (e.g., "Acme Inc")
-    customer_avatar_url     TEXT,               -- Profile photo URL (from Gravatar or upload)
-
-    -- Social proof URLs (optional - for credibility, displayed as links)
-    customer_linkedin_url   TEXT,               -- LinkedIn profile URL (e.g., https://linkedin.com/in/johndoe)
-    customer_twitter_url    TEXT,               -- Twitter/X profile URL (e.g., https://twitter.com/johndoe)
-
-    -- Source tracking
-    source                  TEXT NOT NULL DEFAULT 'form',  -- How testimonial was collected
-    source_metadata         JSONB,              -- Import-specific data: tweet ID, LinkedIn URL, etc.
-
-    -- Approval audit trail
-    approved_by             TEXT,               -- FK: User who approved
-    approved_at             TIMESTAMPTZ,        -- When approved
-    rejected_by             TEXT,               -- FK: User who rejected
-    rejected_at             TIMESTAMPTZ,        -- When rejected
-    rejection_reason        TEXT,               -- Why rejected (internal note)
-
-    -- Audit: who & when
-    created_at              TIMESTAMPTZ NOT NULL DEFAULT NOW(),  -- When submitted
-    updated_at              TIMESTAMPTZ NOT NULL DEFAULT NOW(),  -- Last modification
-    updated_by              TEXT,               -- FK: User who last modified (NULL until first update)
+    -- Timestamps
+    submitted_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),  -- When form was submitted
+    created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),  -- Record creation (same as submitted_at)
+    updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),  -- Last modification
+    updated_by          TEXT,               -- FK: Who last modified (admin edits)
 
     -- Constraints
-    CONSTRAINT testimonials_org_fk
+    CONSTRAINT form_submissions_org_fk
         FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE,
-    CONSTRAINT testimonials_form_fk
+    CONSTRAINT form_submissions_form_fk
         FOREIGN KEY (form_id) REFERENCES forms(id) ON DELETE CASCADE,
-    CONSTRAINT testimonials_approved_by_fk
-        FOREIGN KEY (approved_by) REFERENCES users(id) ON DELETE SET NULL,
-    CONSTRAINT testimonials_rejected_by_fk
-        FOREIGN KEY (rejected_by) REFERENCES users(id) ON DELETE SET NULL,
-    CONSTRAINT testimonials_updated_by_fk
+    CONSTRAINT form_submissions_updated_by_fk
         FOREIGN KEY (updated_by) REFERENCES users(id) ON DELETE SET NULL,
-    CONSTRAINT testimonials_status_check
-        CHECK (status IN ('pending', 'approved', 'rejected')),
-    CONSTRAINT testimonials_rating_check
-        CHECK (rating IS NULL OR (rating >= 1 AND rating <= 5)),
-    CONSTRAINT testimonials_source_check
-        CHECK (source IN ('form', 'import', 'manual')),
-    CONSTRAINT testimonials_email_format
-        CHECK (customer_email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'),
-    CONSTRAINT testimonials_linkedin_url_format
-        CHECK (customer_linkedin_url IS NULL OR customer_linkedin_url ~* '^https?://(www\.)?linkedin\.com/'),
-    CONSTRAINT testimonials_twitter_url_format
-        CHECK (customer_twitter_url IS NULL OR customer_twitter_url ~* '^https?://(www\.)?(twitter\.com|x\.com)/')
+    CONSTRAINT form_submissions_email_format
+        CHECK (submitter_email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'),
+    CONSTRAINT form_submissions_linkedin_url_format
+        CHECK (submitter_linkedin_url IS NULL OR submitter_linkedin_url ~* '^https?://(www\.)?linkedin\.com/'),
+    CONSTRAINT form_submissions_twitter_url_format
+        CHECK (submitter_twitter_url IS NULL OR submitter_twitter_url ~* '^https?://(www\.)?(twitter\.com|x\.com)/')
 );
 
 -- Indexes
-CREATE INDEX idx_testimonials_org ON testimonials(organization_id);  -- Filter by org
-CREATE INDEX idx_testimonials_form ON testimonials(form_id);         -- Filter by form
-CREATE INDEX idx_testimonials_status ON testimonials(organization_id, status);  -- Dashboard filters
-CREATE INDEX idx_testimonials_created ON testimonials(organization_id, created_at DESC);  -- Recent first
-CREATE INDEX idx_testimonials_approved  -- Widget queries (most common)
-    ON testimonials(organization_id, created_at DESC)
-    WHERE status = 'approved';
+CREATE INDEX idx_form_submissions_org ON form_submissions(organization_id);
+CREATE INDEX idx_form_submissions_form ON form_submissions(form_id);
+CREATE INDEX idx_form_submissions_submitted ON form_submissions(organization_id, submitted_at DESC);
 
-SELECT add_updated_at_trigger('testimonials');
+SELECT add_updated_at_trigger('form_submissions');
 
 -- Table comment
-COMMENT ON TABLE testimonials IS 'Customer testimonials - the displayable quote, rating, and customer info. Raw form responses in form_responses table';
+COMMENT ON TABLE form_submissions IS 'Raw form submission event - submitter info lives here, responses in form_responses';
 
 -- Column comments
-COMMENT ON COLUMN testimonials.id IS 'Primary key - NanoID 12-char unique identifier';
-COMMENT ON COLUMN testimonials.organization_id IS 'FK to organizations - tenant boundary for isolation';
-COMMENT ON COLUMN testimonials.form_id IS 'FK to forms - which form collected this testimonial';
-COMMENT ON COLUMN testimonials.status IS 'Workflow status: pending (new), approved (published), rejected (hidden)';
-COMMENT ON COLUMN testimonials.content IS 'AI-assembled testimonial text from customer answers. Editable by owner';
-COMMENT ON COLUMN testimonials.rating IS 'Star rating 1-5. Denormalized from answers for quick widget display';
-COMMENT ON COLUMN testimonials.customer_name IS 'Customer full name. Displayed on widgets';
-COMMENT ON COLUMN testimonials.customer_email IS 'Customer email for follow-up. NOT displayed publicly';
-COMMENT ON COLUMN testimonials.customer_title IS 'Job title like "Product Manager". Displayed on widgets';
-COMMENT ON COLUMN testimonials.customer_company IS 'Company name like "Acme Inc". Displayed on widgets';
-COMMENT ON COLUMN testimonials.customer_avatar_url IS 'Profile photo URL. From Gravatar hash or direct upload';
-COMMENT ON COLUMN testimonials.customer_linkedin_url IS 'LinkedIn profile URL for social proof. Displayed as clickable link on widgets';
-COMMENT ON COLUMN testimonials.customer_twitter_url IS 'Twitter/X profile URL for social proof. Displayed as clickable link on widgets';
-COMMENT ON COLUMN testimonials.source IS 'How collected: form (web form), import (Twitter/LinkedIn), manual (entered by owner)';
-COMMENT ON COLUMN testimonials.source_metadata IS 'Import-specific data - JSONB appropriate. E.g., {"twitter_id": "123", "url": "..."}';
-COMMENT ON COLUMN testimonials.approved_by IS 'FK to users - who clicked approve. NULL if pending/rejected';
-COMMENT ON COLUMN testimonials.approved_at IS 'When approved. NULL if pending/rejected';
-COMMENT ON COLUMN testimonials.rejected_by IS 'FK to users - who clicked reject. NULL if pending/approved';
-COMMENT ON COLUMN testimonials.rejected_at IS 'When rejected. NULL if pending/approved';
-COMMENT ON COLUMN testimonials.rejection_reason IS 'Internal note explaining rejection. Not shown to customer';
-COMMENT ON COLUMN testimonials.created_at IS 'When testimonial was submitted. Immutable';
-COMMENT ON COLUMN testimonials.updated_at IS 'Last modification timestamp. Auto-updated by trigger';
-COMMENT ON COLUMN testimonials.updated_by IS 'FK to users - who last modified. NULL until first update';
+COMMENT ON COLUMN form_submissions.id IS 'Primary key - NanoID 12-char unique identifier';
+COMMENT ON COLUMN form_submissions.organization_id IS 'FK to organizations - tenant boundary for isolation';
+COMMENT ON COLUMN form_submissions.form_id IS 'FK to forms - which form was submitted';
+COMMENT ON COLUMN form_submissions.submitter_name IS 'Full name of person who submitted. Source of truth for customer identity';
+COMMENT ON COLUMN form_submissions.submitter_email IS 'Email for follow-up. NOT displayed publicly on widgets';
+COMMENT ON COLUMN form_submissions.submitter_title IS 'Job title like "Product Manager". Copied to testimonial for display';
+COMMENT ON COLUMN form_submissions.submitter_company IS 'Company name like "Acme Inc". Copied to testimonial for display';
+COMMENT ON COLUMN form_submissions.submitter_avatar_url IS 'Profile photo URL. From Gravatar or upload';
+COMMENT ON COLUMN form_submissions.submitter_linkedin_url IS 'LinkedIn profile URL for social proof verification';
+COMMENT ON COLUMN form_submissions.submitter_twitter_url IS 'Twitter/X profile URL for social proof verification';
+COMMENT ON COLUMN form_submissions.submitted_at IS 'When customer submitted the form. Immutable';
+COMMENT ON COLUMN form_submissions.created_at IS 'Record creation timestamp. Same as submitted_at';
+COMMENT ON COLUMN form_submissions.updated_at IS 'Last modification. Auto-updated by trigger';
+COMMENT ON COLUMN form_submissions.updated_by IS 'FK to users - who made admin edits. NULL until first update';
 ```
 
-### Status Workflow
+### Relationship to Other Tables
 
 ```
-┌─────────┐    approve    ┌──────────┐
-│ pending │──────────────►│ approved │
-└────┬────┘               └──────────┘
-     │
-     │ reject
-     ▼
-┌──────────┐
-│ rejected │
-└──────────┘
+form_submissions (1) ────► form_responses (N)
+       │                   Raw answers to each question
+       │
+       └────────────────► testimonials (0..1)
+                          The curated, displayable content
 ```
-
-### Source Types
-
-| Source | Description | Metadata Example |
-|--------|-------------|------------------|
-| `form` | Submitted via form | `null` |
-| `import` | Imported from external | `{"twitter_id": "123", "url": "..."}` |
-| `manual` | Manually entered | `{"notes": "From email"}` |
 
 ---
 
@@ -615,8 +561,8 @@ CREATE TABLE public.form_responses (
     id                  TEXT PRIMARY KEY DEFAULT generate_nanoid_12(),  -- NanoID 12-char unique identifier
 
     -- Relationships
-    testimonial_id      TEXT NOT NULL,      -- FK: Parent testimonial
-    question_id         TEXT NOT NULL,      -- FK: Which question this answers
+    submission_id       TEXT NOT NULL,      -- FK: Parent form submission
+    question_id         TEXT NOT NULL,      -- FK: Which question this responds to
 
     -- Typed answer columns (use based on question_type.answer_data_type)
     answer_text         TEXT,               -- text_short, text_long, text_email, choice_single, choice_dropdown
@@ -632,12 +578,12 @@ CREATE TABLE public.form_responses (
     updated_by          TEXT,               -- FK: User who last modified (NULL until first update)
 
     -- Constraints
-    CONSTRAINT form_responses_testimonial_fk
-        FOREIGN KEY (testimonial_id) REFERENCES testimonials(id) ON DELETE CASCADE,
+    CONSTRAINT form_responses_submission_fk
+        FOREIGN KEY (submission_id) REFERENCES form_submissions(id) ON DELETE CASCADE,
     CONSTRAINT form_responses_question_fk
         FOREIGN KEY (question_id) REFERENCES form_questions(id) ON DELETE CASCADE,
     CONSTRAINT form_responses_unique
-        UNIQUE (testimonial_id, question_id),     -- One response per question per testimonial
+        UNIQUE (submission_id, question_id),      -- One response per question per submission
     CONSTRAINT form_responses_updated_by_fk
         FOREIGN KEY (updated_by) REFERENCES users(id) ON DELETE SET NULL,
     CONSTRAINT form_responses_has_value           -- At least one response column must be filled
@@ -651,7 +597,7 @@ CREATE TABLE public.form_responses (
 );
 
 -- Indexes
-CREATE INDEX idx_form_responses_testimonial ON form_responses(testimonial_id);  -- Get all responses for testimonial
+CREATE INDEX idx_form_responses_submission ON form_responses(submission_id);    -- Get all responses for submission
 CREATE INDEX idx_form_responses_question ON form_responses(question_id);        -- Analytics by question
 CREATE INDEX idx_form_responses_rating                                          -- Rating analysis queries
     ON form_responses(question_id, answer_integer)
@@ -664,7 +610,7 @@ COMMENT ON TABLE form_responses IS 'Raw form submission responses - internal dat
 
 -- Column comments
 COMMENT ON COLUMN form_responses.id IS 'Primary key - NanoID 12-char unique identifier';
-COMMENT ON COLUMN form_responses.testimonial_id IS 'FK to testimonials - parent testimonial this response belongs to';
+COMMENT ON COLUMN form_responses.submission_id IS 'FK to form_submissions - parent submission this response belongs to';
 COMMENT ON COLUMN form_responses.question_id IS 'FK to form_questions - which question this responds to';
 COMMENT ON COLUMN form_responses.answer_text IS 'Text responses: short text, long text, email, single choice value, dropdown value';
 COMMENT ON COLUMN form_responses.answer_integer IS 'Numeric responses: star rating (1-5), NPS score (0-10), scale value';
@@ -715,7 +661,150 @@ GROUP BY f.id, f.name;
 
 ---
 
-## 3.7 Widgets Table
+## 3.7 Testimonials Table
+
+The displayable testimonial entity - the curated quote, rating, and customer info shown on widgets. Can be created from a form submission (has linked form_responses) or independently (imports, manual entry).
+
+```sql
+CREATE TABLE public.testimonials (
+    -- Primary key
+    id                      TEXT PRIMARY KEY DEFAULT generate_nanoid_12(),  -- NanoID 12-char unique identifier
+
+    -- Ownership & relationships
+    organization_id         TEXT NOT NULL,      -- FK: Tenant boundary for multi-tenancy
+    submission_id           TEXT,               -- FK: Source submission (NULL for imports/manual)
+
+    -- Workflow status
+    status                  TEXT NOT NULL DEFAULT 'pending',  -- pending → approved/rejected
+
+    -- The displayable content
+    content                 TEXT,               -- AI-assembled testimonial quote (the text shown on widgets)
+    rating                  SMALLINT,           -- Star rating 1-5 (denormalized for quick display)
+
+    -- Customer info (copied from submission OR entered manually for imports)
+    customer_name           TEXT NOT NULL,      -- Customer's full name (displayed on widgets)
+    customer_email          TEXT NOT NULL,      -- Customer's email (for follow-up, NOT displayed)
+    customer_title          TEXT,               -- Job title (e.g., "Product Manager")
+    customer_company        TEXT,               -- Company name (e.g., "Acme Inc")
+    customer_avatar_url     TEXT,               -- Profile photo URL
+    customer_linkedin_url   TEXT,               -- LinkedIn profile for social proof
+    customer_twitter_url    TEXT,               -- Twitter/X profile for social proof
+
+    -- Source tracking
+    source                  TEXT NOT NULL DEFAULT 'form',  -- How testimonial was created
+    source_metadata         JSONB,              -- Import-specific data: tweet ID, LinkedIn URL, etc.
+
+    -- Approval audit trail
+    approved_by             TEXT,               -- FK: User who approved
+    approved_at             TIMESTAMPTZ,        -- When approved
+    rejected_by             TEXT,               -- FK: User who rejected
+    rejected_at             TIMESTAMPTZ,        -- When rejected
+    rejection_reason        TEXT,               -- Why rejected (internal note)
+
+    -- Audit: who & when
+    created_at              TIMESTAMPTZ NOT NULL DEFAULT NOW(),  -- When testimonial was created
+    updated_at              TIMESTAMPTZ NOT NULL DEFAULT NOW(),  -- Last modification
+    updated_by              TEXT,               -- FK: User who last modified
+
+    -- Constraints
+    CONSTRAINT testimonials_org_fk
+        FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE,
+    CONSTRAINT testimonials_submission_fk
+        FOREIGN KEY (submission_id) REFERENCES form_submissions(id) ON DELETE SET NULL,
+    CONSTRAINT testimonials_approved_by_fk
+        FOREIGN KEY (approved_by) REFERENCES users(id) ON DELETE SET NULL,
+    CONSTRAINT testimonials_rejected_by_fk
+        FOREIGN KEY (rejected_by) REFERENCES users(id) ON DELETE SET NULL,
+    CONSTRAINT testimonials_updated_by_fk
+        FOREIGN KEY (updated_by) REFERENCES users(id) ON DELETE SET NULL,
+    CONSTRAINT testimonials_status_check
+        CHECK (status IN ('pending', 'approved', 'rejected')),
+    CONSTRAINT testimonials_rating_check
+        CHECK (rating IS NULL OR (rating >= 1 AND rating <= 5)),
+    CONSTRAINT testimonials_source_check
+        CHECK (source IN ('form', 'import', 'manual')),
+    CONSTRAINT testimonials_email_format
+        CHECK (customer_email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'),
+    CONSTRAINT testimonials_linkedin_url_format
+        CHECK (customer_linkedin_url IS NULL OR customer_linkedin_url ~* '^https?://(www\.)?linkedin\.com/'),
+    CONSTRAINT testimonials_twitter_url_format
+        CHECK (customer_twitter_url IS NULL OR customer_twitter_url ~* '^https?://(www\.)?(twitter\.com|x\.com)/')
+);
+
+-- Indexes
+CREATE INDEX idx_testimonials_org ON testimonials(organization_id);
+CREATE INDEX idx_testimonials_submission ON testimonials(submission_id) WHERE submission_id IS NOT NULL;
+CREATE INDEX idx_testimonials_status ON testimonials(organization_id, status);
+CREATE INDEX idx_testimonials_approved ON testimonials(organization_id, created_at DESC) WHERE status = 'approved';
+
+SELECT add_updated_at_trigger('testimonials');
+
+-- Table comment
+COMMENT ON TABLE testimonials IS 'Displayable testimonial entity - quote, rating, customer info. Widgets display these.';
+
+-- Column comments
+COMMENT ON COLUMN testimonials.id IS 'Primary key - NanoID 12-char unique identifier';
+COMMENT ON COLUMN testimonials.organization_id IS 'FK to organizations - tenant boundary for isolation';
+COMMENT ON COLUMN testimonials.submission_id IS 'FK to form_submissions - NULL for imports/manual. Access form via submission.form_id';
+COMMENT ON COLUMN testimonials.status IS 'Workflow: pending (new), approved (shown on widgets), rejected (hidden)';
+COMMENT ON COLUMN testimonials.content IS 'The testimonial quote - AI-assembled from form responses or imported text';
+COMMENT ON COLUMN testimonials.rating IS 'Star rating 1-5. Copied from form response or entered manually';
+COMMENT ON COLUMN testimonials.customer_name IS 'Full name displayed on widgets. Copied from submission or entered for imports';
+COMMENT ON COLUMN testimonials.customer_email IS 'Email for follow-up. NOT displayed on widgets';
+COMMENT ON COLUMN testimonials.customer_title IS 'Job title displayed on widgets (e.g., "Product Manager")';
+COMMENT ON COLUMN testimonials.customer_company IS 'Company name displayed on widgets (e.g., "Acme Inc")';
+COMMENT ON COLUMN testimonials.customer_avatar_url IS 'Profile photo URL displayed on widgets';
+COMMENT ON COLUMN testimonials.customer_linkedin_url IS 'LinkedIn profile URL - clickable social proof link';
+COMMENT ON COLUMN testimonials.customer_twitter_url IS 'Twitter/X profile URL - clickable social proof link';
+COMMENT ON COLUMN testimonials.source IS 'Origin: form (via submission), import (Twitter/LinkedIn), manual (typed by owner)';
+COMMENT ON COLUMN testimonials.source_metadata IS 'Import metadata (tweet_id, original_url, etc.). JSONB appropriate here';
+COMMENT ON COLUMN testimonials.approved_by IS 'FK to users - who approved. NULL if pending/rejected';
+COMMENT ON COLUMN testimonials.approved_at IS 'When approved. NULL if pending/rejected';
+COMMENT ON COLUMN testimonials.rejected_by IS 'FK to users - who rejected. NULL if pending/approved';
+COMMENT ON COLUMN testimonials.rejected_at IS 'When rejected. NULL if pending/approved';
+COMMENT ON COLUMN testimonials.rejection_reason IS 'Internal note. Not shown to customer';
+COMMENT ON COLUMN testimonials.created_at IS 'When created. Immutable';
+COMMENT ON COLUMN testimonials.updated_at IS 'Last modification. Auto-updated by trigger';
+COMMENT ON COLUMN testimonials.updated_by IS 'FK to users - who last modified. NULL until first update';
+```
+
+### Status Workflow
+
+```
+┌─────────┐    approve    ┌──────────┐
+│ pending │──────────────►│ approved │  ← Shown on widgets
+└────┬────┘               └──────────┘
+     │
+     │ reject
+     ▼
+┌──────────┐
+│ rejected │  ← Hidden, with reason
+└──────────┘
+```
+
+### Source Types
+
+| Source | Has Submission? | Description |
+|--------|-----------------|-------------|
+| `form` | Yes | Created from form_submissions, has form_responses |
+| `import` | No | Imported from Twitter/LinkedIn, no submission |
+| `manual` | No | Manually entered by owner, no submission |
+
+### Data Flow by Source
+
+```
+SOURCE = 'form':
+  form_submissions ──► testimonials (submission_id set)
+         │
+         └──► form_responses
+
+SOURCE = 'import' or 'manual':
+  testimonials (submission_id = NULL, customer_* entered directly)
+```
+
+---
+
+## 3.8 Widgets Table
 
 Embeddable widgets - testimonial selections in junction table.
 
@@ -800,7 +889,7 @@ COMMENT ON COLUMN widgets.updated_by IS 'FK to users - who last modified. NULL u
 
 ---
 
-## 3.8 Widget Testimonials Junction Table
+## 3.9 Widget Testimonials Junction Table
 
 Proper many-to-many with ordering.
 
