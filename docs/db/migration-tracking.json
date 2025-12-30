@@ -1,13 +1,13 @@
 {
   "metadata": {
-    "generated": "2025-12-29T16:30:00+05:30",
-    "totalTables": 3,
+    "generated": "2025-12-30T12:00:00+05:30",
+    "totalTables": 8,
     "statusCounts": {
-      "current": 3,
+      "current": 8,
       "behind": 0,
       "critical": 0
     },
-    "lastGlobalUpdate": "2025-12-29-1630"
+    "lastGlobalUpdate": "2025-12-30-1200"
   },
   "tables": {
     "users": {
@@ -46,6 +46,71 @@
           "migration": "1767004830000_2025_12_29_1610__roles__create_table",
           "date": "2025-12-29",
           "summary": "Initial table creation with unique_name+name pattern, explicit permission columns, is_viewer flag, system role seeds"
+        }
+      ]
+    },
+    "plans": {
+      "lastMigration": "1767030206000_2025_12_29_2313__plans__create_table",
+      "status": "current",
+      "lastUpdated": "2025-12-30-1200",
+      "timezone": "GMT+5:30",
+      "migrationHistory": [
+        {
+          "migration": "1767030206000_2025_12_29_2313__plans__create_table",
+          "date": "2025-12-29",
+          "summary": "Initial table with plan templates, limits, unique_name+name pattern, and free/pro/team seed data"
+        }
+      ]
+    },
+    "plan_prices": {
+      "lastMigration": "1767030266000_2025_12_29_2314__plan_prices__create_table",
+      "status": "current",
+      "lastUpdated": "2025-12-30-1200",
+      "timezone": "GMT+5:30",
+      "migrationHistory": [
+        {
+          "migration": "1767030266000_2025_12_29_2314__plan_prices__create_table",
+          "date": "2025-12-29",
+          "summary": "Initial table with multi-currency pricing, base unit pricing (cents/paise), USD and INR seed data"
+        }
+      ]
+    },
+    "organizations": {
+      "lastMigration": "1767030326000_2025_12_29_2315__organizations__create_table",
+      "status": "current",
+      "lastUpdated": "2025-12-30-1200",
+      "timezone": "GMT+5:30",
+      "migrationHistory": [
+        {
+          "migration": "1767030326000_2025_12_29_2315__organizations__create_table",
+          "date": "2025-12-29",
+          "summary": "Initial table - tenant boundary with slug validation, JSONB settings for UI prefs only"
+        }
+      ]
+    },
+    "organization_plans": {
+      "lastMigration": "1767030386000_2025_12_29_2316__organization_plans__create_table",
+      "status": "current",
+      "lastUpdated": "2025-12-30-1200",
+      "timezone": "GMT+5:30",
+      "migrationHistory": [
+        {
+          "migration": "1767030386000_2025_12_29_2316__organization_plans__create_table",
+          "date": "2025-12-29",
+          "summary": "Initial table with subscription management, copy-on-subscribe limits, override audit trail"
+        }
+      ]
+    },
+    "organization_roles": {
+      "lastMigration": "1767030446000_2025_12_29_2317__organization_roles__create_table",
+      "status": "current",
+      "lastUpdated": "2025-12-30-1200",
+      "timezone": "GMT+5:30",
+      "migrationHistory": [
+        {
+          "migration": "1767030446000_2025_12_29_2317__organization_roles__create_table",
+          "date": "2025-12-29",
+          "summary": "Initial table - user-org-role junction with invitation workflow, one role per user per org"
         }
       ]
     }
