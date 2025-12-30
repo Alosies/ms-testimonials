@@ -42,11 +42,6 @@ CREATE TABLE public.forms (
     product_name        TEXT NOT NULL,      -- Product being reviewed - used in question templates
     product_description TEXT,               -- AI infers industry, audience, tone from this description
 
-    -- Submission settings (explicit columns, not JSONB)
-    collect_rating      BOOLEAN NOT NULL DEFAULT true,   -- Show star rating question
-    require_email       BOOLEAN NOT NULL DEFAULT true,   -- Email mandatory for follow-up
-    require_company     BOOLEAN NOT NULL DEFAULT false,  -- Company name mandatory (reduces friction if false)
-
     -- UI preferences (JSONB appropriate - truly dynamic)
     settings            JSONB NOT NULL DEFAULT '{}'::jsonb,  -- Theme colors, branding - NOT business logic
 
@@ -84,9 +79,6 @@ COMMENT ON COLUMN forms.name IS 'Form display name shown in dashboard (e.g., "Pr
 COMMENT ON COLUMN forms.slug IS 'URL-friendly identifier for public form link (/f/{slug}). Lowercase alphanumeric with hyphens';
 COMMENT ON COLUMN forms.product_name IS 'Name of product being reviewed - used in question templates (e.g., "How did {product} help?")';
 COMMENT ON COLUMN forms.product_description IS 'AI context for question generation - enables "Infer, Don''t Ask" philosophy. AI infers industry, audience, tone from this';
-COMMENT ON COLUMN forms.collect_rating IS 'Whether to show star rating question on form. Default true';
-COMMENT ON COLUMN forms.require_email IS 'Whether customer email is mandatory. Default true for follow-up capability';
-COMMENT ON COLUMN forms.require_company IS 'Whether company name is mandatory. Default false - reduces friction';
 COMMENT ON COLUMN forms.settings IS 'UI preferences only (theme colors, branding) - NOT business logic. JSONB appropriate here';
 COMMENT ON COLUMN forms.is_active IS 'Soft delete flag. False = form disabled, public link returns 404';
 COMMENT ON COLUMN forms.created_at IS 'Timestamp when form was created. Immutable after insert';
@@ -104,10 +96,15 @@ COMMENT ON COLUMN forms.updated_at IS 'Timestamp of last modification. Auto-upda
 | `slug` | TEXT | NOT NULL | URL-friendly identifier |
 | `product_name` | TEXT | NOT NULL | Product being reviewed |
 | `product_description` | TEXT | NULL | AI context for question generation |
-| `collect_rating` | BOOLEAN | NOT NULL | Collect star rating |
-| `require_email` | BOOLEAN | NOT NULL | Email required |
-| `require_company` | BOOLEAN | NOT NULL | Company required |
 | `settings` | JSONB | NOT NULL | UI preferences (theme, colors) |
+| `is_active` | BOOLEAN | NOT NULL | Soft delete flag |
+| `created_at` | TIMESTAMPTZ | NOT NULL | Creation timestamp |
+| `updated_at` | TIMESTAMPTZ | NOT NULL | Last modification |
+
+**Note:** Rating, email, and company collection settings are now controlled via `form_questions`:
+- Add `rating_star` question → collect ratings
+- Add `text_email` question with `is_required=true` → require email
+- Add `text_short` question for company with `is_required=false` → optional company
 
 ---
 
