@@ -1,0 +1,39 @@
+table:
+  name: question_types
+  schema: public
+array_relationships:
+  - name: questions
+    using:
+      foreign_key_constraint_on:
+        column: question_type_id
+        table:
+          name: form_questions
+          schema: public
+select_permissions:
+  - role: anonymous
+    permission:
+      columns:
+        - id
+        - unique_name
+        - name
+        - category
+        - answer_data_type
+      filter:
+        is_active:
+          _eq: true
+  - role: member
+    permission:
+      columns: '*'
+      filter: {}
+  - role: org_admin
+    permission:
+      columns: '*'
+      filter: {}
+  - role: owner
+    permission:
+      columns: '*'
+      filter: {}
+  - role: viewer
+    permission:
+      columns: '*'
+      filter: {}

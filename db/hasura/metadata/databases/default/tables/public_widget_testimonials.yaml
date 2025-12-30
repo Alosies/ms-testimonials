@@ -1,0 +1,113 @@
+table:
+  name: widget_testimonials
+  schema: public
+object_relationships:
+  - name: added_by_user
+    using:
+      foreign_key_constraint_on: added_by
+  - name: organization
+    using:
+      foreign_key_constraint_on: organization_id
+  - name: testimonial
+    using:
+      foreign_key_constraint_on: testimonial_id
+  - name: widget
+    using:
+      foreign_key_constraint_on: widget_id
+insert_permissions:
+  - role: member
+    permission:
+      check:
+        organization_id:
+          _eq: X-Hasura-Organization-Id
+      columns: '*'
+  - role: org_admin
+    permission:
+      check:
+        organization_id:
+          _eq: X-Hasura-Organization-Id
+      columns: '*'
+  - role: owner
+    permission:
+      check:
+        organization_id:
+          _eq: X-Hasura-Organization-Id
+      columns: '*'
+select_permissions:
+  - role: anonymous
+    permission:
+      columns:
+        - id
+        - widget_id
+        - testimonial_id
+        - display_order
+        - is_featured
+      filter:
+        widget:
+          is_active:
+            _eq: true
+  - role: member
+    permission:
+      columns: '*'
+      filter:
+        organization_id:
+          _eq: X-Hasura-Organization-Id
+  - role: org_admin
+    permission:
+      columns: '*'
+      filter:
+        organization_id:
+          _eq: X-Hasura-Organization-Id
+      allow_aggregations: true
+  - role: owner
+    permission:
+      columns: '*'
+      filter:
+        organization_id:
+          _eq: X-Hasura-Organization-Id
+      allow_aggregations: true
+  - role: viewer
+    permission:
+      columns: '*'
+      filter:
+        organization_id:
+          _eq: X-Hasura-Organization-Id
+update_permissions:
+  - role: member
+    permission:
+      columns: '*'
+      filter:
+        organization_id:
+          _eq: X-Hasura-Organization-Id
+      check:
+        organization_id:
+          _eq: X-Hasura-Organization-Id
+  - role: org_admin
+    permission:
+      columns: '*'
+      filter:
+        organization_id:
+          _eq: X-Hasura-Organization-Id
+      check:
+        organization_id:
+          _eq: X-Hasura-Organization-Id
+  - role: owner
+    permission:
+      columns: '*'
+      filter:
+        organization_id:
+          _eq: X-Hasura-Organization-Id
+      check:
+        organization_id:
+          _eq: X-Hasura-Organization-Id
+delete_permissions:
+  - role: org_admin
+    permission:
+      filter:
+        organization_id:
+          _eq: X-Hasura-Organization-Id
+  - role: owner
+    permission:
+      filter:
+        organization_id:
+          _eq: X-Hasura-Organization-Id

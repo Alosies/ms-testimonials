@@ -1,0 +1,117 @@
+table:
+  name: form_question_responses
+  schema: public
+object_relationships:
+  - name: organization
+    using:
+      foreign_key_constraint_on: organization_id
+  - name: question
+    using:
+      foreign_key_constraint_on: question_id
+  - name: submission
+    using:
+      foreign_key_constraint_on: submission_id
+  - name: updater
+    using:
+      foreign_key_constraint_on: updated_by
+insert_permissions:
+  - role: anonymous
+    permission:
+      check:
+        submission:
+          form:
+            is_active:
+              _eq: true
+      columns:
+        - organization_id
+        - submission_id
+        - question_id
+        - answer_text
+        - answer_integer
+        - answer_boolean
+        - answer_json
+        - answer_url
+  - role: member
+    permission:
+      check:
+        organization_id:
+          _eq: X-Hasura-Organization-Id
+      columns: '*'
+  - role: org_admin
+    permission:
+      check:
+        organization_id:
+          _eq: X-Hasura-Organization-Id
+      columns: '*'
+  - role: owner
+    permission:
+      check:
+        organization_id:
+          _eq: X-Hasura-Organization-Id
+      columns: '*'
+select_permissions:
+  - role: member
+    permission:
+      columns: '*'
+      filter:
+        organization_id:
+          _eq: X-Hasura-Organization-Id
+  - role: org_admin
+    permission:
+      columns: '*'
+      filter:
+        organization_id:
+          _eq: X-Hasura-Organization-Id
+      allow_aggregations: true
+  - role: owner
+    permission:
+      columns: '*'
+      filter:
+        organization_id:
+          _eq: X-Hasura-Organization-Id
+      allow_aggregations: true
+  - role: viewer
+    permission:
+      columns: '*'
+      filter:
+        organization_id:
+          _eq: X-Hasura-Organization-Id
+update_permissions:
+  - role: member
+    permission:
+      columns: '*'
+      filter:
+        organization_id:
+          _eq: X-Hasura-Organization-Id
+      check:
+        organization_id:
+          _eq: X-Hasura-Organization-Id
+  - role: org_admin
+    permission:
+      columns: '*'
+      filter:
+        organization_id:
+          _eq: X-Hasura-Organization-Id
+      check:
+        organization_id:
+          _eq: X-Hasura-Organization-Id
+  - role: owner
+    permission:
+      columns: '*'
+      filter:
+        organization_id:
+          _eq: X-Hasura-Organization-Id
+      check:
+        organization_id:
+          _eq: X-Hasura-Organization-Id
+delete_permissions:
+  - role: org_admin
+    permission:
+      filter:
+        organization_id:
+          _eq: X-Hasura-Organization-Id
+  - role: owner
+    permission:
+      filter:
+        organization_id:
+          _eq: X-Hasura-Organization-Id

@@ -1,0 +1,128 @@
+table:
+  name: testimonials
+  schema: public
+object_relationships:
+  - name: approver
+    using:
+      foreign_key_constraint_on: approved_by
+  - name: organization
+    using:
+      foreign_key_constraint_on: organization_id
+  - name: rejecter
+    using:
+      foreign_key_constraint_on: rejected_by
+  - name: submission
+    using:
+      foreign_key_constraint_on: submission_id
+  - name: updater
+    using:
+      foreign_key_constraint_on: updated_by
+array_relationships:
+  - name: widget_placements
+    using:
+      foreign_key_constraint_on:
+        column: testimonial_id
+        table:
+          name: widget_testimonials
+          schema: public
+insert_permissions:
+  - role: member
+    permission:
+      check:
+        organization_id:
+          _eq: X-Hasura-Organization-Id
+      columns: '*'
+  - role: org_admin
+    permission:
+      check:
+        organization_id:
+          _eq: X-Hasura-Organization-Id
+      columns: '*'
+  - role: owner
+    permission:
+      check:
+        organization_id:
+          _eq: X-Hasura-Organization-Id
+      columns: '*'
+select_permissions:
+  - role: anonymous
+    permission:
+      columns:
+        - id
+        - content
+        - rating
+        - customer_name
+        - customer_title
+        - customer_company
+        - customer_avatar_url
+        - customer_linkedin_url
+        - customer_twitter_url
+        - created_at
+      filter:
+        status:
+          _eq: approved
+  - role: member
+    permission:
+      columns: '*'
+      filter:
+        organization_id:
+          _eq: X-Hasura-Organization-Id
+  - role: org_admin
+    permission:
+      columns: '*'
+      filter:
+        organization_id:
+          _eq: X-Hasura-Organization-Id
+      allow_aggregations: true
+  - role: owner
+    permission:
+      columns: '*'
+      filter:
+        organization_id:
+          _eq: X-Hasura-Organization-Id
+      allow_aggregations: true
+  - role: viewer
+    permission:
+      columns: '*'
+      filter:
+        organization_id:
+          _eq: X-Hasura-Organization-Id
+update_permissions:
+  - role: member
+    permission:
+      columns: '*'
+      filter:
+        organization_id:
+          _eq: X-Hasura-Organization-Id
+      check:
+        organization_id:
+          _eq: X-Hasura-Organization-Id
+  - role: org_admin
+    permission:
+      columns: '*'
+      filter:
+        organization_id:
+          _eq: X-Hasura-Organization-Id
+      check:
+        organization_id:
+          _eq: X-Hasura-Organization-Id
+  - role: owner
+    permission:
+      columns: '*'
+      filter:
+        organization_id:
+          _eq: X-Hasura-Organization-Id
+      check:
+        organization_id:
+          _eq: X-Hasura-Organization-Id
+delete_permissions:
+  - role: org_admin
+    permission:
+      filter:
+        organization_id:
+          _eq: X-Hasura-Organization-Id
+  - role: owner
+    permission:
+      filter:
+        organization_id:
+          _eq: X-Hasura-Organization-Id
