@@ -1,0 +1,21 @@
+fragment QuestionTypeBasic on question_types {
+  id
+  unique_name
+  name
+  description
+  category
+  input_component
+  answer_data_type
+  display_order
+  is_active
+  supports_min_length
+  supports_max_length
+  supports_min_value
+  supports_max_value
+  supports_options
+  supports_pattern
+  supports_file_types
+  supports_max_file_size
+  default_min_value
+  default_max_value
+}

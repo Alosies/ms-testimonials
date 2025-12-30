@@ -1,0 +1,13 @@
+fragment UserBasic on users {
+  id
+  email
+  display_name
+  avatar_url
+  email_verified
+  locale
+  timezone
+  is_active
+  last_login_at
+  created_at
+  updated_at
+}

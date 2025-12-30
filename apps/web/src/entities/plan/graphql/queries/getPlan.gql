@@ -1,0 +1,7 @@
+#import "../fragments/PlanBasic.gql"
+
+query GetPlan($planId: String!) {
+  plans_by_pk(id: $planId) {
+    ...PlanBasic
+  }
+}

@@ -1,0 +1,14 @@
+fragment PlanBasic on plans {
+  id
+  unique_name
+  name
+  description
+  max_forms
+  max_members
+  max_testimonials
+  max_widgets
+  show_branding
+  is_active
+  created_at
+  updated_at
+}

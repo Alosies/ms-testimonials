@@ -1,0 +1,12 @@
+mutation UpdateForm($id: String!, $changes: forms_set_input!) {
+  update_forms_by_pk(pk_columns: { id: $id }, _set: $changes) {
+    id
+    name
+    slug
+    product_name
+    product_description
+    settings
+    is_active
+    updated_at
+  }
+}

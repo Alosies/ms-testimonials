@@ -1,0 +1,7 @@
+#import "../fragments/QuestionTypeBasic.gql"
+
+query GetQuestionTypes {
+  question_types(where: { is_active: { _eq: true } }, order_by: { display_order: asc }) {
+    ...QuestionTypeBasic
+  }
+}

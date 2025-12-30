@@ -1,0 +1,7 @@
+#import "../fragments/FormBasic.gql"
+
+query GetForms($organizationId: String!) {
+  forms(where: { organization_id: { _eq: $organizationId } }, order_by: { created_at: desc }) {
+    ...FormBasic
+  }
+}

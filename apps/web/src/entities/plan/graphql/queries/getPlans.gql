@@ -1,0 +1,7 @@
+#import "../fragments/PlanBasic.gql"
+
+query GetPlans {
+  plans(where: { is_active: { _eq: true } }, order_by: { name: asc }) {
+    ...PlanBasic
+  }
+}

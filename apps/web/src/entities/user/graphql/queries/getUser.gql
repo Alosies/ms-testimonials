@@ -1,0 +1,7 @@
+#import "../fragments/UserBasic.gql"
+
+query GetUser($userId: String!) {
+  users_by_pk(id: $userId) {
+    ...UserBasic
+  }
+}

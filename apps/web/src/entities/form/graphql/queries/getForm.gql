@@ -1,0 +1,7 @@
+#import "../fragments/FormBasic.gql"
+
+query GetForm($formId: String!) {
+  forms_by_pk(id: $formId) {
+    ...FormBasic
+  }
+}

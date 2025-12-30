@@ -1,0 +1,13 @@
+fragment FormBasic on forms {
+  id
+  name
+  slug
+  product_name
+  product_description
+  settings
+  is_active
+  organization_id
+  created_by
+  created_at
+  updated_at
+}
