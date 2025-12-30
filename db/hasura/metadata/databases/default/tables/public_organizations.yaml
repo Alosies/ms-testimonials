@@ -1,3 +1,121 @@
 table:
   name: organizations
   schema: public
+object_relationships:
+  - name: creator
+    using:
+      foreign_key_constraint_on: created_by
+array_relationships:
+  - name: forms
+    using:
+      foreign_key_constraint_on:
+        column: organization_id
+        table:
+          name: forms
+          schema: public
+  - name: members
+    using:
+      foreign_key_constraint_on:
+        column: organization_id
+        table:
+          name: organization_roles
+          schema: public
+  - name: plans
+    using:
+      foreign_key_constraint_on:
+        column: organization_id
+        table:
+          name: organization_plans
+          schema: public
+  - name: testimonials
+    using:
+      foreign_key_constraint_on:
+        column: organization_id
+        table:
+          name: testimonials
+          schema: public
+  - name: widgets
+    using:
+      foreign_key_constraint_on:
+        column: organization_id
+        table:
+          name: widgets
+          schema: public
+insert_permissions:
+  - role: owner
+    permission:
+      check: {}
+      set:
+        created_by: X-Hasura-User-Id
+      columns:
+        - name
+        - slug
+        - logo_url
+        - settings
+        - created_by
+select_permissions:
+  - role: member
+    permission:
+      columns: '*'
+      filter:
+        id:
+          _eq: X-Hasura-Organization-Id
+  - role: org_admin
+    permission:
+      columns: '*'
+      filter:
+        id:
+          _eq: X-Hasura-Organization-Id
+      allow_aggregations: true
+  - role: owner
+    permission:
+      columns: '*'
+      filter:
+        id:
+          _eq: X-Hasura-Organization-Id
+      allow_aggregations: true
+  - role: viewer
+    permission:
+      columns:
+        - id
+        - name
+        - slug
+        - logo_url
+        - is_active
+        - created_at
+      filter:
+        id:
+          _eq: X-Hasura-Organization-Id
+update_permissions:
+  - role: org_admin
+    permission:
+      columns:
+        - name
+        - logo_url
+        - settings
+      filter:
+        id:
+          _eq: X-Hasura-Organization-Id
+      check:
+        id:
+          _eq: X-Hasura-Organization-Id
+  - role: owner
+    permission:
+      columns:
+        - name
+        - slug
+        - logo_url
+        - settings
+        - is_active
+      filter:
+        id:
+          _eq: X-Hasura-Organization-Id
+      check:
+        id:
+          _eq: X-Hasura-Organization-Id
+delete_permissions:
+  - role: owner
+    permission:
+      filter:
+        id:
+          _eq: X-Hasura-Organization-Id

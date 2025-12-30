@@ -1,3 +1,113 @@
 table:
   name: organization_plans
   schema: public
+object_relationships:
+  - name: organization
+    using:
+      foreign_key_constraint_on: organization_id
+  - name: override_user
+    using:
+      foreign_key_constraint_on: overridden_by
+  - name: plan
+    using:
+      foreign_key_constraint_on: plan_id
+insert_permissions:
+  - role: owner
+    permission:
+      check:
+        organization_id:
+          _eq: X-Hasura-Organization-Id
+      columns:
+        - organization_id
+        - plan_id
+        - status
+        - billing_cycle
+        - currency_code
+        - starts_at
+        - current_period_ends_at
+        - trial_ends_at
+        - max_forms
+        - max_testimonials
+        - max_widgets
+        - max_members
+        - show_branding
+        - price_in_base_unit
+select_permissions:
+  - role: member
+    permission:
+      columns:
+        - id
+        - organization_id
+        - plan_id
+        - status
+        - billing_cycle
+        - starts_at
+        - current_period_ends_at
+        - trial_ends_at
+        - max_forms
+        - max_testimonials
+        - max_widgets
+        - max_members
+        - show_branding
+      filter:
+        organization_id:
+          _eq: X-Hasura-Organization-Id
+  - role: org_admin
+    permission:
+      columns: '*'
+      filter:
+        organization_id:
+          _eq: X-Hasura-Organization-Id
+  - role: owner
+    permission:
+      columns: '*'
+      filter:
+        organization_id:
+          _eq: X-Hasura-Organization-Id
+      allow_aggregations: true
+  - role: viewer
+    permission:
+      columns:
+        - id
+        - organization_id
+        - plan_id
+        - status
+        - current_period_ends_at
+        - trial_ends_at
+        - max_forms
+        - max_testimonials
+        - max_widgets
+        - max_members
+        - show_branding
+      filter:
+        organization_id:
+          _eq: X-Hasura-Organization-Id
+update_permissions:
+  - role: owner
+    permission:
+      columns:
+        - status
+        - current_period_ends_at
+        - trial_ends_at
+        - cancelled_at
+        - max_forms
+        - max_testimonials
+        - max_widgets
+        - max_members
+        - show_branding
+        - has_overrides
+        - override_reason
+        - overridden_by
+        - overridden_at
+      filter:
+        organization_id:
+          _eq: X-Hasura-Organization-Id
+      check:
+        organization_id:
+          _eq: X-Hasura-Organization-Id
+delete_permissions:
+  - role: owner
+    permission:
+      filter:
+        organization_id:
+          _eq: X-Hasura-Organization-Id

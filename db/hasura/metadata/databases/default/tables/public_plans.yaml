@@ -1,3 +1,58 @@
 table:
   name: plans
   schema: public
+array_relationships:
+  - name: organization_plans
+    using:
+      foreign_key_constraint_on:
+        column: plan_id
+        table:
+          name: organization_plans
+          schema: public
+  - name: prices
+    using:
+      foreign_key_constraint_on:
+        column: plan_id
+        table:
+          name: plan_prices
+          schema: public
+select_permissions:
+  - role: anonymous
+    permission:
+      columns:
+        - id
+        - unique_name
+        - name
+        - description
+        - max_testimonials
+        - max_forms
+        - max_widgets
+        - max_members
+        - show_branding
+      filter:
+        is_active:
+          _eq: true
+  - role: member
+    permission:
+      columns: '*'
+      filter:
+        is_active:
+          _eq: true
+  - role: org_admin
+    permission:
+      columns: '*'
+      filter:
+        is_active:
+          _eq: true
+  - role: owner
+    permission:
+      columns: '*'
+      filter:
+        is_active:
+          _eq: true
+  - role: viewer
+    permission:
+      columns: '*'
+      filter:
+        is_active:
+          _eq: true
