@@ -34,6 +34,7 @@ const config: CodegenConfig = {
           date: 'string',
           time: 'string',
           interval: 'string',
+          organization_setup_status: "'pending_setup' | 'completed'",
         },
         // Type generation options
         maybeValue: 'T | null | undefined',
@@ -64,6 +65,7 @@ const config: CodegenConfig = {
           date: 'string',
           time: 'string',
           interval: 'string',
+          organization_setup_status: "'pending_setup' | 'completed'",
         },
         // Vue-specific options
         withCompositionFunctions: true,
