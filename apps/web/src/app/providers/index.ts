@@ -1,0 +1,1 @@
+export { apolloProvider } from './apollo'

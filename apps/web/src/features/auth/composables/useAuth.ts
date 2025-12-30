@@ -7,6 +7,7 @@
 import { ref, computed } from 'vue';
 import type { User } from '@supabase/supabase-js';
 import { supabase } from '@/shared/auth/supabase';
+import { setTokenGetter } from '@/shared/lib/apollo';
 import * as authApi from '../api';
 import type { AuthUser, AuthCredentials, RegisterCredentials } from '../models';
 
@@ -79,6 +80,9 @@ async function initialize() {
   if (isInitialized.value) {
     return;
   }
+
+  // Set up Apollo token getter
+  setTokenGetter(() => enhancedToken.value);
 
   isLoading.value = true;
   error.value = null;

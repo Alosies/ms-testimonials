@@ -15,10 +15,13 @@
   "dependencies": {
     "@apollo/client": "^3.11.0",
     "@supabase/supabase-js": "^2.58.0",
+    "@testimonials/icons": "workspace:*",
+    "@vue/apollo-composable": "^4.2.2",
     "@vueuse/core": "^11.3.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "graphql": "^16.9.0",
+    "graphql-tag": "^2.12.6",
     "lucide-vue-next": "^0.562.0",
     "pinia": "^3.0.4",
     "pinia-plugin-persistedstate": "^4.0.0",
