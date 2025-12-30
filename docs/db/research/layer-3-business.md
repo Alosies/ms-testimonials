@@ -32,7 +32,10 @@ CREATE TABLE public.forms (
 
     -- Ownership & multi-tenancy
     organization_id     TEXT NOT NULL,      -- FK: Tenant boundary for isolation
+
+    -- Audit: who & when
     created_by          TEXT NOT NULL,      -- FK: User who created this form
+    updated_by          TEXT,               -- FK: User who last modified (NULL until first update)
 
     -- Form identity
     name                TEXT NOT NULL,      -- Display name in dashboard (e.g., "Product Feedback Form")
@@ -55,6 +58,8 @@ CREATE TABLE public.forms (
         FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE,
     CONSTRAINT forms_created_by_fk
         FOREIGN KEY (created_by) REFERENCES users(id),
+    CONSTRAINT forms_updated_by_fk
+        FOREIGN KEY (updated_by) REFERENCES users(id),
     CONSTRAINT forms_slug_per_org_unique
         UNIQUE (organization_id, slug),
     CONSTRAINT forms_slug_format
@@ -75,6 +80,7 @@ COMMENT ON TABLE forms IS 'Testimonial collection forms - questions normalized t
 COMMENT ON COLUMN forms.id IS 'Primary key - NanoID 12-char unique identifier';
 COMMENT ON COLUMN forms.organization_id IS 'FK to organizations - tenant boundary for multi-tenancy isolation';
 COMMENT ON COLUMN forms.created_by IS 'FK to users - user who created this form';
+COMMENT ON COLUMN forms.updated_by IS 'FK to users - user who last modified. NULL until first update';
 COMMENT ON COLUMN forms.name IS 'Form display name shown in dashboard (e.g., "Product Feedback Form")';
 COMMENT ON COLUMN forms.slug IS 'URL-friendly identifier for public form link (/f/{slug}). Lowercase alphanumeric with hyphens';
 COMMENT ON COLUMN forms.product_name IS 'Name of product being reviewed - used in question templates (e.g., "How did {product} help?")';
@@ -90,16 +96,17 @@ COMMENT ON COLUMN forms.updated_at IS 'Timestamp of last modification. Auto-upda
 | Column | Type | Constraints | Description |
 |--------|------|-------------|-------------|
 | `id` | TEXT | PK | NanoID 12-char |
-| `organization_id` | TEXT | FK | Parent organization |
-| `created_by` | TEXT | FK → users | Creator user |
-| `name` | TEXT | NOT NULL | Form name |
-| `slug` | TEXT | NOT NULL | URL-friendly identifier |
+| `organization_id` | TEXT | FK → organizations | Parent organization (tenant) |
+| `created_by` | TEXT | FK → users | Who created |
+| `updated_by` | TEXT | FK → users | Who last modified |
+| `name` | TEXT | NOT NULL | Form display name |
+| `slug` | TEXT | NOT NULL, UNIQUE | URL identifier (/f/{slug}) |
 | `product_name` | TEXT | NOT NULL | Product being reviewed |
 | `product_description` | TEXT | NULL | AI context for question generation |
 | `settings` | JSONB | NOT NULL | UI preferences (theme, colors) |
 | `is_active` | BOOLEAN | NOT NULL | Soft delete flag |
-| `created_at` | TIMESTAMPTZ | NOT NULL | Creation timestamp |
-| `updated_at` | TIMESTAMPTZ | NOT NULL | Last modification |
+| `created_at` | TIMESTAMPTZ | NOT NULL | When created |
+| `updated_at` | TIMESTAMPTZ | NOT NULL | When last modified |
 
 **Note:** Rating, email, and company collection settings are now controlled via `form_questions`:
 - Add `rating_star` question → collect ratings
@@ -254,6 +261,11 @@ For MVP, focus on these 6 types:
 | `choice_single` | "Would you recommend?" Yes/No |
 | `special_consent` | Permission to publish |
 
+**Week 1 Stretch:**
+| Type | Primary Use |
+|------|-------------|
+| `choice_multiple` | "Which features do you value?" (multi-select) |
+
 ---
 
 ## 3.3 Form Questions Table
@@ -290,16 +302,19 @@ CREATE TABLE public.form_questions (
     allowed_file_types  TEXT[],                 -- MIME types array: ['image/jpeg', 'image/png']
     max_file_size_kb    INTEGER,                -- Maximum file size in kilobytes
 
-    -- State & timestamps
+    -- State & audit
     is_active           BOOLEAN NOT NULL DEFAULT true,   -- Soft delete: false = hidden but answers preserved
-    created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),  -- Immutable creation timestamp
-    updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),  -- Auto-updated by trigger
+    created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),  -- When created
+    updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),  -- When last modified (auto-trigger)
+    updated_by          TEXT,               -- FK: Who last modified (NULL until first update)
 
     -- Constraints
     CONSTRAINT form_questions_form_fk
         FOREIGN KEY (form_id) REFERENCES forms(id) ON DELETE CASCADE,
     CONSTRAINT form_questions_type_fk
         FOREIGN KEY (question_type_id) REFERENCES question_types(id),
+    CONSTRAINT form_questions_updated_by_fk
+        FOREIGN KEY (updated_by) REFERENCES users(id),
     CONSTRAINT form_questions_key_per_form_unique
         UNIQUE (form_id, question_key),           -- Each key appears once per form
     CONSTRAINT form_questions_order_per_form_unique
@@ -342,6 +357,7 @@ COMMENT ON COLUMN form_questions.max_file_size_kb IS 'Maximum file size in kilob
 COMMENT ON COLUMN form_questions.is_active IS 'Soft delete flag. False = question hidden from form but answers preserved';
 COMMENT ON COLUMN form_questions.created_at IS 'Timestamp when question was created. Immutable after insert';
 COMMENT ON COLUMN form_questions.updated_at IS 'Timestamp of last modification. Auto-updated by trigger';
+COMMENT ON COLUMN form_questions.updated_by IS 'FK to users - who last modified. NULL until first update';
 ```
 
 ### Column Reference
@@ -365,6 +381,9 @@ COMMENT ON COLUMN form_questions.updated_at IS 'Timestamp of last modification. 
 | `allowed_file_types` | TEXT[] | NULL | MIME types (media types) |
 | `max_file_size_kb` | INTEGER | NULL | Max KB (media types) |
 | `is_active` | BOOLEAN | NOT NULL | Soft delete |
+| `created_at` | TIMESTAMPTZ | NOT NULL | When created |
+| `updated_at` | TIMESTAMPTZ | NOT NULL | When last modified |
+| `updated_by` | TEXT | FK → users | Who last modified |
 
 ### Default Question Keys
 
@@ -488,9 +507,10 @@ CREATE TABLE public.testimonials (
     rejected_at             TIMESTAMPTZ,        -- When rejected
     rejection_reason        TEXT,               -- Why rejected (internal note)
 
-    -- Timestamps
+    -- Audit: who & when
     created_at              TIMESTAMPTZ NOT NULL DEFAULT NOW(),  -- When submitted
     updated_at              TIMESTAMPTZ NOT NULL DEFAULT NOW(),  -- Last modification
+    updated_by              TEXT,               -- FK: User who last modified (NULL until first update)
 
     -- Constraints
     CONSTRAINT testimonials_org_fk
@@ -501,6 +521,8 @@ CREATE TABLE public.testimonials (
         FOREIGN KEY (approved_by) REFERENCES users(id) ON DELETE SET NULL,
     CONSTRAINT testimonials_rejected_by_fk
         FOREIGN KEY (rejected_by) REFERENCES users(id) ON DELETE SET NULL,
+    CONSTRAINT testimonials_updated_by_fk
+        FOREIGN KEY (updated_by) REFERENCES users(id) ON DELETE SET NULL,
     CONSTRAINT testimonials_status_check
         CHECK (status IN ('pending', 'approved', 'rejected')),
     CONSTRAINT testimonials_rating_check
@@ -546,6 +568,7 @@ COMMENT ON COLUMN testimonials.rejected_at IS 'When rejected. NULL if pending/ap
 COMMENT ON COLUMN testimonials.rejection_reason IS 'Internal note explaining rejection. Not shown to customer';
 COMMENT ON COLUMN testimonials.created_at IS 'When testimonial was submitted. Immutable';
 COMMENT ON COLUMN testimonials.updated_at IS 'Last modification timestamp. Auto-updated by trigger';
+COMMENT ON COLUMN testimonials.updated_by IS 'FK to users - who last modified. NULL until first update';
 ```
 
 ### Status Workflow
@@ -592,10 +615,11 @@ CREATE TABLE public.testimonial_answers (
     answer_json         JSONB,              -- choice_multiple: ["option_a", "option_c"]
     answer_url          TEXT,               -- media_image, media_video, text_url: file/page URL
 
-    -- Metadata
+    -- Audit: who & when
     answered_at         TIMESTAMPTZ NOT NULL DEFAULT NOW(),  -- When customer answered
     created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),  -- Record creation
     updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),  -- Last modification
+    updated_by          TEXT,               -- FK: User who last modified (NULL until first update)
 
     -- Constraints
     CONSTRAINT testimonial_answers_testimonial_fk
@@ -604,6 +628,8 @@ CREATE TABLE public.testimonial_answers (
         FOREIGN KEY (question_id) REFERENCES form_questions(id) ON DELETE CASCADE,
     CONSTRAINT testimonial_answers_unique
         UNIQUE (testimonial_id, question_id),     -- One answer per question per testimonial
+    CONSTRAINT testimonial_answers_updated_by_fk
+        FOREIGN KEY (updated_by) REFERENCES users(id) ON DELETE SET NULL,
     CONSTRAINT testimonial_answers_has_value      -- At least one answer column must be filled
         CHECK (
             answer_text IS NOT NULL OR
@@ -638,6 +664,7 @@ COMMENT ON COLUMN testimonial_answers.answer_url IS 'URL answers: uploaded file 
 COMMENT ON COLUMN testimonial_answers.answered_at IS 'When customer submitted this specific answer';
 COMMENT ON COLUMN testimonial_answers.created_at IS 'Record creation timestamp. Usually same as answered_at';
 COMMENT ON COLUMN testimonial_answers.updated_at IS 'Last modification timestamp. Auto-updated by trigger';
+COMMENT ON COLUMN testimonial_answers.updated_by IS 'FK to users - who last modified. NULL until first update';
 ```
 
 ### Answer Column Usage by Question Type
@@ -706,16 +733,19 @@ CREATE TABLE public.widgets (
     -- Type-specific settings (JSONB appropriate - truly varies by type)
     settings            JSONB NOT NULL DEFAULT '{}'::jsonb,  -- carousel_speed, columns, animation, etc.
 
-    -- State & timestamps
+    -- State & audit
     is_active           BOOLEAN NOT NULL DEFAULT true,   -- Soft delete: false = embed returns empty
     created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),  -- Immutable creation timestamp
     updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),  -- Auto-updated by trigger
+    updated_by          TEXT,               -- FK: User who last modified (NULL until first update)
 
     -- Constraints
     CONSTRAINT widgets_org_fk
         FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE,
     CONSTRAINT widgets_created_by_fk
         FOREIGN KEY (created_by) REFERENCES users(id),
+    CONSTRAINT widgets_updated_by_fk
+        FOREIGN KEY (updated_by) REFERENCES users(id) ON DELETE SET NULL,
     CONSTRAINT widgets_type_check
         CHECK (type IN ('wall_of_love', 'carousel', 'single_quote')),
     CONSTRAINT widgets_theme_check
@@ -747,6 +777,7 @@ COMMENT ON COLUMN widgets.settings IS 'Type-specific UI settings - JSONB appropr
 COMMENT ON COLUMN widgets.is_active IS 'Soft delete flag. False = embed script returns empty widget';
 COMMENT ON COLUMN widgets.created_at IS 'Timestamp when widget was created. Immutable';
 COMMENT ON COLUMN widgets.updated_at IS 'Last modification timestamp. Auto-updated by trigger';
+COMMENT ON COLUMN widgets.updated_by IS 'FK to users - who last modified. NULL until first update';
 ```
 
 ### Widget Types

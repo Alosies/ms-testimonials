@@ -476,7 +476,7 @@ Dashboard → Widgets → Create → Select Type → Choose Testimonials → Cop
 
 ## Reference Documents
 
-- `build-schedule.md` - Detailed 5-day implementation plan with daily tasks
-- `testimonial-competitor-deepdive.md` - Full competitor analysis and research
+- [Build Schedule](./build-schedule.md) - Detailed 5-day implementation plan with daily tasks
+- [Competitor Deep Dive](./testimonial-competitor-deepdive.md) - Full competitor analysis and research
 - [Makeform AI Testimonial Form Generator](https://www.makeform.ai/tools/ai-testimonial-form-generator) - AI form builder competitor
 - [Senja Testimonial Questions](https://senja.io/testimonial-questions) - Industry-specific question examples
