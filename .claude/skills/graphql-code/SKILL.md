@@ -313,6 +313,30 @@ const enabled = computed(() => !!variables.value.organizationId);
 const { result } = useGetFormsQuery(variables, { enabled });
 ```
 
+### Reactive Query Variables (CRITICAL)
+
+When passing variables to GraphQL query composables, **ALWAYS use `computed()` directly** - never wrap with `ref()`:
+
+```typescript
+// ✅ CORRECT: Pass computed directly - reactive and updates when dependencies change
+const variables = computed(() => ({
+  organizationId: currentOrganizationId.value ?? '',
+}));
+const { data } = useGetFormsQuery(variables);
+
+// ❌ WRONG: ref(computed.value) creates a STATIC ref that never updates!
+const variables = computed(() => ({
+  organizationId: currentOrganizationId.value ?? '',
+}));
+const { data } = useGetFormsQuery(ref(variables.value));  // BUG: Never updates!
+```
+
+**Why this matters:**
+- `ref(computed.value)` captures the initial value at creation time
+- When dependencies (like `currentOrganizationId`) change, the ref stays the same
+- The query never re-executes with new values
+- `ComputedRef<T>` extends `Ref<T>`, so Vue Apollo accepts computed refs directly
+
 ### Safe Data Extraction
 Use safe navigation with fallbacks:
 
@@ -363,6 +387,7 @@ entities/organization/
 - [ ] Create models (queries.ts, mutations.ts, index.ts)
 - [ ] Create composables using generated types
 - [ ] Export through entity `index.ts`
+- [ ] Use `computed()` directly for query variables (NOT `ref(computed.value)`)
 - [ ] Test in component
 
 ---
