@@ -140,7 +140,7 @@ const plans = [
               class="w-full"
               as-child
             >
-              <RouterLink to="/signup">
+              <RouterLink to="/auth/signup">
                 {{ plan.cta }}
               </RouterLink>
             </Button>

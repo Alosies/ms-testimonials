@@ -25,7 +25,7 @@ defineOptions({
 
       <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
         <Button variant="glass" size="lg" as-child class="min-w-[200px] text-base">
-          <RouterLink to="/signup">
+          <RouterLink to="/auth/signup">
             Get Started Free
           </RouterLink>
         </Button>

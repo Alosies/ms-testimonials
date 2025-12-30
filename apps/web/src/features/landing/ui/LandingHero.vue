@@ -46,7 +46,7 @@ defineOptions({
       <!-- CTA Buttons -->
       <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
         <Button variant="glass" size="lg" as-child class="min-w-[180px] text-base">
-          <RouterLink to="/signup">
+          <RouterLink to="/auth/signup">
             Get Started Free
           </RouterLink>
         </Button>

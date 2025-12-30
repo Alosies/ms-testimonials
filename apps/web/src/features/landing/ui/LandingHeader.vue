@@ -105,7 +105,7 @@ onUnmounted(() => {
             as-child
             :class="isScrolled ? '' : 'text-white hover:bg-white/10'"
           >
-            <RouterLink to="/login">
+            <RouterLink to="/auth/login">
               Log in
             </RouterLink>
           </Button>
@@ -114,7 +114,7 @@ onUnmounted(() => {
             size="sm"
             as-child
           >
-            <RouterLink to="/signup">
+            <RouterLink to="/auth/signup">
               Get Started
             </RouterLink>
           </Button>
@@ -176,7 +176,7 @@ onUnmounted(() => {
               as-child
               :class="isScrolled ? '' : 'text-white hover:bg-white/10 border-white/20'"
             >
-              <RouterLink to="/login">
+              <RouterLink to="/auth/login">
                 Log in
               </RouterLink>
             </Button>
@@ -185,7 +185,7 @@ onUnmounted(() => {
               size="sm"
               as-child
             >
-              <RouterLink to="/signup">
+              <RouterLink to="/auth/signup">
                 Get Started
               </RouterLink>
             </Button>
