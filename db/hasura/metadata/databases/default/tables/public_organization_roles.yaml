@@ -46,6 +46,19 @@ insert_permissions:
         - invited_at
         - joined_at
 select_permissions:
+  - role: user
+    permission:
+      columns:
+        - id
+        - organization_id
+        - user_id
+        - role_id
+        - is_default_org
+        - is_active
+        - joined_at
+      filter:
+        user_id:
+          _eq: X-Hasura-User-Id
   - role: member
     permission:
       columns: '*'
