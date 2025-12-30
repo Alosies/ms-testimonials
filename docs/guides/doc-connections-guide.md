@@ -76,6 +76,7 @@ Every docs.md file must include a "Doc Connections" section immediately after th
 | `table-` | Database table documentation | `table-users` | `/docs/db/tables/*/docs.md` |
 | `db-` | Database layer/research docs | `db-layer-1-auth` | `/docs/db/research/` |
 | `guide-` | Developer guides | `guide-doc-connections` | `/docs/guides/` |
+| `adr-` | Architecture Decision Records | `adr-001-default-org` | `/docs/adr/` |
 | `skill-` | Claude skill documentation | `skill-hasura-migrations` | `/.claude/skills/` |
 
 ### ID Format Rules
@@ -91,6 +92,9 @@ Every docs.md file must include a "Doc Connections" section immediately after th
 ```
 project-root/
 ├── docs/
+│   ├── adr/                  # Architecture Decision Records
+│   │   ├── README.md                # adr-index ID
+│   │   └── 001-*.md                 # adr-001-* IDs
 │   ├── db/
 │   │   ├── tables/           # Table documentation
 │   │   │   └── [table-name]/

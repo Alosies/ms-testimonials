@@ -1,0 +1,32 @@
+# Architecture Decision Records
+
+## Doc Connections
+**ID**: `adr-index`
+
+2025-12-30-1700 IST
+
+**Parent ReadMes**:
+- `docs-index` - Documentation root index
+
+**Related ReadMes**:
+- `guide-auth-implementation` - Auth implementation plan
+
+---
+
+## Overview
+
+This directory contains Architecture Decision Records (ADRs) for the Testimonials platform. ADRs document significant architectural decisions made during development, including the context, decision, and consequences.
+
+## ADR Format
+
+Each ADR follows this structure:
+- **Status**: Proposed, Accepted, Deprecated, Superseded
+- **Context**: What is the issue that we're seeing that is motivating this decision?
+- **Decision**: What is the change that we're proposing and/or doing?
+- **Consequences**: What becomes easier or more difficult because of this change?
+
+## ADR Index
+
+| ID | Title | Status | Date |
+|----|-------|--------|------|
+| [ADR-001](./001-default-organization-creation.md) | Default Organization Creation on Login | Accepted | 2025-12-30 |
