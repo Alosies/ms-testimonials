@@ -2,6 +2,13 @@ table:
   name: users
   schema: public
 array_relationships:
+  - name: created_organizations
+    using:
+      foreign_key_constraint_on:
+        column: created_by
+        table:
+          name: organizations
+          schema: public
   - name: identities
     using:
       foreign_key_constraint_on:
@@ -9,3 +16,79 @@ array_relationships:
         table:
           name: user_identities
           schema: public
+  - name: organization_memberships
+    using:
+      foreign_key_constraint_on:
+        column: user_id
+        table:
+          name: organization_roles
+          schema: public
+select_permissions:
+  - role: member
+    permission:
+      columns: '*'
+      filter:
+        id:
+          _eq: X-Hasura-User-Id
+  - role: org_admin
+    permission:
+      columns: '*'
+      filter:
+        id:
+          _eq: X-Hasura-User-Id
+  - role: owner
+    permission:
+      columns: '*'
+      filter:
+        id:
+          _eq: X-Hasura-User-Id
+  - role: viewer
+    permission:
+      columns:
+        - id
+        - display_name
+        - avatar_url
+        - is_active
+      filter:
+        id:
+          _eq: X-Hasura-User-Id
+update_permissions:
+  - role: member
+    permission:
+      columns:
+        - display_name
+        - avatar_url
+        - locale
+        - timezone
+      filter:
+        id:
+          _eq: X-Hasura-User-Id
+      check:
+        id:
+          _eq: X-Hasura-User-Id
+  - role: org_admin
+    permission:
+      columns:
+        - display_name
+        - avatar_url
+        - locale
+        - timezone
+      filter:
+        id:
+          _eq: X-Hasura-User-Id
+      check:
+        id:
+          _eq: X-Hasura-User-Id
+  - role: owner
+    permission:
+      columns:
+        - display_name
+        - avatar_url
+        - locale
+        - timezone
+      filter:
+        id:
+          _eq: X-Hasura-User-Id
+      check:
+        id:
+          _eq: X-Hasura-User-Id
