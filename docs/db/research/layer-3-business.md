@@ -1,6 +1,6 @@
 # Layer 3: Business Entities
 
-**Tables:** forms, question_types, form_questions, question_options, testimonials, testimonial_answers, widgets, widget_testimonials
+**Tables:** forms, question_types, form_questions, question_options, testimonials, form_responses, widgets, widget_testimonials
 
 ---
 
@@ -444,7 +444,7 @@ COMMENT ON TABLE question_options IS 'Predefined choices for choice-type questio
 -- Column comments
 COMMENT ON COLUMN question_options.id IS 'Primary key - NanoID 12-char unique identifier';
 COMMENT ON COLUMN question_options.question_id IS 'FK to form_questions - must be a choice-type question';
-COMMENT ON COLUMN question_options.option_value IS 'Stored value saved in testimonial_answers (e.g., "yes", "no", "maybe")';
+COMMENT ON COLUMN question_options.option_value IS 'Stored value saved in form_responses (e.g., "yes", "no", "maybe")';
 COMMENT ON COLUMN question_options.option_label IS 'Display text shown to customer (e.g., "Yes, definitely!", "Not right now")';
 COMMENT ON COLUMN question_options.display_order IS 'Order in option list. Unique per question, starts at 1';
 COMMENT ON COLUMN question_options.is_default IS 'Pre-selected when form loads. Only one per question should be true';
@@ -553,7 +553,7 @@ CREATE INDEX idx_testimonials_approved  -- Widget queries (most common)
 SELECT add_updated_at_trigger('testimonials');
 
 -- Table comment
-COMMENT ON TABLE testimonials IS 'Customer testimonials - answers normalized to testimonial_answers';
+COMMENT ON TABLE testimonials IS 'Customer testimonials - the displayable quote, rating, and customer info. Raw form responses in form_responses table';
 
 -- Column comments
 COMMENT ON COLUMN testimonials.id IS 'Primary key - NanoID 12-char unique identifier';
@@ -605,12 +605,12 @@ COMMENT ON COLUMN testimonials.updated_by IS 'FK to users - who last modified. N
 
 ---
 
-## 3.6 Testimonial Answers Table
+## 3.6 Form Responses Table
 
-Normalized answers with typed columns based on question type. Each answer uses the appropriate column for its data type - no JSONB dumps.
+Raw form submission responses (internal data, not displayed). Each response uses typed columns based on question type - no JSONB dumps. These feed into AI assembly to create the displayable testimonial.
 
 ```sql
-CREATE TABLE public.testimonial_answers (
+CREATE TABLE public.form_responses (
     -- Primary key
     id                  TEXT PRIMARY KEY DEFAULT generate_nanoid_12(),  -- NanoID 12-char unique identifier
 
@@ -632,15 +632,15 @@ CREATE TABLE public.testimonial_answers (
     updated_by          TEXT,               -- FK: User who last modified (NULL until first update)
 
     -- Constraints
-    CONSTRAINT testimonial_answers_testimonial_fk
+    CONSTRAINT form_responses_testimonial_fk
         FOREIGN KEY (testimonial_id) REFERENCES testimonials(id) ON DELETE CASCADE,
-    CONSTRAINT testimonial_answers_question_fk
+    CONSTRAINT form_responses_question_fk
         FOREIGN KEY (question_id) REFERENCES form_questions(id) ON DELETE CASCADE,
-    CONSTRAINT testimonial_answers_unique
-        UNIQUE (testimonial_id, question_id),     -- One answer per question per testimonial
-    CONSTRAINT testimonial_answers_updated_by_fk
+    CONSTRAINT form_responses_unique
+        UNIQUE (testimonial_id, question_id),     -- One response per question per testimonial
+    CONSTRAINT form_responses_updated_by_fk
         FOREIGN KEY (updated_by) REFERENCES users(id) ON DELETE SET NULL,
-    CONSTRAINT testimonial_answers_has_value      -- At least one answer column must be filled
+    CONSTRAINT form_responses_has_value           -- At least one response column must be filled
         CHECK (
             answer_text IS NOT NULL OR
             answer_integer IS NOT NULL OR
@@ -651,30 +651,30 @@ CREATE TABLE public.testimonial_answers (
 );
 
 -- Indexes
-CREATE INDEX idx_testimonial_answers_testimonial ON testimonial_answers(testimonial_id);  -- Get all answers for testimonial
-CREATE INDEX idx_testimonial_answers_question ON testimonial_answers(question_id);        -- Analytics by question
-CREATE INDEX idx_testimonial_answers_rating                                               -- Rating analysis queries
-    ON testimonial_answers(question_id, answer_integer)
+CREATE INDEX idx_form_responses_testimonial ON form_responses(testimonial_id);  -- Get all responses for testimonial
+CREATE INDEX idx_form_responses_question ON form_responses(question_id);        -- Analytics by question
+CREATE INDEX idx_form_responses_rating                                          -- Rating analysis queries
+    ON form_responses(question_id, answer_integer)
     WHERE answer_integer IS NOT NULL;
 
-SELECT add_updated_at_trigger('testimonial_answers');
+SELECT add_updated_at_trigger('form_responses');
 
 -- Table comment
-COMMENT ON TABLE testimonial_answers IS 'Typed answers - explicit columns based on question_type.answer_data_type';
+COMMENT ON TABLE form_responses IS 'Raw form submission responses - internal data for AI assembly, not displayed on widgets';
 
 -- Column comments
-COMMENT ON COLUMN testimonial_answers.id IS 'Primary key - NanoID 12-char unique identifier';
-COMMENT ON COLUMN testimonial_answers.testimonial_id IS 'FK to testimonials - parent testimonial this answer belongs to';
-COMMENT ON COLUMN testimonial_answers.question_id IS 'FK to form_questions - which question this answers';
-COMMENT ON COLUMN testimonial_answers.answer_text IS 'Text answers: short text, long text, email, single choice value, dropdown value';
-COMMENT ON COLUMN testimonial_answers.answer_integer IS 'Numeric answers: star rating (1-5), NPS score (0-10), scale value';
-COMMENT ON COLUMN testimonial_answers.answer_boolean IS 'Boolean answers: consent checkbox (true = agreed)';
-COMMENT ON COLUMN testimonial_answers.answer_json IS 'JSON answers: multiple choice selected values array ["opt_a", "opt_c"]';
-COMMENT ON COLUMN testimonial_answers.answer_url IS 'URL answers: uploaded file URL, or validated URL input';
-COMMENT ON COLUMN testimonial_answers.answered_at IS 'When customer submitted this specific answer';
-COMMENT ON COLUMN testimonial_answers.created_at IS 'Record creation timestamp. Usually same as answered_at';
-COMMENT ON COLUMN testimonial_answers.updated_at IS 'Last modification timestamp. Auto-updated by trigger';
-COMMENT ON COLUMN testimonial_answers.updated_by IS 'FK to users - who last modified. NULL until first update';
+COMMENT ON COLUMN form_responses.id IS 'Primary key - NanoID 12-char unique identifier';
+COMMENT ON COLUMN form_responses.testimonial_id IS 'FK to testimonials - parent testimonial this response belongs to';
+COMMENT ON COLUMN form_responses.question_id IS 'FK to form_questions - which question this responds to';
+COMMENT ON COLUMN form_responses.answer_text IS 'Text responses: short text, long text, email, single choice value, dropdown value';
+COMMENT ON COLUMN form_responses.answer_integer IS 'Numeric responses: star rating (1-5), NPS score (0-10), scale value';
+COMMENT ON COLUMN form_responses.answer_boolean IS 'Boolean responses: consent checkbox (true = agreed)';
+COMMENT ON COLUMN form_responses.answer_json IS 'JSON responses: multiple choice selected values array ["opt_a", "opt_c"]';
+COMMENT ON COLUMN form_responses.answer_url IS 'URL responses: uploaded file URL, or validated URL input';
+COMMENT ON COLUMN form_responses.answered_at IS 'When customer submitted this specific response';
+COMMENT ON COLUMN form_responses.created_at IS 'Record creation timestamp. Usually same as answered_at';
+COMMENT ON COLUMN form_responses.updated_at IS 'Last modification timestamp. Auto-updated by trigger';
+COMMENT ON COLUMN form_responses.updated_by IS 'FK to users - who last modified. NULL until first update';
 ```
 
 ### Answer Column Usage by Question Type
@@ -702,14 +702,14 @@ COMMENT ON COLUMN testimonial_answers.updated_by IS 'FK to users - who last modi
 -- Average star rating per form
 SELECT
     f.name AS form_name,
-    AVG(ta.answer_integer) AS avg_rating,
+    AVG(fr.answer_integer) AS avg_rating,
     COUNT(*) AS total_ratings
-FROM testimonial_answers ta
-JOIN form_questions fq ON ta.question_id = fq.id
+FROM form_responses fr
+JOIN form_questions fq ON fr.question_id = fq.id
 JOIN question_types qt ON fq.question_type_id = qt.id
 JOIN forms f ON fq.form_id = f.id
 WHERE qt.unique_name = 'rating_star'
-  AND ta.answer_integer IS NOT NULL
+  AND fr.answer_integer IS NOT NULL
 GROUP BY f.id, f.name;
 ```
 
