@@ -1,13 +1,15 @@
 # Testimonial Widget - MVP Plan
 
-Version: 1.0
-Date: December 28, 2025
+Version: 1.2
+Date: December 30, 2025
 
 ---
 
 ## Product Vision
 
-A simple testimonial collection and display tool that takes 2 minutes to set up. Differentiated by AI-powered smart prompts that help customers write better testimonials without sacrificing authenticity.
+A simple testimonial collection and display tool that takes 2 minutes to set up. Differentiated by **dual AI features**:
+1. **AI Question Suggestions** - Generate industry-specific form questions from product description
+2. **AI Testimonial Assembly** - Combine customer answers into polished, authentic testimonials
 
 **Tagline:** "Beautiful testimonials in 2 minutes. No complexity tax."
 
@@ -25,12 +27,18 @@ A simple testimonial collection and display tool that takes 2 minutes to set up.
                           │
               Senja       │   [OUR OPPORTUNITY]
            ($19-99/mo)    │   Simple + Affordable
-                          │
+                          │                + AI-First
             Famewall      │
            ($10-80/mo)    │
                           │
                     AFFORDABLE
 ```
+
+### AI-Focused Competitor
+
+| Competitor | What They Do | Our Advantage |
+|------------|--------------|---------------|
+| **Makeform** | AI form builder that generates testimonial forms from product descriptions | We combine AI form generation + AI testimonial assembly in one flow. They generate forms; we generate forms AND polish testimonials. |
 
 ### Exploitable Gaps
 
@@ -71,7 +79,47 @@ Instead of a blank textarea, guide customers through structured prompts:
 
 ---
 
-### 2. Dashboard
+### 2. AI Question Suggestions (Form Builder) - DIFFERENTIATOR
+
+When creating a form, AI generates tailored questions based on product/industry context.
+
+**How It Works (Infer, Don't Ask):**
+
+| Step | Action |
+|------|--------|
+| 1 | User enters product name and brief description |
+| 2 | AI infers industry, tone, and audience from description |
+| 3 | AI generates 5-8 suggested questions tailored to their context |
+| 4 | User can accept, edit, reorder, or remove questions |
+
+**Example:**
+
+```
+Input (2 fields only):
+  Product: "TaskFlow"
+  Description: "Project management tool for remote teams"
+
+AI Infers:
+  Industry: SaaS/B2B
+  Audience: Remote teams, project managers
+  Value Props: Collaboration, time management
+
+AI Generates:
+  1. "What was your biggest project management headache before TaskFlow?"
+  2. "How has TaskFlow improved your team's remote collaboration?"
+  3. "What feature saves you the most time each week?"
+  4. "Can you share a specific result (hours saved, projects completed, etc.)?"
+```
+
+**Why This Adds LTD Value:**
+- Saves users from writing questions from scratch
+- Industry-specific questions = higher quality testimonials
+- Differentiates from competitors who offer static templates
+- Combines with AI Assembly for end-to-end AI experience
+
+---
+
+### 3. Dashboard
 
 Simple management interface with:
 - View all testimonials
@@ -83,7 +131,7 @@ Simple management interface with:
 
 ---
 
-### 3. Embed Widgets
+### 4. Embed Widgets
 
 Three widget types for MVP:
 
@@ -107,7 +155,7 @@ Three widget types for MVP:
 
 ---
 
-### 4. Shareable Form Link
+### 5. Shareable Form Link
 
 Each form gets a unique public URL:
 ```
@@ -129,9 +177,10 @@ User                    Form                     Testimonial
 ├── name                ├── name                 ├── status (pending/approved/rejected)
 ├── company             ├── slug                 ├── rating
 ├── plan                ├── product_name         ├── content
-├── created_at          ├── questions[]          ├── answers{} (raw prompt answers)
-                        ├── settings{}           ├── customer_name
-                        ├── created_at           ├── customer_title
+├── created_at          ├── product_description  ├── answers{} (raw prompt answers)
+                        ├── questions[]          ├── customer_name
+                        ├── settings{}           ├── customer_title
+                        ├── created_at
                                                  ├── customer_company
 Widget                                           ├── customer_email
 ├── id                                           ├── created_at
@@ -163,6 +212,53 @@ Widget                                           ├── customer_email
 
 ## AI Implementation
 
+### AI #1: Question Suggestions (Form Builder)
+
+**Input (from business owner) - Just 2 fields:**
+```json
+{
+  "product_name": "TaskFlow",
+  "description": "Project management tool for remote teams"
+}
+```
+
+**Prompt to GPT-4o-mini:**
+```
+Generate 5 testimonial collection questions for this product.
+
+Product: {product_name}
+Description: {description}
+
+First, infer from the description:
+- Industry/category (SaaS, course, ecommerce, service, etc.)
+- Target audience (who uses this product)
+- Key value propositions (what problems it solves)
+
+Then generate questions following these guidelines:
+- Question 1: Ask about the problem/challenge BEFORE using the product
+- Question 2: Ask about HOW the product helped solve it
+- Question 3: Ask about specific RESULTS or outcomes
+- Question 4-5: Ask industry-specific questions that highlight unique value
+
+Keep questions conversational, specific to the product context.
+Output as JSON array of strings.
+```
+
+**Output:**
+```json
+[
+  "What was your biggest project management headache before TaskFlow?",
+  "How has TaskFlow improved your team's remote collaboration?",
+  "What feature saves you the most time each week?",
+  "Can you share a specific result (hours saved, projects completed)?",
+  "Would you recommend TaskFlow to other remote teams? Why?"
+]
+```
+
+---
+
+### AI #2: Testimonial Assembly (Customer Submission)
+
 **Input (from customer):**
 ```json
 {
@@ -187,11 +283,86 @@ Output only the testimonial text, in quotes.
 
 ---
 
+## AI Context Philosophy: "Infer, Don't Ask"
+
+**Principle:** Minimize user inputs, maximize AI inference. Show the "magic" quickly.
+
+### Why This Approach
+
+| Approach | Problem |
+|----------|---------|
+| Rich context forms | Users abandon complex setups |
+| Industry dropdowns | Adds friction, often wrong selection |
+| Multiple configuration steps | Delays time-to-value |
+
+**Our Solution:** 2 inputs → AI infers the rest → User sees tailored questions instantly.
+
+### User Inputs (Minimal)
+
+| Input | Example | Required |
+|-------|---------|----------|
+| Product Name | "TaskFlow" | Yes |
+| Product Description | "Project management tool for remote teams" | Yes |
+
+That's it. Two fields.
+
+### AI Inferences (Automatic)
+
+From the product description, AI automatically infers:
+
+| Inference | Example | How It's Used |
+|-----------|---------|---------------|
+| Industry | SaaS / B2B | Question vocabulary, specificity |
+| Audience | Remote teams, managers | Question framing |
+| Tone | Professional, technical | Language style |
+| Value Props | Collaboration, time-saving | Question focus areas |
+
+### Context Flow
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    FORM CREATION                            │
+│  User Input: product_name + product_description             │
+│                          ↓                                  │
+│  AI Inference: industry, tone, audience, value_props        │
+│                          ↓                                  │
+│  Output: 5 tailored questions                               │
+└─────────────────────────────────────────────────────────────┘
+                           ↓
+┌─────────────────────────────────────────────────────────────┐
+│                 TESTIMONIAL SUBMISSION                       │
+│  Context Available: product_name, product_description,      │
+│                     questions, customer answers              │
+│                          ↓                                  │
+│  AI Assembly: Natural, first-person testimonial             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Context Storage (MVP)
+
+| Context Type | Storage | Lifespan |
+|--------------|---------|----------|
+| Form Context | `product_name`, `product_description` in forms table | Permanent |
+| Question Context | `questions[]` JSONB in forms table | Permanent |
+| Answer Context | `answers{}` JSONB in testimonials table | Permanent |
+
+### Future Context Enhancements (Post-MVP)
+
+Reserved for later iterations:
+- Organization-level context (shared across forms)
+- Industry-specific prompt libraries
+- Testimonial pattern learning
+- Customer voice analysis
+
+**MVP Focus:** Ship simple, validate the "magic" works, then layer sophistication.
+
+---
+
 ## User Flows
 
 ### Flow 1: Business Owner Setup (2 minutes)
 ```
-Sign Up → Create Form → Copy Form Link → Share with Customers
+Sign Up → Create Form → AI Suggests Questions → Customize → Copy Form Link → Share
 ```
 
 ### Flow 2: Customer Submits Testimonial
@@ -211,6 +382,7 @@ Dashboard → Widgets → Create → Select Type → Choose Testimonials → Cop
 ### Must Have (Launch Blockers)
 - [ ] User authentication (email/password)
 - [ ] Create/edit collection form
+- [ ] AI question suggestions (form builder)
 - [ ] Smart prompt flow (4 steps)
 - [ ] AI testimonial assembly
 - [ ] Customer testimonial submission
@@ -277,10 +449,10 @@ Dashboard → Widgets → Create → Select Type → Choose Testimonials → Cop
 | Day | Focus | Deliverables |
 |-----|-------|--------------|
 | 1 | Setup + Auth | Project scaffold, DB schema, auth flow |
-| 2 | Collection Form | Smart prompts UI, AI assembly, form submission |
-| 3 | Dashboard | List testimonials, approve/reject, basic CRUD |
-| 4 | Widgets | Wall, carousel, single + embed code generator |
-| 5 | Polish + Deploy | Bug fixes, mobile responsive, deploy to production |
+| 2 | Form Builder + AI | Form creation UI, AI question suggestions, form preview |
+| 3 | Collection + Assembly | Smart prompts UI, AI testimonial assembly, form submission |
+| 4 | Dashboard + Widgets | List testimonials, approve/reject, wall/carousel/single widgets |
+| 5 | Polish + Deploy | Embed code generator, bug fixes, mobile responsive, deploy |
 
 ---
 
@@ -304,4 +476,7 @@ Dashboard → Widgets → Create → Select Type → Choose Testimonials → Cop
 
 ## Reference Documents
 
-- `TESTIMONIAL_COMPETITOR_DEEPDIVE.md` - Full competitor analysis and research
+- `build-schedule.md` - Detailed 5-day implementation plan with daily tasks
+- `testimonial-competitor-deepdive.md` - Full competitor analysis and research
+- [Makeform AI Testimonial Form Generator](https://www.makeform.ai/tools/ai-testimonial-form-generator) - AI form builder competitor
+- [Senja Testimonial Questions](https://senja.io/testimonial-questions) - Industry-specific question examples
