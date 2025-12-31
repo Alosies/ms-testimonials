@@ -1,8 +1,12 @@
 /**
  * Router guards for authentication and organization routing
+ *
+ * Following CoursePads pattern:
+ * - Uses module-level promise for auth readiness (no Vue watch in guards)
+ * - Uses currentUserId from context store as the primary auth check
  */
 import type { Router } from 'vue-router'
-import { useAuth } from '@/features/auth'
+import { useAuth, getAuthReadyPromise } from '@/features/auth'
 import { useCurrentContextStore } from '@/shared/currentContext'
 
 /**
@@ -32,27 +36,50 @@ function isReservedSlug(slug: string): boolean {
 }
 
 export function setupAuthGuards(router: Router) {
-  router.beforeEach(async (to, _from, next) => {
-    const { isAuthenticated, isLoading, isInitialized } = useAuth()
+  router.beforeEach(async (to, from, next) => {
+    const { isInitialized } = useAuth()
     const contextStore = useCurrentContextStore()
 
-    // Wait for auth to initialize before making decisions
+    // For routes that require auth or are guest-only, wait for auth to initialize
+    // Uses module-level promise pattern (no Vue watch in guards)
+    if (to.meta.requiresAuth || to.meta.guestOnly) {
+      await getAuthReadyPromise()
+    }
+
+    // If still not initialized (public routes), let them through
     if (!isInitialized.value) {
       return next()
     }
 
-    // Wait for loading to complete
-    if (isLoading.value) {
-      return next()
+    // Check if user is authenticated using context store
+    // Primary check: currentUserId is not null
+    const hasUser = contextStore.currentUserId !== null
+    const orgSlug = contextStore.currentOrganizationSlug
+
+    // Redirect authenticated users from root path to their organization dashboard
+    // This runs early to ensure authenticated users never see the landing page
+    if (to.path === '/' && hasUser) {
+      if (orgSlug) {
+        return next(`/${orgSlug}/dashboard`)
+      }
+      // Org not loaded yet - this will be handled by useCurrentContext watcher
+      // For now, let them through and the app will redirect once org is available
     }
 
-    const isAuth = isAuthenticated.value
-    const orgSlug = contextStore.currentOrganizationSlug
+    // Handle post-login redirect: when navigating FROM auth pages after login
+    // This catches the case where user just logged in and orgSlug might not be ready
+    if (from.path.startsWith('/auth/') && hasUser) {
+      if (orgSlug) {
+        return next(`/${orgSlug}/dashboard`)
+      }
+      // If no org slug yet, redirect to root which will handle it once org loads
+      return next('/')
+    }
 
     // Handle reserved slugs being used as org param (legacy routes)
     // e.g., /dashboard should redirect to /:org/dashboard
     if (to.params.org && isReservedSlug(to.params.org as string)) {
-      if (isAuth && orgSlug) {
+      if (hasUser && orgSlug) {
         // Redirect legacy route to proper org-scoped route
         // /dashboard -> /acme-corp/dashboard
         // /forms -> /acme-corp/forms
@@ -61,8 +88,8 @@ export function setupAuthGuards(router: Router) {
         const newPath = `/${orgSlug}/${legacySegment}${remainingPath}`
         return next(newPath)
       }
-      // Not authenticated, redirect to login
-      return next('/auth/login')
+      // Not authenticated, redirect to homepage
+      return next('/')
     }
 
     // Allow public routes without authentication
@@ -71,33 +98,24 @@ export function setupAuthGuards(router: Router) {
     }
 
     // Protect routes that require authentication
-    if (to.meta.requiresAuth && !isAuth) {
-      return next('/auth/login')
+    // Redirect to homepage (landing page) if not authenticated
+    if (to.meta.requiresAuth && !hasUser) {
+      return next('/')
     }
 
     // Prevent authenticated users from accessing guest-only pages (login, signup)
-    if (to.meta.guestOnly && isAuth) {
+    if (to.meta.guestOnly && hasUser) {
       // Redirect to org dashboard if we have an org slug
       if (orgSlug) {
         return next(`/${orgSlug}/dashboard`)
       }
-      // Fallback to root which will handle redirect
+      // Fallback to root which will handle redirect once org loads
       return next('/')
-    }
-
-    // Redirect authenticated users from root to their org dashboard
-    if (to.path === '/' && isAuth) {
-      if (orgSlug) {
-        return next(`/${orgSlug}/dashboard`)
-      }
-      // If no org yet, wait for context to load
-      // The app will redirect once org is available
-      return next()
     }
 
     // For org-scoped routes, validate org slug matches current context
     // This prevents users from accessing other orgs via URL manipulation
-    if (to.params.org && isAuth && orgSlug) {
+    if (to.params.org && hasUser && orgSlug) {
       const routeOrg = to.params.org as string
       if (routeOrg !== orgSlug) {
         // Redirect to correct org path
