@@ -106,6 +106,7 @@ update_permissions:
         - slug
         - logo_url
         - settings
+        - setup_status
         - is_active
       filter:
         id:
