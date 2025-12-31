@@ -1,0 +1,12 @@
+query CheckSlugAvailability($slug: String!, $excludeOrganizationId: String!) {
+  organizations(
+    where: {
+      slug: { _eq: $slug }
+      id: { _neq: $excludeOrganizationId }
+      is_active: { _eq: true }
+    }
+    limit: 1
+  ) {
+    id
+  }
+}

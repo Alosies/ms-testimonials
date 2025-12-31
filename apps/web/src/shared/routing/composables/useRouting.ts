@@ -1,5 +1,5 @@
 import { computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { createSharedComposable } from '@vueuse/core'
 import { useCurrentContextStore } from '@/shared/currentContext'
 import { createEntityUrlSlug } from '@/shared/urls'
@@ -28,13 +28,21 @@ import type {
  */
 function useRoutingCore(): RoutingUtilities {
   const router = useRouter()
+  const route = useRoute()
   const contextStore = useCurrentContextStore()
 
   // ============================================
   // Organization Context
   // ============================================
 
-  const organizationSlug = computed(() => contextStore.currentOrganizationSlug)
+  // Use store slug first, fall back to route params for immediate availability
+  const organizationSlug = computed(() => {
+    const storeSlug = contextStore.currentOrganizationSlug
+    if (storeSlug) return storeSlug
+    // Fallback to route param when store isn't populated yet
+    const routeOrg = route.params.org
+    return typeof routeOrg === 'string' ? routeOrg : null
+  })
 
   /**
    * Helper to build organization-scoped paths
