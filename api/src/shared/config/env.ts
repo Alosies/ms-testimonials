@@ -27,8 +27,11 @@ export const env = {
   HASURA_URL: getEnvVar('HASURA_URL', 'http://localhost:8080/v1/graphql'),
   HASURA_ADMIN_SECRET: getEnvVar('HASURA_ADMIN_SECRET', ''),
 
-  // OpenAI
+  // AI Providers
+  AI_PROVIDER: getEnvVar('AI_PROVIDER', 'openai'), // 'openai', 'anthropic', or 'google'
   OPENAI_API_KEY: getEnvVar('OPENAI_API_KEY', ''),
+  ANTHROPIC_API_KEY: getEnvVar('ANTHROPIC_API_KEY', ''),
+  GOOGLE_API_KEY: getEnvVar('GOOGLE_API_KEY', ''),
 
   // Frontend
   FRONTEND_URL: getEnvVar('FRONTEND_URL', 'http://localhost:3000'),
