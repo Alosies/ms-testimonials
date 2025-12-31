@@ -5,11 +5,73 @@
  */
 import { ref, computed } from 'vue';
 import type { User } from '@supabase/supabase-js';
+import { promiseTimeout } from '@vueuse/core';
 import { supabase } from '@/shared/auth/supabase';
 import { useTokenManager } from '@/shared/authorization';
 import * as authApi from '../api';
 import type { AuthCredentials, RegisterCredentials } from '../models';
 import { createSharedComposable } from '@vueuse/core';
+
+// ============================================================================
+// Module-level auth readiness promise
+// This allows router guards to await initialization before checking auth
+// ============================================================================
+
+let authReadyResolve: (() => void) | null = null;
+let authReadyPromise: Promise<void> = new Promise(resolve => {
+  authReadyResolve = resolve;
+});
+
+// Default timeout for auth initialization (5 seconds)
+const DEFAULT_AUTH_TIMEOUT_MS = 5000;
+
+// Track if auth has been resolved (to avoid spurious timeout warnings)
+let authResolved = false;
+
+/**
+ * Get the promise that resolves when auth is initialized
+ * This can be awaited in router guards to defer auth checks
+ *
+ * @param timeoutMs - Maximum time to wait for auth (default: 5000ms)
+ * @returns Promise that resolves when auth is ready or timeout occurs
+ *
+ * On timeout, the promise resolves (not rejects) to prevent blocking navigation.
+ * The guard will proceed with current auth state (likely not authenticated).
+ */
+export function getAuthReadyPromise(
+  timeoutMs = DEFAULT_AUTH_TIMEOUT_MS
+): Promise<void> {
+  // If already resolved, return immediately
+  if (authResolved) {
+    return Promise.resolve();
+  }
+
+  return Promise.race([
+    authReadyPromise.then(() => {
+      authResolved = true;
+    }),
+    promiseTimeout(timeoutMs).then(() => {
+      // Only warn if we actually timed out (auth didn't resolve first)
+      if (!authResolved) {
+        console.warn(
+          `[Auth] Timeout after ${timeoutMs}ms waiting for auth initialization. ` +
+            'Proceeding with current auth state.'
+        );
+        authResolved = true; // Prevent future warnings
+      }
+    }),
+  ]);
+}
+
+/**
+ * Reset the auth ready promise (used for testing or re-initialization)
+ */
+export function resetAuthReadyPromise(): void {
+  authReadyPromise = new Promise(resolve => {
+    authReadyResolve = resolve;
+  });
+  authResolved = false;
+}
 
 function _useAuth() {
   // Get token manager instance (singleton)
@@ -63,6 +125,12 @@ function _useAuth() {
     } finally {
       isLoading.value = false;
       isInitialized.value = true;
+
+      // Resolve the auth ready promise so router guards can proceed
+      if (authReadyResolve) {
+        authReadyResolve();
+        authReadyResolve = null;
+      }
     }
 
     // Listen for auth changes
