@@ -15,6 +15,33 @@ export type GetUserDefaultOrganizationVariables = GetUserDefaultOrganizationQuer
 // Extract Data Types from Queries
 // ========================================
 export type Organization = NonNullable<GetOrganizationQuery['organizations_by_pk']>;
-export type UserDefaultOrganization = NonNullable<
-  GetUserDefaultOrganizationQuery['organization_roles'][number]['organization']
->;
+
+// User's default organization role assignment
+export type UserOrganizationRole = GetUserDefaultOrganizationQuery['organization_roles'][number];
+
+// Organization from the default org query
+export type UserDefaultOrganization = NonNullable<UserOrganizationRole['organization']>;
+
+// Role from the organization role assignment
+export type OrganizationRole = UserOrganizationRole['role'];
+
+// ========================================
+// Role Type Guards and Constants
+// ========================================
+export type RoleUniqueName = 'owner' | 'org_admin' | 'member' | 'viewer';
+
+/**
+ * Check if a role is an admin-level role (owner or org_admin)
+ */
+export function isAdminRole(role: OrganizationRole | null): boolean {
+  if (!role) return false;
+  return role.unique_name === 'owner' || role.unique_name === 'org_admin';
+}
+
+/**
+ * Check if a role is owner
+ */
+export function isOwnerRole(role: OrganizationRole | null): boolean {
+  if (!role) return false;
+  return role.unique_name === 'owner';
+}
