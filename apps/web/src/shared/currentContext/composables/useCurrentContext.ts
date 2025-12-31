@@ -1,7 +1,8 @@
 import { watch, computed } from 'vue';
+import { useRouter } from 'vue-router';
 import { useCurrentContextStore } from '../store';
 import { useAuth } from '@/features/auth';
-import { useGetUserDefaultOrganization } from '@/entities/organization';
+import { useGetUserDefaultOrganization, useOrganizationStore } from '@/entities/organization';
 import type { CurrentOrganization } from '../models';
 
 /**
@@ -12,7 +13,9 @@ import type { CurrentOrganization } from '../models';
  * default organization.
  */
 export function useCurrentContext() {
+  const router = useRouter();
   const contextStore = useCurrentContextStore();
+  const organizationStore = useOrganizationStore();
   const { currentUser, isAuthenticated, isInitialized } = useAuth();
 
   // Reactive variables that update when currentUser changes
@@ -20,7 +23,7 @@ export function useCurrentContext() {
     userId: currentUser.value?.id ?? '',
   }));
 
-  const { organization: defaultOrg, isLoading: isOrgLoading } =
+  const { organization: defaultOrg, role: userRole, isLoading: isOrgLoading } =
     useGetUserDefaultOrganization(orgQueryVariables);
 
   // Watch for auth changes and sync to context store
@@ -35,16 +38,18 @@ export function useCurrentContext() {
         });
       } else {
         contextStore.reset();
+        organizationStore.reset();
       }
     },
     { immediate: true },
   );
 
-  // Watch for organization changes
+  // Watch for organization changes - sync to both stores and handle redirect
   watch(
     defaultOrg,
     newOrg => {
       if (newOrg) {
+        // Sync to CurrentContext store (simplified interface)
         const org: CurrentOrganization = {
           id: newOrg.id,
           name: newOrg.name,
@@ -53,7 +58,25 @@ export function useCurrentContext() {
           setupStatus: newOrg.setup_status as 'pending_setup' | 'completed',
         };
         contextStore.setCurrentOrganization(org);
+
+        // Sync to Organization store (full organization data)
+        organizationStore.setCurrentOrganization(newOrg);
+
+        // Redirect authenticated users from root to org dashboard
+        // This handles the case where user was on '/' waiting for org to load
+        if (router.currentRoute.value.path === '/' && isAuthenticated.value) {
+          router.replace(`/${newOrg.slug}/dashboard`);
+        }
       }
+    },
+    { immediate: true },
+  );
+
+  // Watch for role changes - sync to organization store
+  watch(
+    userRole,
+    newRole => {
+      organizationStore.setCurrentRole(newRole);
     },
     { immediate: true },
   );
@@ -63,12 +86,13 @@ export function useCurrentContext() {
     isOrgLoading,
     loading => {
       contextStore.setLoading(loading);
+      organizationStore.setLoading(loading);
     },
     { immediate: true },
   );
 
   return {
-    // From store
+    // From context store
     user: computed(() => contextStore.user),
     organization: computed(() => contextStore.organization),
     isLoading: computed(() => contextStore.isLoading),
@@ -76,6 +100,12 @@ export function useCurrentContext() {
     currentOrganizationId: contextStore.currentOrganizationId,
     currentOrganizationSlug: contextStore.currentOrganizationSlug,
     needsSetup: contextStore.needsSetup,
+
+    // From organization store
+    currentRole: computed(() => organizationStore.currentRole),
+    isAdmin: organizationStore.isAdmin,
+    isOwner: organizationStore.isOwner,
+    showSetupIndicator: organizationStore.showSetupIndicator,
 
     // From auth
     isAuthenticated,
