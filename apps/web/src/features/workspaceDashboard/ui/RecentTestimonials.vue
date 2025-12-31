@@ -3,9 +3,11 @@ import { computed, toRefs } from 'vue';
 import { Icon } from '@testimonials/icons';
 import { useGetTestimonials } from '@/entities/testimonial';
 import { useCurrentContextStore } from '@/shared/currentContext';
+import { useRouting } from '@/shared/routing';
 
 const contextStore = useCurrentContextStore();
 const { currentOrganizationId } = toRefs(contextStore);
+const { testimonialsPath } = useRouting();
 
 const variables = computed(() => ({
   organizationId: currentOrganizationId.value ?? '',
@@ -46,7 +48,7 @@ const truncateContent = (content: string | null | undefined, length = 100) => {
         <h2 class="text-lg font-semibold text-gray-900">Recent Testimonials</h2>
       </div>
       <RouterLink
-        to="/testimonials"
+        :to="testimonialsPath"
         class="text-sm text-violet-600 hover:text-violet-700 font-medium flex items-center gap-1"
       >
         View All

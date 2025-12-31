@@ -3,9 +3,11 @@ import { computed, toRefs } from 'vue';
 import { Icon } from '@testimonials/icons';
 import { useGetWidgets } from '@/entities/widget';
 import { useCurrentContextStore } from '@/shared/currentContext';
+import { useRouting } from '@/shared/routing';
 
 const contextStore = useCurrentContextStore();
 const { currentOrganizationId } = toRefs(contextStore);
+const { widgetsPath, getWidgetPath } = useRouting();
 
 const variables = computed(() => ({
   organizationId: currentOrganizationId.value ?? '',
@@ -63,7 +65,7 @@ const getWidgetTypeColor = (type: string) => {
         <h2 class="text-lg font-semibold text-gray-900">Widgets</h2>
       </div>
       <RouterLink
-        to="/widgets"
+        :to="widgetsPath"
         class="text-sm text-violet-600 hover:text-violet-700 font-medium flex items-center gap-1"
       >
         View All
@@ -90,7 +92,7 @@ const getWidgetTypeColor = (type: string) => {
       <Icon icon="heroicons:squares-2x2" class="w-12 h-12 text-gray-300 mx-auto mb-3" />
       <p class="text-gray-500 text-sm mb-4">No widgets yet</p>
       <RouterLink
-        to="/widgets/new"
+        :to="`${widgetsPath}/new`"
         class="inline-flex items-center gap-2 px-4 py-2 bg-violet-600 text-white text-sm font-medium rounded-lg hover:bg-violet-700 transition-colors"
       >
         <Icon icon="heroicons:plus" class="w-4 h-4" />
@@ -103,7 +105,7 @@ const getWidgetTypeColor = (type: string) => {
       <RouterLink
         v-for="widget in displayWidgets"
         :key="widget.id"
-        :to="`/widgets/${widget.id}`"
+        :to="getWidgetPath({ name: widget.name, id: widget.id })"
         class="flex items-center gap-4 p-3 rounded-lg hover:bg-gray-50 transition-colors group"
       >
         <div :class="['w-10 h-10 rounded-lg flex items-center justify-center', getWidgetTypeColor(widget.type)]">

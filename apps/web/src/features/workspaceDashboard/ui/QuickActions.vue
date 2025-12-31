@@ -1,36 +1,40 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import { Icon } from '@testimonials/icons';
+import { useRouting } from '@/shared/routing';
 
-const quickActions = [
+const { formsPath, testimonialsPath, widgetsPath, settingsPath } = useRouting();
+
+const quickActions = computed(() => [
   {
     name: 'Create Form',
     icon: 'heroicons:plus-circle',
     color: 'from-emerald-400 via-teal-500 to-cyan-500',
     description: 'Start collecting testimonials',
-    route: '/forms/new',
+    route: `${formsPath.value}/new`,
   },
   {
     name: 'View Testimonials',
     icon: 'heroicons:chat-bubble-left-right',
     color: 'from-blue-400 via-indigo-500 to-purple-500',
     description: 'Manage your testimonials',
-    route: '/testimonials',
+    route: testimonialsPath.value,
   },
   {
     name: 'Create Widget',
     icon: 'heroicons:squares-2x2',
     color: 'from-violet-400 via-purple-500 to-fuchsia-500',
     description: 'Embed on your website',
-    route: '/widgets/new',
+    route: `${widgetsPath.value}/new`,
   },
   {
     name: 'Settings',
     icon: 'heroicons:cog-6-tooth',
     color: 'from-amber-400 via-orange-500 to-red-500',
     description: 'Configure your account',
-    route: '/settings',
+    route: settingsPath.value,
   },
-];
+]);
 </script>
 
 <template>

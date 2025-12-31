@@ -3,9 +3,11 @@ import { computed, toRefs } from 'vue';
 import { Icon } from '@testimonials/icons';
 import { useGetTestimonials } from '@/entities/testimonial';
 import { useCurrentContextStore } from '@/shared/currentContext';
+import { useRouting } from '@/shared/routing';
 
 const contextStore = useCurrentContextStore();
 const { currentOrganizationId } = toRefs(contextStore);
+const { testimonialsPath, getTestimonialPath } = useRouting();
 
 const variables = computed(() => ({
   organizationId: currentOrganizationId.value ?? '',
@@ -50,7 +52,7 @@ const { testimonials: pendingTestimonials, isLoading } = useGetTestimonials(vari
       <RouterLink
         v-for="testimonial in pendingTestimonials"
         :key="testimonial.id"
-        :to="`/testimonials/${testimonial.id}`"
+        :to="getTestimonialPath({ customerName: testimonial.customer_name || 'unknown', id: testimonial.id })"
         class="flex items-center gap-3 p-3 rounded-lg hover:bg-amber-50 transition-colors group"
       >
         <div
@@ -76,7 +78,7 @@ const { testimonials: pendingTestimonials, isLoading } = useGetTestimonials(vari
 
       <RouterLink
         v-if="pendingTestimonials.length >= 5"
-        to="/testimonials?status=pending"
+        :to="`${testimonialsPath}?status=pending`"
         class="block text-center py-2 text-sm text-amber-600 hover:text-amber-700 font-medium"
       >
         View all pending

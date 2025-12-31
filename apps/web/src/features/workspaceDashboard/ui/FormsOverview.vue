@@ -3,9 +3,11 @@ import { computed, toRefs } from 'vue';
 import { Icon } from '@testimonials/icons';
 import { useGetForms } from '@/entities/form';
 import { useCurrentContextStore } from '@/shared/currentContext';
+import { useRouting } from '@/shared/routing';
 
 const contextStore = useCurrentContextStore();
 const { currentOrganizationId } = toRefs(contextStore);
+const { formsPath, getFormPath } = useRouting();
 
 const variables = computed(() => ({
   organizationId: currentOrganizationId.value ?? '',
@@ -24,7 +26,7 @@ const displayForms = computed(() => forms.value.slice(0, 5));
         <h2 class="text-lg font-semibold text-gray-900">Recent Forms</h2>
       </div>
       <RouterLink
-        to="/forms"
+        :to="formsPath"
         class="text-sm text-violet-600 hover:text-violet-700 font-medium flex items-center gap-1"
       >
         View All
@@ -51,7 +53,7 @@ const displayForms = computed(() => forms.value.slice(0, 5));
       <Icon icon="heroicons:document-text" class="w-12 h-12 text-gray-300 mx-auto mb-3" />
       <p class="text-gray-500 text-sm mb-4">No forms yet</p>
       <RouterLink
-        to="/forms/new"
+        :to="`${formsPath}/new`"
         class="inline-flex items-center gap-2 px-4 py-2 bg-violet-600 text-white text-sm font-medium rounded-lg hover:bg-violet-700 transition-colors"
       >
         <Icon icon="heroicons:plus" class="w-4 h-4" />
@@ -64,7 +66,7 @@ const displayForms = computed(() => forms.value.slice(0, 5));
       <RouterLink
         v-for="form in displayForms"
         :key="form.id"
-        :to="`/forms/${form.slug}`"
+        :to="getFormPath({ name: form.name, id: form.id })"
         class="flex items-center gap-4 p-3 rounded-lg hover:bg-gray-50 transition-colors group"
       >
         <div
