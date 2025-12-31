@@ -10,6 +10,7 @@ import {
   RecentTestimonials,
   PendingApprovals,
   WidgetsOverview,
+  SetupCallout,
 } from './ui';
 
 const contextStore = useCurrentContextStore();
@@ -29,6 +30,11 @@ const { stats, isLoading: isStatsLoading } = useDashboardStats(statsVariables);
 
     <!-- Main Content -->
     <div class="max-w-7xl mx-auto px-6 py-8">
+      <!-- Setup Callout (shows when organization setup is pending for admin users) -->
+      <div class="mb-6">
+        <SetupCallout />
+      </div>
+
       <!-- Stats -->
       <div class="mb-8">
         <DashboardStats :stats="stats" :is-loading="isStatsLoading || isContextLoading" />

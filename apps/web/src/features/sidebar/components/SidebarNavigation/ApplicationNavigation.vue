@@ -123,6 +123,16 @@ const handleClick = (item: (typeof applicationMenuItems.value)[0]) => {
               ]"
             />
             <span>{{ item.label }}</span>
+
+            <!-- Badge/Indicator (e.g., setup pending) -->
+            <span
+              v-if="item.badge"
+              class="ml-auto inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-medium rounded-full bg-amber-100 text-amber-700 border border-amber-200"
+              :title="item.id === 'settings' ? 'Complete your workspace setup' : ''"
+            >
+              <Icon icon="heroicons:exclamation-circle" class="w-3 h-3" />
+              {{ item.badge }}
+            </span>
           </button>
         </nav>
       </div>

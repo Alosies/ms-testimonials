@@ -1,5 +1,7 @@
 import { computed, type ComputedRef } from 'vue'
+import { toRefs } from 'vue'
 import { useRouting } from '@/shared/routing'
+import { useOrganizationStore } from '@/entities/organization'
 import type { MenuItem } from '../types'
 
 export interface UseApplicationMenuItemsReturn {
@@ -14,6 +16,8 @@ export function useApplicationMenuItems(): UseApplicationMenuItemsReturn {
     goToWidgets,
     goToSettings,
   } = useRouting()
+
+  const { showSetupIndicator } = toRefs(useOrganizationStore())
 
   const applicationMenuItems = computed<MenuItem[]>(() => [
     {
@@ -51,6 +55,8 @@ export function useApplicationMenuItems(): UseApplicationMenuItemsReturn {
       action: goToSettings,
       testId: 'nav-settings',
       section: 'secondary',
+      // Show indicator when organization setup is pending (only for owner/admin)
+      badge: showSetupIndicator.value ? 'Pending' : undefined,
     },
   ])
 

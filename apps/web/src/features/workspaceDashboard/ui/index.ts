@@ -5,3 +5,4 @@ export { default as FormsOverview } from './FormsOverview.vue';
 export { default as RecentTestimonials } from './RecentTestimonials.vue';
 export { default as PendingApprovals } from './PendingApprovals.vue';
 export { default as WidgetsOverview } from './WidgetsOverview.vue';
+export { default as SetupCallout } from './SetupCallout.vue';
