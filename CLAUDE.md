@@ -17,6 +17,22 @@ Testimonials is a testimonial collection and display tool with AI-powered smart 
 - **Package Manager**: pnpm (v10.10.0)
 - **Node Version**: 22.15.0
 
+## Reference Project: CoursePads
+
+This project is modeled after CoursePads and shares many architectural patterns and best practices. When implementing new features or needing inspiration for how to execute something, CoursePads can be used as a reference.
+
+**CoursePads Repository:** `/Users/alosiesgeorge/CodeRepositories/Fork/Coursepads`
+
+### Shared Patterns from CoursePads
+- **GraphQL code patterns** - Query/mutation structure, composables, type generation
+- **FSD architecture** - Feature-Sliced Design folder structure and conventions
+- **Apollo Client setup** - Client configuration, caching strategies, error handling
+- **URL patterns** - Slug-based routing with ID encoding (e.g., `slug_id` format)
+- **Entity composables** - useEntity pattern for GraphQL operations
+- **Type organization** - Models folder exports, generated type re-exports
+
+When unsure about implementation approach, consult the CoursePads codebase for proven patterns.
+
 ## Essential Commands
 
 ### Development
