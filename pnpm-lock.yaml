@@ -96,6 +96,9 @@ importers:
       '@testimonials/icons':
         specifier: workspace:*
         version: link:../../packages/libs/icons
+      '@vee-validate/zod':
+        specifier: ^4.15.1
+        version: 4.15.1(vue@3.5.26(typescript@5.9.3))(zod@3.25.76)
       '@vue/apollo-composable':
         specifier: ^4.2.2
         version: 4.2.2(@apollo/client@3.14.0(@types/react@19.2.7)(graphql-ws@6.0.6(graphql@16.12.0)(ws@8.18.3))(graphql@16.12.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(graphql@16.12.0)(typescript@5.9.3)(vue@3.5.26(typescript@5.9.3))
@@ -132,12 +135,18 @@ importers:
       tailwindcss-animate:
         specifier: ^1.0.7
         version: 1.0.7(tailwindcss@3.4.19(tsx@4.21.0)(yaml@2.8.2))
+      vee-validate:
+        specifier: ^4.15.1
+        version: 4.15.1(vue@3.5.26(typescript@5.9.3))
       vue:
         specifier: ^3.5.0
         version: 3.5.26(typescript@5.9.3)
       vue-router:
         specifier: ^4.4.0
         version: 4.6.4(vue@3.5.26(typescript@5.9.3))
+      zod:
+        specifier: ^3.25.76
+        version: 3.25.76
     devDependencies:
       '@graphql-codegen/cli':
         specifier: ^5.0.0
@@ -1948,6 +1957,11 @@ packages:
 
   '@unhead/schema@1.11.20':
     resolution: {integrity: sha512-0zWykKAaJdm+/Y7yi/Yds20PrUK7XabLe9c3IRcjnwYmSWY6z0Cr19VIs3ozCj8P+GhR+/TI2mwtGlueCEYouA==}
+
+  '@vee-validate/zod@4.15.1':
+    resolution: {integrity: sha512-329Z4TDBE5Vx0FdbA8S4eR9iGCFFUNGbxjpQ20ff5b5wGueScjocUIx9JHPa79LTG06RnlUR4XogQsjN4tecKA==}
+    peerDependencies:
+      zod: ^3.24.0
 
   '@vitejs/plugin-vue@5.2.4':
     resolution: {integrity: sha512-7Yx/SXSOcQq5HiiV3orevHUFn+pmMB4cgbEkDYgnkUWb0WfeQ/wa2yFv6D5ICiCQOVpjA7vYDXrC7AGO8yjDHA==}
@@ -4198,6 +4212,10 @@ packages:
     resolution: {integrity: sha512-RAH822pAdBgcNMAfWnCBU3CFZcfZ/i1eZjwFU/dsLKumyuuP3niueg2UAukXYF0E2AAoc82ZSSf9J0WQBinzHA==}
     engines: {node: '>=12.20'}
 
+  type-fest@4.41.0:
+    resolution: {integrity: sha512-TeTSQ6H5YHvpqVwBRcnLDCBnDOHWYu7IvGbHT6N8AOymcr9PJGjc1GTtiWZTYg0NCgYwvnYWEkVChQAr9bjfwA==}
+    engines: {node: '>=16'}
+
   typescript@5.9.3:
     resolution: {integrity: sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==}
     engines: {node: '>=14.17'}
@@ -4273,6 +4291,11 @@ packages:
   uuid@9.0.1:
     resolution: {integrity: sha512-b+1eJOlsR9K8HJpow9Ok3fiWOWSIcIzXodvv0rQjVoOVNpWMpxf1wZNpt4y9h10odCNrqnYp1OBzRktckBe3sA==}
     hasBin: true
+
+  vee-validate@4.15.1:
+    resolution: {integrity: sha512-DkFsiTwEKau8VIxyZBGdO6tOudD+QoUBPuHj3e6QFqmbfCRj1ArmYWue9lEp6jLSWBIw4XPlDLjFIZNLdRAMSg==}
+    peerDependencies:
+      vue: ^3.4.26
 
   vite@5.4.21:
     resolution: {integrity: sha512-o5a9xKjbtuhY6Bi5S3+HvbRERmouabWbyUcpXXUA1u+GNUKoROi9byOJ8M0nHbHYHkYICiMlqxkg1KkYmm25Sw==}
@@ -6367,6 +6390,14 @@ snapshots:
     dependencies:
       hookable: 5.5.3
       zhead: 2.2.4
+
+  '@vee-validate/zod@4.15.1(vue@3.5.26(typescript@5.9.3))(zod@3.25.76)':
+    dependencies:
+      type-fest: 4.41.0
+      vee-validate: 4.15.1(vue@3.5.26(typescript@5.9.3))
+      zod: 3.25.76
+    transitivePeerDependencies:
+      - vue
 
   '@vitejs/plugin-vue@5.2.4(vite@5.4.21(@types/node@22.19.3))(vue@3.5.26(typescript@5.9.3))':
     dependencies:
@@ -8866,6 +8897,8 @@ snapshots:
 
   type-fest@2.19.0: {}
 
+  type-fest@4.41.0: {}
+
   typescript@5.9.3: {}
 
   ua-parser-js@1.0.41: {}
@@ -8966,6 +8999,12 @@ snapshots:
       which-typed-array: 1.1.19
 
   uuid@9.0.1: {}
+
+  vee-validate@4.15.1(vue@3.5.26(typescript@5.9.3)):
+    dependencies:
+      '@vue/devtools-api': 7.7.9
+      type-fest: 4.41.0
+      vue: 3.5.26(typescript@5.9.3)
 
   vite@5.4.21(@types/node@22.19.3):
     dependencies:
