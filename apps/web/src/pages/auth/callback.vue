@@ -2,26 +2,36 @@
 import { onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuth } from '@/features/auth';
+import { useCurrentContextStore } from '@/shared/currentContext';
 
 const router = useRouter();
 const { isAuthLoading, isAuthenticated } = useAuth();
+const contextStore = useCurrentContextStore();
 
-// Redirect to dashboard when auth is complete
+// Helper to get the redirect path
+function getRedirectPath() {
+  const orgSlug = contextStore.currentOrganizationSlug;
+  return orgSlug ? `/${orgSlug}/dashboard` : '/';
+}
+
+// Redirect to dashboard when auth and org context are ready
 onMounted(() => {
-  // If already authenticated and not loading, redirect immediately
-  if (isAuthenticated.value && !isAuthLoading.value) {
-    router.push('/dashboard');
+  if (isAuthenticated.value && !isAuthLoading.value && contextStore.currentOrganizationSlug) {
+    router.push(getRedirectPath());
   }
 });
 
-// Watch for auth completion
-watch([isAuthenticated, isAuthLoading], ([authenticated, loading]) => {
-  if (authenticated && !loading) {
-    setTimeout(() => {
-      router.push('/dashboard');
-    }, 1500);
+// Watch for auth and org context completion
+watch(
+  [isAuthenticated, isAuthLoading, () => contextStore.currentOrganizationSlug],
+  ([authenticated, loading, orgSlug]) => {
+    if (authenticated && !loading && orgSlug) {
+      setTimeout(() => {
+        router.push(getRedirectPath());
+      }, 1500);
+    }
   }
-});
+);
 </script>
 
 <template>
@@ -84,7 +94,7 @@ watch([isAuthenticated, isAuthLoading], ([authenticated, loading]) => {
         <div class="mt-6">
           <button
             class="text-primary hover:underline text-sm font-medium"
-            @click="router.push('/dashboard')"
+            @click="router.push(getRedirectPath())"
           >
             Go to Dashboard
           </button>

@@ -68,12 +68,17 @@ export function setupAuthGuards(router: Router) {
 
     // Handle post-login redirect: when navigating FROM auth pages after login
     // This catches the case where user just logged in and orgSlug might not be ready
+    // Skip if already going to the correct org dashboard to prevent infinite loops
     if (from.path.startsWith('/auth/') && hasUser) {
-      if (orgSlug) {
-        return next(`/${orgSlug}/dashboard`)
+      const targetOrgDashboard = `/${orgSlug}/dashboard`
+      if (orgSlug && to.path !== targetOrgDashboard) {
+        return next(targetOrgDashboard)
       }
       // If no org slug yet, redirect to root which will handle it once org loads
-      return next('/')
+      // But skip if already going to root
+      if (!orgSlug && to.path !== '/') {
+        return next('/')
+      }
     }
 
     // Handle reserved slugs being used as org param (legacy routes)
