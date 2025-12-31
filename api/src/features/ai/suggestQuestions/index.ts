@@ -37,39 +37,79 @@ const AIResponseSchema = z.object({
 
 /**
  * Build the prompt for question generation
+ * Uses customer feedback science principles:
+ * - Narrative arc (before → during → after)
+ * - Concrete over abstract
+ * - Emotion + specificity = persuasive testimonials
  */
-function buildPrompt(productName: string, productDescription: string): string {
-  return `Generate 5 testimonial collection questions for this product.
+function buildPrompt(productName: string, productDescription: string, focusAreas?: string): string {
+  const focusSection = focusAreas
+    ? `
+FOCUS AREAS (User-specified priorities):
+${focusAreas}
+Incorporate these themes into the questions where natural. Ensure at least 2-3 questions address these focus areas directly.`
+    : '';
 
-Product Name: ${productName}
-Product Description: ${productDescription}
+  return `You are a customer feedback specialist. Generate 5 testimonial collection questions that will elicit compelling, specific, and credible customer stories.
 
-First, analyze the product to infer:
+PRODUCT CONTEXT:
+- Name: ${productName}
+- Description: ${productDescription}
+${focusSection}
+
+FIRST, analyze the product to infer:
 - Industry/category (SaaS, e-commerce, course, agency, etc.)
 - Target audience (who uses this product)
 - Key value propositions (what problems it solves)
 - Appropriate tone (Professional, Casual, Technical, Friendly)
 
-Then generate exactly 5 questions following these guidelines:
+QUESTION DESIGN PRINCIPLES:
+1. Use the "Before → During → After" narrative arc
+2. Ask for CONCRETE details (numbers, timeframes, specific examples)
+3. Avoid yes/no questions - use open-ended prompts
+4. Make questions feel conversational, not like a survey
+5. Help customers recall specific moments, not general impressions
 
-1. Question 1 (question_key: "problem_before"): Ask about the problem/challenge BEFORE using the product. Use question_type_id: "text_long"
+GENERATE exactly 5 questions following this framework:
 
-2. Question 2 (question_key: "solution_impact"): Ask about HOW the product helped solve it. Use question_type_id: "text_long"
+Question 1 - THE STRUGGLE (question_key: "problem_before")
+Purpose: Establish the "before state" - pain, frustration, or challenge
+Psychology: Makes the transformation story relatable
+Type: text_long
+Ask about specific frustrations, wasted time/money, or failed alternatives BEFORE ${productName}
 
-3. Question 3 (question_key: "specific_results"): Ask about specific RESULTS or outcomes (numbers, time saved, etc.). Use question_type_id: "text_long"
+Question 2 - THE DISCOVERY (question_key: "solution_experience")
+Purpose: Capture the experience of using the product
+Psychology: Shows the product in action, builds credibility
+Type: text_long
+Ask about a specific moment, feature, or interaction that stood out
 
-4. Question 4 (question_key: "rating"): A rating question asking about overall experience. Use question_type_id: "rating_star"
+Question 3 - THE TRANSFORMATION (question_key: "specific_results")
+Purpose: Quantify the impact with concrete outcomes
+Psychology: Numbers and specifics make testimonials persuasive
+Type: text_long
+Ask for measurable results: time saved, money earned, problems eliminated, metrics improved
 
-5. Question 5 (question_key: "recommendation"): Ask for recommendation or additional thoughts. Use question_type_id: "text_long"
+Question 4 - THE VERDICT (question_key: "rating")
+Purpose: Capture overall satisfaction as a quantifiable metric
+Psychology: Social proof signal, easy to display
+Type: rating_star
+Ask about overall experience or likelihood to recommend
 
-Important guidelines:
-- Use the actual product name "${productName}" in questions, never use placeholders like "[Product]"
-- Make questions conversational and specific to the product context
-- Placeholders should guide users on what to write
-- Help text should provide additional context where useful (or null if not needed)
-- Questions 1-4 should be required (is_required: true)
-- Question 5 should be optional (is_required: false)
-- display_order should be 1, 2, 3, 4, 5 respectively`;
+Question 5 - THE ENDORSEMENT (question_key: "recommendation")
+Purpose: Capture advice to others considering the product
+Psychology: Peer-to-peer recommendations are highly trusted
+Type: text_long
+Ask what they would tell someone considering ${productName}
+
+FORMATTING REQUIREMENTS:
+- Use "${productName}" directly in questions - never placeholders like "[Product]"
+- Write questions as if having a friendly conversation
+- Placeholders should guide with examples of good answers
+- Help text provides additional context (or null if self-explanatory)
+- Questions 1-4: is_required: true
+- Question 5: is_required: false (optional but valuable)
+- display_order: 1, 2, 3, 4, 5 respectively`;
 }
 
 /**
@@ -88,7 +128,7 @@ interface SuggestQuestionsResult {
 export async function suggestQuestions(c: Context) {
   try {
     const body = await c.req.json();
-    const { product_name, product_description, quality = 'fast' } = body;
+    const { product_name, product_description, focus_areas, quality = 'fast' } = body;
 
     // Input validation
     if (!product_name || typeof product_name !== 'string') {
@@ -140,7 +180,7 @@ export async function suggestQuestions(c: Context) {
     const result = await generateObject({
       model,
       schema: AIResponseSchema,
-      prompt: buildPrompt(product_name, product_description),
+      prompt: buildPrompt(product_name, product_description, focus_areas),
       temperature: 0.7,
       // Tag for audit (supported by OpenAI and Anthropic)
       experimental_telemetry: {

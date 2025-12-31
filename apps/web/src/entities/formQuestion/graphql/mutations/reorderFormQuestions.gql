@@ -1,0 +1,8 @@
+mutation ReorderFormQuestions($updates: [form_questions_updates!]!) {
+  update_form_questions_many(updates: $updates) {
+    returning {
+      id
+      display_order
+    }
+  }
+}

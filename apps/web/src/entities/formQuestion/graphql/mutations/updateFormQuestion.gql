@@ -1,0 +1,5 @@
+mutation UpdateFormQuestion($id: String!, $input: form_questions_set_input!) {
+  update_form_questions_by_pk(pk_columns: { id: $id }, _set: $input) {
+    ...FormQuestionBasic
+  }
+}

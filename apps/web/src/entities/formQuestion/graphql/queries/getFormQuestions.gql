@@ -1,0 +1,8 @@
+query GetFormQuestions($formId: String!) {
+  form_questions(
+    where: { form_id: { _eq: $formId }, is_active: { _eq: true } }
+    order_by: { display_order: asc }
+  ) {
+    ...FormQuestionBasic
+  }
+}

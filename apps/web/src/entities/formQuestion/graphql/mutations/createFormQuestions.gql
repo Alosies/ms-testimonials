@@ -1,0 +1,7 @@
+mutation CreateFormQuestions($inputs: [form_questions_insert_input!]!) {
+  insert_form_questions(objects: $inputs) {
+    returning {
+      ...FormQuestionBasic
+    }
+  }
+}

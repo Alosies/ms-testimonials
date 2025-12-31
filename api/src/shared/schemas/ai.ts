@@ -72,6 +72,10 @@ export const SuggestQuestionsRequestSchema = z.object({
     example: 'Project management tool for remote teams that helps track tasks, collaborate in real-time, and meet deadlines.',
     description: 'Brief description of the product (10-1000 characters)',
   }),
+  focus_areas: z.string().max(500).optional().openapi({
+    example: 'ease of onboarding, time saved on reporting, customer support quality',
+    description: 'Optional guidance for question generation - specific aspects to focus on',
+  }),
 }).openapi('SuggestQuestionsRequest');
 
 /**
