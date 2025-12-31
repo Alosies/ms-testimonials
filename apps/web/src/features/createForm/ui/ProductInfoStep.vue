@@ -4,6 +4,16 @@ import { Button, Input, Textarea, Label } from '@testimonials/ui';
 import { Icon } from '@testimonials/icons';
 import type { FormData } from '../models';
 
+/**
+ * Input limits - must match backend validation
+ * @see api/src/shared/utils/inputSanitizer.ts
+ */
+const INPUT_LIMITS = {
+  product_name: 100,
+  product_description: 1000,
+  focus_areas: 500,
+} as const;
+
 const props = defineProps<{
   canProceed: boolean;
   isLoading: boolean;
@@ -15,7 +25,15 @@ const emit = defineEmits<{
 
 const formData = defineModel<FormData>('formData', { required: true });
 
-const characterCount = computed(() => formData.value.product_description.length);
+// Character counts for validation feedback
+const nameCharCount = computed(() => formData.value.product_name.length);
+const descCharCount = computed(() => formData.value.product_description.length);
+const focusCharCount = computed(() => (formData.value.focus_areas || '').length);
+
+// Validation states
+const isNameOverLimit = computed(() => nameCharCount.value > INPUT_LIMITS.product_name);
+const isDescOverLimit = computed(() => descCharCount.value > INPUT_LIMITS.product_description);
+const isFocusOverLimit = computed(() => focusCharCount.value > INPUT_LIMITS.focus_areas);
 
 // Focus areas helper suggestions
 const focusSuggestions = [
@@ -64,8 +82,16 @@ function handleContinue() {
           id="product-name"
           v-model="formData.product_name"
           placeholder="e.g., TaskFlow"
+          :maxlength="INPUT_LIMITS.product_name"
           class="mt-1"
+          :class="{ 'border-red-500 focus:ring-red-500': isNameOverLimit }"
         />
+        <p
+          class="mt-1 text-xs"
+          :class="isNameOverLimit ? 'text-red-500' : 'text-gray-400'"
+        >
+          {{ nameCharCount }}/{{ INPUT_LIMITS.product_name }} characters
+        </p>
       </div>
 
       <div>
@@ -75,10 +101,15 @@ function handleContinue() {
           v-model="formData.product_description"
           placeholder="e.g., Project management tool for remote teams that helps track tasks, collaborate in real-time, and meet deadlines."
           :rows="4"
+          :maxlength="INPUT_LIMITS.product_description"
           class="mt-1"
+          :class="{ 'border-red-500 focus:ring-red-500': isDescOverLimit }"
         />
-        <p class="mt-1 text-xs text-gray-400">
-          {{ characterCount }}/1000 characters
+        <p
+          class="mt-1 text-xs"
+          :class="isDescOverLimit ? 'text-red-500' : 'text-gray-400'"
+        >
+          {{ descCharCount }}/{{ INPUT_LIMITS.product_description }} characters
         </p>
       </div>
 
@@ -112,8 +143,16 @@ function handleContinue() {
           v-model="formData.focus_areas"
           placeholder="e.g., ease of onboarding, time saved on reporting, specific feature X, customer support quality..."
           :rows="2"
+          :maxlength="INPUT_LIMITS.focus_areas"
           class="mt-3"
+          :class="{ 'border-red-500 focus:ring-red-500': isFocusOverLimit }"
         />
+        <p
+          class="mt-1 text-xs"
+          :class="isFocusOverLimit ? 'text-red-500' : 'text-gray-400'"
+        >
+          {{ focusCharCount }}/{{ INPUT_LIMITS.focus_areas }} characters
+        </p>
       </div>
     </div>
 
