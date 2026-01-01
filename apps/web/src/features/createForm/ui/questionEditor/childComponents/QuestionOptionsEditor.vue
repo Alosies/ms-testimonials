@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref, nextTick } from 'vue';
 import { Button, Input, Label, Separator } from '@testimonials/ui';
 import { Icon } from '@testimonials/icons';
 import type { AIQuestionOption } from '@/shared/api';
@@ -13,6 +14,9 @@ const emit = defineEmits<{
   update: [index: number, updates: Partial<AIQuestionOption>];
   remove: [index: number];
 }>();
+
+// Ref to the options container for querying inputs
+const optionsContainer = ref<HTMLElement | null>(null);
 
 // Auto-generate option_value from label
 function generateOptionValue(label: string): string {
@@ -29,6 +33,17 @@ function handleLabelChange(index: number, label: string) {
     option_label: label,
     option_value: generateOptionValue(label),
   });
+}
+
+// Handle Enter key to add new option and focus it
+async function handleEnterKey() {
+  emit('add');
+  // Focus the new input after it's rendered
+  await nextTick();
+  const inputs = optionsContainer.value?.querySelectorAll('input');
+  if (inputs?.length) {
+    (inputs[inputs.length - 1] as HTMLInputElement).focus();
+  }
 }
 </script>
 
@@ -56,7 +71,7 @@ function handleLabelChange(index: number, label: string) {
         </Button>
       </div>
 
-      <div v-else class="space-y-2">
+      <div v-else ref="optionsContainer" class="space-y-2">
         <div
           v-for="(option, optIndex) in options"
           :key="optIndex"
@@ -79,6 +94,7 @@ function handleLabelChange(index: number, label: string) {
             class="flex-1"
             placeholder="Enter option text..."
             @update:model-value="(v) => handleLabelChange(optIndex, String(v))"
+            @keydown.enter.prevent="handleEnterKey"
           />
 
           <Button
