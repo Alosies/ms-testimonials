@@ -33,6 +33,8 @@ export type { ApiClientError } from './lib';
 // AI domain exports (convenience re-exports)
 export { useApiForAI } from './ai';
 export type {
+  QuestionTypeId,
+  AIQuestionOption,
   AIQuestion,
   AIContext,
   SuggestQuestionsRequest,

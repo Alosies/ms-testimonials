@@ -1,4 +1,6 @@
 export type {
+  QuestionTypeId,
+  AIQuestionOption,
   AIQuestion,
   AIContext,
   SuggestQuestionsRequest,

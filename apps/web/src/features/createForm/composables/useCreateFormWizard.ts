@@ -73,6 +73,7 @@ export function useCreateFormWizard() {
       help_text: question.help_text || null,
       is_required: question.is_required ?? false,
       display_order: questions.value.length + 1,
+      options: question.options || null,
       isNew: true,
       isModified: false,
     };
