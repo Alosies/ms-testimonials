@@ -1,4 +1,4 @@
-.PHONY: install dev dev-web dev-api build db-up db-down hasura-console hasura-migrate hasura-metadata
+.PHONY: install dev dev-web dev-api build db-up db-down hasura-console hasura-migrate hasura-metadata sync sync-push
 
 # Install dependencies
 install:
@@ -50,3 +50,10 @@ codegen:
 
 codegen-watch:
 	pnpm codegen:web:watch
+
+# Worktree sync
+sync:
+	./scripts/sync-worktrees.sh
+
+sync-push:
+	./scripts/sync-worktrees.sh -f

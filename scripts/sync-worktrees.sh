@@ -1,0 +1,515 @@
+#!/bin/bash
+set -e
+
+# Parse arguments
+FORCE_PUSH=false
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    -f|--force-push)
+      FORCE_PUSH=true
+      shift
+      ;;
+    -h|--help)
+      echo "Usage: $0 [OPTIONS]"
+      echo ""
+      echo "Sync all worktrees with dev using linear history (rebase)"
+      echo ""
+      echo "Options:"
+      echo "  -f, --force-push    Force push all branches to remote after sync"
+      echo "  -h, --help          Show this help message"
+      exit 0
+      ;;
+    *)
+      echo "Unknown option: $1"
+      echo "Use -h or --help for usage information"
+      exit 1
+      ;;
+  esac
+done
+
+# Worktrees to sync (in order - commits will stack in this sequence)
+WORKTREES=(
+  "/Users/alosiesgeorge/CodeRepositories/Fork/micro-saas/proj-testimonials/ms-testimonials-yellow"
+  "/Users/alosiesgeorge/CodeRepositories/Fork/micro-saas/proj-testimonials/ms-testimonials-green"
+  "/Users/alosiesgeorge/CodeRepositories/Fork/micro-saas/proj-testimonials/ms-testimonials-blue"
+)
+
+MAIN_WORKTREE="/Users/alosiesgeorge/CodeRepositories/Fork/micro-saas/proj-testimonials/ms-testimonials"
+DEV_BRANCH="dev"
+
+# Track dirty worktrees (space-separated list for bash 3.2 compatibility)
+DIRTY_WORKTREES=""
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+CYAN='\033[0;36m'
+GRAY='\033[0;90m'
+NC='\033[0m' # No Color
+
+is_dirty() {
+  local wt="$1"
+  echo "$DIRTY_WORKTREES" | grep -q "$wt"
+}
+
+mark_dirty() {
+  local wt="$1"
+  DIRTY_WORKTREES="$DIRTY_WORKTREES $wt"
+}
+
+log_header() {
+  echo ""
+  echo -e "${GREEN}════════════════════════════════════════════════════════════${NC}"
+  echo -e "${GREEN}  $1${NC}"
+  echo -e "${GREEN}════════════════════════════════════════════════════════════${NC}"
+}
+
+log_section() {
+  echo ""
+  echo -e "${YELLOW}── $1 ──${NC}"
+}
+
+log_info() {
+  echo -e "${CYAN}→${NC} $1"
+}
+
+log_detail() {
+  echo -e "${GRAY}  $1${NC}"
+}
+
+log_success() {
+  echo -e "${GREEN}✓${NC} $1"
+}
+
+log_warning() {
+  echo -e "${YELLOW}!${NC} $1"
+}
+
+log_error() {
+  echo -e "${RED}✗${NC} $1"
+}
+
+log_commit() {
+  echo -e "  ${BLUE}•${NC} $1"
+}
+
+# Arrow-key menu selection
+# Usage: menu_select "Option1" "Option2" ...
+# Returns: selected index (0-based) in MENU_RESULT
+menu_select() {
+  local options=("$@")
+  local selected=0
+  local count=${#options[@]}
+
+  # Hide cursor
+  tput civis 2>/dev/null || true
+
+  # Draw menu
+  draw_menu() {
+    for i in "${!options[@]}"; do
+      # Move to beginning of line and clear
+      echo -ne "\r\033[K"
+      if [ $i -eq $selected ]; then
+        echo -e "  ${GREEN}▸ ${options[$i]}${NC}"
+      else
+        echo -e "    ${options[$i]}"
+      fi
+    done
+  }
+
+  # Move cursor up to redraw
+  move_up() {
+    for ((i=0; i<count; i++)); do
+      echo -ne "\033[1A"
+    done
+  }
+
+  # Initial draw
+  draw_menu
+
+  # Read input
+  while true; do
+    read -rsn1 key
+
+    # Handle arrow keys (escape sequences)
+    if [ "$key" = $'\x1b' ]; then
+      read -rsn2 -t 0.1 key
+      case "$key" in
+        '[A') # Up arrow
+          ((selected--))
+          [ $selected -lt 0 ] && selected=$((count - 1))
+          ;;
+        '[B') # Down arrow
+          ((selected++))
+          [ $selected -ge $count ] && selected=0
+          ;;
+      esac
+      move_up
+      draw_menu
+    elif [ "$key" = "" ]; then # Enter key
+      break
+    fi
+  done
+
+  # Show cursor
+  tput cnorm 2>/dev/null || true
+
+  MENU_RESULT=$selected
+}
+
+log_header "Testimonials Worktree Sync Script"
+echo "Syncing all worktrees with dev using linear history (rebase)"
+echo ""
+log_info "Main worktree: $MAIN_WORKTREE"
+log_info "Target branch: $DEV_BRANCH"
+log_info "Worktrees to sync: ${#WORKTREES[@]}"
+if [ "$FORCE_PUSH" = true ]; then
+  log_warning "Force push enabled - will push all branches to remote"
+  echo ""
+  echo -e "${YELLOW}Are you sure you want to force push all branches?${NC}"
+  echo -e "${GRAY}(Use ↑/↓ arrows to select, Enter to confirm)${NC}"
+  echo ""
+  menu_select "Yes" "No"
+  if [ "$MENU_RESULT" -eq 0 ]; then
+    log_success "Confirmed - will force push after sync"
+  else
+    log_info "Force push cancelled - will sync without pushing"
+    FORCE_PUSH=false
+  fi
+fi
+
+# Check for uncommitted changes in main worktree
+log_section "Checking for uncommitted changes"
+
+if ! git -C "$MAIN_WORKTREE" diff --quiet || ! git -C "$MAIN_WORKTREE" diff --cached --quiet; then
+  log_error "Main worktree has uncommitted changes - cannot proceed"
+  echo ""
+  git -C "$MAIN_WORKTREE" status --short
+  exit 1
+fi
+log_success "Main worktree is clean"
+
+# Check for uncommitted changes in all worktrees (don't exit, just track)
+for wt in "${WORKTREES[@]}"; do
+  if [ -d "$wt" ]; then
+    BRANCH=$(git -C "$wt" rev-parse --abbrev-ref HEAD)
+    if ! git -C "$wt" diff --quiet || ! git -C "$wt" diff --cached --quiet; then
+      log_warning "$BRANCH has uncommitted changes (will skip rebase, but include commits)"
+      mark_dirty "$wt"
+      git -C "$wt" status --short | head -5 | while read -r line; do
+        log_detail "$line"
+      done
+    else
+      log_success "$BRANCH is clean"
+    fi
+  fi
+done
+
+# Show current state
+log_section "Current worktree state"
+git worktree list
+
+log_section "Current branch positions"
+DEV_SHA=$(git -C "$MAIN_WORKTREE" rev-parse --short "$DEV_BRANCH")
+log_info "$DEV_BRANCH: $DEV_SHA"
+for wt in "${WORKTREES[@]}"; do
+  if [ -d "$wt" ]; then
+    BRANCH=$(git -C "$wt" rev-parse --abbrev-ref HEAD)
+    SHA=$(git -C "$wt" rev-parse --short HEAD)
+    if is_dirty "$wt"; then
+      log_warning "$BRANCH: $SHA (dirty - rebase will be skipped)"
+    else
+      log_info "$BRANCH: $SHA"
+    fi
+  fi
+done
+
+# Ensure we're on dev in main worktree
+log_section "Preparing main worktree"
+log_info "Checking out $DEV_BRANCH..."
+git -C "$MAIN_WORKTREE" checkout "$DEV_BRANCH"
+log_success "On branch $DEV_BRANCH"
+
+# Process each worktree in order
+for wt in "${WORKTREES[@]}"; do
+  if [ ! -d "$wt" ]; then
+    log_warning "Skipping $wt (directory not found)"
+    continue
+  fi
+
+  BRANCH=$(git -C "$wt" rev-parse --abbrev-ref HEAD)
+  BRANCH_SHA_BEFORE=$(git -C "$wt" rev-parse --short HEAD)
+  DEV_SHA_BEFORE=$(git -C "$MAIN_WORKTREE" rev-parse --short "$DEV_BRANCH")
+
+  log_header "Processing: $BRANCH"
+  log_info "Branch SHA: $BRANCH_SHA_BEFORE"
+  log_info "Dev SHA:    $DEV_SHA_BEFORE"
+
+  if is_dirty "$wt"; then
+    log_warning "Worktree has uncommitted changes - skipping rebase"
+  fi
+
+  # Check if branch has commits ahead of dev
+  AHEAD=$(git -C "$MAIN_WORKTREE" rev-list --count "$DEV_BRANCH".."$BRANCH" 2>/dev/null || echo "0")
+  BEHIND=$(git -C "$MAIN_WORKTREE" rev-list --count "$BRANCH".."$DEV_BRANCH" 2>/dev/null || echo "0")
+
+  log_info "Commits ahead of dev: $AHEAD"
+  log_info "Commits behind dev: $BEHIND"
+
+  if [ "$AHEAD" = "0" ]; then
+    log_warning "No new commits to sync"
+
+    # If clean and behind, still rebase to catch up
+    if ! is_dirty "$wt" && [ "$BEHIND" != "0" ]; then
+      log_section "Rebasing $BRANCH to catch up with dev"
+      log_info "Running: git rebase $DEV_BRANCH"
+      echo ""
+
+      if git -C "$wt" rebase "$DEV_BRANCH"; then
+        BRANCH_SHA_AFTER=$(git -C "$wt" rev-parse --short HEAD)
+        echo ""
+        log_success "Rebase successful - branch is now up to date"
+        log_detail "Before: $BRANCH_SHA_BEFORE"
+        log_detail "After:  $BRANCH_SHA_AFTER"
+      else
+        log_error "Rebase failed! Resolve conflicts in $wt, then re-run this script"
+        exit 1
+      fi
+    fi
+    continue
+  fi
+
+  # Show commits that will be included
+  log_section "Commits to be included in dev"
+  git -C "$MAIN_WORKTREE" log --oneline "$DEV_BRANCH".."$BRANCH" | while read -r line; do
+    log_commit "$line"
+  done
+
+  # Handle differently based on dirty status
+  if is_dirty "$wt"; then
+    # Dirty worktree: try to fast-forward dev to branch (if possible)
+    # This only works if dev is an ancestor of branch
+    log_section "Attempting to fast-forward $DEV_BRANCH to $BRANCH (no rebase)"
+    log_info "Running: git merge $BRANCH --ff-only"
+    echo ""
+
+    if git -C "$MAIN_WORKTREE" merge "$BRANCH" --ff-only; then
+      DEV_SHA_AFTER=$(git -C "$MAIN_WORKTREE" rev-parse --short "$DEV_BRANCH")
+      echo ""
+      log_success "Fast-forward successful"
+      log_detail "Dev before: $DEV_SHA_BEFORE"
+      log_detail "Dev after:  $DEV_SHA_AFTER"
+      log_warning "Note: $BRANCH was not rebased (has uncommitted changes)"
+      log_warning "      It may fall behind as other branches are processed"
+    else
+      echo ""
+      log_warning "Cannot fast-forward (branches have diverged)"
+      log_warning "Skipping $BRANCH entirely - commit your changes and re-run to include"
+      log_detail "The branch has commits not in dev, but dev also has commits not in branch"
+      log_detail "A rebase is required, which cannot be done with uncommitted changes"
+    fi
+  else
+    # Clean worktree: normal rebase + fast-forward flow
+    log_section "Rebasing $BRANCH onto $DEV_BRANCH"
+    log_info "Running: git rebase $DEV_BRANCH"
+    echo ""
+
+    if git -C "$wt" rebase "$DEV_BRANCH"; then
+      BRANCH_SHA_AFTER=$(git -C "$wt" rev-parse --short HEAD)
+      echo ""
+      log_success "Rebase successful"
+      log_detail "Before: $BRANCH_SHA_BEFORE"
+      log_detail "After:  $BRANCH_SHA_AFTER"
+    else
+      log_error "Rebase failed! Resolve conflicts in $wt, then re-run this script"
+      exit 1
+    fi
+
+    # Fast-forward dev to the rebased branch
+    log_section "Fast-forwarding $DEV_BRANCH to $BRANCH"
+    log_info "Running: git merge $BRANCH --ff-only"
+    echo ""
+
+    if git -C "$MAIN_WORKTREE" merge "$BRANCH" --ff-only; then
+      DEV_SHA_AFTER=$(git -C "$MAIN_WORKTREE" rev-parse --short "$DEV_BRANCH")
+      echo ""
+      log_success "Fast-forward successful"
+      log_detail "Dev before: $DEV_SHA_BEFORE"
+      log_detail "Dev after:  $DEV_SHA_AFTER"
+    else
+      log_error "Fast-forward failed! This shouldn't happen after a successful rebase."
+      exit 1
+    fi
+  fi
+
+  log_success "Completed processing $BRANCH"
+done
+
+# Second pass: catch up any clean worktrees that fell behind
+log_header "Second Pass: Catching Up"
+DEV_SHA_CURRENT=$(git -C "$MAIN_WORKTREE" rev-parse --short "$DEV_BRANCH")
+
+for wt in "${WORKTREES[@]}"; do
+  if [ ! -d "$wt" ]; then
+    continue
+  fi
+
+  BRANCH=$(git -C "$wt" rev-parse --abbrev-ref HEAD)
+  BRANCH_SHA=$(git -C "$wt" rev-parse --short HEAD)
+
+  # Skip if already synced
+  if [ "$BRANCH_SHA" = "$DEV_SHA_CURRENT" ]; then
+    log_success "$BRANCH is already synced"
+    continue
+  fi
+
+  # Skip dirty worktrees
+  if is_dirty "$wt"; then
+    BEHIND=$(git -C "$MAIN_WORKTREE" rev-list --count "$BRANCH".."$DEV_BRANCH" 2>/dev/null || echo "0")
+    log_warning "$BRANCH is dirty, skipping ($BEHIND commits behind dev)"
+    continue
+  fi
+
+  # Rebase clean worktrees that are behind
+  BEHIND=$(git -C "$MAIN_WORKTREE" rev-list --count "$BRANCH".."$DEV_BRANCH" 2>/dev/null || echo "0")
+  if [ "$BEHIND" != "0" ]; then
+    log_section "Rebasing $BRANCH to catch up ($BEHIND commits behind)"
+    log_info "Running: git rebase $DEV_BRANCH"
+    echo ""
+
+    if git -C "$wt" rebase "$DEV_BRANCH"; then
+      BRANCH_SHA_AFTER=$(git -C "$wt" rev-parse --short HEAD)
+      echo ""
+      log_success "Rebase successful"
+      log_detail "Before: $BRANCH_SHA"
+      log_detail "After:  $BRANCH_SHA_AFTER"
+    else
+      log_error "Rebase failed! Resolve conflicts in $wt, then re-run this script"
+      exit 1
+    fi
+  fi
+done
+
+# Final state
+log_header "Sync Complete"
+
+log_section "Final worktree state"
+git worktree list
+
+log_section "Final branch positions"
+DEV_SHA=$(git -C "$MAIN_WORKTREE" rev-parse --short "$DEV_BRANCH")
+log_info "$DEV_BRANCH: $DEV_SHA"
+for wt in "${WORKTREES[@]}"; do
+  if [ -d "$wt" ]; then
+    BRANCH=$(git -C "$wt" rev-parse --abbrev-ref HEAD)
+    SHA=$(git -C "$wt" rev-parse --short HEAD)
+
+    if [ "$SHA" = "$DEV_SHA" ]; then
+      log_success "$BRANCH: $SHA (synced with dev)"
+    elif is_dirty "$wt"; then
+      BEHIND_NOW=$(git -C "$MAIN_WORKTREE" rev-list --count "$BRANCH".."$DEV_BRANCH" 2>/dev/null || echo "0")
+      log_warning "$BRANCH: $SHA (dirty, $BEHIND_NOW commits behind dev)"
+    else
+      log_info "$BRANCH: $SHA"
+    fi
+  fi
+done
+
+log_section "Recent commits on dev"
+git --no-pager -C "$MAIN_WORKTREE" log --oneline -10
+
+echo ""
+if [ -n "$DIRTY_WORKTREES" ]; then
+  log_warning "Some worktrees had uncommitted changes and may be behind dev"
+  log_warning "Commit changes and re-run to fully sync"
+else
+  log_success "All worktrees synchronized successfully!"
+fi
+
+# Force push if requested
+if [ "$FORCE_PUSH" = true ]; then
+  log_header "Force Pushing to Remote"
+
+  # Push dev branch first (with hooks - validates the shared codebase)
+  log_section "Pushing $DEV_BRANCH (with pre-push hooks)"
+  log_info "Running: git push origin $DEV_BRANCH --force-with-lease"
+  if git -C "$MAIN_WORKTREE" push origin "$DEV_BRANCH" --force-with-lease; then
+    log_success "Pushed $DEV_BRANCH"
+  else
+    log_error "Failed to push $DEV_BRANCH - aborting remaining pushes"
+    exit 1
+  fi
+
+  # Push each worktree branch (skip hooks - dev already validated the codebase)
+  log_info "Remaining branches will skip hooks (dev validated codebase)"
+  for wt in "${WORKTREES[@]}"; do
+    if [ ! -d "$wt" ]; then
+      continue
+    fi
+
+    BRANCH=$(git -C "$wt" rev-parse --abbrev-ref HEAD)
+
+    log_section "Pushing $BRANCH (--no-verify)"
+    log_info "Running: git push origin $BRANCH --force-with-lease --no-verify"
+
+    if git -C "$wt" push origin "$BRANCH" --force-with-lease --no-verify; then
+      log_success "Pushed $BRANCH"
+    else
+      log_error "Failed to push $BRANCH"
+      exit 1
+    fi
+  done
+
+  log_header "Push Complete"
+  log_success "All branches pushed to remote!"
+fi
+
+# Final summary
+echo ""
+echo -e "${GREEN}════════════════════════════════════════════════════════════${NC}"
+echo -e "${GREEN}  Summary${NC}"
+echo -e "${GREEN}════════════════════════════════════════════════════════════${NC}"
+echo ""
+
+# Get dev branch last update time in IST
+DEV_LAST_UPDATE=$(TZ='Asia/Kolkata' git -C "$MAIN_WORKTREE" log -1 --format="%cd" --date=format:"%d %b %Y, %I:%M %p IST" "$DEV_BRANCH")
+log_info "Dev branch: $DEV_BRANCH @ $(git -C "$MAIN_WORKTREE" rev-parse --short "$DEV_BRANCH")"
+log_detail "Up to date till: $DEV_LAST_UPDATE"
+
+echo ""
+log_section "Branch Update Status"
+for wt in "${WORKTREES[@]}"; do
+  if [ -d "$wt" ]; then
+    BRANCH=$(git -C "$wt" rev-parse --abbrev-ref HEAD)
+    SHA=$(git -C "$wt" rev-parse --short HEAD)
+    LAST_UPDATE=$(TZ='Asia/Kolkata' git -C "$wt" log -1 --format="%cd" --date=format:"%d %b %Y, %I:%M %p IST")
+
+    if [ "$SHA" = "$DEV_SHA" ]; then
+      log_success "$BRANCH: $SHA"
+      log_detail "Up to date till: $LAST_UPDATE"
+    elif is_dirty "$wt"; then
+      BEHIND_NOW=$(git -C "$MAIN_WORKTREE" rev-list --count "$BRANCH".."$DEV_BRANCH" 2>/dev/null || echo "0")
+      log_warning "$BRANCH: $SHA ($BEHIND_NOW commits behind)"
+      log_detail "Up to date till: $LAST_UPDATE"
+    else
+      log_info "$BRANCH: $SHA"
+      log_detail "Up to date till: $LAST_UPDATE"
+    fi
+  fi
+done
+
+echo ""
+log_info "Worktrees synced: ${#WORKTREES[@]}"
+if [ "$FORCE_PUSH" = true ]; then
+  log_info "Remote: All branches force pushed"
+else
+  log_info "Remote: No changes pushed (use -f to force push)"
+fi
+if [ -n "$DIRTY_WORKTREES" ]; then
+  log_warning "Dirty worktrees: Some branches may be behind dev"
+fi
+echo ""
+log_success "Done!"
+echo ""
