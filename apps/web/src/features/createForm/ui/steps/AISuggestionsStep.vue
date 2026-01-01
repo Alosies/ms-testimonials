@@ -4,9 +4,9 @@ import { Button } from '@testimonials/ui';
 import { Icon } from '@testimonials/icons';
 import { useApiForAI, getErrorMessage } from '@/shared/api';
 import type { AIContext, AIQuestion } from '@/shared/api';
-import type { FormData, QuestionData } from '../models';
-import QuestionCard from './QuestionCard.vue';
-import AIThinkingLoader from './AIThinkingLoader.vue';
+import type { FormData, QuestionData } from '../../models';
+import QuestionCard from '../questionEditor/QuestionCard.vue';
+import AIThinkingLoader from '../aiLoader/AIThinkingLoader.vue';
 
 const props = defineProps<{
   formData: FormData;
@@ -206,17 +206,17 @@ onMounted(async () => {
 
               <div class="space-y-2">
                 <div>
-                  <p class="text-[10px] uppercase tracking-wide text-teal-400">Industry</p>
+                  <p class="text-[10px] font-medium uppercase tracking-wide text-teal-600">Industry</p>
                   <p class="text-xs font-medium text-teal-900">{{ aiContext.industry }}</p>
                 </div>
 
                 <div>
-                  <p class="text-[10px] uppercase tracking-wide text-teal-400">Audience</p>
+                  <p class="text-[10px] font-medium uppercase tracking-wide text-teal-600">Audience</p>
                   <p class="text-xs font-medium text-teal-900">{{ aiContext.audience }}</p>
                 </div>
 
                 <div>
-                  <p class="text-[10px] uppercase tracking-wide text-teal-400">Tone</p>
+                  <p class="text-[10px] font-medium uppercase tracking-wide text-teal-600">Tone</p>
                   <p class="text-xs font-medium text-teal-900">{{ aiContext.tone }}</p>
                 </div>
               </div>

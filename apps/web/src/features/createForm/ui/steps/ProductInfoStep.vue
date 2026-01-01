@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 import { Button, Input, Textarea, Label } from '@testimonials/ui';
 import { Icon } from '@testimonials/icons';
-import type { FormData } from '../models';
+import type { FormData } from '../../models';
 
 /**
  * Input limits - must match backend validation
@@ -47,14 +47,28 @@ const focusSuggestions = [
   'Team collaboration',
 ];
 
-function addSuggestion(suggestion: string) {
+function isSuggestionSelected(suggestion: string): boolean {
   const currentFocus = formData.value.focus_areas || '';
-  if (currentFocus.toLowerCase().includes(suggestion.toLowerCase())) {
-    return; // Already included
+  return currentFocus.toLowerCase().includes(suggestion.toLowerCase());
+}
+
+function toggleSuggestion(suggestion: string) {
+  const currentFocus = formData.value.focus_areas || '';
+  const suggestionLower = suggestion.toLowerCase();
+
+  if (isSuggestionSelected(suggestion)) {
+    // Remove the suggestion
+    const parts = currentFocus
+      .split(',')
+      .map((s) => s.trim())
+      .filter((s) => s.toLowerCase() !== suggestionLower);
+    formData.value.focus_areas = parts.join(', ');
+  } else {
+    // Add the suggestion
+    formData.value.focus_areas = currentFocus
+      ? `${currentFocus}, ${suggestionLower}`
+      : suggestionLower;
   }
-  formData.value.focus_areas = currentFocus
-    ? `${currentFocus}, ${suggestion.toLowerCase()}`
-    : suggestion.toLowerCase();
 }
 
 function handleContinue() {
@@ -131,10 +145,23 @@ function handleContinue() {
             v-for="suggestion in focusSuggestions"
             :key="suggestion"
             type="button"
-            class="rounded-full border border-gray-300 bg-white px-3 py-1 text-xs text-gray-600 transition-colors hover:border-primary hover:bg-primary/5 hover:text-primary"
-            @click="addSuggestion(suggestion)"
+            class="flex items-center gap-1 rounded-full border px-3 py-1 text-xs transition-colors"
+            :class="
+              isSuggestionSelected(suggestion)
+                ? 'border-primary bg-primary/10 text-primary'
+                : 'border-gray-300 bg-white text-gray-600 hover:border-primary hover:bg-primary/5 hover:text-primary'
+            "
+            @click="toggleSuggestion(suggestion)"
           >
-            + {{ suggestion }}
+            <Icon
+              :icon="
+                isSuggestionSelected(suggestion)
+                  ? 'lucide:check'
+                  : 'lucide:plus'
+              "
+              class="h-3 w-3"
+            />
+            {{ suggestion }}
           </button>
         </div>
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Icon } from '@testimonials/icons';
-import type { QuestionData } from '../models';
+import type { QuestionData } from '../../../models';
 
 defineProps<{
   question: QuestionData;

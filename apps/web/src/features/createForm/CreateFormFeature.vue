@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { useCreateFormWizard } from './composables/useCreateFormWizard';
-import ProductInfoStep from './ui/ProductInfoStep.vue';
-import AISuggestionsStep from './ui/AISuggestionsStep.vue';
-import CustomizeQuestionsStep from './ui/CustomizeQuestionsStep.vue';
-import PreviewPublishStep from './ui/PreviewPublishStep.vue';
+import {
+  ProductInfoStep,
+  AISuggestionsStep,
+  CustomizeQuestionsStep,
+  PreviewPublishStep,
+} from './ui';
 
 const {
   currentStep,

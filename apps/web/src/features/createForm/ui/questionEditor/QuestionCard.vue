@@ -3,7 +3,7 @@ import { computed, toRefs } from 'vue';
 import { Button, Card, CardContent } from '@testimonials/ui';
 import { Icon } from '@testimonials/icons';
 import { useOrganizationStore } from '@/entities/organization';
-import type { QuestionData } from '../models';
+import type { QuestionData } from '../../models';
 
 const props = defineProps<{
   question: QuestionData;
@@ -31,9 +31,12 @@ const questionTypeLabel = computed(
 );
 const questionTypeIcon = computed(() => currentQuestionType.value?.icon ?? 'minus');
 
-// Map icon names to heroicons format
+// Map icon names to iconify format (supports heroicons:, lucide:, etc.)
 function getHeroIconName(iconName: string | null | undefined): string {
   if (!iconName) return 'heroicons:minus';
+  // If icon already has a prefix (contains `:`) use it as-is
+  if (iconName.includes(':')) return iconName;
+  // Default to heroicons for unprefixed icon names
   return `heroicons:${iconName}`;
 }
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue';
-import type { QuestionData } from '../models';
+import type { QuestionData } from '../../models';
 import QuestionCard from './QuestionCard.vue';
 import QuestionEditorPanel from './QuestionEditorPanel.vue';
 

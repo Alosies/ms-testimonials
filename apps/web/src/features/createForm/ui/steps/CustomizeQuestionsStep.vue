@@ -6,9 +6,9 @@ import { useCreateForm } from '@/entities/form';
 import { useCreateFormQuestions } from '@/entities/formQuestion';
 import { useCurrentContextStore } from '@/shared/currentContext';
 import { createSlugFromString } from '@/shared/urls';
-import type { FormData, QuestionData } from '../models';
-import QuestionList from './QuestionList.vue';
-import AddQuestionModal from './AddQuestionModal.vue';
+import type { FormData, QuestionData } from '../../models';
+import QuestionList from '../questionEditor/QuestionList.vue';
+import AddQuestionModal from '../modals/AddQuestionModal.vue';
 
 const props = defineProps<{
   questions: QuestionData[];

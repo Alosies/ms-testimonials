@@ -1,9 +1,14 @@
-export { default as ProductInfoStep } from './ProductInfoStep.vue';
-export { default as AISuggestionsStep } from './AISuggestionsStep.vue';
-export { default as CustomizeQuestionsStep } from './CustomizeQuestionsStep.vue';
-export { default as PreviewPublishStep } from './PreviewPublishStep.vue';
-export { default as QuestionCard } from './QuestionCard.vue';
-export { default as QuestionList } from './QuestionList.vue';
-export { default as FormPreview } from './FormPreview.vue';
-export { default as AddQuestionModal } from './AddQuestionModal.vue';
-export { default as AIThinkingLoader } from './AIThinkingLoader.vue';
+// Wizard Steps
+export * from './steps';
+
+// Question Editor
+export * from './questionEditor';
+
+// AI Loader
+export * from './aiLoader';
+
+// Form Preview
+export * from './formPreview';
+
+// Modals
+export * from './modals';

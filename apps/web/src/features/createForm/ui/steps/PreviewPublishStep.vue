@@ -4,8 +4,8 @@ import { useRouter } from 'vue-router';
 import { Button, Input } from '@testimonials/ui';
 import { Icon } from '@testimonials/icons';
 import { useCurrentContextStore } from '@/shared/currentContext';
-import type { FormData, QuestionData } from '../models';
-import FormPreview from './FormPreview.vue';
+import type { FormData, QuestionData } from '../../models';
+import FormPreview from '../formPreview/FormPreview.vue';
 
 const props = defineProps<{
   formData: FormData;

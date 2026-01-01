@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, toRefs, computed } from 'vue';
 import {
   Dialog,
   DialogContent,
@@ -17,20 +17,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@testimonials/ui';
-import { useGetQuestionTypes } from '@/entities/questionType';
-import type { QuestionData } from '../models';
+import { useOrganizationStore } from '@/entities/organization';
+import type { QuestionTypeId } from '@/shared/api';
+import type { QuestionData } from '../../models';
 
 const emit = defineEmits<{
   add: [question: Partial<QuestionData>];
   close: [];
 }>();
 
-const { questionTypes } = useGetQuestionTypes();
+// Get allowed question types from organization's plan (pre-formatted for select)
+const organizationStore = useOrganizationStore();
+const { questionTypeOptions: questionTypes } = toRefs(organizationStore);
 
 // Form state
 const questionText = ref('');
 const questionKey = ref('');
-const questionTypeId = ref('text_long');
+const questionTypeId = ref<QuestionTypeId>('text_long');
 const placeholder = ref('');
 const helpText = ref('');
 const isRequired = ref(true);

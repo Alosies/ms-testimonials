@@ -3,6 +3,7 @@ import { onMounted } from 'vue';
 import { RouterView } from 'vue-router';
 import { useAuth } from '@/features/auth';
 import { useCurrentContext } from '@/shared/currentContext';
+import { ConfirmationModal } from '@/shared/widgets';
 
 const { initialize } = useAuth();
 
@@ -17,4 +18,6 @@ onMounted(() => {
 
 <template>
   <RouterView />
+  <!-- Global confirmation modal -->
+  <ConfirmationModal />
 </template>

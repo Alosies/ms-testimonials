@@ -17,11 +17,10 @@ import {
 } from '@testimonials/ui';
 import { Icon } from '@testimonials/icons';
 import type { QuestionTypeId } from '@/shared/api';
-import type { QuestionData } from '../models';
-import { useQuestionEditorPanel } from '../composables';
-import QuestionPreview from './QuestionPreview.vue';
-import QuestionOptionsEditor from './QuestionOptionsEditor.vue';
-import DeleteConfirmDialog from './DeleteConfirmDialog.vue';
+import type { QuestionData } from '../../models';
+import { useQuestionEditorPanel } from '../../composables';
+import QuestionPreview from './childComponents/QuestionPreview.vue';
+import QuestionOptionsEditor from './childComponents/QuestionOptionsEditor.vue';
 
 const props = defineProps<{
   question: QuestionData | null;
@@ -40,7 +39,6 @@ const emit = defineEmits<{
 // Use composable for all logic
 const {
   localQuestion,
-  showDeleteConfirm,
   questionTypes,
   questionTypeIcon,
   supportsOptions,
@@ -51,8 +49,6 @@ const {
   removeOption,
   handleKeydown,
   handleDeleteClick,
-  handleConfirmDelete,
-  handleCancelDelete,
   closePanel,
 } = useQuestionEditorPanel({
   question: toRef(props, 'question'),
@@ -235,12 +231,4 @@ const {
       </div>
     </SheetContent>
   </Sheet>
-
-  <!-- Delete Confirmation Dialog -->
-  <DeleteConfirmDialog
-    v-model:open="showDeleteConfirm"
-    :question-text="localQuestion?.question_text ?? ''"
-    @confirm="handleConfirmDelete"
-    @cancel="handleCancelDelete"
-  />
 </template>

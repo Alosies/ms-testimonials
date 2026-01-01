@@ -1,5 +1,6 @@
 import { computed, ref, watch, toRefs, type Ref } from 'vue';
 import { useOrganizationStore } from '@/entities/organization';
+import { useConfirmationModal } from '@/shared/widgets';
 import type { AIQuestionOption } from '@/shared/api';
 import type { QuestionData } from '../models';
 
@@ -21,11 +22,11 @@ export function useQuestionEditorPanel(options: UseQuestionEditorPanelOptions) {
   const organizationStore = useOrganizationStore();
   const { questionTypeOptions: questionTypes } = toRefs(organizationStore);
 
+  // Global confirmation modal
+  const { showConfirmation } = useConfirmationModal();
+
   // Local editing state for immediate feedback
   const localQuestion = ref<QuestionData | null>(null);
-
-  // Delete confirmation state
-  const showDeleteConfirm = ref(false);
 
   // Sync local state with prop changes
   watch(
@@ -46,9 +47,12 @@ export function useQuestionEditorPanel(options: UseQuestionEditorPanelOptions) {
   const questionTypeIcon = computed(() => currentQuestionType.value?.icon ?? 'minus');
   const supportsOptions = computed(() => currentQuestionType.value?.supportsOptions ?? false);
 
-  // Map icon names to heroicons format
+  // Map icon names to iconify format (supports heroicons:, lucide:, etc.)
   function getHeroIconName(iconName: string | null | undefined): string {
     if (!iconName) return 'heroicons:minus';
+    // If icon already has a prefix (contains `:`) use it as-is
+    if (iconName.includes(':')) return iconName;
+    // Default to heroicons for unprefixed icon names
     return `heroicons:${iconName}`;
   }
 
@@ -110,18 +114,15 @@ export function useQuestionEditorPanel(options: UseQuestionEditorPanelOptions) {
     }
   }
 
-  // Delete confirmation handlers
+  // Delete confirmation handler
   function handleDeleteClick() {
-    showDeleteConfirm.value = true;
-  }
-
-  function handleConfirmDelete() {
-    showDeleteConfirm.value = false;
-    onRemove();
-  }
-
-  function handleCancelDelete() {
-    showDeleteConfirm.value = false;
+    showConfirmation({
+      actionType: 'delete_question',
+      entityName: localQuestion.value?.question_text || 'Untitled question',
+      onConfirm: () => {
+        onRemove();
+      },
+    });
   }
 
   function closePanel() {
@@ -131,7 +132,6 @@ export function useQuestionEditorPanel(options: UseQuestionEditorPanelOptions) {
   return {
     // State
     localQuestion,
-    showDeleteConfirm,
     questionTypes,
 
     // Computed
@@ -147,8 +147,6 @@ export function useQuestionEditorPanel(options: UseQuestionEditorPanelOptions) {
     removeOption,
     handleKeydown,
     handleDeleteClick,
-    handleConfirmDelete,
-    handleCancelDelete,
     closePanel,
   };
 }

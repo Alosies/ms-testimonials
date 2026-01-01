@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Input, Textarea, Label, Button } from '@testimonials/ui';
 import { Icon } from '@testimonials/icons';
-import type { FormData, QuestionData } from '../models';
+import type { FormData, QuestionData } from '../../models';
 
 defineProps<{
   formData: FormData;
