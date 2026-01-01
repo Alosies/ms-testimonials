@@ -13,13 +13,20 @@ function getInputComponent(questionTypeId: string) {
     case 'text_long':
       return 'textarea';
     case 'text_short':
-    case 'email':
-    case 'url':
+    case 'text_email':
+    case 'text_url':
       return 'input';
     case 'rating_star':
       return 'stars';
-    case 'rating_nps':
-      return 'nps';
+    case 'rating_scale':
+      return 'scale';
+    case 'choice_single':
+    case 'choice_multiple':
+    case 'choice_dropdown':
+      return 'choice';
+    case 'input_checkbox':
+    case 'input_switch':
+      return 'boolean';
     default:
       return 'input';
   }
@@ -82,20 +89,27 @@ function getInputComponent(questionTypeId: string) {
           </div>
         </template>
 
-        <template v-else-if="getInputComponent(question.question_type_id) === 'nps'">
+        <template v-else-if="getInputComponent(question.question_type_id) === 'scale'">
           <div class="mt-2 flex justify-between gap-1">
             <button
-              v-for="n in 11"
-              :key="n - 1"
+              v-for="n in 10"
+              :key="n"
               class="flex h-10 w-10 items-center justify-center rounded border text-sm font-medium transition-colors hover:border-primary hover:bg-primary/10"
               disabled
             >
-              {{ n - 1 }}
+              {{ n }}
             </button>
           </div>
           <div class="mt-1 flex justify-between text-xs text-gray-500">
-            <span>Not likely</span>
-            <span>Very likely</span>
+            <span>Low</span>
+            <span>High</span>
+          </div>
+        </template>
+
+        <template v-else-if="getInputComponent(question.question_type_id) === 'boolean'">
+          <div class="mt-2 flex items-center gap-2">
+            <div class="h-5 w-5 rounded border border-gray-300" />
+            <span class="text-sm text-gray-500">Yes / No</span>
           </div>
         </template>
       </div>

@@ -5,6 +5,24 @@
 import { z } from '@hono/zod-openapi';
 
 /**
+ * Question option for choice_single and choice_multiple questions
+ */
+export const AIQuestionOptionSchema = z.object({
+  option_value: z.string().openapi({
+    example: 'yes',
+    description: 'Snake_case stored value (saved in database)',
+  }),
+  option_label: z.string().openapi({
+    example: 'Yes, definitely!',
+    description: 'Display text shown to customer',
+  }),
+  display_order: z.number().int().openapi({
+    example: 1,
+    description: 'Order in option list (1-indexed)',
+  }),
+}).openapi('AIQuestionOption');
+
+/**
  * AI-suggested question structure
  */
 export const AIQuestionSchema = z.object({
@@ -18,7 +36,7 @@ export const AIQuestionSchema = z.object({
   }),
   question_type_id: z.string().openapi({
     example: 'text_long',
-    description: 'Question type ID (text_long, text_short, rating_star, etc.)',
+    description: 'Question type ID (text_short, text_long, text_email, rating_star, rating_scale, choice_single, choice_multiple, input_checkbox, input_switch)',
   }),
   placeholder: z.string().nullable().openapi({
     example: 'Describe the challenges you faced...',
@@ -35,6 +53,9 @@ export const AIQuestionSchema = z.object({
   display_order: z.number().int().openapi({
     example: 1,
     description: 'Display order of the question',
+  }),
+  options: z.array(AIQuestionOptionSchema).nullable().openapi({
+    description: 'Options for choice_single/choice_multiple questions. Null for other types.',
   }),
 }).openapi('AIQuestion');
 
@@ -119,6 +140,7 @@ export const AssembleTestimonialResponseSchema = z.object({
 }).openapi('AssembleTestimonialResponse');
 
 // Type exports
+export type AIQuestionOption = z.infer<typeof AIQuestionOptionSchema>;
 export type AIQuestion = z.infer<typeof AIQuestionSchema>;
 export type AIContext = z.infer<typeof AIContextSchema>;
 export type SuggestQuestionsRequest = z.infer<typeof SuggestQuestionsRequestSchema>;
