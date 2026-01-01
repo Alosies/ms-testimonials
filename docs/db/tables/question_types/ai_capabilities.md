@@ -1,10 +1,10 @@
 # Question Types - AI Capabilities
 
-**Last Updated**: 2025-12-31-1651 (GMT+5:30)
+**Last Updated**: 2026-01-01-0803 (GMT+5:30)
 
 ## Overview
 
-AI can leverage question types to intelligently select appropriate input types when generating smart prompts and to understand how to interpret responses based on answer_data_type.
+AI can leverage question types to intelligently select appropriate input types when generating smart prompts and to understand how to interpret responses based on answer_data_type. Types are aligned with Google Forms standards.
 
 ## Use Cases
 
@@ -15,8 +15,8 @@ AI can leverage question types to intelligently select appropriate input types w
 ```
 FUNCTION suggestQuestionType(questionIntent):
     IF intent contains "rating" OR "score" OR "satisfaction":
-        IF intent mentions "NPS" OR "recommend":
-            RETURN "rating_nps"
+        IF intent mentions "scale" OR "1-10":
+            RETURN "rating_scale"
         ELSE:
             RETURN "rating_star"
 
@@ -25,6 +25,15 @@ FUNCTION suggestQuestionType(questionIntent):
 
     IF intent contains "choose" OR "select" AND "multiple":
         RETURN "choice_multiple"
+
+    IF intent contains "agree" OR "consent" OR "permission":
+        RETURN "input_checkbox"
+
+    IF intent contains "toggle" OR "on/off" OR "yes/no":
+        RETURN "input_switch"
+
+    IF intent contains "date" OR "when":
+        RETURN "input_date"
 
     IF intent contains "long" OR "describe" OR "explain":
         RETURN "text_long"
@@ -43,16 +52,16 @@ FUNCTION interpretResponse(questionTypeId, response):
     SWITCH questionType.answer_data_type:
         CASE "integer":
             score = parseInteger(response.answer_integer)
-            IF questionType.unique_name == "rating_nps":
-                RETURN classifyNPS(score)  // Promoter/Passive/Detractor
-            ELSE:
-                RETURN normalizeRating(score, questionType.default_max_value)
+            RETURN normalizeRating(score, questionType.default_max_value)
 
         CASE "json":
             RETURN parseMultipleChoices(response.answer_json)
 
         CASE "boolean":
-            RETURN response.answer_boolean ? "Consented" : "Declined"
+            IF questionType.unique_name == "input_checkbox":
+                RETURN response.answer_boolean ? "Agreed" : "Declined"
+            ELSE:
+                RETURN response.answer_boolean ? "Yes" : "No"
 
         DEFAULT:
             RETURN response.answer_text
@@ -83,4 +92,18 @@ FUNCTION configureValidation(questionTypeId):
         validation.pattern = getPatternForType(questionType.unique_name)
 
     RETURN validation
+```
+
+### 4. Icon-Based UI Rendering
+**Purpose**: Use icons to provide visual cues in form builder
+
+**Pseudo-Code**:
+```
+FUNCTION renderQuestionTypeOption(questionType):
+    RETURN {
+        label: questionType.name,
+        value: questionType.unique_name,
+        icon: "heroicons:" + questionType.icon,
+        category: questionType.category
+    }
 ```

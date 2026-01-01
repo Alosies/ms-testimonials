@@ -1,6 +1,6 @@
 # Question Types - GraphQL Examples
 
-**Last Updated**: 2025-12-31-1651 (GMT+5:30)
+**Last Updated**: 2026-01-01-0803 (GMT+5:30)
 
 ## Basic Queries
 
@@ -12,6 +12,7 @@ query GetAllQuestionTypes {
     unique_name
     name
     category
+    icon
     input_component
     answer_data_type
   }
