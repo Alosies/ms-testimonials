@@ -2,6 +2,13 @@ table:
   name: question_types
   schema: public
 array_relationships:
+  - name: available_in_plans
+    using:
+      foreign_key_constraint_on:
+        column: question_type_id
+        table:
+          name: plan_question_types
+          schema: public
   - name: questions
     using:
       foreign_key_constraint_on:
