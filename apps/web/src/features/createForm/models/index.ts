@@ -1,5 +1,8 @@
 import type { AIQuestion, AIContext } from '@/shared/api';
 
+// Save Status Types
+export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
+
 // Wizard Step Types
 export type WizardStep = 'product-info' | 'ai-suggestions' | 'customize' | 'preview';
 
