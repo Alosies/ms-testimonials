@@ -1,22 +1,25 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, toRefs } from 'vue'
 import { useRoute } from 'vue-router'
 import { Icon } from '@testimonials/icons'
 import { useRouting } from '@/shared/routing'
+import { useGetForms } from '@/entities/form'
+import { useCurrentContextStore } from '@/shared/currentContext'
+import type { GetFormsQuery } from '@/shared/graphql/generated/operations'
 
-// TODO: Replace with actual forms data from composable
-// import { useForms } from '@/entities/form'
+type FormItem = GetFormsQuery['forms'][number]
 
-interface Form {
-  id: string
-  name: string
-  status: 'active' | 'draft' | 'archived'
-  testimonialCount?: number
-}
+const contextStore = useCurrentContextStore()
+const { currentOrganizationId } = toRefs(contextStore)
 
-// Placeholder data - replace with actual form fetching
-const forms = ref<Form[]>([])
-const isLoading = ref(false)
+const variables = computed(() => ({
+  organizationId: currentOrganizationId.value ?? '',
+}))
+
+const { forms: formsData, isLoading } = useGetForms(variables)
+
+// Expose forms as a computed for template usage
+const forms = computed(() => formsData.value)
 
 const route = useRoute()
 const { goToNewForm, goToForm, goToFormResponses, goToFormSettings, getFormPath } = useRouting()
@@ -45,18 +48,18 @@ const toggleAllForms = () => {
   allExpanded.value = !allExpanded.value
 }
 
-const isFormActive = (form: Form) => {
+const isFormActive = (form: FormItem) => {
   return route.path.startsWith(getFormPath(form))
 }
 
-const isSubItemActive = (form: Form, segment: string) => {
+const isSubItemActive = (form: FormItem, segment: string) => {
   const basePath = getFormPath(form)
   return segment === ''
     ? route.path === basePath
     : route.path === `${basePath}/${segment}`
 }
 
-const navigateToSubItem = (form: Form, segment: string) => {
+const navigateToSubItem = (form: FormItem, segment: string) => {
   switch (segment) {
     case 'responses':
       goToFormResponses(form)
@@ -80,15 +83,15 @@ const formSubItems = [
   { id: 'settings', label: 'Settings', icon: 'heroicons:cog-6-tooth', segment: 'settings' },
 ]
 
-const getStatusBadge = (status: Form['status']) => {
-  switch (status) {
-    case 'draft':
-      return { label: 'Draft', class: 'bg-amber-100 text-amber-700' }
-    case 'archived':
-      return { label: 'Archived', class: 'bg-gray-100 text-gray-600' }
-    default:
-      return null
+const getStatusBadge = (form: FormItem) => {
+  if (form.status === 'draft') {
+    return { label: 'Draft', class: 'bg-amber-100 text-amber-700' }
   }
+  // For published forms, show inactive badge if not active
+  if (!form.is_active) {
+    return { label: 'Inactive', class: 'bg-gray-100 text-gray-600' }
+  }
+  return null
 }
 </script>
 
@@ -109,7 +112,7 @@ const getStatusBadge = (status: Form['status']) => {
         class="text-[10px] text-gray-500 hover:text-gray-700 transition-colors duration-200"
         @click="toggleAllForms"
       >
-        {{ allExpanded ? 'Collapse' : 'Expand' }}
+        {{ allExpanded ? 'Collapse all' : 'Expand all' }}
       </button>
     </div>
 
@@ -170,13 +173,13 @@ const getStatusBadge = (status: Form['status']) => {
             :class="{ 'rotate-90': isFormExpanded(form.id) }"
           />
 
-          <!-- Form icon with gradient for archived -->
+          <!-- Form icon with style for inactive forms -->
           <Icon
             icon="heroicons:document-text"
             class="h-4 w-4 mr-2 transition-colors duration-200"
             :class="[
-              form.status === 'archived'
-                ? 'text-amber-500'
+              !form.is_active && form.status !== 'draft'
+                ? 'text-gray-400'
                 : isFormActive(form)
                   ? 'text-teal-600'
                   : 'text-gray-500 group-hover:text-gray-700',
@@ -189,20 +192,13 @@ const getStatusBadge = (status: Form['status']) => {
 
           <!-- Status Badge -->
           <span
-            v-if="getStatusBadge(form.status)"
+            v-if="getStatusBadge(form)"
             class="ml-1 px-1 py-0.5 text-[9px] font-medium rounded"
-            :class="getStatusBadge(form.status)?.class"
+            :class="getStatusBadge(form)?.class"
           >
-            {{ getStatusBadge(form.status)?.label }}
+            {{ getStatusBadge(form)?.label }}
           </span>
 
-          <!-- Testimonial Count Badge -->
-          <span
-            v-else-if="form.testimonialCount"
-            class="ml-1 px-1.5 py-0.5 text-[10px] font-medium rounded-full bg-gray-100 text-gray-600"
-          >
-            {{ form.testimonialCount }}
-          </span>
         </button>
 
         <!-- Sub Navigation (Expanded) -->
