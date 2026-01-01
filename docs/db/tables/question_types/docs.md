@@ -3,7 +3,7 @@
 ## Doc Connections
 **ID**: `table-question_types`
 
-2026-01-01-0803 IST
+2026-01-01-0840 IST
 
 **Parent ReadMes**:
 - `db-layer-3-business` - Layer 3 business tables
@@ -25,6 +25,7 @@ System-defined reference data table that defines available question types with t
 | `1767078072000_2025_12_30_1231__question_types__create_table` | Create table with seed data for 14 question types |
 | `1767205333963_2025_12_31_2351__question_types__align_google_forms` | Add icon column, rename types to Google Forms style, add Date/Time, remove NPS/consent |
 | `1767209344479_2026_01_01_0058__question_types__add_switch_checkbox` | Add Switch and Checkbox boolean types |
+| `1767236959570_2026_01_01_0839__question_types__update_icons_to_lucide` | Update 4 icons to use Lucide (toggle-right, square-check, circle-dot, list-checks) |
 
 ## Current Types (16)
 

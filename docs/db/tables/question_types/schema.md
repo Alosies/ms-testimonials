@@ -1,6 +1,6 @@
 # Question Types - Schema Reference
 
-**Last Updated**: 2026-01-01-0803 (GMT+5:30)
+**Last Updated**: 2026-01-01-0840 (GMT+5:30)
 
 ## Table Structure
 
@@ -13,7 +13,7 @@
 | `description` | TEXT | NULL | - | Brief explanation shown in form builder tooltip |
 | `input_component` | VARCHAR(50) | NOT NULL | - | Vue component name for rendering |
 | `answer_data_type` | VARCHAR(20) | NOT NULL | - | Data type: text, integer, boolean, decimal, json, url |
-| `icon` | VARCHAR(50) | NULL | - | Heroicons icon name for form builder UI |
+| `icon` | VARCHAR(50) | NULL | - | Iconify icon name (heroicons:x or lucide:x) for form builder UI |
 | `supports_min_length` | BOOLEAN | NOT NULL | `false` | Whether min_length validation is applicable |
 | `supports_max_length` | BOOLEAN | NOT NULL | `false` | Whether max_length validation is applicable |
 | `supports_min_value` | BOOLEAN | NOT NULL | `false` | Whether min_value validation is applicable |
@@ -49,8 +49,8 @@
 | text_long | Paragraph | bars-3-bottom-left | text | text |
 | text_email | Email | envelope | text | text |
 | text_url | URL | link | text | url |
-| choice_single | Multiple choice | stop-circle | choice | text |
-| choice_multiple | Checkboxes | check-circle | choice | json |
+| choice_single | Multiple choice | lucide:circle-dot | choice | text |
+| choice_multiple | Checkboxes | lucide:list-checks | choice | json |
 | choice_dropdown | Dropdown | chevron-up-down | choice | text |
 | rating_star | Star rating | star | rating | integer |
 | rating_scale | Linear scale | ellipsis-horizontal | rating | integer |
@@ -58,6 +58,6 @@
 | media_video | Video | video-camera | media | url |
 | input_date | Date | calendar | input | text |
 | input_time | Time | clock | input | text |
-| input_switch | Switch | arrow-path-rounded-square | input | boolean |
-| input_checkbox | Checkbox | check-square | input | boolean |
+| input_switch | Switch | lucide:toggle-right | input | boolean |
+| input_checkbox | Checkbox | lucide:square-check | input | boolean |
 | special_hidden | Hidden field | eye-slash | special | text |

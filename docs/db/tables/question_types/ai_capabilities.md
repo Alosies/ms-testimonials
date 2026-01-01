@@ -1,6 +1,6 @@
 # Question Types - AI Capabilities
 
-**Last Updated**: 2026-01-01-0803 (GMT+5:30)
+**Last Updated**: 2026-01-01-0840 (GMT+5:30)
 
 ## Overview
 
