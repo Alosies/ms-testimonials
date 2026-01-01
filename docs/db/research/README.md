@@ -22,6 +22,7 @@ This directory contains the database schema design for the Testimonials MVP. The
 | [queries.md](./queries.md) | Common SQL and GraphQL examples |
 | [permissions.md](./permissions.md) | Hasura permission configuration |
 | [design-decisions.md](./design-decisions.md) | JSONB policy, patterns, benefits |
+| [plan-question-types.md](./plan-question-types.md) | Plan-based question type access control |
 
 ---
 

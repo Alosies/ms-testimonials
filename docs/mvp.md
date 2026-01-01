@@ -414,6 +414,7 @@ Dashboard → Widgets → Create → Select Type → Choose Testimonials → Cop
 - [ ] Light/dark widget themes
 - [ ] Form preview
 - [ ] Email notifications (new testimonial)
+- [ ] AI Credit System (usage tracking, limits per plan, cost control)
 
 ### Won't Have (Post-MVP)
 - Video testimonials
