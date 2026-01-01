@@ -29,6 +29,9 @@ export function useQuestionEditorPanel(options: UseQuestionEditorPanelOptions) {
   // Local editing state for immediate feedback
   const localQuestion = ref<QuestionData | null>(null);
 
+  // Separate ref for Switch binding (synced with localQuestion.is_required)
+  const isRequired = ref(false);
+
   // Keyboard navigation state - only active when header is focused
   const isNavigationEnabled = ref(false);
 
@@ -44,10 +47,19 @@ export function useQuestionEditorPanel(options: UseQuestionEditorPanelOptions) {
     (newQuestion) => {
       if (newQuestion) {
         localQuestion.value = { ...newQuestion };
+        isRequired.value = Boolean(newQuestion.is_required);
       }
     },
     { immediate: true, deep: true }
   );
+
+  // Sync isRequired changes back to localQuestion
+  watch(isRequired, (newValue) => {
+    if (localQuestion.value && localQuestion.value.is_required !== newValue) {
+      localQuestion.value = { ...localQuestion.value, is_required: newValue };
+      onUpdate({ is_required: newValue });
+    }
+  });
 
   // Find current question type details
   const currentQuestionType = computed(() =>
@@ -173,6 +185,7 @@ export function useQuestionEditorPanel(options: UseQuestionEditorPanelOptions) {
     // Computed
     questionTypeIcon,
     supportsOptions,
+    isRequired,
 
     // Methods
     getHeroIconName,
