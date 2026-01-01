@@ -1,0 +1,7 @@
+mutation PublishForm($id: String!) {
+  update_forms_by_pk(pk_columns: { id: $id }, _set: { status: "published" }) {
+    id
+    status
+    updated_at
+  }
+}

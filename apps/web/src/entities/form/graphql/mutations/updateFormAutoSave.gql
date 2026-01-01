@@ -1,0 +1,12 @@
+# Auto-save mutation with minimal response
+# Returns ONLY metadata fields to prevent Apollo cache from overwriting local state
+# See ADR-003 for rationale
+mutation UpdateFormAutoSave($id: String!, $changes: forms_set_input!) {
+  update_forms_by_pk(pk_columns: { id: $id }, _set: $changes) {
+    id
+    status
+    updated_at
+    # DO NOT add: product_name, product_description, name, slug, settings
+    # Apollo will overwrite those in cache, causing UI flicker
+  }
+}
