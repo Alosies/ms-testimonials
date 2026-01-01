@@ -54,7 +54,7 @@ const iconName = computed(() => {
 
 <template>
   <Dialog :open="modalState.visible" @update:open="handleUpdateVisible">
-    <DialogContent class="sm:max-w-md">
+    <DialogContent class="z-[60] sm:max-w-md" overlay-class="z-[60]">
       <DialogHeader>
         <!-- Icon -->
         <div

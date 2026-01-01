@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from "vue"
 import type { DialogContentEmits, DialogContentProps } from "reka-ui"
 import type { HTMLAttributes } from "vue"
 import { reactiveOmit } from "@vueuse/core"
@@ -12,19 +13,25 @@ import {
 } from "reka-ui"
 import { cn } from '@ui/lib/utils'
 
-const props = defineProps<DialogContentProps & { class?: HTMLAttributes["class"] }>()
+const props = defineProps<DialogContentProps & {
+  class?: HTMLAttributes["class"]
+  overlayClass?: HTMLAttributes["class"]
+}>()
 const emits = defineEmits<DialogContentEmits>()
 
-const delegatedProps = reactiveOmit(props, "class")
+const delegatedProps = reactiveOmit(props, "class", "overlayClass")
 
 const forwarded = useForwardPropsEmits(delegatedProps, emits)
+
+const overlayClasses = computed(() => cn(
+  "fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+  props.overlayClass,
+))
 </script>
 
 <template>
   <DialogPortal>
-    <DialogOverlay
-      class="fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
-    />
+    <DialogOverlay :class="overlayClasses" />
     <DialogContent
       v-bind="forwarded"
       :class="
