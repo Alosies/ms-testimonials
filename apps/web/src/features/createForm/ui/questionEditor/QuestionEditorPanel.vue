@@ -46,6 +46,7 @@ const {
   isTransitioning,
   questionTypeIcon,
   supportsOptions,
+  isRequired,
   getHeroIconName,
   updateField,
   addOption,
@@ -190,7 +191,7 @@ const {
             </div>
 
             <!-- Type and Required Row -->
-            <div class="flex gap-4">
+            <div class="flex items-end gap-4">
               <!-- Question Type -->
               <div class="flex-1">
                 <Label class="text-sm font-medium">Question Type</Label>
@@ -219,14 +220,9 @@ const {
               </div>
 
               <!-- Required Toggle -->
-              <div class="flex flex-col justify-end">
-                <div class="flex items-center gap-3 rounded-lg border bg-gray-50 px-4 py-2.5">
-                  <Label class="text-sm">Required</Label>
-                  <Switch
-                    :checked="localQuestion.is_required"
-                    @update:checked="(v: boolean) => updateField('is_required', v)"
-                  />
-                </div>
+              <div class="flex h-9 items-center gap-3 rounded-lg border bg-gray-50 px-4">
+                <Label class="text-sm">Required</Label>
+                <Switch v-model="isRequired" />
               </div>
             </div>
 
