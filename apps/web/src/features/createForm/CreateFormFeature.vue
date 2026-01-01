@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref, nextTick } from 'vue';
+import { Icon } from '@testimonials/icons';
 import { useFormEditor } from './composables/useFormEditor';
 import {
   ProductInfoStep,
@@ -55,9 +56,6 @@ const {
   // Publish
   handlePublish,
   publishing,
-
-  // Edit mode
-  isEditMode,
 } = useFormEditor({ existingFormId: props.existingFormId });
 
 // Show loading during initialization or form loading
@@ -65,8 +63,33 @@ const isPageLoading = computed(
   () => isInitializing.value || loadingForm.value
 );
 
-// Page title based on mode
-const pageTitle = computed(() => (isEditMode.value ? 'Edit Form' : 'Create Form'));
+// Inline title editing
+const isEditingTitle = ref(false);
+const titleInputRef = ref<HTMLInputElement | null>(null);
+
+// Display title - use form name or fallback
+const displayTitle = computed(() => formData.name || 'Untitled Form');
+
+async function startEditingTitle() {
+  isEditingTitle.value = true;
+  await nextTick();
+  titleInputRef.value?.focus();
+  titleInputRef.value?.select();
+}
+
+function finishEditingTitle() {
+  isEditingTitle.value = false;
+  // Trim whitespace and ensure we have a name
+  formData.name = formData.name.trim() || 'Untitled Form';
+}
+
+function handleTitleKeydown(event: KeyboardEvent) {
+  if (event.key === 'Enter') {
+    finishEditingTitle();
+  } else if (event.key === 'Escape') {
+    isEditingTitle.value = false;
+  }
+}
 
 const steps = [
   { id: 'product-info', label: 'Product Info', number: 1 },
@@ -78,9 +101,35 @@ const steps = [
 
 <template>
   <div class="mx-auto max-w-5xl px-4 py-8">
-    <!-- Header with Title and Save Status -->
+    <!-- Header with Editable Title and Save Status -->
     <div class="mb-6 flex items-center justify-between">
-      <h1 class="text-2xl font-semibold text-gray-900">{{ pageTitle }}</h1>
+      <!-- Inline Editable Title -->
+      <div class="group flex items-center gap-2">
+        <input
+          v-if="isEditingTitle"
+          ref="titleInputRef"
+          v-model="formData.name"
+          type="text"
+          class="rounded-md border border-gray-300 px-2 py-1 text-2xl font-semibold text-gray-900 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+          placeholder="Untitled Form"
+          @blur="finishEditingTitle"
+          @keydown="handleTitleKeydown"
+        />
+        <button
+          v-else
+          type="button"
+          class="flex items-center gap-2 rounded-md px-2 py-1 text-left hover:bg-gray-100"
+          @click="startEditingTitle"
+        >
+          <h1 class="text-2xl font-semibold text-gray-900">
+            {{ displayTitle }}
+          </h1>
+          <Icon
+            icon="lucide:pencil"
+            class="h-4 w-4 text-gray-400 opacity-0 transition-opacity group-hover:opacity-100"
+          />
+        </button>
+      </div>
       <SaveStatusIndicator
         :status="saveStatus"
         :last-saved-at="lastSavedAt"
@@ -98,9 +147,7 @@ const steps = [
         <div
           class="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-primary/20 border-t-primary"
         />
-        <p class="mt-4 text-sm text-gray-500">
-          {{ isEditMode ? 'Loading form...' : 'Creating draft...' }}
-        </p>
+        <p class="mt-4 text-sm text-gray-500">Loading form...</p>
       </div>
     </div>
 

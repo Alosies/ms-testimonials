@@ -18,7 +18,7 @@ interface UseFormAutoSaveOptions {
  * Uses the minimal response mutation pattern to prevent Apollo cache
  * from overwriting local state. See ADR-003 for rationale.
  *
- * Only auto-saves: product_name, product_description
+ * Only auto-saves: name, product_name, product_description
  * Questions require explicit save via CustomizeQuestionsStep.
  */
 export function useFormAutoSave(options: UseFormAutoSaveOptions) {
@@ -51,6 +51,7 @@ export function useFormAutoSave(options: UseFormAutoSaveOptions) {
       await updateFormAutoSave({
         id: formId.value,
         changes: {
+          name: formData.name,
           product_name: formData.product_name,
           product_description: formData.product_description,
         },
