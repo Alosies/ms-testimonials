@@ -92,24 +92,29 @@ function getInputComponent(questionTypeId: string) {
         <template v-else-if="getInputComponent(question.question_type_id) === 'scale'">
           <div class="mt-2 flex justify-between gap-1">
             <button
-              v-for="n in 10"
+              v-for="n in ((question.max_value ?? 10) - (question.min_value ?? 1) + 1)"
               :key="n"
               class="flex h-10 w-10 items-center justify-center rounded border text-sm font-medium transition-colors hover:border-primary hover:bg-primary/10"
               disabled
             >
-              {{ n }}
+              {{ (question.min_value ?? 1) + n - 1 }}
             </button>
           </div>
           <div class="mt-1 flex justify-between text-xs text-gray-500">
-            <span>Low</span>
-            <span>High</span>
+            <span>{{ question.scale_min_label || 'Low' }}</span>
+            <span>{{ question.scale_max_label || 'High' }}</span>
           </div>
         </template>
 
         <template v-else-if="getInputComponent(question.question_type_id) === 'boolean'">
-          <div class="mt-2 flex items-center gap-2">
-            <div class="h-5 w-5 rounded border border-gray-300" />
-            <span class="text-sm text-gray-500">Yes / No</span>
+          <div class="mt-2 flex items-center gap-3">
+            <div
+              v-if="question.question_type_id === 'input_switch'"
+              class="h-6 w-11 rounded-full bg-gray-200 p-0.5"
+            >
+              <div class="h-5 w-5 rounded-full bg-white shadow" />
+            </div>
+            <div v-else class="h-5 w-5 rounded border-2 border-gray-300" />
           </div>
         </template>
       </div>
