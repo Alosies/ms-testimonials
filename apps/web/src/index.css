@@ -122,6 +122,30 @@ body {
   }
 }
 
+/* Subtle scrollbar - consistent across the application */
+@layer utilities {
+  .scrollbar-subtle::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .scrollbar-subtle::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-subtle::-webkit-scrollbar-thumb {
+    @apply bg-gray-300/40 rounded;
+  }
+
+  .scrollbar-subtle::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-400/60;
+  }
+
+  .scrollbar-subtle {
+    scrollbar-width: thin;
+    scrollbar-color: theme('colors.gray.300 / 40%') transparent;
+  }
+}
+
 /* Scroll animations */
 @layer utilities {
   .animate-fade-in-up {
