@@ -4,21 +4,21 @@
       "command": "npx",
       "args": ["@playwright/mcp@latest", "--extension"],
       "env": {
-        "PLAYWRIGHT_MCP_EXTENSION_TOKEN": "YOUR_YELLOW_CHROME_PROFILE_TOKEN"
+        "PLAYWRIGHT_MCP_EXTENSION_TOKEN": "emwp9BuQrQkX6cs_Wr53cFJroIRbAvuvRZMz-5fff2M"
       }
     },
     "playwright-green": {
       "command": "npx",
       "args": ["@playwright/mcp@latest", "--extension"],
       "env": {
-        "PLAYWRIGHT_MCP_EXTENSION_TOKEN": "YOUR_GREEN_CHROME_PROFILE_TOKEN"
+        "PLAYWRIGHT_MCP_EXTENSION_TOKEN": "6PgeKlvptpZSD4MqidmrHl1xtJccGs9cDj8y7JHsgHA"
       }
     },
     "playwright-blue": {
       "command": "npx",
       "args": ["@playwright/mcp@latest", "--extension"],
       "env": {
-        "PLAYWRIGHT_MCP_EXTENSION_TOKEN": "YOUR_BLUE_CHROME_PROFILE_TOKEN"
+        "PLAYWRIGHT_MCP_EXTENSION_TOKEN": "OSir6AjZkDYVvAgDNiylbpduqbOlZgHMNmlRpr6-4TY"
       }
     },
     "Context7": {
