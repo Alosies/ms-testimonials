@@ -1,188 +1,149 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import {
-  Button,
-  Input,
-  Textarea,
-  Label,
-  Switch,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-  Card,
-  CardContent,
-} from '@testimonials/ui';
+import { computed, toRefs } from 'vue';
+import { Button, Card, CardContent } from '@testimonials/ui';
 import { Icon } from '@testimonials/icons';
-import { useGetQuestionTypes } from '@/entities/questionType';
+import { useOrganizationStore } from '@/entities/organization';
 import type { QuestionData } from '../models';
 
 const props = defineProps<{
   question: QuestionData;
   index: number;
+  isSelected?: boolean;
   readonly?: boolean;
 }>();
 
 const emit = defineEmits<{
-  update: [index: number, updates: Partial<QuestionData>];
+  select: [index: number];
   remove: [index: number];
 }>();
 
-const { questionTypes } = useGetQuestionTypes();
-const isExpanded = ref(false);
+// Get allowed question types from organization's plan
+const organizationStore = useOrganizationStore();
+const { questionTypeOptions: questionTypes } = toRefs(organizationStore);
 
-const questionTypeLabel = computed(() => {
-  const type = questionTypes.value.find(
-    (t) => t.id === props.question.question_type_id
-  );
-  return type?.name ?? props.question.question_type_id;
-});
+// Find current question type details
+const currentQuestionType = computed(() =>
+  questionTypes.value.find((t) => t.id === props.question.question_type_id)
+);
 
-function toggleExpanded() {
+const questionTypeLabel = computed(
+  () => currentQuestionType.value?.name ?? props.question.question_type_id
+);
+const questionTypeIcon = computed(() => currentQuestionType.value?.icon ?? 'minus');
+
+// Map icon names to heroicons format
+function getHeroIconName(iconName: string | null | undefined): string {
+  if (!iconName) return 'heroicons:minus';
+  return `heroicons:${iconName}`;
+}
+
+function handleClick() {
   if (!props.readonly) {
-    isExpanded.value = !isExpanded.value;
+    emit('select', props.index);
   }
 }
 
-function updateField<K extends keyof QuestionData>(
-  field: K,
-  value: QuestionData[K]
-) {
-  emit('update', props.index, { [field]: value });
+function handleRemove(event: Event) {
+  event.stopPropagation();
+  emit('remove', props.index);
 }
 </script>
 
 <template>
   <Card
-    class="transition-shadow"
-    :class="{ 'hover:shadow-md': !readonly, 'cursor-pointer': !readonly }"
+    class="group transition-all duration-200"
+    :class="[
+      !readonly && 'cursor-pointer hover:shadow-md hover:border-primary/50',
+      isSelected && 'ring-2 ring-primary border-primary shadow-md',
+    ]"
+    @click="handleClick"
   >
     <CardContent class="p-4">
-      <!-- Header -->
       <div class="flex items-start gap-3">
         <!-- Drag Handle -->
         <div
           v-if="!readonly"
-          class="mt-1 cursor-grab text-gray-400 hover:text-gray-600"
+          class="mt-0.5 cursor-grab text-gray-300 transition-colors group-hover:text-gray-400"
+          @click.stop
         >
           <Icon icon="lucide:grip-vertical" class="h-5 w-5" />
         </div>
 
         <!-- Question Number -->
         <div
-          class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gray-100 text-xs font-medium text-gray-600"
+          class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-medium transition-colors"
+          :class="[
+            isSelected
+              ? 'bg-primary text-white'
+              : 'bg-gray-100 text-gray-600 group-hover:bg-primary/10 group-hover:text-primary',
+          ]"
         >
           {{ index + 1 }}
         </div>
 
         <!-- Question Content -->
         <div class="min-w-0 flex-1">
-          <div class="flex items-start justify-between gap-2">
-            <div class="flex-1">
-              <p class="text-sm text-gray-900">
+          <div class="flex items-start justify-between gap-3">
+            <div class="flex-1 min-w-0">
+              <p
+                class="text-sm text-gray-900 line-clamp-2"
+                :class="{ 'font-medium': isSelected }"
+              >
                 {{ question.question_text }}
               </p>
-              <div class="mt-1 flex items-center gap-2 text-xs text-gray-500">
+
+              <!-- Meta info -->
+              <div class="mt-1.5 flex flex-wrap items-center gap-2">
+                <!-- Question Type Badge -->
+                <div
+                  class="inline-flex items-center gap-1 rounded-md bg-gray-100 px-2 py-0.5 text-xs text-gray-600"
+                >
+                  <Icon
+                    :icon="getHeroIconName(questionTypeIcon)"
+                    class="h-3 w-3"
+                  />
+                  <span>{{ questionTypeLabel }}</span>
+                </div>
+
+                <!-- Required Badge -->
                 <span
-                  class="rounded bg-gray-100 px-1.5 py-0.5 font-mono text-gray-600"
+                  v-if="question.is_required"
+                  class="inline-flex items-center rounded-md bg-red-50 px-2 py-0.5 text-xs font-medium text-red-600"
                 >
-                  {{ questionTypeLabel }}
+                  Required
                 </span>
-                <span v-if="question.is_required" class="text-red-500"
-                  >Required</span
+
+                <!-- Options Count for choice questions -->
+                <span
+                  v-if="question.options?.length"
+                  class="text-xs text-gray-500"
                 >
+                  {{ question.options.length }} options
+                </span>
               </div>
             </div>
 
             <!-- Actions -->
-            <div v-if="!readonly" class="flex items-center gap-1">
-              <Button
-                variant="ghost"
-                size="icon"
-                class="h-8 w-8"
-                @click.stop="toggleExpanded"
+            <div class="flex shrink-0 items-center gap-1">
+              <!-- Edit indicator on hover -->
+              <div
+                v-if="!readonly && !isSelected"
+                class="hidden items-center gap-1 text-xs text-gray-400 group-hover:flex"
               >
-                <Icon
-                  :icon="isExpanded ? 'lucide:chevron-up' : 'lucide:chevron-down'"
-                  class="h-4 w-4"
-                />
-              </Button>
+                <Icon icon="lucide:pencil" class="h-3 w-3" />
+                <span>Edit</span>
+              </div>
+
+              <!-- Delete Button -->
               <Button
+                v-if="!readonly"
                 variant="ghost"
                 size="icon"
-                class="h-8 w-8 text-red-500 hover:text-red-600"
-                @click.stop="emit('remove', index)"
+                class="h-8 w-8 text-gray-400 opacity-0 transition-opacity hover:text-red-500 group-hover:opacity-100"
+                @click="handleRemove"
               >
                 <Icon icon="lucide:trash-2" class="h-4 w-4" />
               </Button>
-            </div>
-          </div>
-
-          <!-- Expanded Edit Form -->
-          <div v-if="isExpanded && !readonly" class="mt-4 space-y-4 border-t pt-4">
-            <!-- Question Text -->
-            <div>
-              <Label>Question Text</Label>
-              <Textarea
-                :model-value="question.question_text"
-                class="mt-1"
-                rows="2"
-                @update:model-value="(v) => updateField('question_text', String(v))"
-              />
-            </div>
-
-            <!-- Question Type -->
-            <div>
-              <Label>Question Type</Label>
-              <Select
-                :model-value="question.question_type_id"
-                @update:model-value="(v) => updateField('question_type_id', String(v))"
-              >
-                <SelectTrigger class="mt-1">
-                  <SelectValue placeholder="Select type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem
-                    v-for="type in questionTypes"
-                    :key="type.id"
-                    :value="type.id"
-                  >
-                    {{ type.name }}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <!-- Placeholder -->
-            <div>
-              <Label>Placeholder Text</Label>
-              <Input
-                :model-value="question.placeholder ?? ''"
-                class="mt-1"
-                placeholder="Enter placeholder text..."
-                @update:model-value="(v) => updateField('placeholder', String(v) || null)"
-              />
-            </div>
-
-            <!-- Help Text -->
-            <div>
-              <Label>Help Text</Label>
-              <Input
-                :model-value="question.help_text ?? ''"
-                class="mt-1"
-                placeholder="Enter help text..."
-                @update:model-value="(v) => updateField('help_text', String(v) || null)"
-              />
-            </div>
-
-            <!-- Required Toggle -->
-            <div class="flex items-center justify-between">
-              <Label>Required</Label>
-              <Switch
-                :checked="question.is_required"
-                @update:checked="(v: boolean) => updateField('is_required', v)"
-              />
             </div>
           </div>
         </div>
