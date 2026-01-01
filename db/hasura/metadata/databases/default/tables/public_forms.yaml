@@ -55,9 +55,13 @@ select_permissions:
         - product_name
         - product_description
         - settings
+        - status
       filter:
-        is_active:
-          _eq: true
+        _and:
+          - is_active:
+              _eq: true
+          - status:
+              _eq: published
   - role: member
     permission:
       columns: '*'
