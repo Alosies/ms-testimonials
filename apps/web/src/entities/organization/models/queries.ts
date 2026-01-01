@@ -3,6 +3,7 @@ import type {
   GetOrganizationQueryVariables,
   GetUserDefaultOrganizationQuery,
   GetUserDefaultOrganizationQueryVariables,
+  OrganizationBasicFragment,
 } from '@/shared/graphql/generated/operations';
 
 // ========================================
@@ -24,6 +25,22 @@ export type UserDefaultOrganization = NonNullable<UserOrganizationRole['organiza
 
 // Role from the organization role assignment
 export type OrganizationRole = UserOrganizationRole['role'];
+
+// ========================================
+// Plan and Question Types
+// ========================================
+
+// Organization's plan assignment (from OrganizationBasic fragment)
+export type OrganizationPlan = OrganizationBasicFragment['plans'][number];
+
+// Plan details with question types
+export type OrganizationPlanDetails = OrganizationPlan['plan'];
+
+// Plan-question type junction entry
+export type PlanQuestionTypeEntry = OrganizationPlanDetails['question_types'][number];
+
+// Question type allowed by the plan
+export type AllowedQuestionType = PlanQuestionTypeEntry['question_type'];
 
 // ========================================
 // Role Type Guards and Constants
