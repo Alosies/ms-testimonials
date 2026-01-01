@@ -91,11 +91,27 @@ export function useCurrentContext() {
     { immediate: true },
   );
 
+  // Mark context as ready when auth is initialized and org is loaded (or no user)
+  // This prevents flash of empty state while data is loading
+  watch(
+    [isInitialized, isOrgLoading, isAuthenticated],
+    ([authInit, orgLoading, authenticated]) => {
+      // Only mark ready when:
+      // 1. Auth has been initialized, AND
+      // 2. Either: user is not authenticated (no org to load) OR org loading is done
+      if (authInit && (!authenticated || !orgLoading)) {
+        contextStore.markAsReady();
+      }
+    },
+    { immediate: true },
+  );
+
   return {
     // From context store
     user: computed(() => contextStore.user),
     organization: computed(() => contextStore.organization),
     isLoading: computed(() => contextStore.isLoading),
+    isReady: computed(() => contextStore.isReady),
     currentUserId: contextStore.currentUserId,
     currentOrganizationId: contextStore.currentOrganizationId,
     currentOrganizationSlug: contextStore.currentOrganizationSlug,
