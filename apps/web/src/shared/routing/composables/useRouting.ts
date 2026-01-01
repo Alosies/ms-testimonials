@@ -121,7 +121,7 @@ function useRoutingCore(): RoutingUtilities {
 
   // Forms
   const goToForms = () => navigate(formsPath.value)
-  const goToNewForm = () => navigate(withOrgPrefix('/forms/new'))
+  const goToNewForm = () => navigate(withOrgPrefix('/forms/creating'))
   const goToForm = (form: FormRef, options?: NavigationOptions) =>
     navigate(getFormPath(form), options)
   const goToFormResponses = (form: FormRef, options?: NavigationOptions) =>
