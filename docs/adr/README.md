@@ -31,3 +31,4 @@ Each ADR follows this structure:
 |----|-------|--------|------|
 | [ADR-001](./001-default-organization-creation.md) | Default Organization Creation on Login | Accepted | 2025-12-30 |
 | [ADR-002](./002-organization-setup-status.md) | Organization Setup Status Tracking | Proposed | 2025-12-30 |
+| [ADR-003](./003-form-autosave-pattern.md) | Form Auto-Save Pattern | Accepted | 2026-01-01 |
