@@ -6,7 +6,7 @@ import UserProfileSection from './UserProfileSection.vue'
 
 <template>
   <aside
-    class="flex flex-col h-full w-56 bg-gray-50 border-r border-gray-200 overflow-hidden"
+    class="flex flex-col h-full w-64 bg-gray-50 border-r border-gray-200 overflow-hidden"
   >
     <!-- Logo/Brand -->
     <div class="px-4 py-4 border-b border-gray-200">
@@ -31,7 +31,8 @@ import UserProfileSection from './UserProfileSection.vue'
     </div>
 
     <!-- Main Navigation Area (Scrollable) -->
-    <div class="flex-1 overflow-y-auto px-3 py-4 scrollbar-subtle">
+    <!-- scrollbar-gutter: stable reserves space for scrollbar to prevent layout shift -->
+    <div class="flex-1 overflow-y-auto overflow-x-hidden pl-3 pr-1 py-4 scrollbar-subtle">
       <div class="space-y-6">
         <!-- Application Navigation -->
         <ApplicationNavigation />
@@ -47,6 +48,10 @@ import UserProfileSection from './UserProfileSection.vue'
 </template>
 
 <style scoped>
+.scrollbar-subtle {
+  scrollbar-gutter: stable;
+}
+
 .scrollbar-subtle::-webkit-scrollbar {
   width: 4px;
 }
