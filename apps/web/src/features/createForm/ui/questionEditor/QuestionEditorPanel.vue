@@ -13,8 +13,11 @@ import {
   SelectValue,
   Sheet,
   SheetContent,
+  SheetTitle,
+  SheetDescription,
   Separator,
 } from '@testimonials/ui';
+import { VisuallyHidden } from 'reka-ui';
 import { Icon } from '@testimonials/icons';
 import type { QuestionTypeId } from '@/shared/api';
 import type { QuestionData } from '../../models';
@@ -113,9 +116,14 @@ const {
           </div>
 
           <div>
-            <h2 class="text-base font-semibold text-gray-900">
+            <SheetTitle class="text-base font-semibold text-gray-900">
               Question {{ questionIndex + 1 }} of {{ totalQuestions }}
-            </h2>
+            </SheetTitle>
+            <VisuallyHidden>
+              <SheetDescription>
+                Edit question settings including text, type, and options
+              </SheetDescription>
+            </VisuallyHidden>
             <!-- Keyboard navigation hint - only shown on devices with keyboards -->
             <p
               v-if="hasKeyboard"
