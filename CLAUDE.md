@@ -2,6 +2,36 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Multi-Agent Worktree Setup
+
+This project uses Git worktrees for parallel development with multiple Claude agents. Each worktree has a color-coded name that determines which Playwright MCP to use.
+
+### Worktree Structure
+```
+proj-testimonials/
+├── ms-testimonials/         # Parent (dev branch)
+├── ms-testimonials-yellow/  # Yellow agent worktree
+├── ms-testimonials-green/   # Green agent worktree
+└── ms-testimonials-blue/    # Blue agent worktree
+```
+
+### Playwright MCP Selection (CRITICAL)
+**You MUST use the Playwright MCP that matches your worktree folder color:**
+
+| Folder Contains | Use This MCP |
+|-----------------|--------------|
+| `ms-testimonials-yellow` | `playwright-yellow` |
+| `ms-testimonials-green` | `playwright-green` |
+| `ms-testimonials-blue` | `playwright-blue` |
+
+Check your working directory path to determine which color you are. Each Playwright connects to a separate Chrome profile to avoid conflicts between agents.
+
+### Branch Naming Convention
+- Yellow agent: `yellow/*` (e.g., `yellow/feature-x`)
+- Green agent: `green/*` (e.g., `green/feature-y`)
+- Blue agent: `blue/*` (e.g., `blue/feature-z`)
+- Default branches: `yellow/default`, `green/default`, `blue/default`
+
 ## Project Overview
 
 Testimonials is a testimonial collection and display tool with AI-powered smart prompts. It helps businesses collect high-quality testimonials from customers through guided prompts, then assembles them into coherent testimonials using AI.

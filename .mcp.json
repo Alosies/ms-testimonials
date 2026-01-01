@@ -1,26 +1,33 @@
 {
-    "mcpServers": {
-      "playwright-alosies": {
-        "command": "npx",
-        "args": ["@playwright/mcp@latest", "--extension"],
-        "env": {
-          "PLAYWRIGHT_MCP_EXTENSION_TOKEN": "7iFFBC_P12e51WaW3VX3PXqWNZnEGmBd-JzHlA_3lUY"
-        }
-      },
-      "playwright-coursepads": {
-        "command": "npx",
-        "args": ["@playwright/mcp@latest", "--extension"],
-        "env": {
-          "PLAYWRIGHT_MCP_EXTENSION_TOKEN": "I0T7W9OZLnlYaGtAC82EbAgPSC96XuCzvV0HNnnHz6o"
-        }
-      },
-      "Context7": {
-        "command": "npx",
-        "args": ["-y", "@upstash/context7-mcp"]
-      },
-      "tm-graph": {
-        "command": "/Users/alosiesgeorge/CodeRepositories/Fork/micro-saas/proj-testimonials/ms-testimonials/MCPs/graphql/venv/bin/python",
-        "args": ["/Users/alosiesgeorge/CodeRepositories/Fork/micro-saas/proj-testimonials/ms-testimonials/MCPs/graphql/src/main.py"]
+  "mcpServers": {
+    "playwright-yellow": {
+      "command": "npx",
+      "args": ["@playwright/mcp@latest", "--extension"],
+      "env": {
+        "PLAYWRIGHT_MCP_EXTENSION_TOKEN": "YOUR_YELLOW_CHROME_PROFILE_TOKEN"
       }
+    },
+    "playwright-green": {
+      "command": "npx",
+      "args": ["@playwright/mcp@latest", "--extension"],
+      "env": {
+        "PLAYWRIGHT_MCP_EXTENSION_TOKEN": "YOUR_GREEN_CHROME_PROFILE_TOKEN"
+      }
+    },
+    "playwright-blue": {
+      "command": "npx",
+      "args": ["@playwright/mcp@latest", "--extension"],
+      "env": {
+        "PLAYWRIGHT_MCP_EXTENSION_TOKEN": "YOUR_BLUE_CHROME_PROFILE_TOKEN"
+      }
+    },
+    "Context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp"]
+    },
+    "tm-graph": {
+      "command": "/Users/alosiesgeorge/CodeRepositories/Fork/micro-saas/proj-testimonials/ms-testimonials/MCPs/graphql/venv/bin/python",
+      "args": ["/Users/alosiesgeorge/CodeRepositories/Fork/micro-saas/proj-testimonials/ms-testimonials/MCPs/graphql/src/main.py"]
     }
   }
+}
