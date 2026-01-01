@@ -36,9 +36,9 @@ definePage({
   },
 })
 
-// Context & Data
+// Context & Data - use toRefs for proper Pinia reactivity (same pattern as sidebar)
 const contextStore = useCurrentContextStore()
-const { currentOrganizationId } = toRefs(contextStore)
+const { currentOrganizationId, isReady } = toRefs(contextStore)
 
 const variables = computed(() => ({
   organizationId: currentOrganizationId.value ?? '',
@@ -50,6 +50,9 @@ const { forms, isLoading } = useGetForms(variables)
 const { goToNewForm, goToForm, goToFormEdit, goToFormResponses, goToFormSettings } = useRouting()
 
 // Computed states
+// Show loading when context is not ready OR when query is loading
+// isReady becomes true only after auth is initialized AND org is loaded
+const showLoading = computed(() => !isReady.value || isLoading.value)
 const hasForms = computed(() => forms.value.length > 0)
 
 // Status badge configuration
@@ -112,8 +115,8 @@ const formatDate = (dateString: string) => {
           </Button>
         </header>
 
-        <!-- Loading State -->
-        <div v-if="isLoading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Loading State (shown while auth initializes OR query loads) -->
+        <div v-if="showLoading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <Card v-for="n in 6" :key="n" class="p-6">
             <div class="space-y-4">
               <div class="flex items-start justify-between">
@@ -129,7 +132,7 @@ const formatDate = (dateString: string) => {
           </Card>
         </div>
 
-        <!-- Empty State -->
+        <!-- Empty State (only shown after loading completes with no forms) -->
         <div
           v-else-if="!hasForms"
           class="flex flex-col items-center justify-center py-16 px-4"
