@@ -39,14 +39,14 @@ const sheetVariants = cva(
       { side: 'right', size: 'default', class: 'sm:max-w-md' },
       { side: 'right', size: 'lg', class: 'sm:max-w-lg' },
       { side: 'right', size: 'xl', class: 'sm:max-w-xl' },
-      { side: 'right', size: 'wide', class: 'sm:w-3/5 sm:max-w-none' },
+      { side: 'right', size: 'wide', class: 'sm:w-[70%] sm:max-w-none' },
       { side: 'right', size: 'full', class: 'w-full sm:max-w-none' },
       // Left side sizes
       { side: 'left', size: 'sm', class: 'sm:max-w-sm' },
       { side: 'left', size: 'default', class: 'sm:max-w-md' },
       { side: 'left', size: 'lg', class: 'sm:max-w-lg' },
       { side: 'left', size: 'xl', class: 'sm:max-w-xl' },
-      { side: 'left', size: 'wide', class: 'sm:w-3/5 sm:max-w-none' },
+      { side: 'left', size: 'wide', class: 'sm:w-[70%] sm:max-w-none' },
       { side: 'left', size: 'full', class: 'w-full sm:max-w-none' },
     ],
     defaultVariants: {
