@@ -201,6 +201,77 @@ const {
               @remove="removeOption"
             />
 
+            <!-- Scale Settings for Linear Scale -->
+            <div
+              v-if="localQuestion.question_type_id === 'rating_scale'"
+              class="space-y-4 rounded-lg border bg-gray-50 p-4"
+            >
+              <div class="flex items-center gap-2">
+                <Icon icon="lucide:sliders-horizontal" class="h-4 w-4 text-gray-500" />
+                <Label class="text-sm font-medium">Scale Settings</Label>
+              </div>
+
+              <!-- Scale Range -->
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <Label class="text-xs text-gray-500">Start Value</Label>
+                  <Select
+                    :model-value="String(localQuestion.min_value ?? 1)"
+                    @update:model-value="(v) => updateField('min_value', Number(v))"
+                  >
+                    <SelectTrigger class="mt-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="0">0</SelectItem>
+                      <SelectItem value="1">1</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label class="text-xs text-gray-500">End Value</Label>
+                  <Select
+                    :model-value="String(localQuestion.max_value ?? 10)"
+                    @update:model-value="(v) => updateField('max_value', Number(v))"
+                  >
+                    <SelectTrigger class="mt-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="5">5</SelectItem>
+                      <SelectItem value="7">7</SelectItem>
+                      <SelectItem value="10">10</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <!-- Scale Labels -->
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <Label class="text-xs text-gray-500">Min Label</Label>
+                  <Input
+                    :model-value="localQuestion.scale_min_label ?? ''"
+                    class="mt-1"
+                    placeholder="Low"
+                    @update:model-value="(v) => updateField('scale_min_label', String(v) || null)"
+                  />
+                </div>
+                <div>
+                  <Label class="text-xs text-gray-500">Max Label</Label>
+                  <Input
+                    :model-value="localQuestion.scale_max_label ?? ''"
+                    class="mt-1"
+                    placeholder="High"
+                    @update:model-value="(v) => updateField('scale_max_label', String(v) || null)"
+                  />
+                </div>
+              </div>
+              <p class="text-xs text-gray-500">
+                Customize the scale range and endpoint labels
+              </p>
+            </div>
+
             <Separator class="my-4" />
 
             <!-- Placeholder Text -->
