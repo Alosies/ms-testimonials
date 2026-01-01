@@ -1,9 +1,7 @@
 <script setup lang="ts">
-import { ref, computed, toRefs } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, computed } from 'vue';
 import { Button, Input } from '@testimonials/ui';
 import { Icon } from '@testimonials/icons';
-import { useCurrentContextStore } from '@/shared/currentContext';
 import type { FormData, QuestionData } from '../../models';
 import FormPreview from '../formPreview/FormPreview.vue';
 
@@ -11,15 +9,14 @@ const props = defineProps<{
   formData: FormData;
   questions: QuestionData[];
   formId: string | null;
+  publishing?: boolean;
 }>();
 
 const emit = defineEmits<{
   prev: [];
+  publish: [];
 }>();
 
-const router = useRouter();
-const contextStore = useCurrentContextStore();
-const { organization: currentOrganization } = toRefs(contextStore);
 const copied = ref(false);
 
 const formLink = computed(() => {
@@ -45,15 +42,6 @@ async function copyLink() {
 
 function openPreviewInNewTab() {
   window.open(formLink.value, '_blank');
-}
-
-function finish() {
-  const orgSlug = currentOrganization.value?.slug;
-  if (orgSlug) {
-    router.push(`/${orgSlug}/forms`);
-  } else {
-    router.push('/');
-  }
 }
 </script>
 
@@ -100,9 +88,15 @@ function finish() {
           <Icon icon="lucide:external-link" class="mr-2 h-4 w-4" />
           Open Preview
         </Button>
-        <Button @click="finish">
-          Done
-          <Icon icon="lucide:check" class="ml-2 h-4 w-4" />
+        <Button :disabled="publishing" @click="emit('publish')">
+          <template v-if="publishing">
+            <Icon icon="lucide:loader-2" class="mr-2 h-4 w-4 animate-spin" />
+            Publishing...
+          </template>
+          <template v-else>
+            Publish Form
+            <Icon icon="lucide:send" class="ml-2 h-4 w-4" />
+          </template>
         </Button>
       </div>
     </div>

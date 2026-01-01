@@ -1,13 +1,24 @@
 <script setup lang="ts">
-import { useCreateFormWizard } from './composables/useCreateFormWizard';
+import { computed } from 'vue';
+import { useFormEditor } from './composables/useFormEditor';
 import {
   ProductInfoStep,
   AISuggestionsStep,
   CustomizeQuestionsStep,
   PreviewPublishStep,
 } from './ui';
+import SaveStatusIndicator from './ui/SaveStatusIndicator.vue';
+
+const props = defineProps<{
+  /**
+   * If provided, load existing form for editing.
+   * If not provided, create a new draft form on mount.
+   */
+  existingFormId?: string;
+}>();
 
 const {
+  // Wizard state
   currentStep,
   currentStepIndex,
   formData,
@@ -29,7 +40,33 @@ const {
   setFormId,
   setLoading,
   setError,
-} = useCreateFormWizard();
+
+  // Save status
+  saveStatus,
+  lastSavedAt,
+  saveError,
+  retrySave,
+
+  // Initialization
+  isInitializing,
+  initError,
+  loadingForm,
+
+  // Publish
+  handlePublish,
+  publishing,
+
+  // Edit mode
+  isEditMode,
+} = useFormEditor({ existingFormId: props.existingFormId });
+
+// Show loading during initialization or form loading
+const isPageLoading = computed(
+  () => isInitializing.value || loadingForm.value
+);
+
+// Page title based on mode
+const pageTitle = computed(() => (isEditMode.value ? 'Edit Form' : 'Create Form'));
 
 const steps = [
   { id: 'product-info', label: 'Product Info', number: 1 },
@@ -41,8 +78,50 @@ const steps = [
 
 <template>
   <div class="mx-auto max-w-5xl px-4 py-8">
-    <!-- Progress Steps -->
-    <nav class="mb-8" aria-label="Progress">
+    <!-- Header with Title and Save Status -->
+    <div class="mb-6 flex items-center justify-between">
+      <h1 class="text-2xl font-semibold text-gray-900">{{ pageTitle }}</h1>
+      <SaveStatusIndicator
+        :status="saveStatus"
+        :last-saved-at="lastSavedAt"
+        :error="saveError"
+        @retry="retrySave"
+      />
+    </div>
+
+    <!-- Initialization Loading -->
+    <div
+      v-if="isPageLoading"
+      class="flex min-h-[400px] items-center justify-center"
+    >
+      <div class="text-center">
+        <div
+          class="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-primary/20 border-t-primary"
+        />
+        <p class="mt-4 text-sm text-gray-500">
+          {{ isEditMode ? 'Loading form...' : 'Creating draft...' }}
+        </p>
+      </div>
+    </div>
+
+    <!-- Initialization Error -->
+    <div
+      v-else-if="initError"
+      class="mb-6 rounded-lg bg-red-50 p-6 text-center"
+    >
+      <p class="text-sm text-red-700">{{ initError }}</p>
+      <button
+        class="mt-3 text-sm text-red-600 underline hover:text-red-700"
+        @click="$router.go(0)"
+      >
+        Try again
+      </button>
+    </div>
+
+    <!-- Main Content -->
+    <template v-else>
+      <!-- Progress Steps -->
+      <nav class="mb-8" aria-label="Progress">
       <ol class="flex items-center justify-between">
         <li
           v-for="step in steps"
@@ -145,8 +224,11 @@ const steps = [
         :form-data="formData"
         :questions="questions"
         :form-id="formId"
+        :publishing="publishing"
         @prev="prevStep"
+        @publish="handlePublish"
       />
     </div>
+    </template>
   </div>
 </template>
