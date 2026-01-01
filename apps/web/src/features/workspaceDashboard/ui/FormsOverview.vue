@@ -81,7 +81,16 @@ const displayForms = computed(() => forms.value.slice(0, 5));
           <p class="text-xs text-gray-500">{{ form.product_name || 'No product name' }}</p>
         </div>
         <div class="flex items-center gap-2">
+          <!-- Draft status badge -->
           <span
+            v-if="form.status === 'draft'"
+            class="px-2 py-1 text-xs font-medium rounded-full bg-amber-100 text-amber-700"
+          >
+            Draft
+          </span>
+          <!-- Published forms show Active/Inactive -->
+          <span
+            v-else
             :class="[
               'px-2 py-1 text-xs font-medium rounded-full',
               form.is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-600',
