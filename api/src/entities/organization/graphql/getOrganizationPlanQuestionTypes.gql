@@ -1,0 +1,25 @@
+query GetOrganizationPlanQuestionTypes($organizationId: String!) {
+  organizations_by_pk(id: $organizationId) {
+    id
+    plans(where: { status: { _eq: "active" } }, limit: 1) {
+      plan {
+        id
+        unique_name
+        name
+        question_types(order_by: { question_type: { display_order: asc } }) {
+          question_type {
+            id
+            unique_name
+            name
+            category
+            description
+            input_component
+            answer_data_type
+            display_order
+            supports_options
+          }
+        }
+      }
+    }
+  }
+}
