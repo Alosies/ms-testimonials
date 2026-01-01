@@ -12,3 +12,6 @@ export * from './formPreview';
 
 // Modals
 export * from './modals';
+
+// Form Creation Loader
+export { default as FormCreatingLoader } from './FormCreatingLoader.vue';
