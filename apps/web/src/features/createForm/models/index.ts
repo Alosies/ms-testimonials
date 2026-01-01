@@ -17,6 +17,12 @@ export interface QuestionData extends AIQuestion {
   id?: string;
   isNew?: boolean;
   isModified?: boolean;
+  // Rating type fields
+  min_value?: number | null;
+  max_value?: number | null;
+  // Linear scale label customization
+  scale_min_label?: string | null;
+  scale_max_label?: string | null;
 }
 
 // Wizard State
