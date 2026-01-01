@@ -1,15 +1,13 @@
-import { ref, computed, watch, toRefs, onMounted } from 'vue';
-import { useCreateForm, usePublishForm, useGetForm } from '@/entities/form';
-import { useCurrentContextStore } from '@/shared/currentContext';
+import { ref, computed, watch, onMounted } from 'vue';
+import { usePublishForm, useGetForm } from '@/entities/form';
 import { useRouting } from '@/shared/routing';
-import { createSlugFromString } from '@/shared/urls';
 import { useCreateFormWizard } from './useCreateFormWizard';
 import { useFormAutoSave } from './useFormAutoSave';
 
 interface UseFormEditorOptions {
   /**
-   * If provided, load existing form for editing.
-   * If not provided, create a new draft form on mount.
+   * Form ID to load for editing.
+   * Required - form creation is handled by the /forms/creating page.
    */
   existingFormId?: string;
 }
@@ -17,27 +15,24 @@ interface UseFormEditorOptions {
 /**
  * Orchestrates the form editing experience.
  *
- * - For new forms: Creates a draft immediately and redirects to edit URL
- * - For existing forms: Loads form data and enables auto-save
+ * - Loads existing form data and enables auto-save
  * - Integrates wizard state with auto-save and publish functionality
+ * - If no existingFormId, redirects to the form creation page
  */
 export function useFormEditor(options: UseFormEditorOptions = {}) {
   const { existingFormId } = options;
 
-  const contextStore = useCurrentContextStore();
-  const { currentOrganizationId, currentUserId } = toRefs(contextStore);
-  const { goToFormEdit, goToForms } = useRouting();
+  const { goToNewForm, goToForms } = useRouting();
 
   // Core wizard state
   const wizard = useCreateFormWizard();
   const { formData, formId } = wizard;
 
-  // Draft creation state
+  // Loading state
   const isInitializing = ref(false);
   const initError = ref<string | null>(null);
 
   // Mutations
-  const { createForm, loading: creatingDraft } = useCreateForm();
   const { publishForm: publishFormMutation, loading: publishing } =
     usePublishForm();
 
@@ -54,54 +49,6 @@ export function useFormEditor(options: UseFormEditorOptions = {}) {
     formData,
     debounceMs: 500,
   });
-
-  /**
-   * Create a new draft form and redirect to edit URL.
-   * Called on mount when no existingFormId is provided.
-   */
-  async function initializeDraftForm() {
-    if (formId.value) return; // Already have a form
-    if (!currentOrganizationId.value) return;
-    if (!currentUserId.value) return;
-
-    isInitializing.value = true;
-    initError.value = null;
-
-    try {
-      // Generate a temporary slug (can be updated later)
-      const tempSlug = createSlugFromString(`draft-${Date.now()}`);
-
-      const result = await createForm({
-        form: {
-          name: 'Untitled Form',
-          slug: tempSlug,
-          product_name: '',
-          product_description: '',
-          organization_id: currentOrganizationId.value,
-          created_by: currentUserId.value,
-          // status defaults to 'draft' in database
-        },
-      });
-
-      if (result) {
-        wizard.setFormId(result.id);
-
-        // Redirect to edit URL using centralized routing
-        goToFormEdit(
-          { name: result.name || 'untitled', id: result.id },
-          { replace: true }
-        );
-      } else {
-        throw new Error('Failed to create draft form');
-      }
-    } catch (error) {
-      initError.value =
-        error instanceof Error ? error.message : 'Failed to create draft';
-      console.error('Draft creation failed:', error);
-    } finally {
-      isInitializing.value = false;
-    }
-  }
 
   /**
    * Load existing form data into wizard state.
@@ -142,7 +89,7 @@ export function useFormEditor(options: UseFormEditorOptions = {}) {
 
   // Watch for form data changes to trigger auto-save
   watch(
-    () => [formData.product_name, formData.product_description],
+    () => [formData.name, formData.product_name, formData.product_description],
     () => {
       // Only auto-save if we have a form ID (not during initial creation)
       if (formId.value) {
@@ -169,8 +116,8 @@ export function useFormEditor(options: UseFormEditorOptions = {}) {
       // Edit mode: form will be loaded by the query
       wizard.setFormId(existingFormId);
     } else {
-      // Create mode: create draft immediately
-      initializeDraftForm();
+      // No form ID - redirect to the form creation page
+      goToNewForm();
     }
   });
 
@@ -191,9 +138,7 @@ export function useFormEditor(options: UseFormEditorOptions = {}) {
     hasPendingChanges: autoSave.hasPendingChanges,
     retrySave: autoSave.retrySave,
 
-    // Draft & publish
-    initializeDraftForm,
-    creatingDraft,
+    // Publish
     handlePublish,
     publishing,
 
