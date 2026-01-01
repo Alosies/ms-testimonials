@@ -21,6 +21,7 @@ import type { QuestionData } from '../../models';
 import { useQuestionEditorPanel } from '../../composables';
 import QuestionPreview from './childComponents/QuestionPreview.vue';
 import QuestionOptionsEditor from './childComponents/QuestionOptionsEditor.vue';
+import QuestionTypeTips from './childComponents/QuestionTypeTips.vue';
 
 const props = defineProps<{
   question: QuestionData | null;
@@ -40,6 +41,9 @@ const emit = defineEmits<{
 const {
   localQuestion,
   questionTypes,
+  isNavigationEnabled,
+  hasKeyboard,
+  isTransitioning,
   questionTypeIcon,
   supportsOptions,
   getHeroIconName,
@@ -47,7 +51,10 @@ const {
   addOption,
   updateOption,
   removeOption,
-  handleKeydown,
+  handleHeaderKeydown,
+  navigateWithTransition,
+  enableNavigation,
+  disableNavigation,
   handleDeleteClick,
   closePanel,
 } = useQuestionEditorPanel({
@@ -66,11 +73,19 @@ const {
     <SheetContent
       side="right"
       size="wide"
-      class="flex flex-col overflow-hidden p-0 [&>button]:hidden"
-      @keydown="handleKeydown"
+      class="flex flex-col gap-0 overflow-hidden p-0 [&>button]:hidden"
     >
-      <!-- Header with Navigation -->
-      <div class="flex items-center justify-between border-b bg-gray-50 px-6 py-4">
+      <!-- Header with Navigation (focusable for keyboard nav on desktop) -->
+      <div
+        :tabindex="hasKeyboard ? 0 : -1"
+        :class="[
+          'flex items-center justify-between border-b bg-gray-50 px-6 py-4 outline-none transition-colors',
+          hasKeyboard && 'cursor-pointer focus:bg-gray-100',
+        ]"
+        @keydown="handleHeaderKeydown"
+        @focus="enableNavigation"
+        @blur="disableNavigation"
+      >
         <div class="flex items-center gap-3">
           <!-- Navigation Arrows -->
           <div class="flex items-center gap-1">
@@ -79,7 +94,8 @@ const {
               size="icon"
               class="h-8 w-8"
               :disabled="questionIndex <= 0"
-              @click="emit('navigate', 'prev')"
+              tabindex="-1"
+              @click="navigateWithTransition('prev')"
             >
               <Icon icon="lucide:chevron-up" class="h-4 w-4" />
             </Button>
@@ -88,7 +104,8 @@ const {
               size="icon"
               class="h-8 w-8"
               :disabled="questionIndex >= totalQuestions - 1"
-              @click="emit('navigate', 'next')"
+              tabindex="-1"
+              @click="navigateWithTransition('next')"
             >
               <Icon icon="lucide:chevron-down" class="h-4 w-4" />
             </Button>
@@ -98,7 +115,22 @@ const {
             <h2 class="text-base font-semibold text-gray-900">
               Question {{ questionIndex + 1 }} of {{ totalQuestions }}
             </h2>
-            <p class="text-xs text-gray-500">Use ↑↓ arrows to navigate</p>
+            <!-- Keyboard navigation hint - only shown on devices with keyboards -->
+            <p
+              v-if="hasKeyboard"
+              :class="[
+                'text-xs transition-colors',
+                isNavigationEnabled
+                  ? 'font-medium text-primary'
+                  : 'text-gray-500',
+              ]"
+            >
+              <span v-if="isNavigationEnabled" class="inline-flex items-center gap-1">
+                <Icon icon="lucide:keyboard" class="h-3 w-3" />
+                Keyboard ↑↓ navigation active
+              </span>
+              <span v-else>Click here to enable Keyboard ↑↓ navigation</span>
+            </p>
           </div>
         </div>
 
@@ -120,20 +152,27 @@ const {
         </div>
       </div>
 
-      <!-- Scrollable Content -->
-      <div v-if="localQuestion" class="flex-1 overflow-y-auto">
-        <!-- Live Preview -->
-        <QuestionPreview :question="localQuestion" :supports-options="supportsOptions" />
+      <!-- Two-Column Layout -->
+      <div v-if="localQuestion" class="flex flex-1 overflow-hidden">
+        <!-- Main Content Column with smooth transition -->
+        <div
+          :class="[
+            'flex-1 overflow-y-auto bg-gray-50 scrollbar-subtle transition-opacity duration-150',
+            isTransitioning ? 'opacity-0' : 'opacity-100',
+          ]"
+        >
+          <!-- Live Preview -->
+          <QuestionPreview :question="localQuestion" />
 
-        <!-- Editor Form Section -->
-        <div class="bg-white">
+          <!-- Editor Form Section -->
+          <div class="bg-white">
           <!-- Section Header -->
           <div class="border-b bg-white px-6 py-4">
             <div class="flex items-center gap-2">
               <div class="flex h-6 w-6 items-center justify-center rounded-full bg-gray-100">
                 <Icon icon="lucide:settings-2" class="h-3.5 w-3.5 text-gray-600" />
               </div>
-              <span class="text-sm font-medium text-gray-700">Question Settings</span>
+              <span class="text-xs font-semibold uppercase tracking-wide text-gray-500">Question Settings</span>
             </div>
           </div>
 
@@ -299,6 +338,16 @@ const {
             </div>
           </div>
         </div>
+        </div>
+
+        <!-- Tips Aside with smooth transition -->
+        <QuestionTypeTips
+          :question-type-id="localQuestion.question_type_id"
+          :class="[
+            'w-72 shrink-0 overflow-y-auto scrollbar-subtle transition-opacity duration-150',
+            isTransitioning ? 'opacity-0' : 'opacity-100',
+          ]"
+        />
       </div>
     </SheetContent>
   </Sheet>
