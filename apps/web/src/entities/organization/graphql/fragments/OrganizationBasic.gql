@@ -8,4 +8,29 @@ fragment OrganizationBasic on organizations {
   settings
   created_at
   updated_at
+  # Active plan with allowed question types
+  plans(where: { status: { _eq: "active" } }, limit: 1) {
+    id
+    plan_id
+    status
+    plan {
+      id
+      unique_name
+      name
+      question_types {
+        question_type {
+          id
+          unique_name
+          name
+          category
+          description
+          icon
+          input_component
+          answer_data_type
+          display_order
+          supports_options
+        }
+      }
+    }
+  }
 }

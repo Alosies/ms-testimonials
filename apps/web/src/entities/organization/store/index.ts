@@ -1,6 +1,11 @@
 import { defineStore } from 'pinia';
 import { ref, computed, readonly } from 'vue';
-import type { OrganizationRole, UserDefaultOrganization } from '../models';
+import type {
+  OrganizationRole,
+  UserDefaultOrganization,
+  OrganizationPlan,
+  AllowedQuestionType,
+} from '../models';
 import { isAdminRole, isOwnerRole } from '../models';
 
 /**
@@ -15,6 +20,7 @@ export const useOrganizationStore = defineStore('organization', () => {
   // ========================================
   const currentOrganization = ref<UserDefaultOrganization | null>(null);
   const currentRole = ref<OrganizationRole | null>(null);
+  const currentPlan = ref<OrganizationPlan | null>(null);
   const isLoading = ref(false);
 
   // ========================================
@@ -25,6 +31,41 @@ export const useOrganizationStore = defineStore('organization', () => {
   const organizationName = computed(() => currentOrganization.value?.name ?? null);
   const setupStatus = computed(() => currentOrganization.value?.setup_status ?? null);
   const needsSetup = computed(() => setupStatus.value === 'pending_setup');
+
+  // ========================================
+  // Computed - Plan Properties
+  // ========================================
+  const planId = computed(() => currentPlan.value?.plan_id ?? null);
+  const planUniqueName = computed(() => currentPlan.value?.plan?.unique_name ?? null);
+  const planName = computed(() => currentPlan.value?.plan?.name ?? null);
+
+  /**
+   * Question types allowed by the organization's current plan.
+   * Flattened from plan.question_types junction entries.
+   */
+  const allowedQuestionTypes = computed<AllowedQuestionType[]>(() =>
+    currentPlan.value?.plan?.question_types?.map((pqt) => pqt.question_type) ?? []
+  );
+
+  /**
+   * Unique names of allowed question types for quick lookup.
+   */
+  const allowedQuestionTypeIds = computed(() =>
+    allowedQuestionTypes.value.map((t) => t.unique_name)
+  );
+
+  /**
+   * Question types formatted for select/dropdown components.
+   * Maps unique_name to id for compatibility with form components.
+   */
+  const questionTypeOptions = computed(() =>
+    allowedQuestionTypes.value.map((type) => ({
+      id: type.unique_name,
+      name: type.name,
+      icon: type.icon,
+      supportsOptions: type.supports_options,
+    }))
+  );
 
   // ========================================
   // Computed - Role Properties
@@ -59,6 +100,8 @@ export const useOrganizationStore = defineStore('organization', () => {
   // ========================================
   function setCurrentOrganization(organization: UserDefaultOrganization | null) {
     currentOrganization.value = organization;
+    // Extract active plan from organization (first active plan from the array)
+    currentPlan.value = organization?.plans?.[0] ?? null;
   }
 
   function setCurrentRole(role: OrganizationRole | null) {
@@ -72,13 +115,16 @@ export const useOrganizationStore = defineStore('organization', () => {
   function reset() {
     currentOrganization.value = null;
     currentRole.value = null;
+    currentPlan.value = null;
     isLoading.value = false;
   }
 
   return {
-    // State (readonly)
-    currentOrganization: readonly(currentOrganization),
-    currentRole: readonly(currentRole),
+    // State
+    // Note: Not using readonly() to maintain type compatibility with component props
+    currentOrganization,
+    currentRole,
+    currentPlan,
     isLoading: readonly(isLoading),
 
     // Organization computed
@@ -87,6 +133,14 @@ export const useOrganizationStore = defineStore('organization', () => {
     organizationName,
     setupStatus,
     needsSetup,
+
+    // Plan computed
+    planId,
+    planUniqueName,
+    planName,
+    allowedQuestionTypes,
+    allowedQuestionTypeIds,
+    questionTypeOptions,
 
     // Role computed
     roleName,
