@@ -1,4 +1,5 @@
 import { computed, ref, watch, toRefs, type Ref } from 'vue';
+import { useMediaQuery } from '@vueuse/core';
 import { useOrganizationStore } from '@/entities/organization';
 import { useConfirmationModal } from '@/shared/widgets';
 import type { AIQuestionOption } from '@/shared/api';
@@ -27,6 +28,15 @@ export function useQuestionEditorPanel(options: UseQuestionEditorPanelOptions) {
 
   // Local editing state for immediate feedback
   const localQuestion = ref<QuestionData | null>(null);
+
+  // Keyboard navigation state - only active when header is focused
+  const isNavigationEnabled = ref(false);
+
+  // Detect if device has keyboard (pointer: fine indicates mouse/trackpad, typical of keyboard devices)
+  const hasKeyboard = useMediaQuery('(pointer: fine)');
+
+  // Track if content is transitioning (for smooth animations)
+  const isTransitioning = ref(false);
 
   // Sync local state with prop changes
   watch(
@@ -103,15 +113,38 @@ export function useQuestionEditorPanel(options: UseQuestionEditorPanelOptions) {
     updateField('options', updatedOptions.length > 0 ? updatedOptions : null);
   }
 
-  // Keyboard navigation
-  function handleKeydown(event: KeyboardEvent) {
+  // Navigate with smooth transition
+  function navigateWithTransition(direction: 'prev' | 'next') {
+    isTransitioning.value = true;
+    // Small delay to allow fade-out, then navigate
+    setTimeout(() => {
+      onNavigate(direction);
+      // Content will fade back in after navigation
+      setTimeout(() => {
+        isTransitioning.value = false;
+      }, 50);
+    }, 150);
+  }
+
+  // Keyboard navigation - only works when header is focused
+  function handleHeaderKeydown(event: KeyboardEvent) {
+    if (!isNavigationEnabled.value) return;
+
     if (event.key === 'ArrowUp' && questionIndex.value > 0) {
       event.preventDefault();
-      onNavigate('prev');
+      navigateWithTransition('prev');
     } else if (event.key === 'ArrowDown' && questionIndex.value < totalQuestions.value - 1) {
       event.preventDefault();
-      onNavigate('next');
+      navigateWithTransition('next');
     }
+  }
+
+  function enableNavigation() {
+    isNavigationEnabled.value = true;
+  }
+
+  function disableNavigation() {
+    isNavigationEnabled.value = false;
   }
 
   // Delete confirmation handler
@@ -133,6 +166,9 @@ export function useQuestionEditorPanel(options: UseQuestionEditorPanelOptions) {
     // State
     localQuestion,
     questionTypes,
+    isNavigationEnabled,
+    hasKeyboard,
+    isTransitioning,
 
     // Computed
     questionTypeIcon,
@@ -145,7 +181,10 @@ export function useQuestionEditorPanel(options: UseQuestionEditorPanelOptions) {
     addOption,
     updateOption,
     removeOption,
-    handleKeydown,
+    handleHeaderKeydown,
+    navigateWithTransition,
+    enableNavigation,
+    disableNavigation,
     handleDeleteClick,
     closePanel,
   };
