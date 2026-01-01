@@ -3526,6 +3526,20 @@ type mutation_root {
     id: String!
   ): plan_prices
   """
+  delete data from the table: "plan_question_types"
+  """
+  delete_plan_question_types(
+    """filter the rows which have to be deleted"""
+    where: plan_question_types_bool_exp!
+  ): plan_question_types_mutation_response
+  """
+  delete single row from the table: "plan_question_types"
+  """
+  delete_plan_question_types_by_pk(
+    """Primary key (NanoID 12-char)"""
+    id: String!
+  ): plan_question_types
+  """
   delete data from the table: "plans"
   """
   delete_plans(
@@ -3795,6 +3809,24 @@ type mutation_root {
     """upsert condition"""
     on_conflict: plan_prices_on_conflict
   ): plan_prices
+  """
+  insert data into the table: "plan_question_types"
+  """
+  insert_plan_question_types(
+    """the rows to be inserted"""
+    objects: [plan_question_types_insert_input!]!
+    """upsert condition"""
+    on_conflict: plan_question_types_on_conflict
+  ): plan_question_types_mutation_response
+  """
+  insert a single row into the table: "plan_question_types"
+  """
+  insert_plan_question_types_one(
+    """the row to be inserted"""
+    object: plan_question_types_insert_input!
+    """upsert condition"""
+    on_conflict: plan_question_types_on_conflict
+  ): plan_question_types
   """
   insert data into the table: "plans"
   """
@@ -4261,6 +4293,30 @@ type mutation_root {
     """updates to execute, in order"""
     updates: [plan_prices_updates!]!
   ): [plan_prices_mutation_response]
+  """
+  update data of the table: "plan_question_types"
+  """
+  update_plan_question_types(
+    """sets the columns of the filtered rows to the given values"""
+    _set: plan_question_types_set_input
+    """filter the rows which have to be updated"""
+    where: plan_question_types_bool_exp!
+  ): plan_question_types_mutation_response
+  """
+  update single row of the table: "plan_question_types"
+  """
+  update_plan_question_types_by_pk(
+    """sets the columns of the filtered rows to the given values"""
+    _set: plan_question_types_set_input
+    pk_columns: plan_question_types_pk_columns_input!
+  ): plan_question_types
+  """
+  update multiples rows of table: "plan_question_types"
+  """
+  update_plan_question_types_many(
+    """updates to execute, in order"""
+    updates: [plan_question_types_updates!]!
+  ): [plan_question_types_mutation_response]
   """
   update data of the table: "plans"
   """
@@ -7287,6 +7343,349 @@ input plan_prices_variance_order_by {
   price_yearly_in_base_unit: order_by
 }
 
+"""
+Junction table mapping plans to question_types - controls which question types are available per plan
+"""
+type plan_question_types {
+  """Timestamp when mapping was created"""
+  created_at: timestamptz!
+  """User who created the mapping (FK to users)"""
+  created_by: String
+  """An object relationship"""
+  created_by_user: users
+  """Primary key (NanoID 12-char)"""
+  id: String!
+  """An object relationship"""
+  plan: plans!
+  """FK to plans - the subscription plan"""
+  plan_id: String!
+  """An object relationship"""
+  question_type: question_types!
+  """FK to question_types - the question type available in this plan"""
+  question_type_id: String!
+  """Timestamp when mapping was last modified"""
+  updated_at: timestamptz!
+  """User who last modified the mapping (FK to users)"""
+  updated_by: String
+  """An object relationship"""
+  updated_by_user: users
+}
+
+"""
+aggregated selection of "plan_question_types"
+"""
+type plan_question_types_aggregate {
+  aggregate: plan_question_types_aggregate_fields
+  nodes: [plan_question_types!]!
+}
+
+input plan_question_types_aggregate_bool_exp {
+  count: plan_question_types_aggregate_bool_exp_count
+}
+
+input plan_question_types_aggregate_bool_exp_count {
+  arguments: [plan_question_types_select_column!]
+  distinct: Boolean
+  filter: plan_question_types_bool_exp
+  predicate: Int_comparison_exp!
+}
+
+"""
+aggregate fields of "plan_question_types"
+"""
+type plan_question_types_aggregate_fields {
+  count(columns: [plan_question_types_select_column!], distinct: Boolean): Int!
+  max: plan_question_types_max_fields
+  min: plan_question_types_min_fields
+}
+
+"""
+order by aggregate values of table "plan_question_types"
+"""
+input plan_question_types_aggregate_order_by {
+  count: order_by
+  max: plan_question_types_max_order_by
+  min: plan_question_types_min_order_by
+}
+
+"""
+input type for inserting array relation for remote table "plan_question_types"
+"""
+input plan_question_types_arr_rel_insert_input {
+  data: [plan_question_types_insert_input!]!
+  """upsert condition"""
+  on_conflict: plan_question_types_on_conflict
+}
+
+"""
+Boolean expression to filter rows from the table "plan_question_types". All fields are combined with a logical 'AND'.
+"""
+input plan_question_types_bool_exp {
+  _and: [plan_question_types_bool_exp!]
+  _not: plan_question_types_bool_exp
+  _or: [plan_question_types_bool_exp!]
+  created_at: timestamptz_comparison_exp
+  created_by: String_comparison_exp
+  created_by_user: users_bool_exp
+  id: String_comparison_exp
+  plan: plans_bool_exp
+  plan_id: String_comparison_exp
+  question_type: question_types_bool_exp
+  question_type_id: String_comparison_exp
+  updated_at: timestamptz_comparison_exp
+  updated_by: String_comparison_exp
+  updated_by_user: users_bool_exp
+}
+
+"""
+unique or primary key constraints on table "plan_question_types"
+"""
+enum plan_question_types_constraint {
+  """
+  unique or primary key constraint on columns "id"
+  """
+  plan_question_types_pkey
+  """
+  unique or primary key constraint on columns "plan_id", "question_type_id"
+  """
+  plan_question_types_unique
+}
+
+"""
+input type for inserting data into table "plan_question_types"
+"""
+input plan_question_types_insert_input {
+  """Timestamp when mapping was created"""
+  created_at: timestamptz
+  """User who created the mapping (FK to users)"""
+  created_by: String
+  created_by_user: users_obj_rel_insert_input
+  """Primary key (NanoID 12-char)"""
+  id: String
+  plan: plans_obj_rel_insert_input
+  """FK to plans - the subscription plan"""
+  plan_id: String
+  question_type: question_types_obj_rel_insert_input
+  """FK to question_types - the question type available in this plan"""
+  question_type_id: String
+  """Timestamp when mapping was last modified"""
+  updated_at: timestamptz
+  """User who last modified the mapping (FK to users)"""
+  updated_by: String
+  updated_by_user: users_obj_rel_insert_input
+}
+
+"""aggregate max on columns"""
+type plan_question_types_max_fields {
+  """Timestamp when mapping was created"""
+  created_at: timestamptz
+  """User who created the mapping (FK to users)"""
+  created_by: String
+  """Primary key (NanoID 12-char)"""
+  id: String
+  """FK to plans - the subscription plan"""
+  plan_id: String
+  """FK to question_types - the question type available in this plan"""
+  question_type_id: String
+  """Timestamp when mapping was last modified"""
+  updated_at: timestamptz
+  """User who last modified the mapping (FK to users)"""
+  updated_by: String
+}
+
+"""
+order by max() on columns of table "plan_question_types"
+"""
+input plan_question_types_max_order_by {
+  """Timestamp when mapping was created"""
+  created_at: order_by
+  """User who created the mapping (FK to users)"""
+  created_by: order_by
+  """Primary key (NanoID 12-char)"""
+  id: order_by
+  """FK to plans - the subscription plan"""
+  plan_id: order_by
+  """FK to question_types - the question type available in this plan"""
+  question_type_id: order_by
+  """Timestamp when mapping was last modified"""
+  updated_at: order_by
+  """User who last modified the mapping (FK to users)"""
+  updated_by: order_by
+}
+
+"""aggregate min on columns"""
+type plan_question_types_min_fields {
+  """Timestamp when mapping was created"""
+  created_at: timestamptz
+  """User who created the mapping (FK to users)"""
+  created_by: String
+  """Primary key (NanoID 12-char)"""
+  id: String
+  """FK to plans - the subscription plan"""
+  plan_id: String
+  """FK to question_types - the question type available in this plan"""
+  question_type_id: String
+  """Timestamp when mapping was last modified"""
+  updated_at: timestamptz
+  """User who last modified the mapping (FK to users)"""
+  updated_by: String
+}
+
+"""
+order by min() on columns of table "plan_question_types"
+"""
+input plan_question_types_min_order_by {
+  """Timestamp when mapping was created"""
+  created_at: order_by
+  """User who created the mapping (FK to users)"""
+  created_by: order_by
+  """Primary key (NanoID 12-char)"""
+  id: order_by
+  """FK to plans - the subscription plan"""
+  plan_id: order_by
+  """FK to question_types - the question type available in this plan"""
+  question_type_id: order_by
+  """Timestamp when mapping was last modified"""
+  updated_at: order_by
+  """User who last modified the mapping (FK to users)"""
+  updated_by: order_by
+}
+
+"""
+response of any mutation on the table "plan_question_types"
+"""
+type plan_question_types_mutation_response {
+  """number of rows affected by the mutation"""
+  affected_rows: Int!
+  """data from the rows affected by the mutation"""
+  returning: [plan_question_types!]!
+}
+
+"""
+on_conflict condition type for table "plan_question_types"
+"""
+input plan_question_types_on_conflict {
+  constraint: plan_question_types_constraint!
+  update_columns: [plan_question_types_update_column!]! = []
+  where: plan_question_types_bool_exp
+}
+
+"""Ordering options when selecting data from "plan_question_types"."""
+input plan_question_types_order_by {
+  created_at: order_by
+  created_by: order_by
+  created_by_user: users_order_by
+  id: order_by
+  plan: plans_order_by
+  plan_id: order_by
+  question_type: question_types_order_by
+  question_type_id: order_by
+  updated_at: order_by
+  updated_by: order_by
+  updated_by_user: users_order_by
+}
+
+"""primary key columns input for table: plan_question_types"""
+input plan_question_types_pk_columns_input {
+  """Primary key (NanoID 12-char)"""
+  id: String!
+}
+
+"""
+select columns of table "plan_question_types"
+"""
+enum plan_question_types_select_column {
+  """column name"""
+  created_at
+  """column name"""
+  created_by
+  """column name"""
+  id
+  """column name"""
+  plan_id
+  """column name"""
+  question_type_id
+  """column name"""
+  updated_at
+  """column name"""
+  updated_by
+}
+
+"""
+input type for updating data in table "plan_question_types"
+"""
+input plan_question_types_set_input {
+  """Timestamp when mapping was created"""
+  created_at: timestamptz
+  """User who created the mapping (FK to users)"""
+  created_by: String
+  """Primary key (NanoID 12-char)"""
+  id: String
+  """FK to plans - the subscription plan"""
+  plan_id: String
+  """FK to question_types - the question type available in this plan"""
+  question_type_id: String
+  """Timestamp when mapping was last modified"""
+  updated_at: timestamptz
+  """User who last modified the mapping (FK to users)"""
+  updated_by: String
+}
+
+"""
+Streaming cursor of the table "plan_question_types"
+"""
+input plan_question_types_stream_cursor_input {
+  """Stream column input with initial value"""
+  initial_value: plan_question_types_stream_cursor_value_input!
+  """cursor ordering"""
+  ordering: cursor_ordering
+}
+
+"""Initial value of the column from where the streaming should start"""
+input plan_question_types_stream_cursor_value_input {
+  """Timestamp when mapping was created"""
+  created_at: timestamptz
+  """User who created the mapping (FK to users)"""
+  created_by: String
+  """Primary key (NanoID 12-char)"""
+  id: String
+  """FK to plans - the subscription plan"""
+  plan_id: String
+  """FK to question_types - the question type available in this plan"""
+  question_type_id: String
+  """Timestamp when mapping was last modified"""
+  updated_at: timestamptz
+  """User who last modified the mapping (FK to users)"""
+  updated_by: String
+}
+
+"""
+update columns of table "plan_question_types"
+"""
+enum plan_question_types_update_column {
+  """column name"""
+  created_at
+  """column name"""
+  created_by
+  """column name"""
+  id
+  """column name"""
+  plan_id
+  """column name"""
+  question_type_id
+  """column name"""
+  updated_at
+  """column name"""
+  updated_by
+}
+
+input plan_question_types_updates {
+  """sets the columns of the filtered rows to the given values"""
+  _set: plan_question_types_set_input
+  """filter the rows which have to be updated"""
+  where: plan_question_types_bool_exp!
+}
+
 """Plan templates - features/limits only, pricing in plan_prices"""
 type plans {
   """Timestamp when record was created"""
@@ -7359,6 +7758,32 @@ type plans {
     """filter the rows returned"""
     where: plan_prices_bool_exp
   ): plan_prices_aggregate!
+  """An array relationship"""
+  question_types(
+    """distinct select on columns"""
+    distinct_on: [plan_question_types_select_column!]
+    """limit the number of rows returned"""
+    limit: Int
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+    """sort the rows by one or more columns"""
+    order_by: [plan_question_types_order_by!]
+    """filter the rows returned"""
+    where: plan_question_types_bool_exp
+  ): [plan_question_types!]!
+  """An aggregate relationship"""
+  question_types_aggregate(
+    """distinct select on columns"""
+    distinct_on: [plan_question_types_select_column!]
+    """limit the number of rows returned"""
+    limit: Int
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+    """sort the rows by one or more columns"""
+    order_by: [plan_question_types_order_by!]
+    """filter the rows returned"""
+    where: plan_question_types_bool_exp
+  ): plan_question_types_aggregate!
   """Whether to show "Powered by" branding on widgets"""
   show_branding: Boolean!
   """Slug for code comparisons (free, pro, team)"""
@@ -7424,6 +7849,8 @@ input plans_bool_exp {
   organization_plans_aggregate: organization_plans_aggregate_bool_exp
   prices: plan_prices_bool_exp
   prices_aggregate: plan_prices_aggregate_bool_exp
+  question_types: plan_question_types_bool_exp
+  question_types_aggregate: plan_question_types_aggregate_bool_exp
   show_branding: Boolean_comparison_exp
   unique_name: String_comparison_exp
   updated_at: timestamptz_comparison_exp
@@ -7481,6 +7908,7 @@ input plans_insert_input {
   name: String
   organization_plans: organization_plans_arr_rel_insert_input
   prices: plan_prices_arr_rel_insert_input
+  question_types: plan_question_types_arr_rel_insert_input
   """Whether to show "Powered by" branding on widgets"""
   show_branding: Boolean
   """Slug for code comparisons (free, pro, team)"""
@@ -7578,6 +8006,7 @@ input plans_order_by {
   name: order_by
   organization_plans_aggregate: organization_plans_aggregate_order_by
   prices_aggregate: plan_prices_aggregate_order_by
+  question_types_aggregate: plan_question_types_aggregate_order_by
   show_branding: order_by
   unique_name: order_by
   updated_at: order_by
@@ -8087,6 +8516,43 @@ type query_root {
     """Primary key (NanoID 12-char)"""
     id: String!
   ): plan_prices
+  """
+  fetch data from the table: "plan_question_types"
+  """
+  plan_question_types(
+    """distinct select on columns"""
+    distinct_on: [plan_question_types_select_column!]
+    """limit the number of rows returned"""
+    limit: Int
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+    """sort the rows by one or more columns"""
+    order_by: [plan_question_types_order_by!]
+    """filter the rows returned"""
+    where: plan_question_types_bool_exp
+  ): [plan_question_types!]!
+  """
+  fetch aggregated fields from the table: "plan_question_types"
+  """
+  plan_question_types_aggregate(
+    """distinct select on columns"""
+    distinct_on: [plan_question_types_select_column!]
+    """limit the number of rows returned"""
+    limit: Int
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+    """sort the rows by one or more columns"""
+    order_by: [plan_question_types_order_by!]
+    """filter the rows returned"""
+    where: plan_question_types_bool_exp
+  ): plan_question_types_aggregate!
+  """
+  fetch data from the table: "plan_question_types" using primary key columns
+  """
+  plan_question_types_by_pk(
+    """Primary key (NanoID 12-char)"""
+    id: String!
+  ): plan_question_types
   """
   fetch data from the table: "plans"
   """
@@ -9006,6 +9472,32 @@ type question_types {
   Data type for storing answers: text, integer, boolean, decimal, json, url
   """
   answer_data_type: String!
+  """An array relationship"""
+  available_in_plans(
+    """distinct select on columns"""
+    distinct_on: [plan_question_types_select_column!]
+    """limit the number of rows returned"""
+    limit: Int
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+    """sort the rows by one or more columns"""
+    order_by: [plan_question_types_order_by!]
+    """filter the rows returned"""
+    where: plan_question_types_bool_exp
+  ): [plan_question_types!]!
+  """An aggregate relationship"""
+  available_in_plans_aggregate(
+    """distinct select on columns"""
+    distinct_on: [plan_question_types_select_column!]
+    """limit the number of rows returned"""
+    limit: Int
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+    """sort the rows by one or more columns"""
+    order_by: [plan_question_types_order_by!]
+    """filter the rows returned"""
+    where: plan_question_types_bool_exp
+  ): plan_question_types_aggregate!
   """
   Type grouping: text, rating, choice, media, special. Used for UI organization
   """
@@ -9127,6 +9619,8 @@ input question_types_bool_exp {
   _not: question_types_bool_exp
   _or: [question_types_bool_exp!]
   answer_data_type: String_comparison_exp
+  available_in_plans: plan_question_types_bool_exp
+  available_in_plans_aggregate: plan_question_types_aggregate_bool_exp
   category: String_comparison_exp
   created_at: timestamptz_comparison_exp
   default_max_value: Int_comparison_exp
@@ -9186,6 +9680,7 @@ input question_types_insert_input {
   Data type for storing answers: text, integer, boolean, decimal, json, url
   """
   answer_data_type: String
+  available_in_plans: plan_question_types_arr_rel_insert_input
   """
   Type grouping: text, rating, choice, media, special. Used for UI organization
   """
@@ -9340,6 +9835,7 @@ input question_types_on_conflict {
 """Ordering options when selecting data from "question_types"."""
 input question_types_order_by {
   answer_data_type: order_by
+  available_in_plans_aggregate: plan_question_types_aggregate_order_by
   category: order_by
   created_at: order_by
   default_max_value: order_by
@@ -10446,6 +10942,54 @@ type subscription_root {
     """filter the rows returned"""
     where: plan_prices_bool_exp
   ): [plan_prices!]!
+  """
+  fetch data from the table: "plan_question_types"
+  """
+  plan_question_types(
+    """distinct select on columns"""
+    distinct_on: [plan_question_types_select_column!]
+    """limit the number of rows returned"""
+    limit: Int
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+    """sort the rows by one or more columns"""
+    order_by: [plan_question_types_order_by!]
+    """filter the rows returned"""
+    where: plan_question_types_bool_exp
+  ): [plan_question_types!]!
+  """
+  fetch aggregated fields from the table: "plan_question_types"
+  """
+  plan_question_types_aggregate(
+    """distinct select on columns"""
+    distinct_on: [plan_question_types_select_column!]
+    """limit the number of rows returned"""
+    limit: Int
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+    """sort the rows by one or more columns"""
+    order_by: [plan_question_types_order_by!]
+    """filter the rows returned"""
+    where: plan_question_types_bool_exp
+  ): plan_question_types_aggregate!
+  """
+  fetch data from the table: "plan_question_types" using primary key columns
+  """
+  plan_question_types_by_pk(
+    """Primary key (NanoID 12-char)"""
+    id: String!
+  ): plan_question_types
+  """
+  fetch data from the table in a streaming manner: "plan_question_types"
+  """
+  plan_question_types_stream(
+    """maximum number of rows returned in a single batch"""
+    batch_size: Int!
+    """cursor to stream the results returned by the query"""
+    cursor: [plan_question_types_stream_cursor_input]!
+    """filter the rows returned"""
+    where: plan_question_types_bool_exp
+  ): [plan_question_types!]!
   """
   fetch data from the table: "plans"
   """

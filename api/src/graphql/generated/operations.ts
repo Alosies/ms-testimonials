@@ -2907,6 +2907,10 @@ export type Mutation_Root = {
   delete_plan_prices: Maybe<Plan_Prices_Mutation_Response>;
   /** delete single row from the table: "plan_prices" */
   delete_plan_prices_by_pk: Maybe<Plan_Prices>;
+  /** delete data from the table: "plan_question_types" */
+  delete_plan_question_types: Maybe<Plan_Question_Types_Mutation_Response>;
+  /** delete single row from the table: "plan_question_types" */
+  delete_plan_question_types_by_pk: Maybe<Plan_Question_Types>;
   /** delete data from the table: "plans" */
   delete_plans: Maybe<Plans_Mutation_Response>;
   /** delete single row from the table: "plans" */
@@ -2975,6 +2979,10 @@ export type Mutation_Root = {
   insert_plan_prices: Maybe<Plan_Prices_Mutation_Response>;
   /** insert a single row into the table: "plan_prices" */
   insert_plan_prices_one: Maybe<Plan_Prices>;
+  /** insert data into the table: "plan_question_types" */
+  insert_plan_question_types: Maybe<Plan_Question_Types_Mutation_Response>;
+  /** insert a single row into the table: "plan_question_types" */
+  insert_plan_question_types_one: Maybe<Plan_Question_Types>;
   /** insert data into the table: "plans" */
   insert_plans: Maybe<Plans_Mutation_Response>;
   /** insert a single row into the table: "plans" */
@@ -3059,6 +3067,12 @@ export type Mutation_Root = {
   update_plan_prices_by_pk: Maybe<Plan_Prices>;
   /** update multiples rows of table: "plan_prices" */
   update_plan_prices_many: Maybe<Array<Maybe<Plan_Prices_Mutation_Response>>>;
+  /** update data of the table: "plan_question_types" */
+  update_plan_question_types: Maybe<Plan_Question_Types_Mutation_Response>;
+  /** update single row of the table: "plan_question_types" */
+  update_plan_question_types_by_pk: Maybe<Plan_Question_Types>;
+  /** update multiples rows of table: "plan_question_types" */
+  update_plan_question_types_many: Maybe<Array<Maybe<Plan_Question_Types_Mutation_Response>>>;
   /** update data of the table: "plans" */
   update_plans: Maybe<Plans_Mutation_Response>;
   /** update single row of the table: "plans" */
@@ -3208,6 +3222,18 @@ export type Mutation_RootDelete_Plan_PricesArgs = {
 
 /** mutation root */
 export type Mutation_RootDelete_Plan_Prices_By_PkArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+/** mutation root */
+export type Mutation_RootDelete_Plan_Question_TypesArgs = {
+  where: Plan_Question_Types_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootDelete_Plan_Question_Types_By_PkArgs = {
   id: Scalars['String']['input'];
 };
 
@@ -3429,6 +3455,20 @@ export type Mutation_RootInsert_Plan_PricesArgs = {
 export type Mutation_RootInsert_Plan_Prices_OneArgs = {
   object: Plan_Prices_Insert_Input;
   on_conflict?: InputMaybe<Plan_Prices_On_Conflict>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_Plan_Question_TypesArgs = {
+  objects: Array<Plan_Question_Types_Insert_Input>;
+  on_conflict?: InputMaybe<Plan_Question_Types_On_Conflict>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_Plan_Question_Types_OneArgs = {
+  object: Plan_Question_Types_Insert_Input;
+  on_conflict?: InputMaybe<Plan_Question_Types_On_Conflict>;
 };
 
 
@@ -3753,6 +3793,26 @@ export type Mutation_RootUpdate_Plan_Prices_By_PkArgs = {
 /** mutation root */
 export type Mutation_RootUpdate_Plan_Prices_ManyArgs = {
   updates: Array<Plan_Prices_Updates>;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Plan_Question_TypesArgs = {
+  _set?: InputMaybe<Plan_Question_Types_Set_Input>;
+  where: Plan_Question_Types_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Plan_Question_Types_By_PkArgs = {
+  _set?: InputMaybe<Plan_Question_Types_Set_Input>;
+  pk_columns: Plan_Question_Types_Pk_Columns_Input;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Plan_Question_Types_ManyArgs = {
+  updates: Array<Plan_Question_Types_Updates>;
 };
 
 
@@ -6521,6 +6581,329 @@ export type Plan_Prices_Variance_Order_By = {
   price_yearly_in_base_unit?: InputMaybe<Order_By>;
 };
 
+/** Junction table mapping plans to question_types - controls which question types are available per plan */
+export type Plan_Question_Types = {
+  __typename?: 'plan_question_types';
+  /** Timestamp when mapping was created */
+  created_at: Scalars['timestamptz']['output'];
+  /** User who created the mapping (FK to users) */
+  created_by: Maybe<Scalars['String']['output']>;
+  /** An object relationship */
+  created_by_user: Maybe<Users>;
+  /** Primary key (NanoID 12-char) */
+  id: Scalars['String']['output'];
+  /** An object relationship */
+  plan: Plans;
+  /** FK to plans - the subscription plan */
+  plan_id: Scalars['String']['output'];
+  /** An object relationship */
+  question_type: Question_Types;
+  /** FK to question_types - the question type available in this plan */
+  question_type_id: Scalars['String']['output'];
+  /** Timestamp when mapping was last modified */
+  updated_at: Scalars['timestamptz']['output'];
+  /** User who last modified the mapping (FK to users) */
+  updated_by: Maybe<Scalars['String']['output']>;
+  /** An object relationship */
+  updated_by_user: Maybe<Users>;
+};
+
+/** aggregated selection of "plan_question_types" */
+export type Plan_Question_Types_Aggregate = {
+  __typename?: 'plan_question_types_aggregate';
+  aggregate: Maybe<Plan_Question_Types_Aggregate_Fields>;
+  nodes: Array<Plan_Question_Types>;
+};
+
+export type Plan_Question_Types_Aggregate_Bool_Exp = {
+  count?: InputMaybe<Plan_Question_Types_Aggregate_Bool_Exp_Count>;
+};
+
+export type Plan_Question_Types_Aggregate_Bool_Exp_Count = {
+  arguments?: InputMaybe<Array<Plan_Question_Types_Select_Column>>;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+  filter?: InputMaybe<Plan_Question_Types_Bool_Exp>;
+  predicate: Int_Comparison_Exp;
+};
+
+/** aggregate fields of "plan_question_types" */
+export type Plan_Question_Types_Aggregate_Fields = {
+  __typename?: 'plan_question_types_aggregate_fields';
+  count: Scalars['Int']['output'];
+  max: Maybe<Plan_Question_Types_Max_Fields>;
+  min: Maybe<Plan_Question_Types_Min_Fields>;
+};
+
+
+/** aggregate fields of "plan_question_types" */
+export type Plan_Question_Types_Aggregate_FieldsCountArgs = {
+  columns?: InputMaybe<Array<Plan_Question_Types_Select_Column>>;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+/** order by aggregate values of table "plan_question_types" */
+export type Plan_Question_Types_Aggregate_Order_By = {
+  count?: InputMaybe<Order_By>;
+  max?: InputMaybe<Plan_Question_Types_Max_Order_By>;
+  min?: InputMaybe<Plan_Question_Types_Min_Order_By>;
+};
+
+/** input type for inserting array relation for remote table "plan_question_types" */
+export type Plan_Question_Types_Arr_Rel_Insert_Input = {
+  data: Array<Plan_Question_Types_Insert_Input>;
+  /** upsert condition */
+  on_conflict?: InputMaybe<Plan_Question_Types_On_Conflict>;
+};
+
+/** Boolean expression to filter rows from the table "plan_question_types". All fields are combined with a logical 'AND'. */
+export type Plan_Question_Types_Bool_Exp = {
+  _and?: InputMaybe<Array<Plan_Question_Types_Bool_Exp>>;
+  _not?: InputMaybe<Plan_Question_Types_Bool_Exp>;
+  _or?: InputMaybe<Array<Plan_Question_Types_Bool_Exp>>;
+  created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  created_by?: InputMaybe<String_Comparison_Exp>;
+  created_by_user?: InputMaybe<Users_Bool_Exp>;
+  id?: InputMaybe<String_Comparison_Exp>;
+  plan?: InputMaybe<Plans_Bool_Exp>;
+  plan_id?: InputMaybe<String_Comparison_Exp>;
+  question_type?: InputMaybe<Question_Types_Bool_Exp>;
+  question_type_id?: InputMaybe<String_Comparison_Exp>;
+  updated_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  updated_by?: InputMaybe<String_Comparison_Exp>;
+  updated_by_user?: InputMaybe<Users_Bool_Exp>;
+};
+
+/** unique or primary key constraints on table "plan_question_types" */
+export const Plan_Question_Types_Constraint = {
+  /** unique or primary key constraint on columns "id" */
+  PlanQuestionTypesPkey: 'plan_question_types_pkey',
+  /** unique or primary key constraint on columns "plan_id", "question_type_id" */
+  PlanQuestionTypesUnique: 'plan_question_types_unique'
+} as const;
+
+export type Plan_Question_Types_Constraint = typeof Plan_Question_Types_Constraint[keyof typeof Plan_Question_Types_Constraint];
+/** input type for inserting data into table "plan_question_types" */
+export type Plan_Question_Types_Insert_Input = {
+  /** Timestamp when mapping was created */
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** User who created the mapping (FK to users) */
+  created_by?: InputMaybe<Scalars['String']['input']>;
+  created_by_user?: InputMaybe<Users_Obj_Rel_Insert_Input>;
+  /** Primary key (NanoID 12-char) */
+  id?: InputMaybe<Scalars['String']['input']>;
+  plan?: InputMaybe<Plans_Obj_Rel_Insert_Input>;
+  /** FK to plans - the subscription plan */
+  plan_id?: InputMaybe<Scalars['String']['input']>;
+  question_type?: InputMaybe<Question_Types_Obj_Rel_Insert_Input>;
+  /** FK to question_types - the question type available in this plan */
+  question_type_id?: InputMaybe<Scalars['String']['input']>;
+  /** Timestamp when mapping was last modified */
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** User who last modified the mapping (FK to users) */
+  updated_by?: InputMaybe<Scalars['String']['input']>;
+  updated_by_user?: InputMaybe<Users_Obj_Rel_Insert_Input>;
+};
+
+/** aggregate max on columns */
+export type Plan_Question_Types_Max_Fields = {
+  __typename?: 'plan_question_types_max_fields';
+  /** Timestamp when mapping was created */
+  created_at: Maybe<Scalars['timestamptz']['output']>;
+  /** User who created the mapping (FK to users) */
+  created_by: Maybe<Scalars['String']['output']>;
+  /** Primary key (NanoID 12-char) */
+  id: Maybe<Scalars['String']['output']>;
+  /** FK to plans - the subscription plan */
+  plan_id: Maybe<Scalars['String']['output']>;
+  /** FK to question_types - the question type available in this plan */
+  question_type_id: Maybe<Scalars['String']['output']>;
+  /** Timestamp when mapping was last modified */
+  updated_at: Maybe<Scalars['timestamptz']['output']>;
+  /** User who last modified the mapping (FK to users) */
+  updated_by: Maybe<Scalars['String']['output']>;
+};
+
+/** order by max() on columns of table "plan_question_types" */
+export type Plan_Question_Types_Max_Order_By = {
+  /** Timestamp when mapping was created */
+  created_at?: InputMaybe<Order_By>;
+  /** User who created the mapping (FK to users) */
+  created_by?: InputMaybe<Order_By>;
+  /** Primary key (NanoID 12-char) */
+  id?: InputMaybe<Order_By>;
+  /** FK to plans - the subscription plan */
+  plan_id?: InputMaybe<Order_By>;
+  /** FK to question_types - the question type available in this plan */
+  question_type_id?: InputMaybe<Order_By>;
+  /** Timestamp when mapping was last modified */
+  updated_at?: InputMaybe<Order_By>;
+  /** User who last modified the mapping (FK to users) */
+  updated_by?: InputMaybe<Order_By>;
+};
+
+/** aggregate min on columns */
+export type Plan_Question_Types_Min_Fields = {
+  __typename?: 'plan_question_types_min_fields';
+  /** Timestamp when mapping was created */
+  created_at: Maybe<Scalars['timestamptz']['output']>;
+  /** User who created the mapping (FK to users) */
+  created_by: Maybe<Scalars['String']['output']>;
+  /** Primary key (NanoID 12-char) */
+  id: Maybe<Scalars['String']['output']>;
+  /** FK to plans - the subscription plan */
+  plan_id: Maybe<Scalars['String']['output']>;
+  /** FK to question_types - the question type available in this plan */
+  question_type_id: Maybe<Scalars['String']['output']>;
+  /** Timestamp when mapping was last modified */
+  updated_at: Maybe<Scalars['timestamptz']['output']>;
+  /** User who last modified the mapping (FK to users) */
+  updated_by: Maybe<Scalars['String']['output']>;
+};
+
+/** order by min() on columns of table "plan_question_types" */
+export type Plan_Question_Types_Min_Order_By = {
+  /** Timestamp when mapping was created */
+  created_at?: InputMaybe<Order_By>;
+  /** User who created the mapping (FK to users) */
+  created_by?: InputMaybe<Order_By>;
+  /** Primary key (NanoID 12-char) */
+  id?: InputMaybe<Order_By>;
+  /** FK to plans - the subscription plan */
+  plan_id?: InputMaybe<Order_By>;
+  /** FK to question_types - the question type available in this plan */
+  question_type_id?: InputMaybe<Order_By>;
+  /** Timestamp when mapping was last modified */
+  updated_at?: InputMaybe<Order_By>;
+  /** User who last modified the mapping (FK to users) */
+  updated_by?: InputMaybe<Order_By>;
+};
+
+/** response of any mutation on the table "plan_question_types" */
+export type Plan_Question_Types_Mutation_Response = {
+  __typename?: 'plan_question_types_mutation_response';
+  /** number of rows affected by the mutation */
+  affected_rows: Scalars['Int']['output'];
+  /** data from the rows affected by the mutation */
+  returning: Array<Plan_Question_Types>;
+};
+
+/** on_conflict condition type for table "plan_question_types" */
+export type Plan_Question_Types_On_Conflict = {
+  constraint: Plan_Question_Types_Constraint;
+  update_columns?: Array<Plan_Question_Types_Update_Column>;
+  where?: InputMaybe<Plan_Question_Types_Bool_Exp>;
+};
+
+/** Ordering options when selecting data from "plan_question_types". */
+export type Plan_Question_Types_Order_By = {
+  created_at?: InputMaybe<Order_By>;
+  created_by?: InputMaybe<Order_By>;
+  created_by_user?: InputMaybe<Users_Order_By>;
+  id?: InputMaybe<Order_By>;
+  plan?: InputMaybe<Plans_Order_By>;
+  plan_id?: InputMaybe<Order_By>;
+  question_type?: InputMaybe<Question_Types_Order_By>;
+  question_type_id?: InputMaybe<Order_By>;
+  updated_at?: InputMaybe<Order_By>;
+  updated_by?: InputMaybe<Order_By>;
+  updated_by_user?: InputMaybe<Users_Order_By>;
+};
+
+/** primary key columns input for table: plan_question_types */
+export type Plan_Question_Types_Pk_Columns_Input = {
+  /** Primary key (NanoID 12-char) */
+  id: Scalars['String']['input'];
+};
+
+/** select columns of table "plan_question_types" */
+export const Plan_Question_Types_Select_Column = {
+  /** column name */
+  CreatedAt: 'created_at',
+  /** column name */
+  CreatedBy: 'created_by',
+  /** column name */
+  Id: 'id',
+  /** column name */
+  PlanId: 'plan_id',
+  /** column name */
+  QuestionTypeId: 'question_type_id',
+  /** column name */
+  UpdatedAt: 'updated_at',
+  /** column name */
+  UpdatedBy: 'updated_by'
+} as const;
+
+export type Plan_Question_Types_Select_Column = typeof Plan_Question_Types_Select_Column[keyof typeof Plan_Question_Types_Select_Column];
+/** input type for updating data in table "plan_question_types" */
+export type Plan_Question_Types_Set_Input = {
+  /** Timestamp when mapping was created */
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** User who created the mapping (FK to users) */
+  created_by?: InputMaybe<Scalars['String']['input']>;
+  /** Primary key (NanoID 12-char) */
+  id?: InputMaybe<Scalars['String']['input']>;
+  /** FK to plans - the subscription plan */
+  plan_id?: InputMaybe<Scalars['String']['input']>;
+  /** FK to question_types - the question type available in this plan */
+  question_type_id?: InputMaybe<Scalars['String']['input']>;
+  /** Timestamp when mapping was last modified */
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** User who last modified the mapping (FK to users) */
+  updated_by?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** Streaming cursor of the table "plan_question_types" */
+export type Plan_Question_Types_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Plan_Question_Types_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type Plan_Question_Types_Stream_Cursor_Value_Input = {
+  /** Timestamp when mapping was created */
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** User who created the mapping (FK to users) */
+  created_by?: InputMaybe<Scalars['String']['input']>;
+  /** Primary key (NanoID 12-char) */
+  id?: InputMaybe<Scalars['String']['input']>;
+  /** FK to plans - the subscription plan */
+  plan_id?: InputMaybe<Scalars['String']['input']>;
+  /** FK to question_types - the question type available in this plan */
+  question_type_id?: InputMaybe<Scalars['String']['input']>;
+  /** Timestamp when mapping was last modified */
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** User who last modified the mapping (FK to users) */
+  updated_by?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** update columns of table "plan_question_types" */
+export const Plan_Question_Types_Update_Column = {
+  /** column name */
+  CreatedAt: 'created_at',
+  /** column name */
+  CreatedBy: 'created_by',
+  /** column name */
+  Id: 'id',
+  /** column name */
+  PlanId: 'plan_id',
+  /** column name */
+  QuestionTypeId: 'question_type_id',
+  /** column name */
+  UpdatedAt: 'updated_at',
+  /** column name */
+  UpdatedBy: 'updated_by'
+} as const;
+
+export type Plan_Question_Types_Update_Column = typeof Plan_Question_Types_Update_Column[keyof typeof Plan_Question_Types_Update_Column];
+export type Plan_Question_Types_Updates = {
+  /** sets the columns of the filtered rows to the given values */
+  _set?: InputMaybe<Plan_Question_Types_Set_Input>;
+  /** filter the rows which have to be updated */
+  where: Plan_Question_Types_Bool_Exp;
+};
+
 /** Plan templates - features/limits only, pricing in plan_prices */
 export type Plans = {
   __typename?: 'plans';
@@ -6550,6 +6933,10 @@ export type Plans = {
   prices: Array<Plan_Prices>;
   /** An aggregate relationship */
   prices_aggregate: Plan_Prices_Aggregate;
+  /** An array relationship */
+  question_types: Array<Plan_Question_Types>;
+  /** An aggregate relationship */
+  question_types_aggregate: Plan_Question_Types_Aggregate;
   /** Whether to show "Powered by" branding on widgets */
   show_branding: Scalars['Boolean']['output'];
   /** Slug for code comparisons (free, pro, team) */
@@ -6596,6 +6983,26 @@ export type PlansPrices_AggregateArgs = {
   offset?: InputMaybe<Scalars['Int']['input']>;
   order_by?: InputMaybe<Array<Plan_Prices_Order_By>>;
   where?: InputMaybe<Plan_Prices_Bool_Exp>;
+};
+
+
+/** Plan templates - features/limits only, pricing in plan_prices */
+export type PlansQuestion_TypesArgs = {
+  distinct_on?: InputMaybe<Array<Plan_Question_Types_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Plan_Question_Types_Order_By>>;
+  where?: InputMaybe<Plan_Question_Types_Bool_Exp>;
+};
+
+
+/** Plan templates - features/limits only, pricing in plan_prices */
+export type PlansQuestion_Types_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Plan_Question_Types_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Plan_Question_Types_Order_By>>;
+  where?: InputMaybe<Plan_Question_Types_Bool_Exp>;
 };
 
 /** aggregated selection of "plans" */
@@ -6659,6 +7066,8 @@ export type Plans_Bool_Exp = {
   organization_plans_aggregate?: InputMaybe<Organization_Plans_Aggregate_Bool_Exp>;
   prices?: InputMaybe<Plan_Prices_Bool_Exp>;
   prices_aggregate?: InputMaybe<Plan_Prices_Aggregate_Bool_Exp>;
+  question_types?: InputMaybe<Plan_Question_Types_Bool_Exp>;
+  question_types_aggregate?: InputMaybe<Plan_Question_Types_Aggregate_Bool_Exp>;
   show_branding?: InputMaybe<Boolean_Comparison_Exp>;
   unique_name?: InputMaybe<String_Comparison_Exp>;
   updated_at?: InputMaybe<Timestamptz_Comparison_Exp>;
@@ -6707,6 +7116,7 @@ export type Plans_Insert_Input = {
   name?: InputMaybe<Scalars['String']['input']>;
   organization_plans?: InputMaybe<Organization_Plans_Arr_Rel_Insert_Input>;
   prices?: InputMaybe<Plan_Prices_Arr_Rel_Insert_Input>;
+  question_types?: InputMaybe<Plan_Question_Types_Arr_Rel_Insert_Input>;
   /** Whether to show "Powered by" branding on widgets */
   show_branding?: InputMaybe<Scalars['Boolean']['input']>;
   /** Slug for code comparisons (free, pro, team) */
@@ -6801,6 +7211,7 @@ export type Plans_Order_By = {
   name?: InputMaybe<Order_By>;
   organization_plans_aggregate?: InputMaybe<Organization_Plans_Aggregate_Order_By>;
   prices_aggregate?: InputMaybe<Plan_Prices_Aggregate_Order_By>;
+  question_types_aggregate?: InputMaybe<Plan_Question_Types_Aggregate_Order_By>;
   show_branding?: InputMaybe<Order_By>;
   unique_name?: InputMaybe<Order_By>;
   updated_at?: InputMaybe<Order_By>;
@@ -7084,6 +7495,12 @@ export type Query_Root = {
   plan_prices_aggregate: Plan_Prices_Aggregate;
   /** fetch data from the table: "plan_prices" using primary key columns */
   plan_prices_by_pk: Maybe<Plan_Prices>;
+  /** fetch data from the table: "plan_question_types" */
+  plan_question_types: Array<Plan_Question_Types>;
+  /** fetch aggregated fields from the table: "plan_question_types" */
+  plan_question_types_aggregate: Plan_Question_Types_Aggregate;
+  /** fetch data from the table: "plan_question_types" using primary key columns */
+  plan_question_types_by_pk: Maybe<Plan_Question_Types>;
   /** fetch data from the table: "plans" */
   plans: Array<Plans>;
   /** fetch aggregated fields from the table: "plans" */
@@ -7321,6 +7738,29 @@ export type Query_RootPlan_Prices_AggregateArgs = {
 
 
 export type Query_RootPlan_Prices_By_PkArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+export type Query_RootPlan_Question_TypesArgs = {
+  distinct_on?: InputMaybe<Array<Plan_Question_Types_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Plan_Question_Types_Order_By>>;
+  where?: InputMaybe<Plan_Question_Types_Bool_Exp>;
+};
+
+
+export type Query_RootPlan_Question_Types_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Plan_Question_Types_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Plan_Question_Types_Order_By>>;
+  where?: InputMaybe<Plan_Question_Types_Bool_Exp>;
+};
+
+
+export type Query_RootPlan_Question_Types_By_PkArgs = {
   id: Scalars['String']['input'];
 };
 
@@ -8068,6 +8508,10 @@ export type Question_Types = {
   __typename?: 'question_types';
   /** Data type for storing answers: text, integer, boolean, decimal, json, url */
   answer_data_type: Scalars['String']['output'];
+  /** An array relationship */
+  available_in_plans: Array<Plan_Question_Types>;
+  /** An aggregate relationship */
+  available_in_plans_aggregate: Plan_Question_Types_Aggregate;
   /** Type grouping: text, rating, choice, media, special. Used for UI organization */
   category: Scalars['String']['output'];
   /** Timestamp when type was seeded. Immutable */
@@ -8110,6 +8554,26 @@ export type Question_Types = {
   supports_pattern: Scalars['Boolean']['output'];
   /** Code identifier for type lookups (text_short, rating_star). Use in code comparisons */
   unique_name: Scalars['String']['output'];
+};
+
+
+/** Question type definitions - seed data, system-defined, not user-modifiable */
+export type Question_TypesAvailable_In_PlansArgs = {
+  distinct_on?: InputMaybe<Array<Plan_Question_Types_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Plan_Question_Types_Order_By>>;
+  where?: InputMaybe<Plan_Question_Types_Bool_Exp>;
+};
+
+
+/** Question type definitions - seed data, system-defined, not user-modifiable */
+export type Question_TypesAvailable_In_Plans_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Plan_Question_Types_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Plan_Question_Types_Order_By>>;
+  where?: InputMaybe<Plan_Question_Types_Bool_Exp>;
 };
 
 
@@ -8179,6 +8643,8 @@ export type Question_Types_Bool_Exp = {
   _not?: InputMaybe<Question_Types_Bool_Exp>;
   _or?: InputMaybe<Array<Question_Types_Bool_Exp>>;
   answer_data_type?: InputMaybe<String_Comparison_Exp>;
+  available_in_plans?: InputMaybe<Plan_Question_Types_Bool_Exp>;
+  available_in_plans_aggregate?: InputMaybe<Plan_Question_Types_Aggregate_Bool_Exp>;
   category?: InputMaybe<String_Comparison_Exp>;
   created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
   default_max_value?: InputMaybe<Int_Comparison_Exp>;
@@ -8225,6 +8691,7 @@ export type Question_Types_Inc_Input = {
 export type Question_Types_Insert_Input = {
   /** Data type for storing answers: text, integer, boolean, decimal, json, url */
   answer_data_type?: InputMaybe<Scalars['String']['input']>;
+  available_in_plans?: InputMaybe<Plan_Question_Types_Arr_Rel_Insert_Input>;
   /** Type grouping: text, rating, choice, media, special. Used for UI organization */
   category?: InputMaybe<Scalars['String']['input']>;
   /** Timestamp when type was seeded. Immutable */
@@ -8346,6 +8813,7 @@ export type Question_Types_On_Conflict = {
 /** Ordering options when selecting data from "question_types". */
 export type Question_Types_Order_By = {
   answer_data_type?: InputMaybe<Order_By>;
+  available_in_plans_aggregate?: InputMaybe<Plan_Question_Types_Aggregate_Order_By>;
   category?: InputMaybe<Order_By>;
   created_at?: InputMaybe<Order_By>;
   default_max_value?: InputMaybe<Order_By>;
@@ -9096,6 +9564,14 @@ export type Subscription_Root = {
   plan_prices_by_pk: Maybe<Plan_Prices>;
   /** fetch data from the table in a streaming manner: "plan_prices" */
   plan_prices_stream: Array<Plan_Prices>;
+  /** fetch data from the table: "plan_question_types" */
+  plan_question_types: Array<Plan_Question_Types>;
+  /** fetch aggregated fields from the table: "plan_question_types" */
+  plan_question_types_aggregate: Plan_Question_Types_Aggregate;
+  /** fetch data from the table: "plan_question_types" using primary key columns */
+  plan_question_types_by_pk: Maybe<Plan_Question_Types>;
+  /** fetch data from the table in a streaming manner: "plan_question_types" */
+  plan_question_types_stream: Array<Plan_Question_Types>;
   /** fetch data from the table: "plans" */
   plans: Array<Plans>;
   /** fetch aggregated fields from the table: "plans" */
@@ -9408,6 +9884,36 @@ export type Subscription_RootPlan_Prices_StreamArgs = {
   batch_size: Scalars['Int']['input'];
   cursor: Array<InputMaybe<Plan_Prices_Stream_Cursor_Input>>;
   where?: InputMaybe<Plan_Prices_Bool_Exp>;
+};
+
+
+export type Subscription_RootPlan_Question_TypesArgs = {
+  distinct_on?: InputMaybe<Array<Plan_Question_Types_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Plan_Question_Types_Order_By>>;
+  where?: InputMaybe<Plan_Question_Types_Bool_Exp>;
+};
+
+
+export type Subscription_RootPlan_Question_Types_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Plan_Question_Types_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Plan_Question_Types_Order_By>>;
+  where?: InputMaybe<Plan_Question_Types_Bool_Exp>;
+};
+
+
+export type Subscription_RootPlan_Question_Types_By_PkArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+export type Subscription_RootPlan_Question_Types_StreamArgs = {
+  batch_size: Scalars['Int']['input'];
+  cursor: Array<InputMaybe<Plan_Question_Types_Stream_Cursor_Input>>;
+  where?: InputMaybe<Plan_Question_Types_Bool_Exp>;
 };
 
 
@@ -12647,6 +13153,13 @@ export type FindOrganizationBySlugQueryVariables = Exact<{
 
 export type FindOrganizationBySlugQuery = { __typename?: 'query_root', organizations: Array<{ __typename?: 'organizations', id: string, name: string, slug: string, is_active: boolean }> };
 
+export type GetOrganizationPlanQuestionTypesQueryVariables = Exact<{
+  organizationId: Scalars['String']['input'];
+}>;
+
+
+export type GetOrganizationPlanQuestionTypesQuery = { __typename?: 'query_root', organizations_by_pk: { __typename?: 'organizations', id: string, plans: Array<{ __typename?: 'organization_plans', plan: { __typename?: 'plans', id: string, unique_name: string, name: string, question_types: Array<{ __typename?: 'plan_question_types', question_type: { __typename?: 'question_types', id: string, unique_name: string, name: string, category: string, description: string | null, input_component: string, answer_data_type: string, display_order: number, supports_options: boolean } }> } }> } | null };
+
 export type AssignRoleMutationVariables = Exact<{
   organization_id: Scalars['String']['input'];
   user_id: Scalars['String']['input'];
@@ -12814,6 +13327,33 @@ export const FindOrganizationBySlugDocument = `
     name
     slug
     is_active
+  }
+}
+    `;
+export const GetOrganizationPlanQuestionTypesDocument = `
+    query GetOrganizationPlanQuestionTypes($organizationId: String!) {
+  organizations_by_pk(id: $organizationId) {
+    id
+    plans(where: {status: {_eq: "active"}}, limit: 1) {
+      plan {
+        id
+        unique_name
+        name
+        question_types(order_by: {question_type: {display_order: asc}}) {
+          question_type {
+            id
+            unique_name
+            name
+            category
+            description
+            input_component
+            answer_data_type
+            display_order
+            supports_options
+          }
+        }
+      }
+    }
   }
 }
     `;
@@ -13059,6 +13599,9 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
     },
     FindOrganizationBySlug(variables: FindOrganizationBySlugQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<FindOrganizationBySlugQuery> {
       return withWrapper((wrappedRequestHeaders) => client.request<FindOrganizationBySlugQuery>({ document: FindOrganizationBySlugDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'FindOrganizationBySlug', 'query', variables);
+    },
+    GetOrganizationPlanQuestionTypes(variables: GetOrganizationPlanQuestionTypesQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<GetOrganizationPlanQuestionTypesQuery> {
+      return withWrapper((wrappedRequestHeaders) => client.request<GetOrganizationPlanQuestionTypesQuery>({ document: GetOrganizationPlanQuestionTypesDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'GetOrganizationPlanQuestionTypes', 'query', variables);
     },
     AssignRole(variables: AssignRoleMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<AssignRoleMutation> {
       return withWrapper((wrappedRequestHeaders) => client.request<AssignRoleMutation>({ document: AssignRoleDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'AssignRole', 'mutation', variables);
