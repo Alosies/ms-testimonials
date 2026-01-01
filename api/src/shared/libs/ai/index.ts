@@ -12,14 +12,18 @@ export {
   type QualityLevel,
 } from './providers';
 
-// Audit tracking
+// Audit tracking and credit calculation
 export {
   calculateEstimatedCost,
+  calculateCreditsFromCost,
+  getCreditConversionRate,
   buildTrackingTag,
   extractUsageFromResponse,
   createAuditRecord,
+  logAIUsage,
   type AIOperationType,
   type AIUsageData,
   type AIAuditRecord,
   type AITrackingContext,
+  type AILogEntry,
 } from './audit';

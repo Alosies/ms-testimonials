@@ -18,8 +18,9 @@ import { env } from '@/shared/config/env';
 
 /**
  * Supported AI providers
+ * Note: openrouter is reserved for future use (multi-model routing)
  */
-export type AIProvider = 'openai' | 'anthropic' | 'google';
+export type AIProvider = 'openai' | 'anthropic' | 'google' | 'openrouter';
 
 /**
  * Model presets for different use cases
@@ -33,12 +34,20 @@ export type ModelPreset = 'fast' | 'balanced' | 'powerful';
 export type QualityLevel = 'fast' | 'enhanced' | 'premium';
 
 /**
- * Credit costs per quality level
+ * Estimated credit costs per quality level
+ *
+ * These are ESTIMATES used for:
+ * - Pre-operation credit balance checks
+ * - UI display to users before they run an operation
+ *
+ * Actual credits are calculated dynamically based on token usage
+ * using calculateCreditsFromCost() after the operation completes.
+ * This ensures fair billing based on actual consumption.
  */
 export const CREDIT_COSTS: Record<QualityLevel, number> = {
-  fast: 1,
-  enhanced: 5,
-  premium: 12,
+  fast: 1,      // Typical range: 0.25 - 2 credits
+  enhanced: 5,  // Typical range: 2 - 8 credits
+  premium: 12,  // Typical range: 5 - 20 credits
 };
 
 /**
@@ -68,6 +77,12 @@ const MODEL_CONFIG: Record<AIProvider, Record<ModelPreset, string>> = {
     fast: 'gemini-2.0-flash',        // Fast and cost-effective
     balanced: 'gemini-2.5-flash',    // Great balance of speed and quality
     powerful: 'gemini-2.5-pro',      // Highest quality
+  },
+  // Reserved for future use - OpenRouter model IDs
+  openrouter: {
+    fast: 'google/gemini-2.0-flash-exp:free',
+    balanced: 'anthropic/claude-3.5-sonnet',
+    powerful: 'anthropic/claude-3-opus',
   },
 };
 

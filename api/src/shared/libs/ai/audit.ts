@@ -96,6 +96,58 @@ export interface AITrackingContext {
 }
 
 /**
+ * Credit Calculation
+ *
+ * Dynamic credit calculation based on actual USD cost.
+ * Uses 0.25 credit increments for fair, granular pricing.
+ */
+
+/** How much USD equals 1 credit */
+const USD_PER_CREDIT = 0.001; // 1 credit = $0.001 USD
+
+/** Minimum credit charge per operation */
+const MIN_CREDITS = 0.25;
+
+/**
+ * Calculate credits from actual USD cost
+ *
+ * Uses dynamic calculation based on token usage rather than fixed costs.
+ * Rounds UP to nearest 0.25 increment with a minimum charge.
+ *
+ * @param costUsd - Actual or estimated USD cost from token usage
+ * @returns Credits to charge (minimum 0.25, increments of 0.25)
+ *
+ * @example
+ * calculateCreditsFromCost(0.00048) // → 0.5 credits
+ * calculateCreditsFromCost(0.0001)  // → 0.25 credits (minimum)
+ * calculateCreditsFromCost(0.0025)  // → 2.5 credits
+ */
+export function calculateCreditsFromCost(costUsd: number): number {
+  if (costUsd <= 0) {
+    return MIN_CREDITS;
+  }
+
+  const rawCredits = costUsd / USD_PER_CREDIT;
+
+  // Round UP to nearest 0.25 increment
+  const roundedCredits = Math.ceil(rawCredits * 4) / 4;
+
+  // Enforce minimum
+  return Math.max(roundedCredits, MIN_CREDITS);
+}
+
+/**
+ * Get the USD to credit conversion rate
+ * Useful for displaying to users
+ */
+export function getCreditConversionRate(): { usdPerCredit: number; minCredits: number } {
+  return {
+    usdPerCredit: USD_PER_CREDIT,
+    minCredits: MIN_CREDITS,
+  };
+}
+
+/**
  * Estimated costs per 1M tokens by provider/model
  * Used for cost calculation when provider doesn't return actual cost
  */
@@ -152,48 +204,149 @@ export function buildTrackingTag(context: AITrackingContext): string {
 }
 
 /**
+ * Raw response structure from Vercel AI SDK
+ * Each provider may populate different fields
+ *
+ * Note: Vercel AI SDK uses different property names depending on provider:
+ * - OpenAI: promptTokens, completionTokens
+ * - Google: inputTokens, outputTokens
+ * - Anthropic: promptTokens, completionTokens
+ */
+interface RawAIResponse {
+  usage?: {
+    // OpenAI/Anthropic style
+    promptTokens?: number;
+    completionTokens?: number;
+    // Google style
+    inputTokens?: number;
+    outputTokens?: number;
+    // Common
+    totalTokens?: number;
+  };
+  experimental_providerMetadata?: Record<string, unknown>;
+  providerMetadata?: Record<string, unknown>;
+  response?: {
+    id?: string;
+    modelId?: string;
+  };
+}
+
+/**
+ * Extract usage from OpenAI responses
+ */
+function extractOpenAIUsage(response: RawAIResponse): { input: number; output: number; requestId: string } {
+  const usage = response.usage ?? {};
+  return {
+    input: usage.promptTokens ?? usage.inputTokens ?? 0,
+    output: usage.completionTokens ?? usage.outputTokens ?? 0,
+    requestId: response.response?.id ?? '',
+  };
+}
+
+/**
+ * Extract usage from Anthropic responses
+ */
+function extractAnthropicUsage(response: RawAIResponse): { input: number; output: number; requestId: string } {
+  const usage = response.usage ?? {};
+  return {
+    input: usage.promptTokens ?? usage.inputTokens ?? 0,
+    output: usage.completionTokens ?? usage.outputTokens ?? 0,
+    requestId: response.response?.id ?? '',
+  };
+}
+
+/**
+ * Extract usage from Google Gemini responses
+ * Google uses inputTokens/outputTokens (not promptTokens/completionTokens)
+ */
+function extractGoogleUsage(response: RawAIResponse): { input: number; output: number; requestId: string } {
+  const usage = response.usage ?? {};
+
+  // Google uses inputTokens/outputTokens
+  return {
+    input: usage.inputTokens ?? usage.promptTokens ?? 0,
+    output: usage.outputTokens ?? usage.completionTokens ?? 0,
+    requestId: response.response?.id ?? '',
+  };
+}
+
+/**
+ * Extract usage from OpenRouter responses
+ */
+function extractOpenRouterUsage(response: RawAIResponse): { input: number; output: number; requestId: string; cost: number | null } {
+  const usage = response.usage ?? {};
+  const openrouterMeta = (response.experimental_providerMetadata?.openrouter ?? response.providerMetadata?.openrouter) as {
+    generationId?: string;
+    totalCost?: number;
+  } | undefined;
+
+  return {
+    input: usage.promptTokens ?? usage.inputTokens ?? 0,
+    output: usage.completionTokens ?? usage.outputTokens ?? 0,
+    requestId: openrouterMeta?.generationId ?? response.response?.id ?? '',
+    cost: openrouterMeta?.totalCost ?? null,
+  };
+}
+
+/**
  * Extract usage data from Vercel AI SDK response
+ * Uses provider-specific adapters for accurate extraction
  */
 export function extractUsageFromResponse(
-  response: {
-    usage?: {
-      promptTokens?: number;
-      completionTokens?: number;
-      totalTokens?: number;
-    };
-    experimental_providerMetadata?: {
-      openrouter?: {
-        generationId?: string;
-        totalCost?: number;
-      };
-    };
-    response?: {
-      id?: string;
-      modelId?: string;
-    };
-  },
+  response: RawAIResponse,
   provider: AIProvider,
   model: string
 ): Partial<AIUsageData> {
-  const usage = response.usage ?? {};
-  const inputTokens = usage.promptTokens ?? 0;
-  const outputTokens = usage.completionTokens ?? 0;
-  const totalTokens = usage.totalTokens ?? inputTokens + outputTokens;
-
-  // Try to get actual cost from OpenRouter
+  let inputTokens = 0;
+  let outputTokens = 0;
+  let requestId = '';
   let costUsd: number | null = null;
-  const openrouterMeta = response.experimental_providerMetadata?.openrouter;
-  if (openrouterMeta?.totalCost) {
-    costUsd = openrouterMeta.totalCost;
-  } else {
-    // Calculate estimated cost
-    costUsd = calculateEstimatedCost(model, inputTokens, outputTokens);
+
+  // Use provider-specific extraction
+  switch (provider) {
+    case 'openai': {
+      const data = extractOpenAIUsage(response);
+      inputTokens = data.input;
+      outputTokens = data.output;
+      requestId = data.requestId;
+      break;
+    }
+    case 'anthropic': {
+      const data = extractAnthropicUsage(response);
+      inputTokens = data.input;
+      outputTokens = data.output;
+      requestId = data.requestId;
+      break;
+    }
+    case 'google': {
+      const data = extractGoogleUsage(response);
+      inputTokens = data.input;
+      outputTokens = data.output;
+      requestId = data.requestId;
+      break;
+    }
+    case 'openrouter': {
+      const data = extractOpenRouterUsage(response);
+      inputTokens = data.input;
+      outputTokens = data.output;
+      requestId = data.requestId;
+      costUsd = data.cost;
+      break;
+    }
+    default: {
+      // Fallback: try standard usage fields
+      const usage = response.usage ?? {};
+      inputTokens = usage.promptTokens ?? 0;
+      outputTokens = usage.completionTokens ?? 0;
+      requestId = response.response?.id ?? '';
+    }
   }
 
-  // Get request ID
-  let requestId = response.response?.id ?? '';
-  if (openrouterMeta?.generationId) {
-    requestId = openrouterMeta.generationId;
+  const totalTokens = inputTokens + outputTokens;
+
+  // Calculate cost if not provided by provider
+  if (costUsd === null) {
+    costUsd = calculateEstimatedCost(model, inputTokens, outputTokens);
   }
 
   return {
@@ -206,6 +359,64 @@ export function extractUsageFromResponse(
     requestId,
     timestamp: new Date(),
   };
+}
+
+/**
+ * Log entry for AI operations (structured JSON for future log aggregation)
+ */
+export interface AILogEntry {
+  requestId: string;
+  provider: AIProvider;
+  model: string;
+  quality: QualityLevel;
+  organizationId: string;
+  userId?: string;
+  operation: AIOperationType;
+  tokens: {
+    input: number;
+    output: number;
+    total: number;
+  };
+  cost: {
+    credits: number;
+    estimatedUsd: number | null;
+  };
+  timestamp: string;
+  durationMs?: number;
+  success: boolean;
+  error?: string;
+}
+
+/**
+ * Log AI operation usage (structured for log aggregation systems)
+ * This data can be used to:
+ * - Show usage to users in dashboard
+ * - Track costs and credit consumption
+ * - Monitor AI operation performance
+ */
+export function logAIUsage(entry: AILogEntry): void {
+  const logLevel = entry.success ? '📊' : '❌';
+  const usdFormatted = entry.cost.estimatedUsd !== null
+    ? `$${entry.cost.estimatedUsd.toFixed(6)}`
+    : 'N/A';
+
+  console.log(`${logLevel} AI Usage`);
+  console.table({
+    Timestamp: entry.timestamp,
+    'Request ID': entry.requestId,
+    Provider: entry.provider,
+    Model: entry.model,
+    Quality: entry.quality,
+    Operation: entry.operation,
+    'User ID': entry.userId ?? 'N/A',
+    Organization: entry.organizationId,
+    'Input Tokens': entry.tokens.input,
+    'Output Tokens': entry.tokens.output,
+    'Total Tokens': entry.tokens.total,
+    Credits: entry.cost.credits,
+    'Est. USD': usdFormatted,
+    Success: entry.success ? 'Yes' : 'No',
+  });
 }
 
 /**
