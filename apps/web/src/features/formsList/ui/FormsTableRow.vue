@@ -26,9 +26,6 @@ const getStatusConfig = (form: FormItem) => {
   if (form.status === 'draft') {
     return { label: 'Draft', dotClass: 'bg-amber-500', textClass: 'text-amber-600' }
   }
-  if (!form.is_active) {
-    return { label: 'Inactive', dotClass: 'bg-muted-foreground/50', textClass: 'text-muted-foreground' }
-  }
   return { label: 'Published', dotClass: 'bg-emerald-500', textClass: 'text-emerald-600' }
 }
 
@@ -59,9 +56,7 @@ const formatDate = (dateString: string): string => {
           :class="[
             form.status === 'draft'
               ? 'bg-gradient-to-br from-amber-100 to-amber-50 text-amber-600'
-              : form.is_active
-                ? 'bg-gradient-to-br from-primary/20 to-primary/5 text-primary'
-                : 'bg-muted text-muted-foreground'
+              : 'bg-gradient-to-br from-primary/20 to-primary/5 text-primary'
           ]"
         >
           <Icon icon="heroicons:document-text" class="h-4 w-4" />

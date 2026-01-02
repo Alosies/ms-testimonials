@@ -13738,7 +13738,7 @@ export type GetFormQueryCompositionFunctionResult = VueApolloComposable.UseQuery
 export const GetFormsDocument = gql`
     query GetForms($organizationId: String!) {
   forms(
-    where: {organization_id: {_eq: $organizationId}}
+    where: {organization_id: {_eq: $organizationId}, is_active: {_eq: true}}
     order_by: {created_at: desc}
   ) {
     ...FormBasic

@@ -87,10 +87,6 @@ const getStatusBadge = (form: FormItem) => {
   if (form.status === 'draft') {
     return { label: 'Draft', class: 'bg-amber-100 text-amber-700' }
   }
-  // For published forms, show inactive badge if not active
-  if (!form.is_active) {
-    return { label: 'Inactive', class: 'bg-gray-100 text-gray-600' }
-  }
   return null
 }
 </script>
@@ -173,16 +169,14 @@ const getStatusBadge = (form: FormItem) => {
             :class="{ 'rotate-90': isFormExpanded(form.id) }"
           />
 
-          <!-- Form icon with style for inactive forms -->
+          <!-- Form icon -->
           <Icon
             icon="heroicons:document-text"
             class="h-4 w-4 mr-2 transition-colors duration-200"
             :class="[
-              !form.is_active && form.status !== 'draft'
-                ? 'text-gray-400'
-                : isFormActive(form)
-                  ? 'text-teal-600'
-                  : 'text-gray-500 group-hover:text-gray-700',
+              isFormActive(form)
+                ? 'text-teal-600'
+                : 'text-gray-500 group-hover:text-gray-700',
             ]"
           />
 
