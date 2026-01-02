@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { toRef } from 'vue';
+import { toRef, ref, watch, nextTick } from 'vue';
 import {
   Button,
   Input,
@@ -21,27 +21,72 @@ import { VisuallyHidden } from 'reka-ui';
 import { Icon } from '@testimonials/icons';
 import type { QuestionTypeId } from '@/shared/api';
 import type { QuestionData } from '../../models';
-import { useQuestionEditorPanel } from '../../composables';
+import { useQuestionEditorPanel, type PanelMode } from '../../composables';
 import QuestionPreview from './childComponents/QuestionPreview.vue';
 import QuestionOptionsEditor from './childComponents/QuestionOptionsEditor.vue';
 import QuestionTypeTips from './childComponents/QuestionTypeTips.vue';
 
-const props = defineProps<{
-  question: QuestionData | null;
-  questionIndex: number;
-  totalQuestions: number;
-  open: boolean;
-}>();
+// Template ref for auto-focus in add mode
+const questionTextRef = ref<InstanceType<typeof Textarea> | null>(null);
+
+const props = withDefaults(
+  defineProps<{
+    /** Panel mode: 'add' for new questions, 'edit' for existing */
+    mode?: PanelMode;
+    /** Question to edit (edit mode only) */
+    question?: QuestionData | null;
+    /** Index of question being edited (edit mode only) */
+    questionIndex?: number;
+    /** Total number of questions (edit mode only) */
+    totalQuestions?: number;
+    /** Display order for new question (add mode only) */
+    nextDisplayOrder?: number;
+    /** Whether panel is open */
+    open: boolean;
+  }>(),
+  {
+    mode: 'edit',
+    question: null,
+    questionIndex: 0,
+    totalQuestions: 0,
+    nextDisplayOrder: 1,
+  }
+);
 
 const emit = defineEmits<{
   'update:open': [value: boolean];
+  /** Emitted when question is updated (edit mode) */
   update: [updates: Partial<QuestionData>];
+  /** Emitted when question is deleted (edit mode) */
   remove: [];
+  /** Emitted when navigating between questions (edit mode) */
   navigate: [direction: 'prev' | 'next'];
+  /** Emitted when new question is added (add mode) */
+  add: [question: QuestionData];
 }>();
+
+// Build composable options based on mode (called once at setup)
+const composableOptions = props.mode === 'add'
+  ? {
+      mode: 'add' as const,
+      nextDisplayOrder: props.nextDisplayOrder,
+      onAdd: (question: QuestionData) => emit('add', question),
+      onOpenChange: (value: boolean) => emit('update:open', value),
+    }
+  : {
+      mode: 'edit' as const,
+      question: toRef(props, 'question'),
+      questionIndex: toRef(props, 'questionIndex'),
+      totalQuestions: toRef(props, 'totalQuestions'),
+      onUpdate: (updates: Partial<QuestionData>) => emit('update', updates),
+      onRemove: () => emit('remove'),
+      onNavigate: (direction: 'prev' | 'next') => emit('navigate', direction),
+      onOpenChange: (value: boolean) => emit('update:open', value),
+    };
 
 // Use composable for all logic
 const {
+  isEditMode,
   localQuestion,
   questionTypes,
   isNavigationEnabled,
@@ -50,6 +95,7 @@ const {
   questionTypeIcon,
   supportsOptions,
   isRequired,
+  isValid,
   getHeroIconName,
   updateField,
   addOption,
@@ -60,16 +106,24 @@ const {
   enableNavigation,
   disableNavigation,
   handleDeleteClick,
+  handleAddQuestion,
   closePanel,
-} = useQuestionEditorPanel({
-  question: toRef(props, 'question'),
-  questionIndex: toRef(props, 'questionIndex'),
-  totalQuestions: toRef(props, 'totalQuestions'),
-  onUpdate: (updates) => emit('update', updates),
-  onRemove: () => emit('remove'),
-  onNavigate: (direction) => emit('navigate', direction),
-  onOpenChange: (value) => emit('update:open', value),
-});
+} = useQuestionEditorPanel(composableOptions);
+
+// Auto-focus question text input in add mode when panel opens
+watch(
+  () => props.open,
+  async (isOpen) => {
+    if (isOpen && props.mode === 'add') {
+      await nextTick();
+      // Small delay to ensure sheet animation has started
+      setTimeout(() => {
+        questionTextRef.value?.$el?.focus();
+      }, 100);
+    }
+  },
+  { immediate: true }
+);
 </script>
 
 <template>
@@ -79,86 +133,122 @@ const {
       size="wide"
       class="flex flex-col gap-0 overflow-hidden p-0 [&>button]:hidden"
     >
-      <!-- Header with Navigation (focusable for keyboard nav on desktop) -->
+      <!-- Header: Different UI for Add vs Edit mode -->
       <div
-        :tabindex="hasKeyboard ? 0 : -1"
+        :tabindex="isEditMode && hasKeyboard ? 0 : -1"
         :class="[
           'flex items-center justify-between border-b bg-gray-50 px-6 py-4 outline-none transition-colors',
-          hasKeyboard && 'cursor-pointer focus:bg-gray-100',
+          isEditMode && hasKeyboard && 'cursor-pointer focus:bg-gray-100',
         ]"
         @keydown="handleHeaderKeydown"
         @focus="enableNavigation"
         @blur="disableNavigation"
       >
-        <div class="flex items-center gap-3">
-          <!-- Navigation Arrows -->
-          <div class="flex items-center gap-1">
-            <Button
-              variant="ghost"
-              size="icon"
-              class="h-8 w-8"
-              :disabled="questionIndex <= 0"
-              tabindex="-1"
-              @click="navigateWithTransition('prev')"
-            >
-              <Icon icon="lucide:chevron-up" class="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              class="h-8 w-8"
-              :disabled="questionIndex >= totalQuestions - 1"
-              tabindex="-1"
-              @click="navigateWithTransition('next')"
-            >
-              <Icon icon="lucide:chevron-down" class="h-4 w-4" />
-            </Button>
+        <!-- Edit Mode Header -->
+        <template v-if="isEditMode">
+          <div class="flex items-center gap-3">
+            <!-- Navigation Arrows -->
+            <div class="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                class="h-8 w-8"
+                :disabled="questionIndex <= 0"
+                tabindex="-1"
+                @click="navigateWithTransition('prev')"
+              >
+                <Icon icon="lucide:chevron-up" class="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                class="h-8 w-8"
+                :disabled="questionIndex >= totalQuestions - 1"
+                tabindex="-1"
+                @click="navigateWithTransition('next')"
+              >
+                <Icon icon="lucide:chevron-down" class="h-4 w-4" />
+              </Button>
+            </div>
+
+            <div>
+              <SheetTitle class="text-base font-semibold text-gray-900">
+                Question {{ questionIndex + 1 }} of {{ totalQuestions }}
+              </SheetTitle>
+              <VisuallyHidden>
+                <SheetDescription>
+                  Edit question settings including text, type, and options
+                </SheetDescription>
+              </VisuallyHidden>
+              <!-- Keyboard navigation hint - only shown on devices with keyboards -->
+              <p
+                v-if="hasKeyboard"
+                :class="[
+                  'text-xs transition-colors',
+                  isNavigationEnabled
+                    ? 'font-medium text-primary'
+                    : 'text-gray-500',
+                ]"
+              >
+                <span v-if="isNavigationEnabled" class="inline-flex items-center gap-1">
+                  <Icon icon="lucide:keyboard" class="h-3 w-3" />
+                  Keyboard ↑↓ navigation active
+                </span>
+                <span v-else>Click here to enable Keyboard ↑↓ navigation</span>
+              </p>
+            </div>
           </div>
 
-          <div>
-            <SheetTitle class="text-base font-semibold text-gray-900">
-              Question {{ questionIndex + 1 }} of {{ totalQuestions }}
-            </SheetTitle>
-            <VisuallyHidden>
-              <SheetDescription>
-                Edit question settings including text, type, and options
-              </SheetDescription>
-            </VisuallyHidden>
-            <!-- Keyboard navigation hint - only shown on devices with keyboards -->
-            <p
-              v-if="hasKeyboard"
-              :class="[
-                'text-xs transition-colors',
-                isNavigationEnabled
-                  ? 'font-medium text-primary'
-                  : 'text-gray-500',
-              ]"
+          <!-- Edit Mode Actions -->
+          <div class="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              class="text-red-500 hover:bg-red-50 hover:text-red-600"
+              @click="handleDeleteClick"
             >
-              <span v-if="isNavigationEnabled" class="inline-flex items-center gap-1">
-                <Icon icon="lucide:keyboard" class="h-3 w-3" />
-                Keyboard ↑↓ navigation active
-              </span>
-              <span v-else>Click here to enable Keyboard ↑↓ navigation</span>
-            </p>
+              <Icon icon="lucide:trash-2" class="mr-1.5 h-4 w-4" />
+              Delete
+            </Button>
+            <div class="mx-1 h-6 w-px bg-gray-200" />
+            <Button variant="ghost" size="icon" class="h-8 w-8" @click="closePanel">
+              <Icon icon="lucide:x" class="h-4 w-4" />
+            </Button>
           </div>
-        </div>
+        </template>
 
-        <!-- Actions -->
-        <div class="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            class="text-red-500 hover:bg-red-50 hover:text-red-600"
-            @click="handleDeleteClick"
-          >
-            <Icon icon="lucide:trash-2" class="mr-1.5 h-4 w-4" />
-            Delete
-          </Button>
-          <div class="mx-1 h-6 w-px bg-gray-200" />
-          <Button variant="ghost" size="icon" class="h-8 w-8" @click="closePanel">
-            <Icon icon="lucide:x" class="h-4 w-4" />
-          </Button>
-        </div>
+        <!-- Add Mode Header -->
+        <template v-else>
+          <div class="flex items-center gap-3">
+            <div class="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+              <Icon icon="lucide:plus" class="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <SheetTitle class="text-base font-semibold text-gray-900">
+                Add New Question
+              </SheetTitle>
+              <VisuallyHidden>
+                <SheetDescription>
+                  Create a new question for your testimonial form
+                </SheetDescription>
+              </VisuallyHidden>
+              <p class="text-xs text-gray-500">
+                Create a custom question for your form
+              </p>
+            </div>
+          </div>
+
+          <!-- Add Mode Actions -->
+          <div class="flex items-center gap-2">
+            <Button variant="outline" size="sm" @click="closePanel">
+              Cancel
+            </Button>
+            <Button size="sm" :disabled="!isValid" @click="handleAddQuestion">
+              <Icon icon="lucide:plus" class="mr-1.5 h-4 w-4" />
+              Add Question
+            </Button>
+          </div>
+        </template>
       </div>
 
       <!-- Two-Column Layout -->
@@ -190,6 +280,7 @@ const {
             <div>
               <Label class="text-sm font-medium">Question Text</Label>
               <Textarea
+                ref="questionTextRef"
                 :model-value="localQuestion.question_text"
                 class="mt-1.5"
                 rows="3"

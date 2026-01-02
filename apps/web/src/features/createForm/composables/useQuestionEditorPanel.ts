@@ -2,22 +2,64 @@ import { computed, ref, watch, toRefs, type Ref } from 'vue';
 import { useMediaQuery } from '@vueuse/core';
 import { useOrganizationStore } from '@/entities/organization';
 import { useConfirmationModal } from '@/shared/widgets';
-import type { AIQuestionOption } from '@/shared/api';
+import type { AIQuestionOption, QuestionTypeId } from '@/shared/api';
 import type { QuestionData } from '../models';
 
-interface UseQuestionEditorPanelOptions {
+export type PanelMode = 'add' | 'edit';
+
+interface UseQuestionEditorPanelBaseOptions {
+  onOpenChange: (value: boolean) => void;
+}
+
+interface UseQuestionEditorPanelEditOptions extends UseQuestionEditorPanelBaseOptions {
+  mode: 'edit';
   question: Ref<QuestionData | null>;
   questionIndex: Ref<number>;
   totalQuestions: Ref<number>;
   onUpdate: (updates: Partial<QuestionData>) => void;
   onRemove: () => void;
   onNavigate: (direction: 'prev' | 'next') => void;
-  onOpenChange: (value: boolean) => void;
+}
+
+interface UseQuestionEditorPanelAddOptions extends UseQuestionEditorPanelBaseOptions {
+  mode: 'add';
+  onAdd: (question: QuestionData) => void;
+  /** Display order for the new question (defaults to 1) */
+  nextDisplayOrder?: number;
+}
+
+type UseQuestionEditorPanelOptions = UseQuestionEditorPanelEditOptions | UseQuestionEditorPanelAddOptions;
+
+// Helper to generate question_key from question text
+function generateQuestionKey(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, '')
+    .replace(/\s+/g, '_')
+    .slice(0, 50) || `custom_${Date.now()}`;
+}
+
+// Create a blank question template for add mode
+function createBlankQuestion(displayOrder: number): QuestionData {
+  return {
+    question_text: '',
+    question_key: '',
+    question_type_id: 'text_long' as QuestionTypeId,
+    placeholder: null,
+    help_text: null,
+    is_required: true,
+    display_order: displayOrder,
+    options: null,
+    isNew: true,
+  };
 }
 
 export function useQuestionEditorPanel(options: UseQuestionEditorPanelOptions) {
-  const { question, questionIndex, totalQuestions, onUpdate, onRemove, onNavigate, onOpenChange } =
-    options;
+  const { mode, onOpenChange } = options;
+
+  // Mode flags
+  const isAddMode = mode === 'add';
+  const isEditMode = mode === 'edit';
 
   // Get allowed question types from organization's plan
   const organizationStore = useOrganizationStore();
@@ -30,9 +72,9 @@ export function useQuestionEditorPanel(options: UseQuestionEditorPanelOptions) {
   const localQuestion = ref<QuestionData | null>(null);
 
   // Separate ref for Switch binding (synced with localQuestion.is_required)
-  const isRequired = ref(false);
+  const isRequired = ref(true);
 
-  // Keyboard navigation state - only active when header is focused
+  // Keyboard navigation state - only active when header is focused (edit mode only)
   const isNavigationEnabled = ref(false);
 
   // Detect if device has keyboard (pointer: fine indicates mouse/trackpad, typical of keyboard devices)
@@ -41,23 +83,43 @@ export function useQuestionEditorPanel(options: UseQuestionEditorPanelOptions) {
   // Track if content is transitioning (for smooth animations)
   const isTransitioning = ref(false);
 
-  // Sync local state with prop changes
-  watch(
-    question,
-    (newQuestion) => {
-      if (newQuestion) {
-        localQuestion.value = { ...newQuestion };
-        isRequired.value = Boolean(newQuestion.is_required);
-      }
-    },
-    { immediate: true, deep: true }
-  );
+  // Validation for add mode
+  const isValid = computed(() => {
+    if (!localQuestion.value) return false;
+    return localQuestion.value.question_text.trim().length > 0;
+  });
+
+  // Initialize state based on mode
+  if (isAddMode) {
+    const addOptions = options as UseQuestionEditorPanelAddOptions;
+    localQuestion.value = createBlankQuestion(addOptions.nextDisplayOrder ?? 1);
+    isRequired.value = true;
+  }
+
+  // Sync local state with prop changes (edit mode only)
+  if (isEditMode) {
+    const editOptions = options as UseQuestionEditorPanelEditOptions;
+    watch(
+      editOptions.question,
+      (newQuestion) => {
+        if (newQuestion) {
+          localQuestion.value = { ...newQuestion };
+          isRequired.value = Boolean(newQuestion.is_required);
+        }
+      },
+      { immediate: true, deep: true }
+    );
+  }
 
   // Sync isRequired changes back to localQuestion
   watch(isRequired, (newValue) => {
     if (localQuestion.value && localQuestion.value.is_required !== newValue) {
       localQuestion.value = { ...localQuestion.value, is_required: newValue };
-      onUpdate({ is_required: newValue });
+      // In edit mode, emit update immediately
+      if (isEditMode) {
+        const editOptions = options as UseQuestionEditorPanelEditOptions;
+        editOptions.onUpdate({ is_required: newValue });
+      }
     }
   });
 
@@ -78,11 +140,15 @@ export function useQuestionEditorPanel(options: UseQuestionEditorPanelOptions) {
     return `heroicons:${iconName}`;
   }
 
-  // Update local state and emit to parent
+  // Update local state and emit to parent (in edit mode)
   function updateField<K extends keyof QuestionData>(field: K, value: QuestionData[K]) {
     if (!localQuestion.value) return;
     localQuestion.value = { ...localQuestion.value, [field]: value };
-    onUpdate({ [field]: value });
+    // In edit mode, emit updates immediately
+    if (isEditMode) {
+      const editOptions = options as UseQuestionEditorPanelEditOptions;
+      editOptions.onUpdate({ [field]: value });
+    }
   }
 
   // Auto-generate option_value from label
@@ -125,12 +191,15 @@ export function useQuestionEditorPanel(options: UseQuestionEditorPanelOptions) {
     updateField('options', updatedOptions.length > 0 ? updatedOptions : null);
   }
 
-  // Navigate with smooth transition
+  // Navigate with smooth transition (edit mode only)
   function navigateWithTransition(direction: 'prev' | 'next') {
+    if (!isEditMode) return;
+    const editOptions = options as UseQuestionEditorPanelEditOptions;
+
     isTransitioning.value = true;
     // Small delay to allow fade-out, then navigate
     setTimeout(() => {
-      onNavigate(direction);
+      editOptions.onNavigate(direction);
       // Content will fade back in after navigation
       setTimeout(() => {
         isTransitioning.value = false;
@@ -138,14 +207,15 @@ export function useQuestionEditorPanel(options: UseQuestionEditorPanelOptions) {
     }, 150);
   }
 
-  // Keyboard navigation - only works when header is focused
+  // Keyboard navigation - only works when header is focused (edit mode only)
   function handleHeaderKeydown(event: KeyboardEvent) {
-    if (!isNavigationEnabled.value) return;
+    if (!isEditMode || !isNavigationEnabled.value) return;
+    const editOptions = options as UseQuestionEditorPanelEditOptions;
 
-    if (event.key === 'ArrowUp' && questionIndex.value > 0) {
+    if (event.key === 'ArrowUp' && editOptions.questionIndex.value > 0) {
       event.preventDefault();
       navigateWithTransition('prev');
-    } else if (event.key === 'ArrowDown' && questionIndex.value < totalQuestions.value - 1) {
+    } else if (event.key === 'ArrowDown' && editOptions.questionIndex.value < editOptions.totalQuestions.value - 1) {
       event.preventDefault();
       navigateWithTransition('next');
     }
@@ -159,15 +229,41 @@ export function useQuestionEditorPanel(options: UseQuestionEditorPanelOptions) {
     isNavigationEnabled.value = false;
   }
 
-  // Delete confirmation handler
+  // Delete confirmation handler (edit mode only)
   function handleDeleteClick() {
+    if (!isEditMode) return;
+    const editOptions = options as UseQuestionEditorPanelEditOptions;
+
     showConfirmation({
       actionType: 'delete_question',
       entityName: localQuestion.value?.question_text || 'Untitled question',
       onConfirm: () => {
-        onRemove();
+        editOptions.onRemove();
       },
     });
+  }
+
+  // Add question handler (add mode only)
+  function handleAddQuestion() {
+    if (!isAddMode || !localQuestion.value || !isValid.value) return;
+    const addOptions = options as UseQuestionEditorPanelAddOptions;
+
+    // Generate question_key from question_text
+    const finalQuestion: QuestionData = {
+      ...localQuestion.value,
+      question_key: generateQuestionKey(localQuestion.value.question_text),
+    };
+
+    addOptions.onAdd(finalQuestion);
+    onOpenChange(false);
+  }
+
+  // Reset form for add mode (to add another question)
+  function resetForm() {
+    if (!isAddMode) return;
+    const addOptions = options as UseQuestionEditorPanelAddOptions;
+    localQuestion.value = createBlankQuestion(addOptions.nextDisplayOrder ?? 1);
+    isRequired.value = true;
   }
 
   function closePanel() {
@@ -175,6 +271,10 @@ export function useQuestionEditorPanel(options: UseQuestionEditorPanelOptions) {
   }
 
   return {
+    // Mode
+    isAddMode,
+    isEditMode,
+
     // State
     localQuestion,
     questionTypes,
@@ -186,6 +286,7 @@ export function useQuestionEditorPanel(options: UseQuestionEditorPanelOptions) {
     questionTypeIcon,
     supportsOptions,
     isRequired,
+    isValid,
 
     // Methods
     getHeroIconName,
@@ -199,6 +300,8 @@ export function useQuestionEditorPanel(options: UseQuestionEditorPanelOptions) {
     enableNavigation,
     disableNavigation,
     handleDeleteClick,
+    handleAddQuestion,
+    resetForm,
     closePanel,
   };
 }
