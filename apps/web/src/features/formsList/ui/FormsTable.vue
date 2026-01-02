@@ -15,6 +15,7 @@ const emit = defineEmits<{
   editForm: [form: FormItem]
   viewResponses: [form: FormItem]
   openSettings: [form: FormItem]
+  deleteForm: [form: FormItem]
 }>()
 
 const getSortIcon = (column: SortColumn): string => {
@@ -88,6 +89,7 @@ const isSortedBy = (column: SortColumn): boolean => props.sortColumn === column
           @edit="emit('editForm', form)"
           @view-responses="emit('viewResponses', form)"
           @open-settings="emit('openSettings', form)"
+          @delete="emit('deleteForm', form)"
         />
       </tbody>
     </table>

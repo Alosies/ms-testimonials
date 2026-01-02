@@ -5,6 +5,7 @@ export { useGetForm, useGetForms } from './queries';
 export {
   useCreateForm,
   useUpdateForm,
+  useDeleteForm,
   usePublishForm,
   useUpdateFormAutoSave,
 } from './mutations';

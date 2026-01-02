@@ -13146,6 +13146,13 @@ export type CreateFormMutationVariables = Exact<{
 
 export type CreateFormMutation = { __typename?: 'mutation_root', insert_forms_one?: { __typename?: 'forms', id: string, name: string, slug: string, product_name: string, organization_id: string, created_at: string } | null };
 
+export type DeleteFormMutationVariables = Exact<{
+  id: Scalars['String']['input'];
+}>;
+
+
+export type DeleteFormMutation = { __typename?: 'mutation_root', update_forms_by_pk?: { __typename?: 'forms', id: string, is_active: boolean } | null };
+
 export type PublishFormMutationVariables = Exact<{
   id: Scalars['String']['input'];
 }>;
@@ -13561,6 +13568,36 @@ export function useCreateFormMutation(options: VueApolloComposable.UseMutationOp
   return VueApolloComposable.useMutation<CreateFormMutation, CreateFormMutationVariables>(CreateFormDocument, options);
 }
 export type CreateFormMutationCompositionFunctionResult = VueApolloComposable.UseMutationReturn<CreateFormMutation, CreateFormMutationVariables>;
+export const DeleteFormDocument = gql`
+    mutation DeleteForm($id: String!) {
+  update_forms_by_pk(pk_columns: {id: $id}, _set: {is_active: false}) {
+    id
+    is_active
+  }
+}
+    `;
+
+/**
+ * __useDeleteFormMutation__
+ *
+ * To run a mutation, you first call `useDeleteFormMutation` within a Vue component and pass it any options that fit your needs.
+ * When your component renders, `useDeleteFormMutation` returns an object that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - Several other properties: https://v4.apollo.vuejs.org/api/use-mutation.html#return
+ *
+ * @param options that will be passed into the mutation, supported options are listed on: https://v4.apollo.vuejs.org/guide-composable/mutation.html#options;
+ *
+ * @example
+ * const { mutate, loading, error, onDone } = useDeleteFormMutation({
+ *   variables: {
+ *     id: // value for 'id'
+ *   },
+ * });
+ */
+export function useDeleteFormMutation(options: VueApolloComposable.UseMutationOptions<DeleteFormMutation, DeleteFormMutationVariables> | ReactiveFunction<VueApolloComposable.UseMutationOptions<DeleteFormMutation, DeleteFormMutationVariables>> = {}) {
+  return VueApolloComposable.useMutation<DeleteFormMutation, DeleteFormMutationVariables>(DeleteFormDocument, options);
+}
+export type DeleteFormMutationCompositionFunctionResult = VueApolloComposable.UseMutationReturn<DeleteFormMutation, DeleteFormMutationVariables>;
 export const PublishFormDocument = gql`
     mutation PublishForm($id: String!) {
   update_forms_by_pk(pk_columns: {id: $id}, _set: {status: "published"}) {

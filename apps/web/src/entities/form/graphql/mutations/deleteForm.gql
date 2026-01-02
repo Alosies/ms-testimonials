@@ -1,0 +1,6 @@
+mutation DeleteForm($id: String!) {
+  update_forms_by_pk(pk_columns: { id: $id }, _set: { is_active: false }) {
+    id
+    is_active
+  }
+}

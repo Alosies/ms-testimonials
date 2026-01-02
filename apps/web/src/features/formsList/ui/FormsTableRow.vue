@@ -19,6 +19,7 @@ const emit = defineEmits<{
   edit: []
   viewResponses: []
   openSettings: []
+  delete: []
 }>()
 
 const getStatusConfig = (form: FormItem) => {
@@ -169,7 +170,7 @@ const formatDate = (dateString: string): string => {
               Copy Link
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem class="gap-2 text-destructive focus:text-destructive">
+            <DropdownMenuItem class="gap-2 text-destructive focus:text-destructive" @click="emit('delete')">
               <Icon icon="heroicons:trash" class="h-4 w-4" />
               Delete
             </DropdownMenuItem>

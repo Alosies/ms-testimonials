@@ -20,9 +20,11 @@ import {
   FormsNoResults,
   useFormsTableState,
 } from '@/features/formsList'
-import { useGetForms } from '@/entities/form'
+import type { FormItem } from '@/features/formsList'
+import { useGetForms, useDeleteForm } from '@/entities/form'
 import { useCurrentContextStore } from '@/shared/currentContext'
 import { useRouting } from '@/shared/routing'
+import { useConfirmationModal } from '@/shared/widgets/ConfirmationModal'
 
 definePage({
   meta: {
@@ -38,7 +40,22 @@ const variables = computed(() => ({
   organizationId: currentOrganizationId.value ?? '',
 }))
 
-const { forms, isLoading } = useGetForms(variables)
+const { forms, isLoading, refetch } = useGetForms(variables)
+
+// Delete functionality
+const { deleteForm } = useDeleteForm()
+const { showConfirmation } = useConfirmationModal()
+
+const handleDeleteForm = (form: FormItem) => {
+  showConfirmation({
+    actionType: 'delete_form',
+    entityName: form.name,
+    onConfirm: async () => {
+      await deleteForm({ id: form.id })
+      await refetch()
+    },
+  })
+}
 
 // Routing
 const { goToNewForm, goToForm, goToFormEdit, goToFormResponses, goToFormSettings } = useRouting()
@@ -118,6 +135,7 @@ const showNoResults = computed(() => !showLoading.value && hasForms.value && !ha
           @edit-form="goToFormEdit"
           @view-responses="goToFormResponses"
           @open-settings="goToFormSettings"
+          @delete-form="handleDeleteForm"
         />
 
         <!-- No Search Results -->

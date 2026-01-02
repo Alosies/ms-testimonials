@@ -3,6 +3,8 @@ import type {
   CreateFormMutationVariables,
   UpdateFormMutation,
   UpdateFormMutationVariables,
+  DeleteFormMutation,
+  DeleteFormMutationVariables,
   PublishFormMutation,
   PublishFormMutationVariables,
   UpdateFormAutoSaveMutation,
@@ -12,11 +14,13 @@ import type {
 // Re-export Mutation Variables
 export type CreateFormVariables = CreateFormMutationVariables;
 export type UpdateFormVariables = UpdateFormMutationVariables;
+export type DeleteFormVariables = DeleteFormMutationVariables;
 export type PublishFormVariables = PublishFormMutationVariables;
 export type UpdateFormAutoSaveVariables = UpdateFormAutoSaveMutationVariables;
 
 // Extract Mutation Result Types
 export type FormCreateResult = NonNullable<CreateFormMutation['insert_forms_one']>;
 export type FormUpdateResult = NonNullable<UpdateFormMutation['update_forms_by_pk']>;
+export type FormDeleteResult = NonNullable<DeleteFormMutation['update_forms_by_pk']>;
 export type FormPublishResult = NonNullable<PublishFormMutation['update_forms_by_pk']>;
 export type FormAutoSaveResult = NonNullable<UpdateFormAutoSaveMutation['update_forms_by_pk']>;
