@@ -36,6 +36,6 @@ export const env = {
   // Frontend
   FRONTEND_URL: getEnvVar('FRONTEND_URL', 'http://localhost:3000'),
 
-  // CORS
-  CORS_ALLOWED_ORIGINS: getEnvVar('CORS_ALLOWED_ORIGINS', 'http://localhost:3000'),
+  // CORS - Allow all worktree ports (3000 main, 3001 yellow, 3002 green, 3003 blue)
+  CORS_ALLOWED_ORIGINS: getEnvVar('CORS_ALLOWED_ORIGINS', 'http://localhost:3000,http://localhost:3001,http://localhost:3002,http://localhost:3003'),
 };
