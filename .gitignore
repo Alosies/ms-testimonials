@@ -31,10 +31,6 @@ tmp
 temp
 *.tmp
 
-# Generated files
-apps/web/src/typed-router.d.ts
-apps/web/src/shared/graphql/generated
-
 # Docker volumes
 postgres_data
 
