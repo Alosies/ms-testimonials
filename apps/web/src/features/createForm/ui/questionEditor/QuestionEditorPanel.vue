@@ -158,19 +158,14 @@ watch(
         :is-navigation-enabled="isNavigationEnabled"
         :has-keyboard="hasKeyboard"
         :is-valid="isValid"
-        :tabindex="isEditMode && hasKeyboard ? 0 : -1"
-        :class="[
-          'flex items-center justify-between border-b bg-gray-50 px-6 py-4 outline-none transition-colors',
-          isEditMode && hasKeyboard && 'cursor-pointer focus:bg-gray-100',
-        ]"
         @navigate="navigateWithTransition"
         @delete="handleDeleteClick"
         @close="closePanel"
         @add="handleAddQuestion"
         @save="emit('save')"
-        @keydown="handleHeaderKeydown"
-        @focus="enableNavigation"
-        @blur="disableNavigation"
+        @header-keydown="handleHeaderKeydown"
+        @enable-navigation="enableNavigation"
+        @disable-navigation="disableNavigation"
       />
 
       <!-- Two-Column Layout -->

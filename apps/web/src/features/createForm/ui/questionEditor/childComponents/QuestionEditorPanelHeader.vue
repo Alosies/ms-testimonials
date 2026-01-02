@@ -42,7 +42,17 @@ const emit = defineEmits<{
 
 <template>
   <!-- Edit Mode Header -->
-  <div v-if="isEditMode" class="flex flex-1 items-center justify-between">
+  <div
+    v-if="isEditMode"
+    :tabindex="hasKeyboard ? 0 : -1"
+    :class="[
+      'flex items-center justify-between border-b bg-gray-50 px-6 py-4 outline-none transition-colors',
+      hasKeyboard && 'cursor-pointer focus:bg-gray-100',
+    ]"
+    @keydown="emit('headerKeydown', $event)"
+    @focus="emit('enableNavigation')"
+    @blur="emit('disableNavigation')"
+  >
     <div class="flex items-center gap-3">
       <!-- Navigation Arrows -->
       <div class="flex items-center gap-1">
@@ -147,7 +157,10 @@ const emit = defineEmits<{
   </div>
 
   <!-- Add Mode Header -->
-  <div v-else class="flex flex-1 items-center justify-between">
+  <div
+    v-else
+    class="flex items-center justify-between border-b bg-gray-50 px-6 py-4"
+  >
     <div class="flex items-center gap-3">
       <div class="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
         <Icon icon="lucide:plus" class="h-5 w-5 text-primary" />
