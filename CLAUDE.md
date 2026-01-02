@@ -143,6 +143,16 @@ Based on MVP spec:
 
 ## Code Style & Best Practices
 
+### Component Size & Structure
+- **Maximum 250 lines per component** - If a component exceeds this, refactor by:
+  - Breaking into child components
+  - Extracting logic into composables
+  - Moving reusable pieces to shared layer
+- **Page files are thin wrappers** - Pages should only:
+  - Render feature/entity components
+  - Handle high-level conditional rendering (auth guards, loading states)
+  - NOT contain business logic, complex state, or UI implementation details
+
 ### General Practices
 - Prefer explicit null/undefined checks over nullish coalescing
 - Use Tailwind CSS as the primary styling method

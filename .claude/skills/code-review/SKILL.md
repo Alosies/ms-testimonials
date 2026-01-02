@@ -51,6 +51,10 @@ Use the output format below. Include file:line references and severity levels.
 - [ ] Composables in `composables/` folders with `useXxx` naming
 - [ ] No cross-feature imports
 
+### Component Size & Structure
+- [ ] **Max 250 lines per component** - refactor if exceeded (child components or composables)
+- [ ] **Page files are thin wrappers** - only render components + high-level conditionals (no business logic)
+
 ### Tailwind
 - [ ] Tailwind classes used (not custom CSS)
 - [ ] Custom CSS only for: `content: attr()`, CSS variables, animations
