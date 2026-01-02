@@ -5,14 +5,15 @@
  *
  * Displays all forms for the current organization with:
  * - Create new form action
- * - Form table with status, responses count, and quick actions
+ * - Form cards with status, responses count, and quick actions
  * - Loading and empty states
  */
-import { computed, toRefs } from 'vue'
+import { computed, ref, toRefs } from 'vue'
 import { definePage } from 'unplugin-vue-router/runtime'
 import { Icon } from '@testimonials/icons'
 import {
   Button,
+  Input,
   Skeleton,
   DropdownMenu,
   DropdownMenuContent,
@@ -47,11 +48,73 @@ const { forms, isLoading } = useGetForms(variables)
 // Routing
 const { goToNewForm, goToForm, goToFormEdit, goToFormResponses, goToFormSettings } = useRouting()
 
+// Search & Sort
+const searchQuery = ref('')
+type SortColumn = 'name' | 'product' | 'status' | 'updated'
+type SortDirection = 'asc' | 'desc'
+const sortColumn = ref<SortColumn>('updated')
+const sortDirection = ref<SortDirection>('desc')
+
+const toggleSort = (column: SortColumn) => {
+  if (sortColumn.value === column) {
+    sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
+  } else {
+    sortColumn.value = column
+    sortDirection.value = 'asc'
+  }
+}
+
+const filteredAndSortedForms = computed(() => {
+  let result = [...forms.value]
+
+  // Filter by search query
+  if (searchQuery.value.trim()) {
+    const query = searchQuery.value.toLowerCase().trim()
+    result = result.filter(
+      (form) =>
+        form.name.toLowerCase().includes(query) ||
+        (form.product_name?.toLowerCase().includes(query) ?? false)
+    )
+  }
+
+  // Sort
+  result.sort((a, b) => {
+    let comparison = 0
+
+    switch (sortColumn.value) {
+      case 'name':
+        comparison = a.name.localeCompare(b.name)
+        break
+      case 'product':
+        comparison = (a.product_name ?? '').localeCompare(b.product_name ?? '')
+        break
+      case 'status': {
+        const getStatusOrder = (form: FormItem) => {
+          if (form.status === 'draft') return 0
+          if (!form.is_active) return 1
+          return 2
+        }
+        comparison = getStatusOrder(a) - getStatusOrder(b)
+        break
+      }
+      case 'updated':
+        comparison = new Date(a.updated_at).getTime() - new Date(b.updated_at).getTime()
+        break
+    }
+
+    return sortDirection.value === 'asc' ? comparison : -comparison
+  })
+
+  return result
+})
+
 // Computed states
 // Show loading when context is not ready OR when query is loading
 // isReady becomes true only after auth is initialized AND org is loaded
 const showLoading = computed(() => !isReady.value || isLoading.value)
 const hasForms = computed(() => forms.value.length > 0)
+const hasFilteredForms = computed(() => filteredAndSortedForms.value.length > 0)
+const isSearching = computed(() => searchQuery.value.trim().length > 0)
 
 // Status badge configuration
 const getStatusConfig = (form: FormItem) => {
@@ -112,6 +175,22 @@ const formatDate = (dateString: string) => {
             Create Form
           </Button>
         </header>
+
+        <!-- Search Bar -->
+        <div v-if="hasForms || isSearching" class="mb-4">
+          <div class="relative max-w-sm">
+            <Icon
+              icon="heroicons:magnifying-glass"
+              class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"
+            />
+            <Input
+              v-model="searchQuery"
+              type="text"
+              placeholder="Search forms..."
+              class="pl-9"
+            />
+          </div>
+        </div>
 
         <!-- Loading State (shown while auth initializes OR query loads) -->
         <div v-if="showLoading" class="rounded-xl border border-border bg-card overflow-hidden">
@@ -216,26 +295,86 @@ const formatDate = (dateString: string) => {
         </div>
 
         <!-- Forms Table -->
-        <div v-else class="rounded-xl border border-border bg-card overflow-hidden">
+        <div v-else-if="hasFilteredForms" class="rounded-xl border border-border bg-card overflow-hidden">
           <!-- Table -->
           <table class="w-full">
             <!-- Table Header -->
             <thead>
               <tr class="border-b border-border bg-muted/30">
-                <th class="text-left py-3 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                  Form
+                <th
+                  class="text-left py-3 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider cursor-pointer hover:text-foreground transition-colors select-none"
+                  @click="toggleSort('name')"
+                >
+                  <div class="flex items-center gap-1">
+                    Form
+                    <Icon
+                      v-if="sortColumn === 'name'"
+                      :icon="sortDirection === 'asc' ? 'heroicons:chevron-up' : 'heroicons:chevron-down'"
+                      class="h-3 w-3"
+                    />
+                    <Icon
+                      v-else
+                      icon="heroicons:chevron-up-down"
+                      class="h-3 w-3 opacity-40"
+                    />
+                  </div>
                 </th>
-                <th class="text-left py-3 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider hidden md:table-cell">
-                  Product
+                <th
+                  class="text-left py-3 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider hidden md:table-cell cursor-pointer hover:text-foreground transition-colors select-none"
+                  @click="toggleSort('product')"
+                >
+                  <div class="flex items-center gap-1">
+                    Product
+                    <Icon
+                      v-if="sortColumn === 'product'"
+                      :icon="sortDirection === 'asc' ? 'heroicons:chevron-up' : 'heroicons:chevron-down'"
+                      class="h-3 w-3"
+                    />
+                    <Icon
+                      v-else
+                      icon="heroicons:chevron-up-down"
+                      class="h-3 w-3 opacity-40"
+                    />
+                  </div>
                 </th>
-                <th class="text-left py-3 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                  Status
+                <th
+                  class="text-left py-3 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider cursor-pointer hover:text-foreground transition-colors select-none"
+                  @click="toggleSort('status')"
+                >
+                  <div class="flex items-center gap-1">
+                    Status
+                    <Icon
+                      v-if="sortColumn === 'status'"
+                      :icon="sortDirection === 'asc' ? 'heroicons:chevron-up' : 'heroicons:chevron-down'"
+                      class="h-3 w-3"
+                    />
+                    <Icon
+                      v-else
+                      icon="heroicons:chevron-up-down"
+                      class="h-3 w-3 opacity-40"
+                    />
+                  </div>
                 </th>
                 <th class="text-center py-3 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider hidden sm:table-cell">
                   Responses
                 </th>
-                <th class="text-left py-3 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider hidden lg:table-cell">
-                  Updated
+                <th
+                  class="text-left py-3 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider hidden lg:table-cell cursor-pointer hover:text-foreground transition-colors select-none"
+                  @click="toggleSort('updated')"
+                >
+                  <div class="flex items-center gap-1">
+                    Updated
+                    <Icon
+                      v-if="sortColumn === 'updated'"
+                      :icon="sortDirection === 'asc' ? 'heroicons:chevron-up' : 'heroicons:chevron-down'"
+                      class="h-3 w-3"
+                    />
+                    <Icon
+                      v-else
+                      icon="heroicons:chevron-up-down"
+                      class="h-3 w-3 opacity-40"
+                    />
+                  </div>
                 </th>
                 <th class="w-36 py-3 px-2 text-center text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Actions
@@ -246,7 +385,7 @@ const formatDate = (dateString: string) => {
             <!-- Table Body -->
             <tbody class="divide-y divide-border/50">
               <tr
-                v-for="form in forms"
+                v-for="form in filteredAndSortedForms"
                 :key="form.id"
                 class="group transition-colors hover:bg-muted/30 cursor-pointer"
                 @click="goToForm(form)"
@@ -405,6 +544,30 @@ const formatDate = (dateString: string) => {
               </tr>
             </tbody>
           </table>
+        </div>
+
+        <!-- No Search Results State -->
+        <div
+          v-else-if="hasForms && !hasFilteredForms"
+          class="flex flex-col items-center justify-center py-16 px-4"
+        >
+          <div class="relative mb-6">
+            <div class="relative bg-card rounded-2xl p-6 shadow-sm border">
+              <Icon icon="heroicons:magnifying-glass" class="h-12 w-12 text-muted-foreground" />
+            </div>
+          </div>
+
+          <h2 class="text-lg font-medium text-foreground mb-2">
+            No forms found
+          </h2>
+          <p class="text-sm text-muted-foreground text-center max-w-sm mb-6">
+            No forms match "{{ searchQuery }}". Try a different search term.
+          </p>
+
+          <Button variant="outline" @click="searchQuery = ''" class="gap-2">
+            <Icon icon="heroicons:x-mark" class="h-4 w-4" />
+            Clear Search
+          </Button>
         </div>
       </div>
     </div>
