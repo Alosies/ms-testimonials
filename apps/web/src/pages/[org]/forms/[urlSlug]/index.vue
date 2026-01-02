@@ -31,7 +31,7 @@ const formId = computed(() => entityInfo.value?.entityId ?? null)
 // Create a FormRef object for routing (uses slug as name since we don't have the actual form data yet)
 const formRef = computed(() => ({
   id: formId.value ?? '',
-  name: entityInfo.value?.readableSlug ?? 'form',
+  name: entityInfo.value?.slug ?? 'form',
 }))
 
 // TODO: Use formId to fetch form data
