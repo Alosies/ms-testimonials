@@ -42,7 +42,7 @@ const emit = defineEmits<{
 
 <template>
   <!-- Edit Mode Header -->
-  <template v-if="isEditMode">
+  <div v-if="isEditMode" class="flex flex-1 items-center justify-between">
     <div class="flex items-center gap-3">
       <!-- Navigation Arrows -->
       <div class="flex items-center gap-1">
@@ -144,10 +144,10 @@ const emit = defineEmits<{
         <Icon icon="lucide:x" class="h-4 w-4" />
       </Button>
     </div>
-  </template>
+  </div>
 
   <!-- Add Mode Header -->
-  <template v-else>
+  <div v-else class="flex flex-1 items-center justify-between">
     <div class="flex items-center gap-3">
       <div class="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
         <Icon icon="lucide:plus" class="h-5 w-5 text-primary" />
@@ -177,5 +177,5 @@ const emit = defineEmits<{
         Add Question
       </Button>
     </div>
-  </template>
+  </div>
 </template>
