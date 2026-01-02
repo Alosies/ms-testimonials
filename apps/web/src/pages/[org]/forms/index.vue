@@ -5,7 +5,7 @@
  *
  * Displays all forms for the current organization with:
  * - Create new form action
- * - Form cards with status, responses count, and quick actions
+ * - Form table with status, responses count, and quick actions
  * - Loading and empty states
  */
 import { computed, toRefs } from 'vue'
@@ -13,8 +13,6 @@ import { definePage } from 'unplugin-vue-router/runtime'
 import { Icon } from '@testimonials/icons'
 import {
   Button,
-  Card,
-  Badge,
   Skeleton,
   DropdownMenu,
   DropdownMenuContent,
@@ -116,20 +114,78 @@ const formatDate = (dateString: string) => {
         </header>
 
         <!-- Loading State (shown while auth initializes OR query loads) -->
-        <div v-if="showLoading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <Card v-for="n in 6" :key="n" class="p-6">
-            <div class="space-y-4">
-              <div class="flex items-start justify-between">
-                <Skeleton class="h-5 w-32" />
-                <Skeleton class="h-5 w-16" />
-              </div>
-              <Skeleton class="h-4 w-48" />
-              <div class="flex items-center gap-4 pt-2">
-                <Skeleton class="h-4 w-20" />
-                <Skeleton class="h-4 w-24" />
-              </div>
-            </div>
-          </Card>
+        <div v-if="showLoading" class="rounded-xl border border-border bg-card overflow-hidden">
+          <table class="w-full">
+            <!-- Table Header -->
+            <thead>
+              <tr class="border-b border-border bg-muted/30">
+                <th class="text-left py-3 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  Form
+                </th>
+                <th class="text-left py-3 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider hidden md:table-cell">
+                  Product
+                </th>
+                <th class="text-left py-3 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  Status
+                </th>
+                <th class="text-center py-3 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider hidden sm:table-cell">
+                  Responses
+                </th>
+                <th class="text-left py-3 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider hidden lg:table-cell">
+                  Updated
+                </th>
+                <th class="w-36 py-3 px-2 text-center text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+
+            <!-- Table Body Skeleton -->
+            <tbody class="divide-y divide-border/50">
+              <tr v-for="n in 6" :key="n" class="group">
+                <!-- Form Name -->
+                <td class="py-3 px-4">
+                  <div class="flex items-center gap-3">
+                    <Skeleton class="w-9 h-9 rounded-lg" />
+                    <Skeleton class="h-4 w-28" />
+                  </div>
+                </td>
+
+                <!-- Product Name -->
+                <td class="py-3 px-4 hidden md:table-cell">
+                  <Skeleton class="h-4 w-24" />
+                </td>
+
+                <!-- Status -->
+                <td class="py-3 px-4">
+                  <div class="flex items-center gap-1.5">
+                    <Skeleton class="w-2 h-2 rounded-full" />
+                    <Skeleton class="h-3 w-12" />
+                  </div>
+                </td>
+
+                <!-- Responses -->
+                <td class="py-3 px-4 text-center hidden sm:table-cell">
+                  <Skeleton class="h-5 w-8 rounded-full mx-auto" />
+                </td>
+
+                <!-- Updated -->
+                <td class="py-3 px-4 hidden lg:table-cell">
+                  <Skeleton class="h-4 w-16" />
+                </td>
+
+                <!-- Actions -->
+                <td class="py-3 px-2">
+                  <div class="flex items-center justify-center gap-1">
+                    <Skeleton class="w-7 h-7 rounded" />
+                    <Skeleton class="w-7 h-7 rounded" />
+                    <Skeleton class="w-7 h-7 rounded" />
+                    <Skeleton class="w-7 h-7 rounded" />
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
 
         <!-- Empty State (only shown after loading completes with no forms) -->
@@ -159,122 +215,196 @@ const formatDate = (dateString: string) => {
           </Button>
         </div>
 
-        <!-- Forms Grid -->
-        <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <Card
-            v-for="form in forms"
-            :key="form.id"
-            class="group relative overflow-hidden transition-all duration-200 hover:shadow-md hover:border-primary/20"
-          >
-            <!-- Gradient Accent (visible on hover) -->
-            <div
-              class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary to-primary/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-            />
+        <!-- Forms Table -->
+        <div v-else class="rounded-xl border border-border bg-card overflow-hidden">
+          <!-- Table -->
+          <table class="w-full">
+            <!-- Table Header -->
+            <thead>
+              <tr class="border-b border-border bg-muted/30">
+                <th class="text-left py-3 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  Form
+                </th>
+                <th class="text-left py-3 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider hidden md:table-cell">
+                  Product
+                </th>
+                <th class="text-left py-3 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  Status
+                </th>
+                <th class="text-center py-3 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider hidden sm:table-cell">
+                  Responses
+                </th>
+                <th class="text-left py-3 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider hidden lg:table-cell">
+                  Updated
+                </th>
+                <th class="w-36 py-3 px-2 text-center text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  Actions
+                </th>
+              </tr>
+            </thead>
 
-            <div class="relative z-10 p-6">
-              <!-- Card Header -->
-              <div class="flex items-start justify-between mb-3">
-                <div class="flex items-center gap-3 min-w-0 flex-1">
-                  <!-- Form Icon -->
-                  <div
-                    class="flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center transition-colors duration-200"
-                    :class="[
-                      form.status === 'draft'
-                        ? 'bg-amber-100 text-amber-600'
-                        : form.is_active
-                          ? 'bg-primary/10 text-primary'
-                          : 'bg-muted text-muted-foreground'
-                    ]"
-                  >
-                    <Icon icon="heroicons:document-text" class="h-5 w-5" />
-                  </div>
-
-                  <!-- Form Name & Status -->
-                  <div class="min-w-0 flex-1">
-                    <h3
-                      class="text-base font-medium text-foreground truncate cursor-pointer hover:text-primary transition-colors"
-                      :title="form.name"
-                      @click="goToForm(form)"
+            <!-- Table Body -->
+            <tbody class="divide-y divide-border/50">
+              <tr
+                v-for="form in forms"
+                :key="form.id"
+                class="group transition-colors hover:bg-muted/30 cursor-pointer"
+                @click="goToForm(form)"
+              >
+                <!-- Form Name -->
+                <td class="py-3 px-4">
+                  <div class="flex items-center gap-3">
+                    <!-- Form Icon -->
+                    <div
+                      class="flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center transition-all duration-200 group-hover:scale-105"
+                      :class="[
+                        form.status === 'draft'
+                          ? 'bg-gradient-to-br from-amber-100 to-amber-50 text-amber-600'
+                          : form.is_active
+                            ? 'bg-gradient-to-br from-primary/20 to-primary/5 text-primary'
+                            : 'bg-muted text-muted-foreground'
+                      ]"
                     >
-                      {{ form.name }}
-                    </h3>
-                    <Badge
-                      variant="outline"
-                      :class="getStatusConfig(form).class"
-                      class="mt-1 text-[10px] px-1.5 py-0"
+                      <Icon icon="heroicons:document-text" class="h-4 w-4" />
+                    </div>
+                    <div class="min-w-0">
+                      <p class="text-sm font-medium text-foreground truncate max-w-[200px] group-hover:text-primary transition-colors">
+                        {{ form.name }}
+                      </p>
+                      <!-- Show product on mobile -->
+                      <p v-if="form.product_name" class="text-xs text-muted-foreground truncate max-w-[180px] md:hidden">
+                        {{ form.product_name }}
+                      </p>
+                    </div>
+                  </div>
+                </td>
+
+                <!-- Product Name (hidden on mobile) -->
+                <td class="py-3 px-4 hidden md:table-cell">
+                  <p class="text-sm text-muted-foreground truncate max-w-[150px]">
+                    {{ form.product_name || '—' }}
+                  </p>
+                </td>
+
+                <!-- Status -->
+                <td class="py-3 px-4">
+                  <div class="flex items-center gap-1.5">
+                    <span
+                      class="w-2 h-2 rounded-full"
+                      :class="[
+                        form.status === 'draft'
+                          ? 'bg-amber-500'
+                          : form.is_active
+                            ? 'bg-emerald-500'
+                            : 'bg-muted-foreground/50'
+                      ]"
+                    />
+                    <span
+                      class="text-xs font-medium"
+                      :class="[
+                        form.status === 'draft'
+                          ? 'text-amber-600'
+                          : form.is_active
+                            ? 'text-emerald-600'
+                            : 'text-muted-foreground'
+                      ]"
                     >
                       {{ getStatusConfig(form).label }}
-                    </Badge>
+                    </span>
                   </div>
-                </div>
+                </td>
 
-                <!-- Actions Menu -->
-                <DropdownMenu>
-                  <DropdownMenuTrigger as-child>
+                <!-- Responses Count (hidden on very small screens) -->
+                <td class="py-3 px-4 text-center hidden sm:table-cell">
+                  <span class="inline-flex items-center justify-center min-w-[2rem] px-2 py-0.5 rounded-full text-xs font-medium bg-muted text-muted-foreground">
+                    0
+                  </span>
+                </td>
+
+                <!-- Last Updated (hidden on smaller screens) -->
+                <td class="py-3 px-4 hidden lg:table-cell">
+                  <p class="text-sm text-muted-foreground">
+                    {{ formatDate(form.updated_at) }}
+                  </p>
+                </td>
+
+                <!-- Actions -->
+                <td class="py-3 px-2" @click.stop>
+                  <div class="flex items-center justify-end gap-1">
+                    <!-- Edit -->
                     <Button
                       variant="ghost"
                       size="icon-sm"
-                      class="opacity-0 group-hover:opacity-100 transition-opacity -mr-2 -mt-1"
+                      class="opacity-40 group-hover:opacity-100 hover:bg-muted transition-all"
+                      title="Edit form"
+                      @click="goToFormEdit(form)"
                     >
-                      <Icon icon="heroicons:ellipsis-vertical" class="h-4 w-4" />
-                      <span class="sr-only">Form actions</span>
+                      <Icon icon="heroicons:pencil-square" class="h-4 w-4 text-muted-foreground" />
+                      <span class="sr-only">Edit form</span>
                     </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" class="w-48">
-                    <DropdownMenuItem @click="goToFormEdit(form)" class="gap-2">
-                      <Icon icon="heroicons:pencil-square" class="h-4 w-4" />
-                      Edit Form
-                    </DropdownMenuItem>
-                    <DropdownMenuItem @click="goToFormResponses(form)" class="gap-2">
-                      <Icon icon="heroicons:inbox" class="h-4 w-4" />
-                      View Responses
-                    </DropdownMenuItem>
-                    <DropdownMenuItem @click="goToFormSettings(form)" class="gap-2">
-                      <Icon icon="heroicons:cog-6-tooth" class="h-4 w-4" />
-                      Settings
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem class="gap-2 text-destructive focus:text-destructive">
-                      <Icon icon="heroicons:trash" class="h-4 w-4" />
-                      Delete
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
 
-              <!-- Product Name -->
-              <p
-                v-if="form.product_name"
-                class="text-sm text-muted-foreground truncate mb-4"
-                :title="form.product_name"
-              >
-                {{ form.product_name }}
-              </p>
+                    <!-- Responses -->
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      class="opacity-40 group-hover:opacity-100 hover:bg-muted transition-all"
+                      title="View responses"
+                      @click="goToFormResponses(form)"
+                    >
+                      <Icon icon="heroicons:inbox" class="h-4 w-4 text-muted-foreground" />
+                      <span class="sr-only">View responses</span>
+                    </Button>
 
-              <!-- Card Footer - Meta Info -->
-              <div class="flex items-center gap-4 pt-3 border-t border-border/50">
-                <!-- Responses Count (placeholder for now) -->
-                <div class="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <Icon icon="heroicons:chat-bubble-left-right" class="h-3.5 w-3.5" />
-                  <span>0 responses</span>
-                </div>
+                    <!-- Settings -->
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      class="opacity-40 group-hover:opacity-100 hover:bg-muted transition-all"
+                      title="Form settings"
+                      @click="goToFormSettings(form)"
+                    >
+                      <Icon icon="heroicons:cog-6-tooth" class="h-4 w-4 text-muted-foreground" />
+                      <span class="sr-only">Form settings</span>
+                    </Button>
 
-                <!-- Last Updated -->
-                <div class="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <Icon icon="heroicons:clock" class="h-3.5 w-3.5" />
-                  <span>{{ formatDate(form.updated_at) }}</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Click overlay for card navigation -->
-            <button
-              class="absolute inset-0 z-0 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-inset rounded-xl"
-              @click="goToForm(form)"
-            >
-              <span class="sr-only">View {{ form.name }}</span>
-            </button>
-          </Card>
+                    <!-- More actions dropdown -->
+                    <DropdownMenu>
+                      <DropdownMenuTrigger as-child>
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          class="opacity-40 group-hover:opacity-100 hover:bg-muted transition-all"
+                          title="More actions"
+                        >
+                          <Icon icon="heroicons:ellipsis-vertical" class="h-4 w-4 text-muted-foreground" />
+                          <span class="sr-only">More actions</span>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" class="w-48">
+                        <DropdownMenuItem @click="goToForm(form)" class="gap-2">
+                          <Icon icon="heroicons:eye" class="h-4 w-4" />
+                          View Form
+                        </DropdownMenuItem>
+                        <DropdownMenuItem class="gap-2">
+                          <Icon icon="heroicons:document-duplicate" class="h-4 w-4" />
+                          Duplicate
+                        </DropdownMenuItem>
+                        <DropdownMenuItem class="gap-2">
+                          <Icon icon="heroicons:link" class="h-4 w-4" />
+                          Copy Link
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem class="gap-2 text-destructive focus:text-destructive">
+                          <Icon icon="heroicons:trash" class="h-4 w-4" />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
