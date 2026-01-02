@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { computed } from 'vue';
 import { Button } from '@testimonials/ui';
 import { Icon } from '@testimonials/icons';
 import FormSectionHeader from '../FormSectionHeader.vue';
 import QuestionList from '../questionEditor/QuestionList.vue';
-import AddQuestionModal from '../modals/AddQuestionModal.vue';
+import QuestionEditorPanel from '../questionEditor/QuestionEditorPanel.vue';
 import AIThinkingLoader from '../aiLoader/AIThinkingLoader.vue';
+import { useQuestionPanelUrl } from '../../composables';
 import type { FormData, QuestionData } from '../../models';
 import type { SectionStatus } from '../FormSectionHeader.vue';
 import type { AIContext } from '@/shared/api';
@@ -32,7 +33,17 @@ const emit = defineEmits<{
   saveQuestions: [];
 }>();
 
-const showAddQuestion = ref(false);
+// URL-synced add panel state
+const {
+  isAddPanelOpen,
+  openAddPanel,
+  closeAddPanel,
+} = useQuestionPanelUrl({
+  totalQuestions: () => props.questions.length,
+});
+
+// Next display order for new questions
+const nextDisplayOrder = computed(() => props.questions.length + 1);
 
 // Section status
 const sectionStatus = computed<SectionStatus>(() => {
@@ -53,9 +64,9 @@ function handleToggle() {
   }
 }
 
-function handleAddQuestion(question: Partial<QuestionData>) {
+function handleAddQuestion(question: QuestionData) {
   emit('addQuestion', question);
-  showAddQuestion.value = false;
+  closeAddPanel();
 }
 
 function handleRegenerate() {
@@ -109,7 +120,7 @@ function handleSaveQuestions() {
                   <Icon icon="lucide:refresh-cw" class="mr-2 h-3.5 w-3.5" />
                   Regenerate
                 </Button>
-                <Button variant="outline" size="sm" @click="showAddQuestion = true">
+                <Button variant="outline" size="sm" @click="openAddPanel">
                   <Icon icon="lucide:plus" class="mr-2 h-3.5 w-3.5" />
                   Add Question
                 </Button>
@@ -183,11 +194,13 @@ function handleSaveQuestions() {
       </div>
     </div>
 
-    <!-- Add Question Modal -->
-    <AddQuestionModal
-      v-if="showAddQuestion"
+    <!-- Add Question Panel -->
+    <QuestionEditorPanel
+      mode="add"
+      :open="isAddPanelOpen"
+      :next-display-order="nextDisplayOrder"
+      @update:open="(v) => v ? openAddPanel() : closeAddPanel()"
       @add="handleAddQuestion"
-      @close="showAddQuestion = false"
     />
   </div>
 </template>

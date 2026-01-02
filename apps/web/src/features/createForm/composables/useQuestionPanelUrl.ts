@@ -3,7 +3,10 @@ import { useUrlSearchParams } from '@vueuse/core';
 
 interface QuestionPanelUrlParams {
   question?: string;
+  panel?: string;
 }
+
+export type PanelUrlMode = 'edit' | 'add' | null;
 
 /**
  * URL-synchronized question panel state composable
@@ -35,7 +38,7 @@ export function useQuestionPanelUrl(options: {
 
   // VueUse reactive URL params - automatically synced with browser URL
   const params = useUrlSearchParams<QuestionPanelUrlParams>('history', {
-    initialValue: { question: undefined },
+    initialValue: { question: undefined, panel: undefined },
     removeNullishValues: true,
   });
 
@@ -54,25 +57,57 @@ export function useQuestionPanelUrl(options: {
     return index;
   });
 
-  // Panel is open if we have a valid selected index
+  // Panel is open if we have a valid selected index (edit mode)
   const isPanelOpen = computed(() => selectedIndex.value !== null);
 
+  // Add panel is open if panel=add is in URL
+  const isAddPanelOpen = computed(() => params.panel === 'add');
+
+  // Current panel mode
+  const panelMode = computed<PanelUrlMode>(() => {
+    if (params.panel === 'add') return 'add';
+    if (selectedIndex.value !== null) return 'edit';
+    return null;
+  });
+
   /**
-   * Select a question by index - updates URL
+   * Select a question by index - updates URL (edit mode)
+   * Clears add mode if active
    */
   function selectQuestion(index: number) {
     if (index < 0 || index >= totalQuestions()) return;
     isInternalUpdate.value = true;
     params.question = String(index);
+    params.panel = undefined; // Clear add mode
     isInternalUpdate.value = false;
   }
 
   /**
-   * Close the panel - clears URL param
+   * Close the edit panel - clears question param
    */
   function closePanel() {
     isInternalUpdate.value = true;
     params.question = undefined;
+    isInternalUpdate.value = false;
+  }
+
+  /**
+   * Open add panel - sets panel=add in URL
+   * Clears edit mode if active
+   */
+  function openAddPanel() {
+    isInternalUpdate.value = true;
+    params.panel = 'add';
+    params.question = undefined; // Clear edit mode
+    isInternalUpdate.value = false;
+  }
+
+  /**
+   * Close add panel - clears panel param
+   */
+  function closeAddPanel() {
+    isInternalUpdate.value = true;
+    params.panel = undefined;
     isInternalUpdate.value = false;
   }
 
@@ -150,10 +185,14 @@ export function useQuestionPanelUrl(options: {
     // State
     selectedIndex,
     isPanelOpen,
+    isAddPanelOpen,
+    panelMode,
 
     // Actions
     selectQuestion,
     closePanel,
+    openAddPanel,
+    closeAddPanel,
     navigate,
     adjustIndexForReorder,
     adjustIndexForRemoval,
