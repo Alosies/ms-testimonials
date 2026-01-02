@@ -1,5 +1,5 @@
-// Wizard Steps
-export * from './steps';
+// Sections (single-page layout)
+export * from './sections';
 
 // Question Editor
 export * from './questionEditor';

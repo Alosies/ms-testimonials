@@ -6,9 +6,6 @@ export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 // Section Types (single-page layout)
 export type SectionId = 'product-info' | 'questions' | 'preview';
 
-// Wizard Step Types (deprecated - kept for compatibility)
-export type WizardStep = 'product-info' | 'ai-suggestions' | 'customize' | 'preview';
-
 // Form Data (collected in Step 1)
 export interface FormData {
   name: string;
@@ -31,9 +28,8 @@ export interface QuestionData extends AIQuestion {
   scale_max_label?: string | null;
 }
 
-// Wizard State
-export interface WizardState {
-  currentStep: WizardStep;
+// Form Editor State
+export interface FormEditorState {
   formData: FormData;
   questions: QuestionData[];
   aiContext: AIContext | null;

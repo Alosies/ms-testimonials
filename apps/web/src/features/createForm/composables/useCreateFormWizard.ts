@@ -1,14 +1,12 @@
 import { ref, computed, reactive } from 'vue';
 import type { AIQuestion, AIContext } from '@/shared/api';
-import type { WizardStep, FormData, QuestionData } from '../models';
+import type { FormData, QuestionData } from '../models';
 
 /**
- * Composable for managing the create form wizard state
+ * Composable for managing form editor state.
+ * Provides core state and question management for the single-page form builder.
  */
 export function useCreateFormWizard() {
-  // Current step
-  const currentStep = ref<WizardStep>('product-info');
-
   // Form data
   const formData = reactive<FormData>({
     name: '',
@@ -24,35 +22,12 @@ export function useCreateFormWizard() {
   // AI inferred context
   const aiContext = ref<AIContext | null>(null);
 
-  // Created form ID (set after Step 1 save)
+  // Created form ID
   const formId = ref<string | null>(null);
 
   // Loading and error states
   const isLoading = ref(false);
   const error = ref<string | null>(null);
-
-  // Step navigation
-  const steps: WizardStep[] = ['product-info', 'ai-suggestions', 'customize', 'preview'];
-
-  const currentStepIndex = computed(() => steps.indexOf(currentStep.value));
-  const isFirstStep = computed(() => currentStepIndex.value === 0);
-  const isLastStep = computed(() => currentStepIndex.value === steps.length - 1);
-
-  function nextStep() {
-    if (!isLastStep.value) {
-      currentStep.value = steps[currentStepIndex.value + 1];
-    }
-  }
-
-  function prevStep() {
-    if (!isFirstStep.value) {
-      currentStep.value = steps[currentStepIndex.value - 1];
-    }
-  }
-
-  function goToStep(step: WizardStep) {
-    currentStep.value = step;
-  }
 
   // Question management
   function setAIQuestions(aiQuestions: AIQuestion[], context: AIContext | null) {
@@ -144,21 +119,12 @@ export function useCreateFormWizard() {
 
   return {
     // State
-    currentStep,
     formData,
     questions,
     aiContext,
     formId,
     isLoading,
     error,
-
-    // Navigation
-    nextStep,
-    prevStep,
-    goToStep,
-    isFirstStep,
-    isLastStep,
-    currentStepIndex,
 
     // Questions
     setAIQuestions,
