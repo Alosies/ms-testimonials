@@ -32,7 +32,6 @@ const { questionTypeOptions: questionTypes } = toRefs(organizationStore);
 
 // Form state
 const questionText = ref('');
-const questionKey = ref('');
 const questionTypeId = ref<QuestionTypeId>('text_long');
 const placeholder = ref('');
 const helpText = ref('');
@@ -40,7 +39,7 @@ const isRequired = ref(true);
 
 const isOpen = ref(true);
 
-// Generate key from question text
+// Generate key from question text (for internal use)
 function generateKey(text: string): string {
   return text
     .toLowerCase()
@@ -49,29 +48,14 @@ function generateKey(text: string): string {
     .slice(0, 50);
 }
 
-// Auto-generate key when question text changes
-function updateQuestionText(value: string | number) {
-  const strValue = String(value);
-  questionText.value = strValue;
-  if (!questionKey.value || questionKey.value === generateKey(questionText.value.slice(0, -1))) {
-    questionKey.value = generateKey(strValue);
-  }
-}
-
-const isValid = computed(() => {
-  return (
-    questionText.value.trim().length > 0 &&
-    questionKey.value.trim().length > 0 &&
-    /^[a-z][a-z0-9_]*$/.test(questionKey.value)
-  );
-});
+const isValid = computed(() => questionText.value.trim().length > 0);
 
 function handleAdd() {
   if (!isValid.value) return;
 
   emit('add', {
     question_text: questionText.value.trim(),
-    question_key: questionKey.value.trim(),
+    question_key: generateKey(questionText.value.trim()),
     question_type_id: questionTypeId.value,
     placeholder: placeholder.value.trim() || null,
     help_text: helpText.value.trim() || null,
@@ -87,44 +71,32 @@ function handleClose() {
 
 <template>
   <Dialog :open="isOpen" @update:open="handleClose">
-    <DialogContent class="max-w-md">
+    <DialogContent class="max-w-xl">
       <DialogHeader>
         <DialogTitle>Add Custom Question</DialogTitle>
+        <p class="text-sm text-gray-500">
+          Create a custom question for your testimonial form
+        </p>
       </DialogHeader>
 
-      <div class="space-y-4 py-4">
+      <div class="space-y-6 py-2">
         <!-- Question Text -->
         <div>
-          <Label for="question-text">Question Text</Label>
+          <Label for="question-text" class="text-sm font-medium">Question Text</Label>
           <Textarea
             id="question-text"
-            :model-value="questionText"
-            class="mt-1"
-            rows="2"
+            v-model="questionText"
+            class="mt-2"
+            rows="3"
             placeholder="What would you like to ask?"
-            @update:model-value="updateQuestionText"
           />
-        </div>
-
-        <!-- Question Key -->
-        <div>
-          <Label for="question-key">Question Key</Label>
-          <Input
-            id="question-key"
-            v-model="questionKey"
-            class="mt-1 font-mono text-sm"
-            placeholder="e.g., custom_question"
-          />
-          <p class="mt-1 text-xs text-gray-500">
-            Lowercase letters, numbers, and underscores only
-          </p>
         </div>
 
         <!-- Question Type -->
         <div>
-          <Label>Question Type</Label>
+          <Label class="text-sm font-medium">Question Type</Label>
           <Select v-model="questionTypeId">
-            <SelectTrigger class="mt-1">
+            <SelectTrigger class="mt-2">
               <SelectValue placeholder="Select type" />
             </SelectTrigger>
             <SelectContent>
@@ -139,36 +111,45 @@ function handleClose() {
           </Select>
         </div>
 
-        <!-- Placeholder -->
-        <div>
-          <Label for="placeholder">Placeholder Text (optional)</Label>
-          <Input
-            id="placeholder"
-            v-model="placeholder"
-            class="mt-1"
-            placeholder="Enter placeholder text..."
-          />
-        </div>
-
-        <!-- Help Text -->
-        <div>
-          <Label for="help-text">Help Text (optional)</Label>
-          <Input
-            id="help-text"
-            v-model="helpText"
-            class="mt-1"
-            placeholder="Enter help text..."
-          />
+        <!-- Placeholder & Help Text Row -->
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <Label for="placeholder" class="text-sm font-medium">
+              Placeholder
+              <span class="font-normal text-gray-400">(optional)</span>
+            </Label>
+            <Input
+              id="placeholder"
+              v-model="placeholder"
+              class="mt-2"
+              placeholder="Hint text..."
+            />
+          </div>
+          <div>
+            <Label for="help-text" class="text-sm font-medium">
+              Help Text
+              <span class="font-normal text-gray-400">(optional)</span>
+            </Label>
+            <Input
+              id="help-text"
+              v-model="helpText"
+              class="mt-2"
+              placeholder="Additional guidance..."
+            />
+          </div>
         </div>
 
         <!-- Required Toggle -->
-        <div class="flex items-center justify-between">
-          <Label>Required</Label>
+        <div class="flex items-center justify-between rounded-lg border bg-gray-50 px-4 py-3">
+          <div>
+            <Label class="text-sm font-medium">Required</Label>
+            <p class="text-xs text-gray-500">Respondents must answer this question</p>
+          </div>
           <Switch v-model:checked="isRequired" />
         </div>
       </div>
 
-      <DialogFooter>
+      <DialogFooter class="gap-2 pt-2">
         <Button variant="outline" @click="handleClose">Cancel</Button>
         <Button :disabled="!isValid" @click="handleAdd">Add Question</Button>
       </DialogFooter>
