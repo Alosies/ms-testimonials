@@ -22,7 +22,7 @@ defineProps<{
         <!-- Question Text -->
         <div class="flex items-start gap-2">
           <span class="text-sm font-medium text-gray-900">
-            {{ question.question_text || 'Enter your question...' }}
+            {{ question.question_text || 'Enter your question below to see the preview' }}
           </span>
           <span v-if="question.is_required" class="text-red-500">*</span>
         </div>
