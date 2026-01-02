@@ -3,7 +3,7 @@ import { computed } from 'vue';
 import { Icon } from '@testimonials/icons';
 import { useRouting } from '@/shared/routing';
 
-const { formsPath, testimonialsPath, widgetsPath, settingsPath } = useRouting();
+const { newFormPath, testimonialsPath, newWidgetPath, settingsPath } = useRouting();
 
 const quickActions = computed(() => [
   {
@@ -11,7 +11,7 @@ const quickActions = computed(() => [
     icon: 'heroicons:plus-circle',
     color: 'from-emerald-400 via-teal-500 to-cyan-500',
     description: 'Start collecting testimonials',
-    route: `${formsPath.value}/new`,
+    route: newFormPath.value,
   },
   {
     name: 'View Testimonials',
@@ -25,7 +25,7 @@ const quickActions = computed(() => [
     icon: 'heroicons:squares-2x2',
     color: 'from-violet-400 via-purple-500 to-fuchsia-500',
     description: 'Embed on your website',
-    route: `${widgetsPath.value}/new`,
+    route: newWidgetPath.value,
   },
   {
     name: 'Settings',
