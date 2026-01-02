@@ -1,8 +1,12 @@
 <script setup lang="ts">
-import { ref, onMounted, nextTick } from 'vue';
+import { ref, toRefs, onMounted, nextTick } from 'vue';
 import { Button } from '@testimonials/ui';
 import { Icon } from '@testimonials/icons';
 import { useApiForAI, getErrorMessage } from '@/shared/api';
+import { useCreateForm } from '@/entities/form';
+import { useCreateFormQuestions } from '@/entities/formQuestion';
+import { useCurrentContextStore } from '@/shared/currentContext';
+import { createSlugFromString } from '@/shared/urls';
 import type { AIContext, AIQuestion } from '@/shared/api';
 import type { FormData, QuestionData } from '../../models';
 import QuestionCard from '../questionEditor/QuestionCard.vue';
@@ -13,10 +17,12 @@ const props = defineProps<{
   questions: QuestionData[];
   aiContext: AIContext | null;
   isLoading: boolean;
+  formId: string | null;
 }>();
 
 const emit = defineEmits<{
   setQuestions: [questions: AIQuestion[], context: AIContext | null];
+  setFormId: [id: string];
   setLoading: [loading: boolean];
   setError: [error: string | null];
   next: [];
@@ -24,6 +30,10 @@ const emit = defineEmits<{
 }>();
 
 const aiApi = useApiForAI();
+const { createForm } = useCreateForm();
+const { createFormQuestions } = useCreateFormQuestions();
+const contextStore = useCurrentContextStore();
+const { currentOrganizationId } = toRefs(contextStore);
 const isGenerating = ref(false);
 
 // Animation states
@@ -77,6 +87,76 @@ async function generateQuestions() {
 
 async function regenerate() {
   await generateQuestions();
+}
+
+const isSaving = ref(false);
+
+async function handleSaveAndProceed() {
+  if (isSaving.value || props.questions.length === 0) return;
+
+  isSaving.value = true;
+  emit('setLoading', true);
+  emit('setError', null);
+
+  try {
+    let formIdToUse = props.formId;
+
+    // Create the form if not already created
+    if (!formIdToUse) {
+      const slug = createSlugFromString(props.formData.product_name);
+      const formResult = await createForm({
+        form: {
+          name: props.formData.product_name,
+          slug,
+          product_name: props.formData.product_name,
+          product_description: props.formData.product_description,
+          organization_id: currentOrganizationId.value,
+        },
+      });
+
+      if (!formResult) {
+        throw new Error('Failed to create form');
+      }
+
+      formIdToUse = formResult.id;
+      emit('setFormId', formIdToUse);
+    }
+
+    // Create the questions in the database
+    const questionInputs = props.questions.map((q, index) => ({
+      form_id: formIdToUse,
+      organization_id: currentOrganizationId.value,
+      question_type_id: q.question_type_id,
+      question_key: q.question_key,
+      question_text: q.question_text,
+      placeholder: q.placeholder,
+      help_text: q.help_text,
+      display_order: index + 1,
+      is_required: q.is_required,
+    }));
+
+    const questionsResult = await createFormQuestions({
+      inputs: questionInputs,
+    });
+
+    if (!questionsResult || questionsResult.length === 0) {
+      throw new Error('Failed to create questions');
+    }
+
+    // Update local questions with DB IDs
+    const updatedQuestions = props.questions.map((q, index) => ({
+      ...q,
+      id: questionsResult[index].id,
+    }));
+    emit('setQuestions', updatedQuestions as AIQuestion[], props.aiContext);
+
+    emit('next');
+  } catch (error) {
+    emit('setError', error instanceof Error ? error.message : 'An error occurred');
+  } finally {
+    isSaving.value = false;
+    emit('setLoading', false);
+  }
 }
 
 // Generate questions on mount if none exist
@@ -181,9 +261,13 @@ onMounted(async () => {
               </Button>
               <div class="space-x-3">
                 <Button variant="outline" size="sm" @click="emit('prev')">Back</Button>
-                <Button size="sm" :disabled="questions.length === 0" @click="emit('next')">
-                  Customize
-                  <Icon icon="lucide:arrow-right" class="ml-2 h-3.5 w-3.5" />
+                <Button
+                  size="sm"
+                  :disabled="questions.length === 0 || isSaving"
+                  @click="handleSaveAndProceed"
+                >
+                  {{ isSaving ? 'Saving...' : 'Customize' }}
+                  <Icon v-if="!isSaving" icon="lucide:arrow-right" class="ml-2 h-3.5 w-3.5" />
                 </Button>
               </div>
             </div>

@@ -1,0 +1,8 @@
+mutation DeactivateFormQuestions($formId: String!) {
+  update_form_questions(
+    where: { form_id: { _eq: $formId }, is_active: { _eq: true } }
+    _set: { is_active: false }
+  ) {
+    affected_rows
+  }
+}

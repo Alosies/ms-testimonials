@@ -65,9 +65,11 @@ export function useCreateFormWizard() {
   }
 
   function addQuestion(question: Partial<QuestionData>) {
+    // Generate unique key using crypto.randomUUID() (8 chars from UUID)
+    const uniqueId = crypto.randomUUID().slice(0, 8);
     const newQuestion: QuestionData = {
       question_text: question.question_text || '',
-      question_key: question.question_key || `custom_${Date.now()}`,
+      question_key: question.question_key || `custom_${uniqueId}`,
       question_type_id: question.question_type_id || 'text_long',
       placeholder: question.placeholder || null,
       help_text: question.help_text || null,
@@ -115,6 +117,10 @@ export function useCreateFormWizard() {
 
   function setError(errorMessage: string | null) {
     error.value = errorMessage;
+  }
+
+  function setQuestions(newQuestions: QuestionData[]) {
+    questions.value = newQuestions;
   }
 
   // Validation
@@ -165,6 +171,7 @@ export function useCreateFormWizard() {
     setFormId,
     setLoading,
     setError,
+    setQuestions,
 
     // Validation
     canProceedFromProductInfo,

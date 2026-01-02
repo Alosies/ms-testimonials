@@ -13206,6 +13206,13 @@ export type CreateFormQuestionsMutationVariables = Exact<{
 
 export type CreateFormQuestionsMutation = { __typename?: 'mutation_root', insert_form_questions?: { __typename?: 'form_questions_mutation_response', returning: Array<{ __typename?: 'form_questions', id: string, form_id: string, organization_id: string, question_type_id: string, question_key: string, question_text: string, placeholder?: string | null, help_text?: string | null, display_order: number, is_required: boolean, min_length?: number | null, max_length?: number | null, min_value?: number | null, max_value?: number | null, validation_pattern?: string | null, allowed_file_types?: Array<string> | null, max_file_size_kb?: number | null, is_active: boolean, created_at: string, updated_at: string, question_type: { __typename?: 'question_types', id: string, unique_name: string, name: string, category: string, input_component: string } }> } | null };
 
+export type DeactivateFormQuestionsMutationVariables = Exact<{
+  formId: Scalars['String']['input'];
+}>;
+
+
+export type DeactivateFormQuestionsMutation = { __typename?: 'mutation_root', update_form_questions?: { __typename?: 'form_questions_mutation_response', affected_rows: number } | null };
+
 export type DeleteFormQuestionMutationVariables = Exact<{
   id: Scalars['String']['input'];
 }>;
@@ -13821,6 +13828,38 @@ export function useCreateFormQuestionsMutation(options: VueApolloComposable.UseM
   return VueApolloComposable.useMutation<CreateFormQuestionsMutation, CreateFormQuestionsMutationVariables>(CreateFormQuestionsDocument, options);
 }
 export type CreateFormQuestionsMutationCompositionFunctionResult = VueApolloComposable.UseMutationReturn<CreateFormQuestionsMutation, CreateFormQuestionsMutationVariables>;
+export const DeactivateFormQuestionsDocument = gql`
+    mutation DeactivateFormQuestions($formId: String!) {
+  update_form_questions(
+    where: {form_id: {_eq: $formId}, is_active: {_eq: true}}
+    _set: {is_active: false}
+  ) {
+    affected_rows
+  }
+}
+    `;
+
+/**
+ * __useDeactivateFormQuestionsMutation__
+ *
+ * To run a mutation, you first call `useDeactivateFormQuestionsMutation` within a Vue component and pass it any options that fit your needs.
+ * When your component renders, `useDeactivateFormQuestionsMutation` returns an object that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - Several other properties: https://v4.apollo.vuejs.org/api/use-mutation.html#return
+ *
+ * @param options that will be passed into the mutation, supported options are listed on: https://v4.apollo.vuejs.org/guide-composable/mutation.html#options;
+ *
+ * @example
+ * const { mutate, loading, error, onDone } = useDeactivateFormQuestionsMutation({
+ *   variables: {
+ *     formId: // value for 'formId'
+ *   },
+ * });
+ */
+export function useDeactivateFormQuestionsMutation(options: VueApolloComposable.UseMutationOptions<DeactivateFormQuestionsMutation, DeactivateFormQuestionsMutationVariables> | ReactiveFunction<VueApolloComposable.UseMutationOptions<DeactivateFormQuestionsMutation, DeactivateFormQuestionsMutationVariables>> = {}) {
+  return VueApolloComposable.useMutation<DeactivateFormQuestionsMutation, DeactivateFormQuestionsMutationVariables>(DeactivateFormQuestionsDocument, options);
+}
+export type DeactivateFormQuestionsMutationCompositionFunctionResult = VueApolloComposable.UseMutationReturn<DeactivateFormQuestionsMutation, DeactivateFormQuestionsMutationVariables>;
 export const DeleteFormQuestionDocument = gql`
     mutation DeleteFormQuestion($id: String!) {
   update_form_questions_by_pk(pk_columns: {id: $id}, _set: {is_active: false}) {

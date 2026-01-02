@@ -1,46 +1,41 @@
 <script setup lang="ts">
-import { computed, ref, nextTick } from 'vue';
-import { Icon } from '@testimonials/icons';
+import { computed, nextTick, watch } from 'vue';
 import { useFormEditor } from './composables/useFormEditor';
+import { useFormSections } from './composables/useFormSections';
+import { useQuestionGeneration } from './composables/useQuestionGeneration';
+import { useConfirmationModal } from '@/shared/widgets';
 import {
-  ProductInfoStep,
-  AISuggestionsStep,
-  CustomizeQuestionsStep,
-  PreviewPublishStep,
-} from './ui';
+  ProductInfoSection,
+  QuestionsSection,
+  PreviewSection,
+} from './ui/sections';
+import EditableFormTitle from './ui/EditableFormTitle.vue';
 import SaveStatusIndicator from './ui/SaveStatusIndicator.vue';
 
 const props = defineProps<{
-  /**
-   * If provided, load existing form for editing.
-   * If not provided, create a new draft form on mount.
-   */
   existingFormId?: string;
 }>();
 
 const {
-  // Wizard state
-  currentStep,
-  currentStepIndex,
+  // State
   formData,
   questions,
   aiContext,
   formId,
-  isLoading,
   error,
-  nextStep,
-  prevStep,
-  goToStep,
+
+  // Question management
   setAIQuestions,
+  setQuestions,
   addQuestion,
   updateQuestion,
   removeQuestion,
   reorderQuestions,
-  canProceedFromProductInfo,
-  canProceedFromCustomize,
   setFormId,
-  setLoading,
   setError,
+
+  // Validation
+  canProceedFromProductInfo,
 
   // Save status
   saveStatus,
@@ -58,78 +53,110 @@ const {
   publishing,
 } = useFormEditor({ existingFormId: props.existingFormId });
 
+// Section management
+const sections = useFormSections({
+  canExpandQuestions: canProceedFromProductInfo,
+  canExpandPreview: computed(() => questions.value.length > 0),
+});
+
+// Question generation
+const questionGeneration = useQuestionGeneration({
+  formData,
+  formId,
+  questions,
+  onQuestionsGenerated: (newQuestions, context) => {
+    setAIQuestions(newQuestions, context);
+  },
+  onQuestionsSaved: (updatedQuestions) => {
+    setQuestions(updatedQuestions);
+  },
+  onFormCreated: (id) => {
+    setFormId(id);
+  },
+  onError: (errorMsg) => {
+    setError(errorMsg);
+  },
+});
+
+// Confirmation modal for regenerate
+const { showConfirmation: showRegenerateConfirmation } = useConfirmationModal();
+
 // Show loading during initialization or form loading
 const isPageLoading = computed(
   () => isInitializing.value || loadingForm.value
 );
 
-// Inline title editing
-const isEditingTitle = ref(false);
-const titleInputRef = ref<HTMLInputElement | null>(null);
+// Track if questions have unsaved changes
+const hasUnsavedQuestionChanges = computed(() =>
+  questions.value.some((q) => q.isModified || q.isNew)
+);
 
-// Display title - use form name or fallback
-const displayTitle = computed(() => formData.name || 'Untitled Form');
-
-async function startEditingTitle() {
-  isEditingTitle.value = true;
-  await nextTick();
-  titleInputRef.value?.focus();
-  titleInputRef.value?.select();
+// Scroll to an element by ID
+function scrollToSection(id: string) {
+  nextTick(() => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
 }
 
-function finishEditingTitle() {
-  isEditingTitle.value = false;
-  // Trim whitespace and ensure we have a name
-  formData.name = formData.name.trim() || 'Untitled Form';
-}
-
-function handleTitleKeydown(event: KeyboardEvent) {
-  if (event.key === 'Enter') {
-    finishEditingTitle();
-  } else if (event.key === 'Escape') {
-    isEditingTitle.value = false;
+// Handle generate questions
+async function handleGenerateQuestions() {
+  // Scroll to questions section to see the AI loader
+  scrollToSection('questions');
+  const success = await questionGeneration.generateQuestions();
+  if (success) {
+    sections.onQuestionsGenerated();
   }
 }
 
-const steps = [
-  { id: 'product-info', label: 'Product Info', number: 1 },
-  { id: 'ai-suggestions', label: 'AI Suggestions', number: 2 },
-  { id: 'customize', label: 'Customize', number: 3 },
-  { id: 'preview', label: 'Preview', number: 4 },
-];
+// Handle regenerate with confirmation
+function handleRegenerateQuestions() {
+  // Only show confirmation if questions already exist
+  if (questions.value.length > 0) {
+    showRegenerateConfirmation({
+      actionType: 'regenerate_questions',
+      entityName: 'questions',
+      onConfirm: async () => {
+        // Scroll to questions section to see the AI loader
+        scrollToSection('questions');
+        const success = await questionGeneration.regenerateQuestions();
+        if (success) {
+          sections.onQuestionsGenerated();
+        }
+      },
+    });
+  } else {
+    handleGenerateQuestions();
+  }
+}
+
+// Handle save questions (explicit save for new/modified questions)
+async function handleSaveQuestions() {
+  await questionGeneration.saveQuestions();
+}
+
+// Initialize sections after form loads
+watch(
+  () => loadingForm.value,
+  (loading) => {
+    if (!loading) {
+      const hasQuestions = questions.value.length > 0;
+      const questionsInDb = questions.value.some((q) => q.id);
+      sections.initializeSections(hasQuestions, questionsInDb);
+    }
+  }
+);
 </script>
 
 <template>
-  <div class="mx-auto max-w-5xl px-4 py-8">
-    <!-- Header with Editable Title and Save Status -->
+  <div class="mx-auto max-w-4xl px-4 py-8">
     <div class="mb-6 flex items-center justify-between">
-      <!-- Inline Editable Title -->
-      <div class="group flex items-center gap-2">
-        <input
-          v-if="isEditingTitle"
-          ref="titleInputRef"
-          v-model="formData.name"
-          type="text"
-          class="rounded-md border border-gray-300 px-2 py-1 text-2xl font-semibold text-gray-900 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-          placeholder="Untitled Form"
-          @blur="finishEditingTitle"
-          @keydown="handleTitleKeydown"
-        />
-        <button
-          v-else
-          type="button"
-          class="flex items-center gap-2 rounded-md px-2 py-1 text-left hover:bg-gray-100"
-          @click="startEditingTitle"
-        >
-          <h1 class="text-2xl font-semibold text-gray-900">
-            {{ displayTitle }}
-          </h1>
-          <Icon
-            icon="lucide:pencil"
-            class="h-4 w-4 text-gray-400 opacity-0 transition-opacity group-hover:opacity-100"
-          />
-        </button>
-      </div>
+      <EditableFormTitle
+        v-model="formData.name"
+        placeholder="Untitled Form"
+      />
       <SaveStatusIndicator
         :status="saveStatus"
         :last-saved-at="lastSavedAt"
@@ -138,7 +165,6 @@ const steps = [
       />
     </div>
 
-    <!-- Initialization Loading -->
     <div
       v-if="isPageLoading"
       class="flex min-h-[400px] items-center justify-center"
@@ -151,7 +177,6 @@ const steps = [
       </div>
     </div>
 
-    <!-- Initialization Error -->
     <div
       v-else-if="initError"
       class="mb-6 rounded-lg bg-red-50 p-6 text-center"
@@ -165,117 +190,58 @@ const steps = [
       </button>
     </div>
 
-    <!-- Main Content -->
     <template v-else>
-      <!-- Progress Steps -->
-      <nav class="mb-8" aria-label="Progress">
-      <ol class="flex items-center justify-between">
-        <li
-          v-for="step in steps"
-          :key="step.id"
-          class="flex items-center"
-          :class="{ 'flex-1': step.number < 4 }"
-        >
-          <button
-            type="button"
-            class="flex items-center"
-            :class="{
-              'cursor-not-allowed': step.number > currentStepIndex + 1,
-              'cursor-pointer': step.number <= currentStepIndex + 1,
-            }"
-            :disabled="step.number > currentStepIndex + 1"
-            @click="step.number <= currentStepIndex + 1 && goToStep(step.id as typeof currentStep.value)"
-          >
-            <span
-              class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-medium"
-              :class="{
-                'bg-primary text-white': step.number <= currentStepIndex + 1,
-                'bg-gray-200 text-gray-500': step.number > currentStepIndex + 1,
-              }"
-            >
-              {{ step.number }}
-            </span>
-            <span
-              class="ml-2 text-sm font-medium"
-              :class="{
-                'text-gray-900': step.number <= currentStepIndex + 1,
-                'text-gray-400': step.number > currentStepIndex + 1,
-              }"
-            >
-              {{ step.label }}
-            </span>
-          </button>
-          <div
-            v-if="step.number < 4"
-            class="mx-4 h-0.5 flex-1"
-            :class="{
-              'bg-primary': step.number <= currentStepIndex,
-              'bg-gray-200': step.number > currentStepIndex,
-            }"
-          />
-        </li>
-      </ol>
-    </nav>
+      <div
+        v-if="error"
+        class="mb-6 rounded-lg bg-red-50 p-4 text-sm text-red-700"
+      >
+        {{ error }}
+      </div>
 
-    <!-- Error Message -->
-    <div
-      v-if="error"
-      class="mb-6 rounded-lg bg-red-50 p-4 text-sm text-red-700"
-    >
-      {{ error }}
-    </div>
+      <div class="space-y-4">
+        <ProductInfoSection
+          id="product-info"
+          v-model:form-data="formData"
+          :expanded="sections.productInfoExpanded.value"
+          :can-generate="canProceedFromProductInfo"
+          :is-generating="questionGeneration.isGenerating.value"
+          :has-questions="questions.length > 0"
+          @update:expanded="sections.productInfoExpanded.value = $event"
+          @generate="handleGenerateQuestions"
+        />
 
-    <!-- Step Content -->
-    <div class="rounded-lg border bg-white p-6 shadow-sm">
-      <ProductInfoStep
-        v-if="currentStep === 'product-info'"
-        v-model:formData="formData"
-        :can-proceed="canProceedFromProductInfo"
-        :is-loading="isLoading"
-        @next="nextStep"
-      />
+        <QuestionsSection
+          id="questions"
+          :expanded="sections.questionsExpanded.value"
+          :disabled="sections.questionsDisabled.value"
+          :questions="questions"
+          :form-data="formData"
+          :form-id="formId"
+          :is-generating="questionGeneration.isGenerating.value"
+          :is-saving="questionGeneration.isSaving.value"
+          :ai-context="aiContext"
+          :has-unsaved-changes="hasUnsavedQuestionChanges"
+          @update:expanded="sections.questionsExpanded.value = $event"
+          @update-question="updateQuestion"
+          @remove-question="removeQuestion"
+          @add-question="addQuestion"
+          @reorder-questions="reorderQuestions"
+          @regenerate="handleRegenerateQuestions"
+          @save-questions="handleSaveQuestions"
+        />
 
-      <AISuggestionsStep
-        v-else-if="currentStep === 'ai-suggestions'"
-        :form-data="formData"
-        :questions="questions"
-        :ai-context="aiContext"
-        :is-loading="isLoading"
-        @set-questions="setAIQuestions"
-        @set-loading="setLoading"
-        @set-error="setError"
-        @next="nextStep"
-        @prev="prevStep"
-      />
-
-      <CustomizeQuestionsStep
-        v-else-if="currentStep === 'customize'"
-        :questions="questions"
-        :form-data="formData"
-        :form-id="formId"
-        :can-proceed="canProceedFromCustomize"
-        :is-loading="isLoading"
-        @update-question="updateQuestion"
-        @remove-question="removeQuestion"
-        @add-question="addQuestion"
-        @reorder-questions="reorderQuestions"
-        @set-form-id="setFormId"
-        @set-loading="setLoading"
-        @set-error="setError"
-        @next="nextStep"
-        @prev="prevStep"
-      />
-
-      <PreviewPublishStep
-        v-else-if="currentStep === 'preview'"
-        :form-data="formData"
-        :questions="questions"
-        :form-id="formId"
-        :publishing="publishing"
-        @prev="prevStep"
-        @publish="handlePublish"
-      />
-    </div>
+        <PreviewSection
+          id="preview"
+          :expanded="sections.previewExpanded.value"
+          :disabled="sections.previewDisabled.value"
+          :form-data="formData"
+          :questions="questions"
+          :form-id="formId"
+          :publishing="publishing"
+          @update:expanded="sections.previewExpanded.value = $event"
+          @publish="handlePublish"
+        />
+      </div>
     </template>
   </div>
 </template>

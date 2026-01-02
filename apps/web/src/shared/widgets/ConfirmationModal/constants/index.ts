@@ -55,6 +55,14 @@ export const CONFIRMATION_MESSAGES: Record<
     warningText: 'will be rejected.',
     intent: 'warning',
   },
+  regenerate_questions: {
+    title: 'Regenerate Questions?',
+    message:
+      'This will replace all current questions with new AI-generated ones. Any edits you made will be lost.',
+    confirmText: 'Regenerate',
+    warningText: 'All questions will be replaced.',
+    intent: 'warning',
+  },
 } as const;
 
 /**

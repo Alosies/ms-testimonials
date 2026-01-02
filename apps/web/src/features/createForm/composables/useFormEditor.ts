@@ -1,8 +1,11 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import { usePublishForm, useGetForm } from '@/entities/form';
+import { useGetFormQuestions } from '@/entities/formQuestion';
 import { useRouting } from '@/shared/routing';
 import { useCreateFormWizard } from './useCreateFormWizard';
 import { useFormAutoSave } from './useFormAutoSave';
+import type { QuestionData } from '../models';
+import type { QuestionTypeId } from '@/shared/api';
 
 interface UseFormEditorOptions {
   /**
@@ -43,6 +46,10 @@ export function useFormEditor(options: UseFormEditorOptions = {}) {
   const { form: existingForm, loading: loadingForm } =
     useGetForm(formQueryVariables);
 
+  // Query for existing form questions (edit mode)
+  const { formQuestions: existingQuestions, loading: loadingQuestions } =
+    useGetFormQuestions(formQueryVariables);
+
   // Auto-save integration (only enabled when we have a formId)
   const autoSave = useFormAutoSave({
     formId: computed(() => formId.value),
@@ -67,6 +74,32 @@ export function useFormEditor(options: UseFormEditorOptions = {}) {
 
     // Set the form ID
     wizard.setFormId(form.id);
+  }
+
+  /**
+   * Load existing questions into wizard state.
+   * Called when editing a form with existing questions.
+   */
+  function loadExistingQuestions() {
+    if (!existingQuestions.value || existingQuestions.value.length === 0) return;
+
+    // Map DB questions to QuestionData format
+    const questions: QuestionData[] = existingQuestions.value.map((q) => ({
+      id: q.id,
+      question_text: q.question_text,
+      question_key: q.question_key,
+      question_type_id: (q.question_type?.unique_name || q.question_type_id) as QuestionTypeId,
+      placeholder: q.placeholder ?? null,
+      help_text: q.help_text ?? null,
+      is_required: q.is_required,
+      display_order: q.display_order,
+      options: null, // TODO: Load question options if needed
+      isNew: false,
+      isModified: false,
+    }));
+
+    // Set questions in wizard (without AI context since these are loaded from DB)
+    wizard.setAIQuestions(questions, null);
   }
 
   /**
@@ -110,6 +143,17 @@ export function useFormEditor(options: UseFormEditorOptions = {}) {
     { once: true }
   );
 
+  // Load existing questions when query completes (only once on initial load)
+  watch(
+    existingQuestions,
+    (questions) => {
+      if (questions && questions.length > 0) {
+        loadExistingQuestions();
+      }
+    },
+    { once: true }
+  );
+
   // Initialize on mount
   onMounted(() => {
     if (existingFormId) {
@@ -121,6 +165,11 @@ export function useFormEditor(options: UseFormEditorOptions = {}) {
     }
   });
 
+  // Combined loading state for form and questions
+  const isLoadingData = computed(
+    () => loadingForm.value || loadingQuestions.value
+  );
+
   return {
     // Wizard state & methods
     ...wizard,
@@ -128,7 +177,7 @@ export function useFormEditor(options: UseFormEditorOptions = {}) {
     // Initialization state
     isInitializing,
     initError,
-    loadingForm,
+    loadingForm: isLoadingData,
 
     // Auto-save status
     saveStatus: autoSave.saveStatus,

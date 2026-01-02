@@ -3,7 +3,10 @@ import type { AIQuestion, AIContext } from '@/shared/api';
 // Save Status Types
 export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
-// Wizard Step Types
+// Section Types (single-page layout)
+export type SectionId = 'product-info' | 'questions' | 'preview';
+
+// Wizard Step Types (deprecated - kept for compatibility)
 export type WizardStep = 'product-info' | 'ai-suggestions' | 'customize' | 'preview';
 
 // Form Data (collected in Step 1)

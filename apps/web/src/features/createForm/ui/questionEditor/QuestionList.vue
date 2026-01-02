@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue';
 import type { QuestionData } from '../../models';
+import { useQuestionPanelUrl } from '../../composables';
 import QuestionCard from './QuestionCard.vue';
 import QuestionEditorPanel from './QuestionEditorPanel.vue';
 
@@ -17,9 +18,18 @@ const emit = defineEmits<{
 // Local copy for drag operations
 const localQuestions = ref([...props.questions]);
 
-// Selection state for editor panel
-const selectedIndex = ref<number | null>(null);
-const isPanelOpen = ref(false);
+// URL-synced selection state for editor panel
+const {
+  selectedIndex,
+  isPanelOpen,
+  selectQuestion,
+  closePanel,
+  navigate,
+  adjustIndexForReorder,
+  adjustIndexForRemoval,
+} = useQuestionPanelUrl({
+  totalQuestions: () => localQuestions.value.length,
+});
 
 // Keep local copy in sync with props
 watch(
@@ -28,8 +38,7 @@ watch(
     localQuestions.value = [...newQuestions];
     // Close panel if selected question was removed
     if (selectedIndex.value !== null && selectedIndex.value >= newQuestions.length) {
-      selectedIndex.value = null;
-      isPanelOpen.value = false;
+      closePanel();
     }
   },
   { deep: true }
@@ -70,23 +79,8 @@ function onDrop(toIndex: number, event: DragEvent) {
 
   if (fromIndex !== null && fromIndex !== toIndex) {
     emit('reorder', fromIndex, toIndex);
-
-    // Update selected index if needed
-    if (selectedIndex.value === fromIndex) {
-      selectedIndex.value = toIndex;
-    } else if (
-      selectedIndex.value !== null &&
-      fromIndex < selectedIndex.value &&
-      toIndex >= selectedIndex.value
-    ) {
-      selectedIndex.value--;
-    } else if (
-      selectedIndex.value !== null &&
-      fromIndex > selectedIndex.value &&
-      toIndex <= selectedIndex.value
-    ) {
-      selectedIndex.value++;
-    }
+    // Adjust URL-synced selection if needed
+    adjustIndexForReorder(fromIndex, toIndex);
   }
 
   draggedIndex.value = null;
@@ -100,18 +94,11 @@ function onDragEnd() {
 
 // Selection handlers
 function handleSelect(index: number) {
-  selectedIndex.value = index;
-  isPanelOpen.value = true;
+  selectQuestion(index);
 }
 
 function handlePanelClose() {
-  isPanelOpen.value = false;
-  // Keep selection visible for a moment, then clear
-  setTimeout(() => {
-    if (!isPanelOpen.value) {
-      selectedIndex.value = null;
-    }
-  }, 300);
+  closePanel();
 }
 
 function handleUpdate(updates: Partial<QuestionData>) {
@@ -123,32 +110,19 @@ function handleUpdate(updates: Partial<QuestionData>) {
 function handleRemoveFromPanel() {
   if (selectedIndex.value !== null) {
     const indexToRemove = selectedIndex.value;
-    isPanelOpen.value = false;
-    selectedIndex.value = null;
+    closePanel();
     emit('remove', indexToRemove);
   }
 }
 
 function handleRemoveFromCard(index: number) {
-  // If removing the selected question, close the panel
-  if (selectedIndex.value === index) {
-    isPanelOpen.value = false;
-    selectedIndex.value = null;
-  } else if (selectedIndex.value !== null && index < selectedIndex.value) {
-    // Adjust selected index if removing a question before it
-    selectedIndex.value--;
-  }
+  // Adjust URL-synced selection for removal
+  adjustIndexForRemoval(index);
   emit('remove', index);
 }
 
 function handleNavigate(direction: 'prev' | 'next') {
-  if (selectedIndex.value === null) return;
-
-  if (direction === 'prev' && selectedIndex.value > 0) {
-    selectedIndex.value--;
-  } else if (direction === 'next' && selectedIndex.value < localQuestions.value.length - 1) {
-    selectedIndex.value++;
-  }
+  navigate(direction);
 }
 </script>
 

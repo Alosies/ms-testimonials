@@ -16,6 +16,7 @@ export type ConfirmationActionType =
   | 'delete_question'
   | 'archive_testimonial'
   | 'reject_testimonial'
+  | 'regenerate_questions'
   | 'custom';
 
 export interface ConfirmationMessage {
