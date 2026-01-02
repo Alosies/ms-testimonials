@@ -12,7 +12,6 @@ import { FormCreatingLoader } from '@/features/createForm';
 import { useCreateForm } from '@/entities/form';
 import { useCurrentContextStore } from '@/shared/currentContext';
 import { useRouting } from '@/shared/routing';
-import { createSlugFromString } from '@/shared/urls';
 
 definePage({
   meta: {
@@ -53,15 +52,11 @@ async function createAndRedirect() {
   error.value = null;
 
   try {
-    // Generate a temporary slug
-    const tempSlug = createSlugFromString(`draft-${Date.now()}`);
-
     // Run form creation and minimum delay in parallel
     const [result] = await Promise.all([
       createForm({
         form: {
           name: 'Untitled Form',
-          slug: tempSlug,
           product_name: '',
           product_description: '',
           organization_id: currentOrganizationId.value,

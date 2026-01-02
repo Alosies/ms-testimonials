@@ -9,7 +9,6 @@ export type SectionId = 'product-info' | 'questions' | 'preview';
 // Form Data (collected in Step 1)
 export interface FormData {
   name: string;
-  slug: string;
   product_name: string;
   product_description: string;
   focus_areas?: string; // Optional guidance for AI question generation

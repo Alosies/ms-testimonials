@@ -2364,8 +2364,6 @@ export interface Forms {
   questions_aggregate: Form_Questions_Aggregate;
   /** UI preferences only (theme colors, branding) - NOT business logic. JSONB appropriate here */
   settings: Scalars['jsonb']['output'];
-  /** URL-friendly identifier for public form link (/f/{slug}). Lowercase alphanumeric with hyphens */
-  slug: Scalars['String']['output'];
   /** Form lifecycle status: draft (editing), published (public), archived (hidden) */
   status: Scalars['String']['output'];
   /** An array relationship */
@@ -2513,7 +2511,6 @@ export interface Forms_Bool_Exp {
   questions?: InputMaybe<Form_Questions_Bool_Exp>;
   questions_aggregate?: InputMaybe<Form_Questions_Aggregate_Bool_Exp>;
   settings?: InputMaybe<Jsonb_Comparison_Exp>;
-  slug?: InputMaybe<String_Comparison_Exp>;
   status?: InputMaybe<String_Comparison_Exp>;
   submissions?: InputMaybe<Form_Submissions_Bool_Exp>;
   submissions_aggregate?: InputMaybe<Form_Submissions_Aggregate_Bool_Exp>;
@@ -2525,9 +2522,7 @@ export interface Forms_Bool_Exp {
 /** unique or primary key constraints on table "forms" */
 export const Forms_Constraint = {
   /** unique or primary key constraint on columns "id" */
-  FormsPkey: 'forms_pkey',
-  /** unique or primary key constraint on columns "organization_id", "slug" */
-  FormsSlugPerOrgUnique: 'forms_slug_per_org_unique'
+  FormsPkey: 'forms_pkey'
 } as const;
 
 export type Forms_Constraint = typeof Forms_Constraint[keyof typeof Forms_Constraint];
@@ -2572,8 +2567,6 @@ export interface Forms_Insert_Input {
   questions?: InputMaybe<Form_Questions_Arr_Rel_Insert_Input>;
   /** UI preferences only (theme colors, branding) - NOT business logic. JSONB appropriate here */
   settings?: InputMaybe<Scalars['jsonb']['input']>;
-  /** URL-friendly identifier for public form link (/f/{slug}). Lowercase alphanumeric with hyphens */
-  slug?: InputMaybe<Scalars['String']['input']>;
   /** Form lifecycle status: draft (editing), published (public), archived (hidden) */
   status?: InputMaybe<Scalars['String']['input']>;
   submissions?: InputMaybe<Form_Submissions_Arr_Rel_Insert_Input>;
@@ -2601,8 +2594,6 @@ export interface Forms_Max_Fields {
   product_description?: Maybe<Scalars['String']['output']>;
   /** Name of product being reviewed - used in question templates (e.g., "How did {product} help?") */
   product_name?: Maybe<Scalars['String']['output']>;
-  /** URL-friendly identifier for public form link (/f/{slug}). Lowercase alphanumeric with hyphens */
-  slug?: Maybe<Scalars['String']['output']>;
   /** Form lifecycle status: draft (editing), published (public), archived (hidden) */
   status?: Maybe<Scalars['String']['output']>;
   /** Timestamp of last modification. Auto-updated by trigger */
@@ -2627,8 +2618,6 @@ export interface Forms_Max_Order_By {
   product_description?: InputMaybe<Order_By>;
   /** Name of product being reviewed - used in question templates (e.g., "How did {product} help?") */
   product_name?: InputMaybe<Order_By>;
-  /** URL-friendly identifier for public form link (/f/{slug}). Lowercase alphanumeric with hyphens */
-  slug?: InputMaybe<Order_By>;
   /** Form lifecycle status: draft (editing), published (public), archived (hidden) */
   status?: InputMaybe<Order_By>;
   /** Timestamp of last modification. Auto-updated by trigger */
@@ -2654,8 +2643,6 @@ export interface Forms_Min_Fields {
   product_description?: Maybe<Scalars['String']['output']>;
   /** Name of product being reviewed - used in question templates (e.g., "How did {product} help?") */
   product_name?: Maybe<Scalars['String']['output']>;
-  /** URL-friendly identifier for public form link (/f/{slug}). Lowercase alphanumeric with hyphens */
-  slug?: Maybe<Scalars['String']['output']>;
   /** Form lifecycle status: draft (editing), published (public), archived (hidden) */
   status?: Maybe<Scalars['String']['output']>;
   /** Timestamp of last modification. Auto-updated by trigger */
@@ -2680,8 +2667,6 @@ export interface Forms_Min_Order_By {
   product_description?: InputMaybe<Order_By>;
   /** Name of product being reviewed - used in question templates (e.g., "How did {product} help?") */
   product_name?: InputMaybe<Order_By>;
-  /** URL-friendly identifier for public form link (/f/{slug}). Lowercase alphanumeric with hyphens */
-  slug?: InputMaybe<Order_By>;
   /** Form lifecycle status: draft (editing), published (public), archived (hidden) */
   status?: InputMaybe<Order_By>;
   /** Timestamp of last modification. Auto-updated by trigger */
@@ -2727,7 +2712,6 @@ export interface Forms_Order_By {
   product_name?: InputMaybe<Order_By>;
   questions_aggregate?: InputMaybe<Form_Questions_Aggregate_Order_By>;
   settings?: InputMaybe<Order_By>;
-  slug?: InputMaybe<Order_By>;
   status?: InputMaybe<Order_By>;
   submissions_aggregate?: InputMaybe<Form_Submissions_Aggregate_Order_By>;
   updated_at?: InputMaybe<Order_By>;
@@ -2767,8 +2751,6 @@ export const Forms_Select_Column = {
   ProductName: 'product_name',
   /** column name */
   Settings: 'settings',
-  /** column name */
-  Slug: 'slug',
   /** column name */
   Status: 'status',
   /** column name */
@@ -2812,8 +2794,6 @@ export interface Forms_Set_Input {
   product_name?: InputMaybe<Scalars['String']['input']>;
   /** UI preferences only (theme colors, branding) - NOT business logic. JSONB appropriate here */
   settings?: InputMaybe<Scalars['jsonb']['input']>;
-  /** URL-friendly identifier for public form link (/f/{slug}). Lowercase alphanumeric with hyphens */
-  slug?: InputMaybe<Scalars['String']['input']>;
   /** Form lifecycle status: draft (editing), published (public), archived (hidden) */
   status?: InputMaybe<Scalars['String']['input']>;
   /** Timestamp of last modification. Auto-updated by trigger */
@@ -2850,8 +2830,6 @@ export interface Forms_Stream_Cursor_Value_Input {
   product_name?: InputMaybe<Scalars['String']['input']>;
   /** UI preferences only (theme colors, branding) - NOT business logic. JSONB appropriate here */
   settings?: InputMaybe<Scalars['jsonb']['input']>;
-  /** URL-friendly identifier for public form link (/f/{slug}). Lowercase alphanumeric with hyphens */
-  slug?: InputMaybe<Scalars['String']['input']>;
   /** Form lifecycle status: draft (editing), published (public), archived (hidden) */
   status?: InputMaybe<Scalars['String']['input']>;
   /** Timestamp of last modification. Auto-updated by trigger */
@@ -2880,8 +2858,6 @@ export const Forms_Update_Column = {
   ProductName: 'product_name',
   /** column name */
   Settings: 'settings',
-  /** column name */
-  Slug: 'slug',
   /** column name */
   Status: 'status',
   /** column name */

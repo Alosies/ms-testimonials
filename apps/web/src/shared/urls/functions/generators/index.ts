@@ -14,4 +14,5 @@ export {
   createOrgFormUrl,
   createOrgTestimonialUrl,
   createOrgWidgetUrl,
+  createPublicFormUrl,
 } from './createEntityUrls';

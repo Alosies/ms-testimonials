@@ -38,7 +38,7 @@ declare module 'vue-router/auto-routes' {
     '/auth/callback': RouteRecordInfo<'/auth/callback', '/auth/callback', Record<never, never>, Record<never, never>>,
     '/auth/login': RouteRecordInfo<'/auth/login', '/auth/login', Record<never, never>, Record<never, never>>,
     '/auth/signup': RouteRecordInfo<'/auth/signup', '/auth/signup', Record<never, never>, Record<never, never>>,
-    '/f/[slug]': RouteRecordInfo<'/f/[slug]', '/f/:slug', { slug: ParamValue<true> }, { slug: ParamValue<false> }>,
+    '/f/[urlSlug]': RouteRecordInfo<'/f/[urlSlug]', '/f/:urlSlug', { urlSlug: ParamValue<true> }, { urlSlug: ParamValue<false> }>,
     '/showcase': RouteRecordInfo<'/showcase', '/showcase', Record<never, never>, Record<never, never>>,
     '/w/[id]': RouteRecordInfo<'/w/[id]', '/w/:id', { id: ParamValue<true> }, { id: ParamValue<false> }>,
   }

@@ -1,7 +1,6 @@
 fragment FormBasic on forms {
   id
   name
-  slug
   product_name
   product_description
   settings

@@ -15486,22 +15486,6 @@
             "deprecationReason": null
           },
           {
-            "name": "slug",
-            "description": "URL-friendly identifier for public form link (/f/{slug}). Lowercase alphanumeric with hyphens",
-            "args": [],
-            "type": {
-              "kind": "NON_NULL",
-              "name": null,
-              "ofType": {
-                "kind": "SCALAR",
-                "name": "String",
-                "ofType": null
-              }
-            },
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
             "name": "status",
             "description": "Form lifecycle status: draft (editing), published (public), archived (hidden)",
             "args": [],
@@ -16482,18 +16466,6 @@
             "deprecationReason": null
           },
           {
-            "name": "slug",
-            "description": null,
-            "type": {
-              "kind": "INPUT_OBJECT",
-              "name": "String_comparison_exp",
-              "ofType": null
-            },
-            "defaultValue": null,
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
             "name": "status",
             "description": null,
             "type": {
@@ -16582,12 +16554,6 @@
           {
             "name": "forms_pkey",
             "description": "unique or primary key constraint on columns \"id\"",
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "forms_slug_per_org_unique",
-            "description": "unique or primary key constraint on columns \"organization_id\", \"slug\"",
             "isDeprecated": false,
             "deprecationReason": null
           }
@@ -16826,18 +16792,6 @@
             "deprecationReason": null
           },
           {
-            "name": "slug",
-            "description": "URL-friendly identifier for public form link (/f/{slug}). Lowercase alphanumeric with hyphens",
-            "type": {
-              "kind": "SCALAR",
-              "name": "String",
-              "ofType": null
-            },
-            "defaultValue": null,
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
             "name": "status",
             "description": "Form lifecycle status: draft (editing), published (public), archived (hidden)",
             "type": {
@@ -16993,18 +16947,6 @@
             "deprecationReason": null
           },
           {
-            "name": "slug",
-            "description": "URL-friendly identifier for public form link (/f/{slug}). Lowercase alphanumeric with hyphens",
-            "args": [],
-            "type": {
-              "kind": "SCALAR",
-              "name": "String",
-              "ofType": null
-            },
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
             "name": "status",
             "description": "Form lifecycle status: draft (editing), published (public), archived (hidden)",
             "args": [],
@@ -17128,18 +17070,6 @@
           {
             "name": "product_name",
             "description": "Name of product being reviewed - used in question templates (e.g., \"How did {product} help?\")",
-            "type": {
-              "kind": "ENUM",
-              "name": "order_by",
-              "ofType": null
-            },
-            "defaultValue": null,
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "slug",
-            "description": "URL-friendly identifier for public form link (/f/{slug}). Lowercase alphanumeric with hyphens",
             "type": {
               "kind": "ENUM",
               "name": "order_by",
@@ -17281,18 +17211,6 @@
             "deprecationReason": null
           },
           {
-            "name": "slug",
-            "description": "URL-friendly identifier for public form link (/f/{slug}). Lowercase alphanumeric with hyphens",
-            "args": [],
-            "type": {
-              "kind": "SCALAR",
-              "name": "String",
-              "ofType": null
-            },
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
             "name": "status",
             "description": "Form lifecycle status: draft (editing), published (public), archived (hidden)",
             "args": [],
@@ -17416,18 +17334,6 @@
           {
             "name": "product_name",
             "description": "Name of product being reviewed - used in question templates (e.g., \"How did {product} help?\")",
-            "type": {
-              "kind": "ENUM",
-              "name": "order_by",
-              "ofType": null
-            },
-            "defaultValue": null,
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "slug",
-            "description": "URL-friendly identifier for public form link (/f/{slug}). Lowercase alphanumeric with hyphens",
             "type": {
               "kind": "ENUM",
               "name": "order_by",
@@ -17786,18 +17692,6 @@
             "deprecationReason": null
           },
           {
-            "name": "slug",
-            "description": null,
-            "type": {
-              "kind": "ENUM",
-              "name": "order_by",
-              "ofType": null
-            },
-            "defaultValue": null,
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
             "name": "status",
             "description": null,
             "type": {
@@ -17978,12 +17872,6 @@
             "deprecationReason": null
           },
           {
-            "name": "slug",
-            "description": "column name",
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
             "name": "status",
             "description": "column name",
             "isDeprecated": false,
@@ -18149,18 +18037,6 @@
             "type": {
               "kind": "SCALAR",
               "name": "jsonb",
-              "ofType": null
-            },
-            "defaultValue": null,
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "slug",
-            "description": "URL-friendly identifier for public form link (/f/{slug}). Lowercase alphanumeric with hyphens",
-            "type": {
-              "kind": "SCALAR",
-              "name": "String",
               "ofType": null
             },
             "defaultValue": null,
@@ -18364,18 +18240,6 @@
             "deprecationReason": null
           },
           {
-            "name": "slug",
-            "description": "URL-friendly identifier for public form link (/f/{slug}). Lowercase alphanumeric with hyphens",
-            "type": {
-              "kind": "SCALAR",
-              "name": "String",
-              "ofType": null
-            },
-            "defaultValue": null,
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
             "name": "status",
             "description": "Form lifecycle status: draft (editing), published (public), archived (hidden)",
             "type": {
@@ -18475,12 +18339,6 @@
           },
           {
             "name": "settings",
-            "description": "column name",
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "slug",
             "description": "column name",
             "isDeprecated": false,
             "deprecationReason": null

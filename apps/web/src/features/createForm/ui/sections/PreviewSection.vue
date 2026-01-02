@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue';
 import { Button, Input } from '@testimonials/ui';
 import { Icon } from '@testimonials/icons';
+import { createPublicFormUrl } from '@/shared/urls';
 import FormSectionHeader from '../FormSectionHeader.vue';
 import FormPreview from '../formPreview/FormPreview.vue';
 import type { FormData, QuestionData } from '../../models';
@@ -31,12 +32,10 @@ const sectionStatus = computed<SectionStatus>(() => {
 });
 
 const formLink = computed(() => {
+  if (!props.formId) return '';
   const baseUrl = window.location.origin;
-  const slug = props.formData.product_name
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)/g, '');
-  return `${baseUrl}/f/${slug}`;
+  const path = createPublicFormUrl(props.formData.name, props.formId);
+  return `${baseUrl}${path}`;
 });
 
 function handleToggle() {

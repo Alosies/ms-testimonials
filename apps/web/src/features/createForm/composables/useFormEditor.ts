@@ -70,7 +70,6 @@ export function useFormEditor(options: UseFormEditorOptions = {}) {
     formData.product_name = form.product_name || '';
     formData.product_description = form.product_description || '';
     formData.name = form.name || '';
-    formData.slug = form.slug || '';
 
     // Set the form ID
     wizard.setFormId(form.id);

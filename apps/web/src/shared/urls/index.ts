@@ -39,6 +39,7 @@ export {
   createOrgFormUrl,
   createOrgTestimonialUrl,
   createOrgWidgetUrl,
+  createPublicFormUrl,
 } from './functions';
 
 // Types and models

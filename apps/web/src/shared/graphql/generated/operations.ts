@@ -2354,8 +2354,6 @@ export type Forms = {
   questions_aggregate: Form_Questions_Aggregate;
   /** UI preferences only (theme colors, branding) - NOT business logic. JSONB appropriate here */
   settings: Scalars['jsonb']['output'];
-  /** URL-friendly identifier for public form link (/f/{slug}). Lowercase alphanumeric with hyphens */
-  slug: Scalars['String']['output'];
   /** Form lifecycle status: draft (editing), published (public), archived (hidden) */
   status: Scalars['String']['output'];
   /** An array relationship */
@@ -2503,7 +2501,6 @@ export type Forms_Bool_Exp = {
   questions?: InputMaybe<Form_Questions_Bool_Exp>;
   questions_aggregate?: InputMaybe<Form_Questions_Aggregate_Bool_Exp>;
   settings?: InputMaybe<Jsonb_Comparison_Exp>;
-  slug?: InputMaybe<String_Comparison_Exp>;
   status?: InputMaybe<String_Comparison_Exp>;
   submissions?: InputMaybe<Form_Submissions_Bool_Exp>;
   submissions_aggregate?: InputMaybe<Form_Submissions_Aggregate_Bool_Exp>;
@@ -2515,9 +2512,7 @@ export type Forms_Bool_Exp = {
 /** unique or primary key constraints on table "forms" */
 export enum Forms_Constraint {
   /** unique or primary key constraint on columns "id" */
-  FormsPkey = 'forms_pkey',
-  /** unique or primary key constraint on columns "organization_id", "slug" */
-  FormsSlugPerOrgUnique = 'forms_slug_per_org_unique'
+  FormsPkey = 'forms_pkey'
 }
 
 /** delete the field or element with specified path (for JSON arrays, negative integers count from the end) */
@@ -2561,8 +2556,6 @@ export type Forms_Insert_Input = {
   questions?: InputMaybe<Form_Questions_Arr_Rel_Insert_Input>;
   /** UI preferences only (theme colors, branding) - NOT business logic. JSONB appropriate here */
   settings?: InputMaybe<Scalars['jsonb']['input']>;
-  /** URL-friendly identifier for public form link (/f/{slug}). Lowercase alphanumeric with hyphens */
-  slug?: InputMaybe<Scalars['String']['input']>;
   /** Form lifecycle status: draft (editing), published (public), archived (hidden) */
   status?: InputMaybe<Scalars['String']['input']>;
   submissions?: InputMaybe<Form_Submissions_Arr_Rel_Insert_Input>;
@@ -2590,8 +2583,6 @@ export type Forms_Max_Fields = {
   product_description?: Maybe<Scalars['String']['output']>;
   /** Name of product being reviewed - used in question templates (e.g., "How did {product} help?") */
   product_name?: Maybe<Scalars['String']['output']>;
-  /** URL-friendly identifier for public form link (/f/{slug}). Lowercase alphanumeric with hyphens */
-  slug?: Maybe<Scalars['String']['output']>;
   /** Form lifecycle status: draft (editing), published (public), archived (hidden) */
   status?: Maybe<Scalars['String']['output']>;
   /** Timestamp of last modification. Auto-updated by trigger */
@@ -2616,8 +2607,6 @@ export type Forms_Max_Order_By = {
   product_description?: InputMaybe<Order_By>;
   /** Name of product being reviewed - used in question templates (e.g., "How did {product} help?") */
   product_name?: InputMaybe<Order_By>;
-  /** URL-friendly identifier for public form link (/f/{slug}). Lowercase alphanumeric with hyphens */
-  slug?: InputMaybe<Order_By>;
   /** Form lifecycle status: draft (editing), published (public), archived (hidden) */
   status?: InputMaybe<Order_By>;
   /** Timestamp of last modification. Auto-updated by trigger */
@@ -2643,8 +2632,6 @@ export type Forms_Min_Fields = {
   product_description?: Maybe<Scalars['String']['output']>;
   /** Name of product being reviewed - used in question templates (e.g., "How did {product} help?") */
   product_name?: Maybe<Scalars['String']['output']>;
-  /** URL-friendly identifier for public form link (/f/{slug}). Lowercase alphanumeric with hyphens */
-  slug?: Maybe<Scalars['String']['output']>;
   /** Form lifecycle status: draft (editing), published (public), archived (hidden) */
   status?: Maybe<Scalars['String']['output']>;
   /** Timestamp of last modification. Auto-updated by trigger */
@@ -2669,8 +2656,6 @@ export type Forms_Min_Order_By = {
   product_description?: InputMaybe<Order_By>;
   /** Name of product being reviewed - used in question templates (e.g., "How did {product} help?") */
   product_name?: InputMaybe<Order_By>;
-  /** URL-friendly identifier for public form link (/f/{slug}). Lowercase alphanumeric with hyphens */
-  slug?: InputMaybe<Order_By>;
   /** Form lifecycle status: draft (editing), published (public), archived (hidden) */
   status?: InputMaybe<Order_By>;
   /** Timestamp of last modification. Auto-updated by trigger */
@@ -2716,7 +2701,6 @@ export type Forms_Order_By = {
   product_name?: InputMaybe<Order_By>;
   questions_aggregate?: InputMaybe<Form_Questions_Aggregate_Order_By>;
   settings?: InputMaybe<Order_By>;
-  slug?: InputMaybe<Order_By>;
   status?: InputMaybe<Order_By>;
   submissions_aggregate?: InputMaybe<Form_Submissions_Aggregate_Order_By>;
   updated_at?: InputMaybe<Order_By>;
@@ -2757,8 +2741,6 @@ export enum Forms_Select_Column {
   /** column name */
   Settings = 'settings',
   /** column name */
-  Slug = 'slug',
-  /** column name */
   Status = 'status',
   /** column name */
   UpdatedAt = 'updated_at',
@@ -2798,8 +2780,6 @@ export type Forms_Set_Input = {
   product_name?: InputMaybe<Scalars['String']['input']>;
   /** UI preferences only (theme colors, branding) - NOT business logic. JSONB appropriate here */
   settings?: InputMaybe<Scalars['jsonb']['input']>;
-  /** URL-friendly identifier for public form link (/f/{slug}). Lowercase alphanumeric with hyphens */
-  slug?: InputMaybe<Scalars['String']['input']>;
   /** Form lifecycle status: draft (editing), published (public), archived (hidden) */
   status?: InputMaybe<Scalars['String']['input']>;
   /** Timestamp of last modification. Auto-updated by trigger */
@@ -2836,8 +2816,6 @@ export type Forms_Stream_Cursor_Value_Input = {
   product_name?: InputMaybe<Scalars['String']['input']>;
   /** UI preferences only (theme colors, branding) - NOT business logic. JSONB appropriate here */
   settings?: InputMaybe<Scalars['jsonb']['input']>;
-  /** URL-friendly identifier for public form link (/f/{slug}). Lowercase alphanumeric with hyphens */
-  slug?: InputMaybe<Scalars['String']['input']>;
   /** Form lifecycle status: draft (editing), published (public), archived (hidden) */
   status?: InputMaybe<Scalars['String']['input']>;
   /** Timestamp of last modification. Auto-updated by trigger */
@@ -2866,8 +2844,6 @@ export enum Forms_Update_Column {
   ProductName = 'product_name',
   /** column name */
   Settings = 'settings',
-  /** column name */
-  Slug = 'slug',
   /** column name */
   Status = 'status',
   /** column name */
@@ -13137,14 +13113,14 @@ export type Widgets_Variance_Order_By = {
   max_display?: InputMaybe<Order_By>;
 };
 
-export type FormBasicFragment = { __typename?: 'forms', id: string, name: string, slug: string, product_name: string, product_description?: string | null, settings: any, status: string, is_active: boolean, organization_id: string, created_by: string, created_at: string, updated_at: string };
+export type FormBasicFragment = { __typename?: 'forms', id: string, name: string, product_name: string, product_description?: string | null, settings: any, status: string, is_active: boolean, organization_id: string, created_by: string, created_at: string, updated_at: string };
 
 export type CreateFormMutationVariables = Exact<{
   form: Forms_Insert_Input;
 }>;
 
 
-export type CreateFormMutation = { __typename?: 'mutation_root', insert_forms_one?: { __typename?: 'forms', id: string, name: string, slug: string, product_name: string, organization_id: string, created_at: string } | null };
+export type CreateFormMutation = { __typename?: 'mutation_root', insert_forms_one?: { __typename?: 'forms', id: string, name: string, product_name: string, organization_id: string, created_at: string } | null };
 
 export type DeleteFormMutationVariables = Exact<{
   id: Scalars['String']['input'];
@@ -13166,7 +13142,7 @@ export type UpdateFormMutationVariables = Exact<{
 }>;
 
 
-export type UpdateFormMutation = { __typename?: 'mutation_root', update_forms_by_pk?: { __typename?: 'forms', id: string, name: string, slug: string, product_name: string, product_description?: string | null, settings: any, is_active: boolean, updated_at: string } | null };
+export type UpdateFormMutation = { __typename?: 'mutation_root', update_forms_by_pk?: { __typename?: 'forms', id: string, name: string, product_name: string, product_description?: string | null, settings: any, is_active: boolean, updated_at: string } | null };
 
 export type UpdateFormAutoSaveMutationVariables = Exact<{
   id: Scalars['String']['input'];
@@ -13181,14 +13157,14 @@ export type GetFormQueryVariables = Exact<{
 }>;
 
 
-export type GetFormQuery = { __typename?: 'query_root', forms_by_pk?: { __typename?: 'forms', id: string, name: string, slug: string, product_name: string, product_description?: string | null, settings: any, status: string, is_active: boolean, organization_id: string, created_by: string, created_at: string, updated_at: string } | null };
+export type GetFormQuery = { __typename?: 'query_root', forms_by_pk?: { __typename?: 'forms', id: string, name: string, product_name: string, product_description?: string | null, settings: any, status: string, is_active: boolean, organization_id: string, created_by: string, created_at: string, updated_at: string } | null };
 
 export type GetFormsQueryVariables = Exact<{
   organizationId: Scalars['String']['input'];
 }>;
 
 
-export type GetFormsQuery = { __typename?: 'query_root', forms: Array<{ __typename?: 'forms', id: string, name: string, slug: string, product_name: string, product_description?: string | null, settings: any, status: string, is_active: boolean, organization_id: string, created_by: string, created_at: string, updated_at: string }> };
+export type GetFormsQuery = { __typename?: 'query_root', forms: Array<{ __typename?: 'forms', id: string, name: string, product_name: string, product_description?: string | null, settings: any, status: string, is_active: boolean, organization_id: string, created_by: string, created_at: string, updated_at: string }> };
 
 export type FormQuestionBasicFragment = { __typename?: 'form_questions', id: string, form_id: string, organization_id: string, question_type_id: string, question_key: string, question_text: string, placeholder?: string | null, help_text?: string | null, display_order: number, is_required: boolean, min_length?: number | null, max_length?: number | null, min_value?: number | null, max_value?: number | null, validation_pattern?: string | null, allowed_file_types?: Array<string> | null, max_file_size_kb?: number | null, is_active: boolean, created_at: string, updated_at: string, question_type: { __typename?: 'question_types', id: string, unique_name: string, name: string, category: string, input_component: string } };
 
@@ -13363,7 +13339,6 @@ export const FormBasicFragmentDoc = gql`
     fragment FormBasic on forms {
   id
   name
-  slug
   product_name
   product_description
   settings
@@ -13546,7 +13521,6 @@ export const CreateFormDocument = gql`
   insert_forms_one(object: $form) {
     id
     name
-    slug
     product_name
     organization_id
     created_at
@@ -13641,7 +13615,6 @@ export const UpdateFormDocument = gql`
   update_forms_by_pk(pk_columns: {id: $id}, _set: $changes) {
     id
     name
-    slug
     product_name
     product_description
     settings

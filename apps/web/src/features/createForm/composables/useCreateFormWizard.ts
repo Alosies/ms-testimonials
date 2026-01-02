@@ -10,7 +10,6 @@ export function useCreateFormWizard() {
   // Form data
   const formData = reactive<FormData>({
     name: '',
-    slug: '',
     product_name: '',
     product_description: '',
     focus_areas: '',

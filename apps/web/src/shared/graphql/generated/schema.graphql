@@ -2863,10 +2863,6 @@ type forms {
     path: String
   ): jsonb!
   """
-  URL-friendly identifier for public form link (/f/{slug}). Lowercase alphanumeric with hyphens
-  """
-  slug: String!
-  """
   Form lifecycle status: draft (editing), published (public), archived (hidden)
   """
   status: String!
@@ -2994,7 +2990,6 @@ input forms_bool_exp {
   questions: form_questions_bool_exp
   questions_aggregate: form_questions_aggregate_bool_exp
   settings: jsonb_comparison_exp
-  slug: String_comparison_exp
   status: String_comparison_exp
   submissions: form_submissions_bool_exp
   submissions_aggregate: form_submissions_aggregate_bool_exp
@@ -3011,10 +3006,6 @@ enum forms_constraint {
   unique or primary key constraint on columns "id"
   """
   forms_pkey
-  """
-  unique or primary key constraint on columns "organization_id", "slug"
-  """
-  forms_slug_per_org_unique
 }
 
 """
@@ -3079,10 +3070,6 @@ input forms_insert_input {
   """
   settings: jsonb
   """
-  URL-friendly identifier for public form link (/f/{slug}). Lowercase alphanumeric with hyphens
-  """
-  slug: String
-  """
   Form lifecycle status: draft (editing), published (public), archived (hidden)
   """
   status: String
@@ -3114,10 +3101,6 @@ type forms_max_fields {
   Name of product being reviewed - used in question templates (e.g., "How did {product} help?")
   """
   product_name: String
-  """
-  URL-friendly identifier for public form link (/f/{slug}). Lowercase alphanumeric with hyphens
-  """
-  slug: String
   """
   Form lifecycle status: draft (editing), published (public), archived (hidden)
   """
@@ -3151,10 +3134,6 @@ input forms_max_order_by {
   """
   product_name: order_by
   """
-  URL-friendly identifier for public form link (/f/{slug}). Lowercase alphanumeric with hyphens
-  """
-  slug: order_by
-  """
   Form lifecycle status: draft (editing), published (public), archived (hidden)
   """
   status: order_by
@@ -3184,10 +3163,6 @@ type forms_min_fields {
   Name of product being reviewed - used in question templates (e.g., "How did {product} help?")
   """
   product_name: String
-  """
-  URL-friendly identifier for public form link (/f/{slug}). Lowercase alphanumeric with hyphens
-  """
-  slug: String
   """
   Form lifecycle status: draft (editing), published (public), archived (hidden)
   """
@@ -3220,10 +3195,6 @@ input forms_min_order_by {
   Name of product being reviewed - used in question templates (e.g., "How did {product} help?")
   """
   product_name: order_by
-  """
-  URL-friendly identifier for public form link (/f/{slug}). Lowercase alphanumeric with hyphens
-  """
-  slug: order_by
   """
   Form lifecycle status: draft (editing), published (public), archived (hidden)
   """
@@ -3276,7 +3247,6 @@ input forms_order_by {
   product_name: order_by
   questions_aggregate: form_questions_aggregate_order_by
   settings: order_by
-  slug: order_by
   status: order_by
   submissions_aggregate: form_submissions_aggregate_order_by
   updated_at: order_by
@@ -3320,8 +3290,6 @@ enum forms_select_column {
   product_name
   """column name"""
   settings
-  """column name"""
-  slug
   """column name"""
   status
   """column name"""
@@ -3375,10 +3343,6 @@ input forms_set_input {
   """
   settings: jsonb
   """
-  URL-friendly identifier for public form link (/f/{slug}). Lowercase alphanumeric with hyphens
-  """
-  slug: String
-  """
   Form lifecycle status: draft (editing), published (public), archived (hidden)
   """
   status: String
@@ -3425,10 +3389,6 @@ input forms_stream_cursor_value_input {
   """
   settings: jsonb
   """
-  URL-friendly identifier for public form link (/f/{slug}). Lowercase alphanumeric with hyphens
-  """
-  slug: String
-  """
   Form lifecycle status: draft (editing), published (public), archived (hidden)
   """
   status: String
@@ -3460,8 +3420,6 @@ enum forms_update_column {
   product_name
   """column name"""
   settings
-  """column name"""
-  slug
   """column name"""
   status
   """column name"""

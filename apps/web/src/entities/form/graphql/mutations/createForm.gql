@@ -2,7 +2,6 @@ mutation CreateForm($form: forms_insert_input!) {
   insert_forms_one(object: $form) {
     id
     name
-    slug
     product_name
     organization_id
     created_at

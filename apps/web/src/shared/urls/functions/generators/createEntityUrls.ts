@@ -92,3 +92,17 @@ export function createOrgTestimonialUrl(
 export function createOrgWidgetUrl(orgSlug: string, name: string, widgetId: string): string {
   return createOrgEntityUrl(orgSlug, 'widget', name, widgetId);
 }
+
+/**
+ * Creates a public form URL path for customer-facing testimonial collection.
+ * Uses the /f/{name}_{id} pattern per ADR-005.
+ *
+ * @param name - The form name (used for SEO-friendly URL segment).
+ *               If empty/whitespace, defaults to 'form' to ensure valid URL.
+ * @param formId - The form ID (12-char NanoID)
+ * @returns Public form URL path (e.g., "/f/product-feedback_xK9mP2qR4tYn")
+ */
+export function createPublicFormUrl(name: string, formId: string): string {
+  const urlSlug = createEntityUrlSlug(name || 'form', formId);
+  return `/f/${urlSlug}`;
+}

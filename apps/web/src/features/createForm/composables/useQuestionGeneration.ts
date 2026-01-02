@@ -3,7 +3,6 @@ import { useApiForAI, getErrorMessage } from '@/shared/api';
 import { useCreateForm } from '@/entities/form';
 import { useCreateFormQuestions, useDeactivateFormQuestions } from '@/entities/formQuestion';
 import { useCurrentContextStore } from '@/shared/currentContext';
-import { createSlugFromString } from '@/shared/urls';
 import { useQuestionSave } from './useQuestionSave';
 import type { AIContext, AIQuestion } from '@/shared/api';
 import type { FormData, QuestionData } from '../models';
@@ -143,11 +142,9 @@ export function useQuestionGeneration(options: UseQuestionGenerationOptions) {
 
       // Create the form if not already created
       if (!formIdToUse) {
-        const slug = createSlugFromString(formData.product_name);
         const formResult = await createForm({
           form: {
             name: formData.product_name,
-            slug,
             product_name: formData.product_name,
             product_description: formData.product_description,
             organization_id: currentOrganizationId.value,
