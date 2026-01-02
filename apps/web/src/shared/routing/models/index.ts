@@ -46,8 +46,10 @@ export interface RoutingUtilities {
   // Path getters (computed refs - organization-scoped)
   dashboardPath: ComputedRef<string>
   formsPath: ComputedRef<string>
+  newFormPath: ComputedRef<string>
   testimonialsPath: ComputedRef<string>
   widgetsPath: ComputedRef<string>
+  newWidgetPath: ComputedRef<string>
   settingsPath: ComputedRef<string>
 
   // Dynamic path getters (using slug_id pattern)

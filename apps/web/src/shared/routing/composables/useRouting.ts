@@ -62,8 +62,10 @@ function useRoutingCore(): RoutingUtilities {
 
   const dashboardPath = computed(() => withOrgPrefix('/dashboard'))
   const formsPath = computed(() => withOrgPrefix('/forms'))
+  const newFormPath = computed(() => withOrgPrefix('/forms/creating'))
   const testimonialsPath = computed(() => withOrgPrefix('/testimonials'))
   const widgetsPath = computed(() => withOrgPrefix('/widgets'))
+  const newWidgetPath = computed(() => withOrgPrefix('/widgets/new'))
   const settingsPath = computed(() => withOrgPrefix('/settings'))
 
   // ============================================
@@ -121,7 +123,7 @@ function useRoutingCore(): RoutingUtilities {
 
   // Forms
   const goToForms = () => navigate(formsPath.value)
-  const goToNewForm = () => navigate(withOrgPrefix('/forms/creating'))
+  const goToNewForm = () => navigate(newFormPath.value)
   const goToForm = (form: FormRef, options?: NavigationOptions) =>
     navigate(getFormPath(form), options)
   const goToFormResponses = (form: FormRef, options?: NavigationOptions) =>
@@ -138,7 +140,7 @@ function useRoutingCore(): RoutingUtilities {
 
   // Widgets
   const goToWidgets = () => navigate(widgetsPath.value)
-  const goToNewWidget = () => navigate(withOrgPrefix('/widgets/new'))
+  const goToNewWidget = () => navigate(newWidgetPath.value)
   const goToWidget = (widget: WidgetRef, options?: NavigationOptions) =>
     navigate(getWidgetPath(widget), options)
 
@@ -157,8 +159,10 @@ function useRoutingCore(): RoutingUtilities {
     // Path getters
     dashboardPath,
     formsPath,
+    newFormPath,
     testimonialsPath,
     widgetsPath,
+    newWidgetPath,
     settingsPath,
 
     // Dynamic path getters
