@@ -40,6 +40,9 @@ DEV_BRANCH="dev"
 # Track dirty worktrees (space-separated list for bash 3.2 compatibility)
 DIRTY_WORKTREES=""
 
+# Track stashed worktrees (to know which ones need stash pop)
+STASHED_WORKTREES=""
+
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -57,6 +60,58 @@ is_dirty() {
 mark_dirty() {
   local wt="$1"
   DIRTY_WORKTREES="$DIRTY_WORKTREES $wt"
+}
+
+is_stashed() {
+  local wt="$1"
+  echo "$STASHED_WORKTREES" | grep -q "$wt"
+}
+
+mark_stashed() {
+  local wt="$1"
+  STASHED_WORKTREES="$STASHED_WORKTREES $wt"
+}
+
+# Stash changes in a worktree, returns 0 if stash was created, 1 if nothing to stash
+stash_changes() {
+  local wt="$1"
+  local branch="$2"
+
+  # Check if there are changes to stash
+  if git -C "$wt" diff --quiet && git -C "$wt" diff --cached --quiet; then
+    return 1  # Nothing to stash
+  fi
+
+  log_info "Stashing uncommitted changes in $branch..."
+  if git -C "$wt" stash push -m "sync-worktrees: auto-stash before rebase"; then
+    mark_stashed "$wt"
+    log_success "Changes stashed"
+    return 0
+  else
+    log_error "Failed to stash changes"
+    return 2
+  fi
+}
+
+# Pop stashed changes, returns 0 on success, 1 if conflicts
+pop_stash() {
+  local wt="$1"
+  local branch="$2"
+
+  if ! is_stashed "$wt"; then
+    return 0  # Nothing was stashed
+  fi
+
+  log_info "Restoring stashed changes in $branch..."
+  if git -C "$wt" stash pop; then
+    log_success "Stashed changes restored"
+    return 0
+  else
+    log_warning "Stash pop had conflicts - changes are partially applied"
+    log_warning "Resolve conflicts in $wt manually"
+    log_detail "Your stashed changes are still in the stash list if needed: git stash list"
+    return 1
+  fi
 }
 
 log_header() {
@@ -196,7 +251,7 @@ for wt in "${WORKTREES[@]}"; do
   if [ -d "$wt" ]; then
     BRANCH=$(git -C "$wt" rev-parse --abbrev-ref HEAD)
     if ! git -C "$wt" diff --quiet || ! git -C "$wt" diff --cached --quiet; then
-      log_warning "$BRANCH has uncommitted changes (will skip rebase, but include commits)"
+      log_warning "$BRANCH has uncommitted changes (will stash before rebase)"
       mark_dirty "$wt"
       git -C "$wt" status --short | head -5 | while read -r line; do
         log_detail "$line"
@@ -219,7 +274,7 @@ for wt in "${WORKTREES[@]}"; do
     BRANCH=$(git -C "$wt" rev-parse --abbrev-ref HEAD)
     SHA=$(git -C "$wt" rev-parse --short HEAD)
     if is_dirty "$wt"; then
-      log_warning "$BRANCH: $SHA (dirty - rebase will be skipped)"
+      log_warning "$BRANCH: $SHA (dirty - will stash before rebase)"
     else
       log_info "$BRANCH: $SHA"
     fi
@@ -248,7 +303,7 @@ for wt in "${WORKTREES[@]}"; do
   log_info "Dev SHA:    $DEV_SHA_BEFORE"
 
   if is_dirty "$wt"; then
-    log_warning "Worktree has uncommitted changes - skipping rebase"
+    log_warning "Worktree has uncommitted changes - will stash before rebase"
   fi
 
   # Check if branch has commits ahead of dev
@@ -261,8 +316,13 @@ for wt in "${WORKTREES[@]}"; do
   if [ "$AHEAD" = "0" ]; then
     log_warning "No new commits to sync"
 
-    # If clean and behind, still rebase to catch up
-    if ! is_dirty "$wt" && [ "$BEHIND" != "0" ]; then
+    # If behind, rebase to catch up (stash first if dirty)
+    if [ "$BEHIND" != "0" ]; then
+      # Stash if dirty
+      if is_dirty "$wt"; then
+        stash_changes "$wt" "$BRANCH"
+      fi
+
       log_section "Rebasing $BRANCH to catch up with dev"
       log_info "Running: git rebase $DEV_BRANCH"
       echo ""
@@ -273,8 +333,16 @@ for wt in "${WORKTREES[@]}"; do
         log_success "Rebase successful - branch is now up to date"
         log_detail "Before: $BRANCH_SHA_BEFORE"
         log_detail "After:  $BRANCH_SHA_AFTER"
+
+        # Pop stash if we stashed
+        pop_stash "$wt" "$BRANCH"
       else
         log_error "Rebase failed! Resolve conflicts in $wt, then re-run this script"
+        if is_stashed "$wt"; then
+          log_warning "Your stashed changes are still saved. After resolving:"
+          log_detail "1. Complete the rebase: git rebase --continue (or --abort)"
+          log_detail "2. Restore your changes: git stash pop"
+        fi
         exit 1
       fi
     fi
@@ -287,67 +355,58 @@ for wt in "${WORKTREES[@]}"; do
     log_commit "$line"
   done
 
-  # Handle differently based on dirty status
+  # Handle dirty worktrees by stashing first, then normal rebase flow
   if is_dirty "$wt"; then
-    # Dirty worktree: try to fast-forward dev to branch (if possible)
-    # This only works if dev is an ancestor of branch
-    log_section "Attempting to fast-forward $DEV_BRANCH to $BRANCH (no rebase)"
-    log_info "Running: git merge $BRANCH --ff-only"
-    echo ""
+    # Stash uncommitted changes before rebase
+    stash_changes "$wt" "$BRANCH"
+  fi
 
-    if git -C "$MAIN_WORKTREE" merge "$BRANCH" --ff-only; then
-      DEV_SHA_AFTER=$(git -C "$MAIN_WORKTREE" rev-parse --short "$DEV_BRANCH")
-      echo ""
-      log_success "Fast-forward successful"
-      log_detail "Dev before: $DEV_SHA_BEFORE"
-      log_detail "Dev after:  $DEV_SHA_AFTER"
-      log_warning "Note: $BRANCH was not rebased (has uncommitted changes)"
-      log_warning "      It may fall behind as other branches are processed"
-    else
-      echo ""
-      log_warning "Cannot fast-forward (branches have diverged)"
-      log_warning "Skipping $BRANCH entirely - commit your changes and re-run to include"
-      log_detail "The branch has commits not in dev, but dev also has commits not in branch"
-      log_detail "A rebase is required, which cannot be done with uncommitted changes"
-    fi
+  # Rebase branch onto dev
+  log_section "Rebasing $BRANCH onto $DEV_BRANCH"
+  log_info "Running: git rebase $DEV_BRANCH"
+  echo ""
+
+  if git -C "$wt" rebase "$DEV_BRANCH"; then
+    BRANCH_SHA_AFTER=$(git -C "$wt" rev-parse --short HEAD)
+    echo ""
+    log_success "Rebase successful"
+    log_detail "Before: $BRANCH_SHA_BEFORE"
+    log_detail "After:  $BRANCH_SHA_AFTER"
   else
-    # Clean worktree: normal rebase + fast-forward flow
-    log_section "Rebasing $BRANCH onto $DEV_BRANCH"
-    log_info "Running: git rebase $DEV_BRANCH"
-    echo ""
-
-    if git -C "$wt" rebase "$DEV_BRANCH"; then
-      BRANCH_SHA_AFTER=$(git -C "$wt" rev-parse --short HEAD)
-      echo ""
-      log_success "Rebase successful"
-      log_detail "Before: $BRANCH_SHA_BEFORE"
-      log_detail "After:  $BRANCH_SHA_AFTER"
-    else
-      log_error "Rebase failed! Resolve conflicts in $wt, then re-run this script"
-      exit 1
+    log_error "Rebase failed! Resolve conflicts in $wt, then re-run this script"
+    if is_stashed "$wt"; then
+      log_warning "Your stashed changes are still saved. After resolving:"
+      log_detail "1. Complete the rebase: git rebase --continue (or --abort)"
+      log_detail "2. Restore your changes: git stash pop"
     fi
+    exit 1
+  fi
 
-    # Fast-forward dev to the rebased branch
-    log_section "Fast-forwarding $DEV_BRANCH to $BRANCH"
-    log_info "Running: git merge $BRANCH --ff-only"
+  # Fast-forward dev to the rebased branch
+  log_section "Fast-forwarding $DEV_BRANCH to $BRANCH"
+  log_info "Running: git merge $BRANCH --ff-only"
+  echo ""
+
+  if git -C "$MAIN_WORKTREE" merge "$BRANCH" --ff-only; then
+    DEV_SHA_AFTER=$(git -C "$MAIN_WORKTREE" rev-parse --short "$DEV_BRANCH")
     echo ""
+    log_success "Fast-forward successful"
+    log_detail "Dev before: $DEV_SHA_BEFORE"
+    log_detail "Dev after:  $DEV_SHA_AFTER"
+  else
+    log_error "Fast-forward failed! This shouldn't happen after a successful rebase."
+    exit 1
+  fi
 
-    if git -C "$MAIN_WORKTREE" merge "$BRANCH" --ff-only; then
-      DEV_SHA_AFTER=$(git -C "$MAIN_WORKTREE" rev-parse --short "$DEV_BRANCH")
-      echo ""
-      log_success "Fast-forward successful"
-      log_detail "Dev before: $DEV_SHA_BEFORE"
-      log_detail "Dev after:  $DEV_SHA_AFTER"
-    else
-      log_error "Fast-forward failed! This shouldn't happen after a successful rebase."
-      exit 1
-    fi
+  # Pop stash if we stashed earlier
+  if is_dirty "$wt"; then
+    pop_stash "$wt" "$BRANCH"
   fi
 
   log_success "Completed processing $BRANCH"
 done
 
-# Second pass: catch up any clean worktrees that fell behind
+# Second pass: catch up any worktrees that fell behind
 log_header "Second Pass: Catching Up"
 DEV_SHA_CURRENT=$(git -C "$MAIN_WORKTREE" rev-parse --short "$DEV_BRANCH")
 
@@ -365,16 +424,14 @@ for wt in "${WORKTREES[@]}"; do
     continue
   fi
 
-  # Skip dirty worktrees
-  if is_dirty "$wt"; then
-    BEHIND=$(git -C "$MAIN_WORKTREE" rev-list --count "$BRANCH".."$DEV_BRANCH" 2>/dev/null || echo "0")
-    log_warning "$BRANCH is dirty, skipping ($BEHIND commits behind dev)"
-    continue
-  fi
-
-  # Rebase clean worktrees that are behind
+  # Rebase worktrees that are behind (stash first if dirty)
   BEHIND=$(git -C "$MAIN_WORKTREE" rev-list --count "$BRANCH".."$DEV_BRANCH" 2>/dev/null || echo "0")
   if [ "$BEHIND" != "0" ]; then
+    # Stash if dirty
+    if is_dirty "$wt"; then
+      stash_changes "$wt" "$BRANCH"
+    fi
+
     log_section "Rebasing $BRANCH to catch up ($BEHIND commits behind)"
     log_info "Running: git rebase $DEV_BRANCH"
     echo ""
@@ -385,8 +442,18 @@ for wt in "${WORKTREES[@]}"; do
       log_success "Rebase successful"
       log_detail "Before: $BRANCH_SHA"
       log_detail "After:  $BRANCH_SHA_AFTER"
+
+      # Pop stash if we stashed
+      if is_dirty "$wt"; then
+        pop_stash "$wt" "$BRANCH"
+      fi
     else
       log_error "Rebase failed! Resolve conflicts in $wt, then re-run this script"
+      if is_stashed "$wt"; then
+        log_warning "Your stashed changes are still saved. After resolving:"
+        log_detail "1. Complete the rebase: git rebase --continue (or --abort)"
+        log_detail "2. Restore your changes: git stash pop"
+      fi
       exit 1
     fi
   fi
@@ -407,12 +474,18 @@ for wt in "${WORKTREES[@]}"; do
     SHA=$(git -C "$wt" rev-parse --short HEAD)
 
     if [ "$SHA" = "$DEV_SHA" ]; then
-      log_success "$BRANCH: $SHA (synced with dev)"
-    elif is_dirty "$wt"; then
-      BEHIND_NOW=$(git -C "$MAIN_WORKTREE" rev-list --count "$BRANCH".."$DEV_BRANCH" 2>/dev/null || echo "0")
-      log_warning "$BRANCH: $SHA (dirty, $BEHIND_NOW commits behind dev)"
+      if is_dirty "$wt"; then
+        log_success "$BRANCH: $SHA (synced with dev, uncommitted changes restored)"
+      else
+        log_success "$BRANCH: $SHA (synced with dev)"
+      fi
     else
-      log_info "$BRANCH: $SHA"
+      BEHIND_NOW=$(git -C "$MAIN_WORKTREE" rev-list --count "$BRANCH".."$DEV_BRANCH" 2>/dev/null || echo "0")
+      if [ "$BEHIND_NOW" != "0" ]; then
+        log_warning "$BRANCH: $SHA ($BEHIND_NOW commits behind dev)"
+      else
+        log_info "$BRANCH: $SHA"
+      fi
     fi
   fi
 done
@@ -422,11 +495,9 @@ git --no-pager -C "$MAIN_WORKTREE" log --oneline -10
 
 echo ""
 if [ -n "$DIRTY_WORKTREES" ]; then
-  log_warning "Some worktrees had uncommitted changes and may be behind dev"
-  log_warning "Commit changes and re-run to fully sync"
-else
-  log_success "All worktrees synchronized successfully!"
+  log_info "Some worktrees had uncommitted changes (stashed and restored)"
 fi
+log_success "All worktrees synchronized successfully!"
 
 # Force push if requested
 if [ "$FORCE_PUSH" = true ]; then
@@ -487,14 +558,19 @@ for wt in "${WORKTREES[@]}"; do
     LAST_UPDATE=$(TZ='Asia/Kolkata' git -C "$wt" log -1 --format="%cd" --date=format:"%d %b %Y, %I:%M %p IST")
 
     if [ "$SHA" = "$DEV_SHA" ]; then
-      log_success "$BRANCH: $SHA"
-      log_detail "Up to date till: $LAST_UPDATE"
-    elif is_dirty "$wt"; then
-      BEHIND_NOW=$(git -C "$MAIN_WORKTREE" rev-list --count "$BRANCH".."$DEV_BRANCH" 2>/dev/null || echo "0")
-      log_warning "$BRANCH: $SHA ($BEHIND_NOW commits behind)"
+      if is_dirty "$wt"; then
+        log_success "$BRANCH: $SHA (had uncommitted changes)"
+      else
+        log_success "$BRANCH: $SHA"
+      fi
       log_detail "Up to date till: $LAST_UPDATE"
     else
-      log_info "$BRANCH: $SHA"
+      BEHIND_NOW=$(git -C "$MAIN_WORKTREE" rev-list --count "$BRANCH".."$DEV_BRANCH" 2>/dev/null || echo "0")
+      if [ "$BEHIND_NOW" != "0" ]; then
+        log_warning "$BRANCH: $SHA ($BEHIND_NOW commits behind)"
+      else
+        log_info "$BRANCH: $SHA"
+      fi
       log_detail "Up to date till: $LAST_UPDATE"
     fi
   fi
@@ -508,7 +584,7 @@ else
   log_info "Remote: No changes pushed (use -f to force push)"
 fi
 if [ -n "$DIRTY_WORKTREES" ]; then
-  log_warning "Dirty worktrees: Some branches may be behind dev"
+  log_info "Uncommitted changes: Stashed and restored automatically"
 fi
 echo ""
 log_success "Done!"
