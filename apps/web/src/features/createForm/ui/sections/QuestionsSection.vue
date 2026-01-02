@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref, watch } from 'vue';
+import { onKeyStroke } from '@vueuse/core';
 import { Button } from '@testimonials/ui';
 import { Icon } from '@testimonials/icons';
 import FormSectionHeader from '../FormSectionHeader.vue';
@@ -31,6 +32,8 @@ const emit = defineEmits<{
   reorderQuestions: [fromIndex: number, toIndex: number];
   regenerate: [];
   saveQuestions: [];
+  /** Save a specific question by index */
+  saveQuestion: [index: number];
 }>();
 
 // URL-synced add panel state
@@ -52,8 +55,14 @@ const sectionStatus = computed<SectionStatus>(() => {
   return 'incomplete';
 });
 
-// Badge shows question count
+// Count unsaved questions
+const unsavedCount = computed(() =>
+  props.questions.filter((q) => q.isModified || q.isNew).length
+);
+
+// Badge shows unsaved count or question count
 const badge = computed(() => {
+  if (unsavedCount.value > 0) return `${unsavedCount.value} unsaved`;
   if (props.questions.length === 0) return undefined;
   return `${props.questions.length} questions`;
 });
@@ -76,6 +85,40 @@ function handleRegenerate() {
 function handleSaveQuestions() {
   emit('saveQuestions');
 }
+
+function handleSaveQuestion(index: number) {
+  emit('saveQuestion', index);
+}
+
+// Track "just saved" state for success feedback
+const justSaved = ref(false);
+
+// Watch for save completion to show success state
+watch(
+  [() => props.isSaving, () => props.hasUnsavedChanges],
+  ([newSaving, newHasUnsaved], [oldSaving]) => {
+    // Transition from saving to not-saving with no unsaved changes = success
+    if (oldSaving && !newSaving && !newHasUnsaved) {
+      justSaved.value = true;
+      setTimeout(() => {
+        justSaved.value = false;
+      }, 1500);
+    }
+  }
+);
+
+// Keyboard shortcut: ⌘S / Ctrl+S to save all questions
+onKeyStroke('s', (e) => {
+  if (
+    (e.metaKey || e.ctrlKey) &&
+    props.expanded &&
+    props.hasUnsavedChanges &&
+    !props.isSaving
+  ) {
+    e.preventDefault();
+    handleSaveQuestions();
+  }
+});
 </script>
 
 <template>
@@ -86,6 +129,7 @@ function handleSaveQuestions() {
       icon="lucide:message-square-text"
       :expanded="expanded"
       :disabled="disabled"
+      :has-unsaved="unsavedCount > 0"
       :status="sectionStatus"
       :badge="badge"
       @toggle="handleToggle"
@@ -108,9 +152,11 @@ function handleSaveQuestions() {
             <!-- Question List -->
             <QuestionList
               :questions="questions"
+              :is-saving="isSaving"
               @update="(index, updates) => emit('updateQuestion', index, updates)"
               @remove="(index) => emit('removeQuestion', index)"
               @reorder="(from, to) => emit('reorderQuestions', from, to)"
+              @save="handleSaveQuestion"
             />
 
             <!-- Action buttons -->
@@ -126,24 +172,39 @@ function handleSaveQuestions() {
                 </Button>
               </div>
 
-              <div v-if="hasUnsavedChanges" class="flex items-center gap-3">
-                <span class="text-xs text-amber-600">
-                  <Icon icon="lucide:alert-circle" class="mr-1 inline h-3.5 w-3.5" />
-                  Unsaved changes
-                </span>
-                <Button
-                  size="sm"
+              <!-- Save status pill -->
+              <template v-if="hasUnsavedChanges || isSaving || justSaved">
+                <!-- Saved state (green) -->
+                <div
+                  v-if="justSaved"
+                  class="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700"
+                >
+                  <Icon icon="lucide:check" class="h-3 w-3" />
+                  Saved
+                </div>
+                <!-- Unsaved/Saving state (amber) -->
+                <button
+                  v-else
+                  type="button"
                   :disabled="isSaving"
+                  class="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700 transition-colors hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-70"
                   @click="handleSaveQuestions"
                 >
                   <Icon
                     v-if="isSaving"
                     icon="lucide:loader-2"
-                    class="mr-2 h-3.5 w-3.5 animate-spin"
+                    class="h-3 w-3 animate-spin"
                   />
-                  {{ isSaving ? 'Saving...' : 'Save Changes' }}
-                </Button>
-              </div>
+                  <span v-else class="h-1.5 w-1.5 rounded-full bg-amber-500" />
+                  {{ isSaving ? 'Saving...' : `${unsavedCount} unsaved` }}
+                  <kbd
+                    v-if="!isSaving"
+                    class="ml-0.5 rounded bg-amber-100/80 px-1 py-0.5 font-mono text-[10px] text-amber-600"
+                  >
+                    ⌘S
+                  </kbd>
+                </button>
+              </template>
             </div>
           </div>
 

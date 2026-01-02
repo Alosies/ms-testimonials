@@ -13,10 +13,13 @@ const props = withDefaults(
     disabled?: boolean;
     status?: SectionStatus;
     badge?: string | number;
+    /** Whether section has unsaved/draft content */
+    hasUnsaved?: boolean;
   }>(),
   {
     disabled: false,
     status: 'incomplete',
+    hasUnsaved: false,
   }
 );
 
@@ -80,7 +83,8 @@ const statusColor = computed(() => {
       <div
         class="flex h-8 w-8 items-center justify-center rounded-lg"
         :class="{
-          'bg-primary/10 text-primary': !disabled,
+          'bg-amber-100 text-amber-600': hasUnsaved && !disabled,
+          'bg-primary/10 text-primary': !hasUnsaved && !disabled,
           'bg-gray-100 text-gray-400': disabled,
         }"
       >
@@ -105,17 +109,28 @@ const statusColor = computed(() => {
     </div>
 
     <div class="flex items-center gap-2">
-      <!-- Badge (e.g., question count) -->
-      <span
-        v-if="badge !== undefined && !expanded"
-        class="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600"
-      >
-        {{ badge }}
-      </span>
+      <!-- Badge: Unsaved pill or regular count -->
+      <template v-if="badge !== undefined && !expanded">
+        <!-- Unsaved state: amber pill with dot -->
+        <span
+          v-if="hasUnsaved"
+          class="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700"
+        >
+          <span class="h-1.5 w-1.5 rounded-full bg-amber-500" />
+          {{ badge }}
+        </span>
+        <!-- Normal state: gray badge -->
+        <span
+          v-else
+          class="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600"
+        >
+          {{ badge }}
+        </span>
+      </template>
 
       <!-- Status Icon -->
       <Icon
-        v-if="statusIcon && !disabled"
+        v-if="statusIcon && !disabled && !hasUnsaved"
         :icon="statusIcon"
         class="h-5 w-5"
         :class="statusColor"

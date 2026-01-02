@@ -21,6 +21,9 @@ const emit = defineEmits<{
 const organizationStore = useOrganizationStore();
 const { questionTypeOptions: questionTypes } = toRefs(organizationStore);
 
+// Check if question has unsaved changes
+const isDirty = computed(() => props.question.isModified || props.question.isNew);
+
 // Find current question type details
 const currentQuestionType = computed(() =>
   questionTypes.value.find((t) => t.id === props.question.question_type_id)
@@ -58,6 +61,7 @@ function handleRemove(event: Event) {
     :class="[
       !readonly && 'cursor-pointer hover:shadow-md hover:border-primary/50',
       isSelected && 'ring-2 ring-primary border-primary shadow-md',
+      isDirty && !isSelected && 'border-l-4 border-l-amber-400 bg-amber-50/30',
     ]"
     @click="handleClick"
   >

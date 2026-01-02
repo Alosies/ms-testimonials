@@ -340,6 +340,101 @@ export function useQuestionGeneration(options: UseQuestionGenerationOptions) {
     }
   }
 
+  /**
+   * Save a single question by index
+   *
+   * - Creates if isNew=true
+   * - Updates if isModified=true
+   * - Clears flags after successful save
+   */
+  async function saveQuestion(index: number): Promise<boolean> {
+    if (isSaving.value) return false;
+    if (!formId.value) {
+      onError('Cannot save question: No form ID');
+      return false;
+    }
+
+    const question = questions.value[index];
+    if (!question) {
+      onError('Cannot save question: Invalid index');
+      return false;
+    }
+
+    // Nothing to save if not dirty
+    if (!question.isNew && !question.isModified) {
+      return true;
+    }
+
+    isSaving.value = true;
+
+    try {
+      const formIdToUse = formId.value;
+      const updatedQuestions = [...questions.value];
+
+      if (question.isNew && !question.id) {
+        // Create new question
+        const result = await createFormQuestion({
+          input: {
+            form_id: formIdToUse,
+            organization_id: currentOrganizationId.value,
+            question_type_id: resolveQuestionTypeId(question.question_type_id),
+            question_key: question.question_key,
+            question_text: question.question_text,
+            placeholder: question.placeholder,
+            help_text: question.help_text,
+            display_order: question.display_order,
+            is_required: question.is_required,
+          },
+        });
+
+        if (!result) {
+          throw new Error('Failed to create question');
+        }
+
+        // Update local question with DB ID and clear flags
+        updatedQuestions[index] = {
+          ...updatedQuestions[index],
+          id: result.id,
+          isNew: false,
+          isModified: false,
+        };
+      } else if (question.isModified && question.id) {
+        // Update existing question
+        const result = await updateFormQuestion({
+          id: question.id,
+          input: {
+            question_type_id: resolveQuestionTypeId(question.question_type_id),
+            question_text: question.question_text,
+            placeholder: question.placeholder,
+            help_text: question.help_text,
+            display_order: question.display_order,
+            is_required: question.is_required,
+          },
+        });
+
+        if (!result) {
+          throw new Error('Failed to update question');
+        }
+
+        // Clear isModified flag
+        updatedQuestions[index] = {
+          ...updatedQuestions[index],
+          isModified: false,
+        };
+      }
+
+      // Notify parent with updated questions
+      onQuestionsSaved(updatedQuestions);
+      return true;
+
+    } catch (error) {
+      onError(getErrorMessage(error));
+      return false;
+    } finally {
+      isSaving.value = false;
+    }
+  }
+
   return {
     // State
     isGenerating,
@@ -354,6 +449,7 @@ export function useQuestionGeneration(options: UseQuestionGenerationOptions) {
     generateQuestions,
     regenerateQuestions,
     saveQuestions,
+    saveQuestion,
     initializeAnimationState,
   };
 }

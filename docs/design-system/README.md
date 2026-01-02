@@ -21,10 +21,11 @@ A minimal, trust-inspiring design system inspired by Notion's clarity and Linear
 
 ## Design Guides
 
-1. [Color System](./colors.md) - Palette and usage rules
-2. [Typography](./typography.md) - Font scales and hierarchy
-3. [Spacing](./spacing.md) - Layout rhythm and density
-4. [Components](./components.md) - UI component guidelines
+1. [UX Philosophy](./ux-philosophy.md) - Interaction patterns and principles
+2. [Color System](./colors.md) - Palette and usage rules
+3. [Typography](./typography.md) - Font scales and hierarchy
+4. [Spacing](./spacing.md) - Layout rhythm and density
+5. [Components](./components.md) - UI component guidelines
 
 ## Key Principles
 
@@ -54,6 +55,7 @@ Never use raw Tailwind colors. Always use semantic names:
 ```
 docs/design-system/
 ├── README.md          # This file
+├── ux-philosophy.md   # Interaction patterns and principles
 ├── colors.md          # Color palette and usage
 ├── typography.md      # Font scales and rules
 ├── spacing.md         # Layout and spacing

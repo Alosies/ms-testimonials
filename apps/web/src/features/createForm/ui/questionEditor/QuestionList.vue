@@ -7,12 +7,16 @@ import QuestionEditorPanel from './QuestionEditorPanel.vue';
 
 const props = defineProps<{
   questions: QuestionData[];
+  /** Whether save is in progress */
+  isSaving?: boolean;
 }>();
 
 const emit = defineEmits<{
   update: [index: number, updates: Partial<QuestionData>];
   remove: [index: number];
   reorder: [fromIndex: number, toIndex: number];
+  /** Save specific question */
+  save: [index: number];
 }>();
 
 // Local copy for drag operations
@@ -48,6 +52,13 @@ watch(
 const selectedQuestion = computed(() =>
   selectedIndex.value !== null ? localQuestions.value[selectedIndex.value] : null
 );
+
+// Check if selected question has unsaved changes
+const selectedQuestionIsDirty = computed(() => {
+  if (selectedIndex.value === null) return false;
+  const q = localQuestions.value[selectedIndex.value];
+  return q?.isModified || q?.isNew;
+});
 
 // Drag state
 const draggedIndex = ref<number | null>(null);
@@ -124,6 +135,12 @@ function handleRemoveFromCard(index: number) {
 function handleNavigate(direction: 'prev' | 'next') {
   navigate(direction);
 }
+
+function handleSave() {
+  if (selectedIndex.value !== null) {
+    emit('save', selectedIndex.value);
+  }
+}
 </script>
 
 <template>
@@ -168,10 +185,13 @@ function handleNavigate(direction: 'prev' | 'next') {
       :question-index="selectedIndex ?? 0"
       :total-questions="localQuestions.length"
       :open="isPanelOpen"
+      :is-dirty="selectedQuestionIsDirty"
+      :is-saving="isSaving"
       @update:open="(v) => (v ? null : handlePanelClose())"
       @update="handleUpdate"
       @remove="handleRemoveFromPanel"
       @navigate="handleNavigate"
+      @save="handleSave"
     />
   </div>
 </template>

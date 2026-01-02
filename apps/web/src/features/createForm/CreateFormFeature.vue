@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, watch } from 'vue';
+import { computed, nextTick, watch, onUnmounted } from 'vue';
 import { useFormEditor } from './composables/useFormEditor';
 import { useFormSections } from './composables/useFormSections';
 import { useQuestionGeneration } from './composables/useQuestionGeneration';
@@ -137,6 +137,29 @@ async function handleSaveQuestions() {
   await questionGeneration.saveQuestions();
 }
 
+// Handle save single question
+async function handleSaveQuestion(index: number) {
+  await questionGeneration.saveQuestion(index);
+}
+
+// Beforeunload warning for unsaved changes
+function handleBeforeUnload(e: BeforeUnloadEvent) {
+  e.preventDefault();
+  e.returnValue = '';
+}
+
+watch(hasUnsavedQuestionChanges, (hasChanges) => {
+  if (hasChanges) {
+    window.addEventListener('beforeunload', handleBeforeUnload);
+  } else {
+    window.removeEventListener('beforeunload', handleBeforeUnload);
+  }
+});
+
+onUnmounted(() => {
+  window.removeEventListener('beforeunload', handleBeforeUnload);
+});
+
 // Initialize sections after form loads
 watch(
   () => loadingForm.value,
@@ -228,6 +251,7 @@ watch(
           @reorder-questions="reorderQuestions"
           @regenerate="handleRegenerateQuestions"
           @save-questions="handleSaveQuestions"
+          @save-question="handleSaveQuestion"
         />
 
         <PreviewSection

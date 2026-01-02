@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { toRef, ref, watch, nextTick } from 'vue';
+import { onKeyStroke } from '@vueuse/core';
 import {
   Button,
   Input,
@@ -43,6 +44,10 @@ const props = withDefaults(
     nextDisplayOrder?: number;
     /** Whether panel is open */
     open: boolean;
+    /** Whether current question has unsaved changes (edit mode only) */
+    isDirty?: boolean;
+    /** Whether save is in progress (edit mode only) */
+    isSaving?: boolean;
   }>(),
   {
     mode: 'edit',
@@ -50,6 +55,8 @@ const props = withDefaults(
     questionIndex: 0,
     totalQuestions: 0,
     nextDisplayOrder: 1,
+    isDirty: false,
+    isSaving: false,
   }
 );
 
@@ -63,6 +70,8 @@ const emit = defineEmits<{
   navigate: [direction: 'prev' | 'next'];
   /** Emitted when new question is added (add mode) */
   add: [question: QuestionData];
+  /** Emitted when save button is clicked (edit mode) */
+  save: [];
 }>();
 
 // Build composable options based on mode (called once at setup)
@@ -123,6 +132,30 @@ watch(
     }
   },
   { immediate: true }
+);
+
+// Keyboard shortcut: ⌘S / Ctrl+S to save
+onKeyStroke('s', (e) => {
+  if ((e.metaKey || e.ctrlKey) && props.open && props.isDirty && !props.isSaving && isEditMode) {
+    e.preventDefault();
+    emit('save');
+  }
+});
+
+// Track "just saved" state for success feedback
+const justSaved = ref(false);
+
+watch(
+  [() => props.isSaving, () => props.isDirty],
+  ([newSaving, newDirty], [oldSaving]) => {
+    // Save completed: was saving, now not saving, and no longer dirty
+    if (oldSaving && !newSaving && !newDirty) {
+      justSaved.value = true;
+      setTimeout(() => {
+        justSaved.value = false;
+      }, 1500);
+    }
+  }
 );
 </script>
 
@@ -201,6 +234,38 @@ watch(
 
           <!-- Edit Mode Actions -->
           <div class="flex items-center gap-2">
+            <!-- Save status pill: Unsaved → Saving → Saved -->
+            <template v-if="isDirty || isSaving || justSaved">
+              <!-- Saved state (green, fades out) -->
+              <div
+                v-if="justSaved"
+                class="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700 transition-all"
+              >
+                <Icon icon="lucide:check" class="h-3 w-3" />
+                Saved
+              </div>
+
+              <!-- Unsaved/Saving state (amber, clickable) -->
+              <button
+                v-else
+                :disabled="isSaving"
+                class="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700 transition-all hover:bg-amber-100 disabled:cursor-wait"
+                @click="emit('save')"
+              >
+                <Icon
+                  v-if="isSaving"
+                  icon="lucide:loader-2"
+                  class="h-3 w-3 animate-spin"
+                />
+                <span v-else class="h-1.5 w-1.5 rounded-full bg-amber-500" />
+                {{ isSaving ? 'Saving...' : 'Unsaved' }}
+                <kbd v-if="!isSaving" class="rounded bg-amber-100/80 px-1 py-0.5 font-mono text-[10px] text-amber-600">
+                  ⌘S
+                </kbd>
+              </button>
+              <div class="mx-1 h-6 w-px bg-gray-200" />
+            </template>
+
             <Button
               variant="ghost"
               size="sm"
