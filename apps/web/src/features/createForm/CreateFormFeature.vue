@@ -103,12 +103,11 @@ function scrollToSection(id: string) {
 
 // Handle generate questions
 async function handleGenerateQuestions() {
+  // Switch panels immediately so user sees the AI loader animation
+  sections.onGenerationStarted();
   // Scroll to questions section to see the AI loader
   scrollToSection('questions');
-  const success = await questionGeneration.generateQuestions();
-  if (success) {
-    sections.onQuestionsGenerated();
-  }
+  await questionGeneration.generateQuestions();
 }
 
 // Handle regenerate with confirmation
@@ -119,12 +118,11 @@ function handleRegenerateQuestions() {
       actionType: 'regenerate_questions',
       entityName: 'questions',
       onConfirm: async () => {
+        // Switch panels immediately so user sees the AI loader animation
+        sections.onGenerationStarted();
         // Scroll to questions section to see the AI loader
         scrollToSection('questions');
-        const success = await questionGeneration.regenerateQuestions();
-        if (success) {
-          sections.onQuestionsGenerated();
-        }
+        await questionGeneration.regenerateQuestions();
       },
     });
   } else {

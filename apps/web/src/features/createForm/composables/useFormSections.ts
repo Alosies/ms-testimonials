@@ -164,6 +164,18 @@ export function useFormSections(options: {
   }
 
   /**
+   * Handle when question generation starts
+   * Closes Product Info and opens Questions section immediately
+   * so user can see the AI loader animation
+   */
+  function onGenerationStarted() {
+    productInfoExpanded.value = false;
+    questionsExpanded.value = true;
+    previewExpanded.value = false;
+    updateUrlParam();
+  }
+
+  /**
    * Handle after questions are generated
    */
   function onQuestionsGenerated() {
@@ -206,6 +218,7 @@ export function useFormSections(options: {
     expandSection,
     collapseSection,
     initializeSections,
+    onGenerationStarted,
     onQuestionsGenerated,
     onQuestionsSaved,
   };
