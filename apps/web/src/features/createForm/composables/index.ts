@@ -6,3 +6,4 @@ export { useFormAutoSave, type SaveStatus } from './useFormAutoSave';
 export { useFormEditor } from './useFormEditor';
 export { useFormSections } from './useFormSections';
 export { useQuestionGeneration } from './useQuestionGeneration';
+export { useQuestionSave } from './useQuestionSave';

@@ -1,15 +1,10 @@
-import { ref, toRefs, nextTick, computed, type Ref } from 'vue';
+import { ref, toRefs, nextTick, type Ref } from 'vue';
 import { useApiForAI, getErrorMessage } from '@/shared/api';
 import { useCreateForm } from '@/entities/form';
-import {
-  useCreateFormQuestion,
-  useCreateFormQuestions,
-  useUpdateFormQuestion,
-  useDeactivateFormQuestions,
-} from '@/entities/formQuestion';
-import { useGetQuestionTypes } from '@/entities/questionType';
+import { useCreateFormQuestions, useDeactivateFormQuestions } from '@/entities/formQuestion';
 import { useCurrentContextStore } from '@/shared/currentContext';
 import { createSlugFromString } from '@/shared/urls';
+import { useQuestionSave } from './useQuestionSave';
 import type { AIContext, AIQuestion } from '@/shared/api';
 import type { FormData, QuestionData } from '../models';
 
@@ -44,39 +39,21 @@ export function useQuestionGeneration(options: UseQuestionGenerationOptions) {
 
   const aiApi = useApiForAI();
   const { createForm } = useCreateForm();
-  const { createFormQuestion } = useCreateFormQuestion();
   const { createFormQuestions } = useCreateFormQuestions();
-  const { updateFormQuestion } = useUpdateFormQuestion();
   const { deactivateFormQuestions } = useDeactivateFormQuestions();
-  const { questionTypes } = useGetQuestionTypes();
   const contextStore = useCurrentContextStore();
   const { currentOrganizationId } = toRefs(contextStore);
 
-  // Create mapping from unique_name to id for question types
-  // AI API returns unique_name (e.g., "text_long") but DB expects id
-  const questionTypeMap = computed(() => {
-    const map = new Map<string, string>();
-    for (const qt of questionTypes.value) {
-      map.set(qt.unique_name, qt.id);
-    }
-    return map;
+  // Use the question save composable for individual/bulk saves
+  const questionSave = useQuestionSave({
+    formId,
+    questions,
+    onQuestionsSaved,
+    onError,
   });
-
-  /**
-   * Resolve question_type_id from unique_name to actual database id
-   */
-  function resolveQuestionTypeId(uniqueName: string): string {
-    const id = questionTypeMap.value.get(uniqueName);
-    if (!id) {
-      console.warn(`Unknown question type: ${uniqueName}, using as-is`);
-      return uniqueName;
-    }
-    return id;
-  }
 
   // State
   const isGenerating = ref(false);
-  const isSaving = ref(false);
 
   // Animation states for staggered reveal
   const showSuccess = ref(false);
@@ -157,9 +134,9 @@ export function useQuestionGeneration(options: UseQuestionGenerationOptions) {
    * Save generated questions to database
    */
   async function saveGeneratedQuestions(generatedQuestions: AIQuestion[]): Promise<void> {
-    if (isSaving.value) return;
+    if (questionSave.isSaving.value) return;
 
-    isSaving.value = true;
+    questionSave.isSaving.value = true;
 
     try {
       let formIdToUse = formId.value;
@@ -195,7 +172,7 @@ export function useQuestionGeneration(options: UseQuestionGenerationOptions) {
       const questionInputs = generatedQuestions.map((q, index) => ({
         form_id: formIdToUse,
         organization_id: currentOrganizationId.value,
-        question_type_id: resolveQuestionTypeId(q.question_type_id),
+        question_type_id: questionSave.resolveQuestionTypeId(q.question_type_id),
         question_key: q.question_key,
         question_text: q.question_text,
         placeholder: q.placeholder,
@@ -222,7 +199,7 @@ export function useQuestionGeneration(options: UseQuestionGenerationOptions) {
     } catch (error) {
       onError(getErrorMessage(error));
     } finally {
-      isSaving.value = false;
+      questionSave.isSaving.value = false;
     }
   }
 
@@ -236,209 +213,10 @@ export function useQuestionGeneration(options: UseQuestionGenerationOptions) {
     }
   }
 
-  /**
-   * Save custom questions (new and modified) to the database
-   *
-   * - Creates new questions that have isNew=true
-   * - Updates existing questions that have isModified=true
-   * - Clears isNew/isModified flags after successful save
-   */
-  async function saveQuestions(): Promise<boolean> {
-    if (isSaving.value) return false;
-    if (!formId.value) {
-      onError('Cannot save questions: No form ID');
-      return false;
-    }
-
-    const newQuestions = questions.value.filter((q) => q.isNew && !q.id);
-    const modifiedQuestions = questions.value.filter((q) => q.isModified && q.id);
-
-    if (newQuestions.length === 0 && modifiedQuestions.length === 0) {
-      // Nothing to save
-      return true;
-    }
-
-    isSaving.value = true;
-
-    try {
-      const formIdToUse = formId.value;
-      const updatedQuestions = [...questions.value];
-
-      // Create new questions
-      for (const question of newQuestions) {
-        const result = await createFormQuestion({
-          input: {
-            form_id: formIdToUse,
-            organization_id: currentOrganizationId.value,
-            question_type_id: resolveQuestionTypeId(question.question_type_id),
-            question_key: question.question_key,
-            question_text: question.question_text,
-            placeholder: question.placeholder,
-            help_text: question.help_text,
-            display_order: question.display_order,
-            is_required: question.is_required,
-          },
-        });
-
-        if (!result) {
-          throw new Error('Failed to create question');
-        }
-
-        // Update local question with DB ID and clear flags
-        const index = updatedQuestions.findIndex(
-          (q) => q.question_key === question.question_key
-        );
-        if (index !== -1) {
-          updatedQuestions[index] = {
-            ...updatedQuestions[index],
-            id: result.id,
-            isNew: false,
-            isModified: false,
-          };
-        }
-      }
-
-      // Update modified questions
-      for (const question of modifiedQuestions) {
-        if (!question.id) continue;
-
-        const result = await updateFormQuestion({
-          id: question.id,
-          input: {
-            question_type_id: resolveQuestionTypeId(question.question_type_id),
-            question_text: question.question_text,
-            placeholder: question.placeholder,
-            help_text: question.help_text,
-            display_order: question.display_order,
-            is_required: question.is_required,
-          },
-        });
-
-        if (!result) {
-          throw new Error('Failed to update question');
-        }
-
-        // Clear isModified flag
-        const index = updatedQuestions.findIndex((q) => q.id === question.id);
-        if (index !== -1) {
-          updatedQuestions[index] = {
-            ...updatedQuestions[index],
-            isModified: false,
-          };
-        }
-      }
-
-      // Notify parent with updated questions
-      onQuestionsSaved(updatedQuestions);
-      return true;
-
-    } catch (error) {
-      onError(getErrorMessage(error));
-      return false;
-    } finally {
-      isSaving.value = false;
-    }
-  }
-
-  /**
-   * Save a single question by index
-   *
-   * - Creates if isNew=true
-   * - Updates if isModified=true
-   * - Clears flags after successful save
-   */
-  async function saveQuestion(index: number): Promise<boolean> {
-    if (isSaving.value) return false;
-    if (!formId.value) {
-      onError('Cannot save question: No form ID');
-      return false;
-    }
-
-    const question = questions.value[index];
-    if (!question) {
-      onError('Cannot save question: Invalid index');
-      return false;
-    }
-
-    // Nothing to save if not dirty
-    if (!question.isNew && !question.isModified) {
-      return true;
-    }
-
-    isSaving.value = true;
-
-    try {
-      const formIdToUse = formId.value;
-      const updatedQuestions = [...questions.value];
-
-      if (question.isNew && !question.id) {
-        // Create new question
-        const result = await createFormQuestion({
-          input: {
-            form_id: formIdToUse,
-            organization_id: currentOrganizationId.value,
-            question_type_id: resolveQuestionTypeId(question.question_type_id),
-            question_key: question.question_key,
-            question_text: question.question_text,
-            placeholder: question.placeholder,
-            help_text: question.help_text,
-            display_order: question.display_order,
-            is_required: question.is_required,
-          },
-        });
-
-        if (!result) {
-          throw new Error('Failed to create question');
-        }
-
-        // Update local question with DB ID and clear flags
-        updatedQuestions[index] = {
-          ...updatedQuestions[index],
-          id: result.id,
-          isNew: false,
-          isModified: false,
-        };
-      } else if (question.isModified && question.id) {
-        // Update existing question
-        const result = await updateFormQuestion({
-          id: question.id,
-          input: {
-            question_type_id: resolveQuestionTypeId(question.question_type_id),
-            question_text: question.question_text,
-            placeholder: question.placeholder,
-            help_text: question.help_text,
-            display_order: question.display_order,
-            is_required: question.is_required,
-          },
-        });
-
-        if (!result) {
-          throw new Error('Failed to update question');
-        }
-
-        // Clear isModified flag
-        updatedQuestions[index] = {
-          ...updatedQuestions[index],
-          isModified: false,
-        };
-      }
-
-      // Notify parent with updated questions
-      onQuestionsSaved(updatedQuestions);
-      return true;
-
-    } catch (error) {
-      onError(getErrorMessage(error));
-      return false;
-    } finally {
-      isSaving.value = false;
-    }
-  }
-
   return {
     // State
     isGenerating,
-    isSaving,
+    isSaving: questionSave.isSaving,
 
     // Animation state
     showSuccess,
@@ -448,8 +226,8 @@ export function useQuestionGeneration(options: UseQuestionGenerationOptions) {
     // Actions
     generateQuestions,
     regenerateQuestions,
-    saveQuestions,
-    saveQuestion,
+    saveQuestions: questionSave.saveQuestions,
+    saveQuestion: questionSave.saveQuestion,
     initializeAnimationState,
   };
 }
