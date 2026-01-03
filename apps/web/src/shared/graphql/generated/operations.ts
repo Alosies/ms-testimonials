@@ -14793,6 +14793,22 @@ export type GetFormQuestionsQueryVariables = Exact<{
 
 export type GetFormQuestionsQuery = { __typename?: 'query_root', form_questions: Array<{ __typename?: 'form_questions', id: string, form_id: string, organization_id: string, question_type_id: string, question_key: string, question_text: string, placeholder?: string | null, help_text?: string | null, display_order: number, is_required: boolean, min_length?: number | null, max_length?: number | null, min_value?: number | null, max_value?: number | null, validation_pattern?: string | null, allowed_file_types?: Array<string> | null, max_file_size_kb?: number | null, is_active: boolean, created_at: string, updated_at: string, question_type: { __typename?: 'question_types', id: string, unique_name: string, name: string, category: string, input_component: string } }> };
 
+export type FormStepBasicFragment = { __typename?: 'form_steps', id: string, form_id: string, step_type: string, step_order: number, question_id?: string | null, content: any, tips?: Array<string> | null, is_active: boolean, created_at: string, updated_at: string };
+
+export type CreateFormStepsMutationVariables = Exact<{
+  inputs: Array<Form_Steps_Insert_Input> | Form_Steps_Insert_Input;
+}>;
+
+
+export type CreateFormStepsMutation = { __typename?: 'mutation_root', insert_form_steps?: { __typename?: 'form_steps_mutation_response', returning: Array<{ __typename?: 'form_steps', id: string, form_id: string, step_type: string, step_order: number, question_id?: string | null, content: any, tips?: Array<string> | null, is_active: boolean, created_at: string, updated_at: string }> } | null };
+
+export type GetFormStepsQueryVariables = Exact<{
+  formId: Scalars['String']['input'];
+}>;
+
+
+export type GetFormStepsQuery = { __typename?: 'query_root', form_steps: Array<{ __typename?: 'form_steps', id: string, form_id: string, step_type: string, step_order: number, question_id?: string | null, content: any, tips?: Array<string> | null, is_active: boolean, created_at: string, updated_at: string, question?: { __typename?: 'form_questions', id: string, question_text: string, question_type: { __typename?: 'question_types', id: string, unique_name: string, category: string } } | null }> };
+
 export type OrganizationBasicFragment = { __typename?: 'organizations', id: string, name: string, slug: string, logo_url?: string | null, setup_status: 'pending_setup' | 'completed', is_active: boolean, settings: any, created_at: string, updated_at: string, plans: Array<{ __typename?: 'organization_plans', id: string, plan_id: string, status: string, plan: { __typename?: 'plans', id: string, unique_name: string, name: string, question_types: Array<{ __typename?: 'plan_question_types', question_type: { __typename?: 'question_types', id: string, unique_name: string, name: string, category: string, description?: string | null, icon?: string | null, input_component: string, answer_data_type: string, display_order: number, supports_options: boolean } }> } }> };
 
 export type UpdateOrganizationMutationVariables = Exact<{
@@ -14954,6 +14970,20 @@ export const FormQuestionBasicFragmentDoc = gql`
     category
     input_component
   }
+}
+    `;
+export const FormStepBasicFragmentDoc = gql`
+    fragment FormStepBasic on form_steps {
+  id
+  form_id
+  step_type
+  step_order
+  question_id
+  content
+  tips
+  is_active
+  created_at
+  updated_at
 }
     `;
 export const OrganizationBasicFragmentDoc = gql`
@@ -15533,6 +15563,76 @@ export function useGetFormQuestionsLazyQuery(variables?: GetFormQuestionsQueryVa
   return VueApolloComposable.useLazyQuery<GetFormQuestionsQuery, GetFormQuestionsQueryVariables>(GetFormQuestionsDocument, variables, options);
 }
 export type GetFormQuestionsQueryCompositionFunctionResult = VueApolloComposable.UseQueryReturn<GetFormQuestionsQuery, GetFormQuestionsQueryVariables>;
+export const CreateFormStepsDocument = gql`
+    mutation CreateFormSteps($inputs: [form_steps_insert_input!]!) {
+  insert_form_steps(objects: $inputs) {
+    returning {
+      ...FormStepBasic
+    }
+  }
+}
+    ${FormStepBasicFragmentDoc}`;
+
+/**
+ * __useCreateFormStepsMutation__
+ *
+ * To run a mutation, you first call `useCreateFormStepsMutation` within a Vue component and pass it any options that fit your needs.
+ * When your component renders, `useCreateFormStepsMutation` returns an object that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - Several other properties: https://v4.apollo.vuejs.org/api/use-mutation.html#return
+ *
+ * @param options that will be passed into the mutation, supported options are listed on: https://v4.apollo.vuejs.org/guide-composable/mutation.html#options;
+ *
+ * @example
+ * const { mutate, loading, error, onDone } = useCreateFormStepsMutation({
+ *   variables: {
+ *     inputs: // value for 'inputs'
+ *   },
+ * });
+ */
+export function useCreateFormStepsMutation(options: VueApolloComposable.UseMutationOptions<CreateFormStepsMutation, CreateFormStepsMutationVariables> | ReactiveFunction<VueApolloComposable.UseMutationOptions<CreateFormStepsMutation, CreateFormStepsMutationVariables>> = {}) {
+  return VueApolloComposable.useMutation<CreateFormStepsMutation, CreateFormStepsMutationVariables>(CreateFormStepsDocument, options);
+}
+export type CreateFormStepsMutationCompositionFunctionResult = VueApolloComposable.UseMutationReturn<CreateFormStepsMutation, CreateFormStepsMutationVariables>;
+export const GetFormStepsDocument = gql`
+    query GetFormSteps($formId: String!) {
+  form_steps(where: {form_id: {_eq: $formId}}, order_by: {step_order: asc}) {
+    ...FormStepBasic
+    question {
+      id
+      question_text
+      question_type {
+        id
+        unique_name
+        category
+      }
+    }
+  }
+}
+    ${FormStepBasicFragmentDoc}`;
+
+/**
+ * __useGetFormStepsQuery__
+ *
+ * To run a query within a Vue component, call `useGetFormStepsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetFormStepsQuery` returns an object from Apollo Client that contains result, loading and error properties
+ * you can use to render your UI.
+ *
+ * @param variables that will be passed into the query
+ * @param options that will be passed into the query, supported options are listed on: https://v4.apollo.vuejs.org/guide-composable/query.html#options;
+ *
+ * @example
+ * const { result, loading, error } = useGetFormStepsQuery({
+ *   formId: // value for 'formId'
+ * });
+ */
+export function useGetFormStepsQuery(variables: GetFormStepsQueryVariables | VueCompositionApi.Ref<GetFormStepsQueryVariables> | ReactiveFunction<GetFormStepsQueryVariables>, options: VueApolloComposable.UseQueryOptions<GetFormStepsQuery, GetFormStepsQueryVariables> | VueCompositionApi.Ref<VueApolloComposable.UseQueryOptions<GetFormStepsQuery, GetFormStepsQueryVariables>> | ReactiveFunction<VueApolloComposable.UseQueryOptions<GetFormStepsQuery, GetFormStepsQueryVariables>> = {}) {
+  return VueApolloComposable.useQuery<GetFormStepsQuery, GetFormStepsQueryVariables>(GetFormStepsDocument, variables, options);
+}
+export function useGetFormStepsLazyQuery(variables?: GetFormStepsQueryVariables | VueCompositionApi.Ref<GetFormStepsQueryVariables> | ReactiveFunction<GetFormStepsQueryVariables>, options: VueApolloComposable.UseQueryOptions<GetFormStepsQuery, GetFormStepsQueryVariables> | VueCompositionApi.Ref<VueApolloComposable.UseQueryOptions<GetFormStepsQuery, GetFormStepsQueryVariables>> | ReactiveFunction<VueApolloComposable.UseQueryOptions<GetFormStepsQuery, GetFormStepsQueryVariables>> = {}) {
+  return VueApolloComposable.useLazyQuery<GetFormStepsQuery, GetFormStepsQueryVariables>(GetFormStepsDocument, variables, options);
+}
+export type GetFormStepsQueryCompositionFunctionResult = VueApolloComposable.UseQueryReturn<GetFormStepsQuery, GetFormStepsQueryVariables>;
 export const UpdateOrganizationDocument = gql`
     mutation UpdateOrganization($id: String!, $changes: organizations_set_input!) {
   update_organizations_by_pk(pk_columns: {id: $id}, _set: $changes) {

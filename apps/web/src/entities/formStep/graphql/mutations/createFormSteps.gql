@@ -1,0 +1,7 @@
+mutation CreateFormSteps($inputs: [form_steps_insert_input!]!) {
+  insert_form_steps(objects: $inputs) {
+    returning {
+      ...FormStepBasic
+    }
+  }
+}

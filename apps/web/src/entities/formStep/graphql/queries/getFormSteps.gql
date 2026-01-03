@@ -1,0 +1,19 @@
+#import "../fragments/FormStepBasic.gql"
+
+query GetFormSteps($formId: String!) {
+  form_steps(
+    where: { form_id: { _eq: $formId } }
+    order_by: { step_order: asc }
+  ) {
+    ...FormStepBasic
+    question {
+      id
+      question_text
+      question_type {
+        id
+        unique_name
+        category
+      }
+    }
+  }
+}

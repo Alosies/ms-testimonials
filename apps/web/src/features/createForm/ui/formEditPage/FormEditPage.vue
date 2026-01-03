@@ -17,6 +17,8 @@ import {
   useScrollStepDetection,
 } from '../../composables/timeline';
 import { useGetForm } from '@/entities/form';
+import { useGetFormSteps } from '@/entities/formStep';
+import type { FormStep, StepType, StepContent } from '../../models/stepContent';
 import TimelineSidebar from './TimelineSidebar.vue';
 import TimelineCanvas from './TimelineCanvas.vue';
 
@@ -49,11 +51,36 @@ watch(form, (loadedForm) => {
       productName: loadedForm.product_name ?? undefined,
       productDescription: loadedForm.product_description ?? undefined,
     });
+    // Update form name from database
+    formName.value = loadedForm.name;
+  }
+}, { immediate: true });
+
+// Fetch form steps
+const stepsQueryVars = computed(() => ({ formId: props.formId }));
+const { formSteps } = useGetFormSteps(stepsQueryVars);
+
+// Transform and load steps into editor when data arrives
+watch(formSteps, (steps) => {
+  if (steps && steps.length > 0) {
+    const transformed: FormStep[] = steps.map((step) => ({
+      id: step.id,
+      formId: step.form_id,
+      stepType: step.step_type as StepType,
+      stepOrder: step.step_order,
+      questionId: step.question_id ?? null,
+      content: (step.content as StepContent) ?? {},
+      tips: (step.tips as string[]) ?? [],
+      isActive: step.is_active,
+      isNew: false,
+      isModified: false,
+    }));
+    editor.setSteps(transformed);
   }
 }, { immediate: true });
 
 // Header state
-const formName = ref('My Test Form');
+const formName = ref('Loading...');
 const saveStatus = ref<'saved' | 'saving' | 'unsaved' | 'error'>('saved');
 
 // Header handlers
