@@ -12,9 +12,10 @@ import { definePage } from 'unplugin-vue-router/runtime';
 import FormEditorLayout from '@/layouts/FormEditorLayout.vue';
 import FormEditorHeader from '@/features/createForm/ui/FormEditorHeader.vue';
 import { PropertiesPanel } from '@/features/createForm/ui/propertiesPanel';
+import StepEditorSlideIn from '@/features/createForm/ui/stepEditor/StepEditorSlideIn.vue';
 import { useTimelineEditor } from '@/features/createForm/composables/timeline/useTimelineEditor';
 import { extractEntityIdFromSlug } from '@/shared/urls';
-// TODO: Import actual components when Green agent completes G4, G8
+// TODO: Import Green agent components when ready
 // import StepsSidebar from '@/features/createForm/ui/stepsSidebar/StepsSidebar.vue';
 // import TimelineCanvas from '@/features/createForm/ui/timelineCanvas/TimelineCanvas.vue';
 
@@ -179,6 +180,9 @@ function handleFormNameUpdate(name: string) {
       <PropertiesPanel />
     </template>
   </FormEditorLayout>
+
+  <!-- Step Editor Slide-in Panel (B6) -->
+  <StepEditorSlideIn />
 </template>
 
 <style scoped>
