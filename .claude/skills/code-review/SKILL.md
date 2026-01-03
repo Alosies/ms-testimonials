@@ -48,6 +48,7 @@ Use the output format below. Include file:line references and severity levels.
 ### FSD Architecture
 - [ ] Layer imports: pages → features → entities → shared
 - [ ] Types exported only from `models/` folders
+- [ ] **No functions in `models/` folders** - move to `functions/` folder
 - [ ] Composables in `composables/` folders with `useXxx` naming
 - [ ] No cross-feature imports
 

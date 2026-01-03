@@ -89,6 +89,26 @@ Only the following can use a composable (`useXxx`) inside them:
 - **Composables, adapters, functions, utils should NOT export types**
 - **Use barrel exports (`index.ts`) in models folders for clean APIs**
 
+### Models vs Functions Separation (Critical)
+- **`models/` folders contain ONLY type definitions** - interfaces, types, enums
+- **NO functions in `models/` folders** - move to `functions/` folder instead
+- Type guards, factories, and helper functions belong in `functions/`
+
+```typescript
+// ❌ Bad: Functions in models folder
+// models/stepContent.ts
+export interface FormStep { ... }
+export function isWelcomeStep(step: FormStep) { ... }  // Wrong location!
+
+// ✅ Good: Types in models, functions in functions folder
+// models/stepContent.ts
+export interface FormStep { ... }
+
+// functions/typeGuards.ts
+import type { FormStep } from '../models/stepContent';
+export function isWelcomeStep(step: FormStep) { ... }
+```
+
 ### GraphQL Type Safety (Critical)
 - **ALWAYS use generated GraphQL types** from `@/shared/graphql/generated/operations`
 - **Import and re-export** generated types in entity models
