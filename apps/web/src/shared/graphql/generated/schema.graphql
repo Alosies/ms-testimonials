@@ -104,6 +104,1098 @@ input String_comparison_exp {
   _similar: String
 }
 
+"""
+Normalized contact data for testimonial submitters. Enables contact management, deduplication across forms, and tracking of repeat submissions within an organization.
+"""
+type contacts {
+  """
+  URL to profile photo or avatar image. Displayed alongside testimonials for visual social proof and authenticity.
+  """
+  avatar_url: String
+  """
+  Name of the company or organization where the contact works. Used for B2B testimonial displays and logo integration.
+  """
+  company_name: String
+  """
+  URL to the contact's company website. May be used for automated logo fetching or company verification.
+  """
+  company_website: String
+  """
+  Timestamp when this contact record was first created. Set automatically on insert, never modified thereafter.
+  """
+  created_at: timestamptz!
+  """
+  Primary identifier for the contact. Unique within each organization. Used for deduplication when same person submits multiple testimonials across different forms.
+  """
+  email: String!
+  """
+  Boolean flag indicating if email ownership has been confirmed via verification link. Verified contacts may receive preferential display treatment.
+  """
+  email_verified: Boolean!
+  """
+  Timestamp of first interaction with the organization. Set on creation and never modified. Used for cohort analysis and engagement metrics.
+  """
+  first_seen_at: timestamptz!
+  """
+  Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification.
+  """
+  id: String!
+  """
+  Professional title or role (e.g., "VP of Engineering", "Founder"). Adds credibility context to testimonials, especially for B2B use cases.
+  """
+  job_title: String
+  """
+  Timestamp of most recent activity. Updated on each new submission or interaction. Used for identifying active vs dormant contacts.
+  """
+  last_seen_at: timestamptz!
+  """
+  URL to LinkedIn profile. Provides professional verification and enables social proof through platform recognition.
+  """
+  linkedin_url: String
+  """
+  Display name of the contact. Collected from form submission contact_info step or enriched from external data sources like LinkedIn.
+  """
+  name: String
+  """An object relationship"""
+  organization: organizations!
+  """
+  Foreign key to organizations table. Establishes tenant boundary - all contacts are scoped to a single organization for multi-tenancy isolation.
+  """
+  organization_id: String!
+  """
+  Origin of this contact record: form_submission (created during testimonial submission), import (bulk CSV/API import), manual (admin created). Used for analytics and attribution.
+  """
+  source: String!
+  """An object relationship"""
+  source_form: forms
+  """
+  Foreign key to forms table. References the first form through which this contact was acquired. Preserved even if form is later deleted (set null).
+  """
+  source_form_id: String
+  """
+  Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers.
+  """
+  submission_count: Int!
+  """An array relationship"""
+  submissions(
+    """distinct select on columns"""
+    distinct_on: [form_submissions_select_column!]
+    """limit the number of rows returned"""
+    limit: Int
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+    """sort the rows by one or more columns"""
+    order_by: [form_submissions_order_by!]
+    """filter the rows returned"""
+    where: form_submissions_bool_exp
+  ): [form_submissions!]!
+  """An aggregate relationship"""
+  submissions_aggregate(
+    """distinct select on columns"""
+    distinct_on: [form_submissions_select_column!]
+    """limit the number of rows returned"""
+    limit: Int
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+    """sort the rows by one or more columns"""
+    order_by: [form_submissions_order_by!]
+    """filter the rows returned"""
+    where: form_submissions_bool_exp
+  ): form_submissions_aggregate!
+  """
+  URL to Twitter/X profile. Used for social sharing integration and additional verification of contact identity.
+  """
+  twitter_url: String
+  """
+  Timestamp of last modification to this record. Automatically updated by database trigger on any column change.
+  """
+  updated_at: timestamptz!
+}
+
+"""
+aggregated selection of "contacts"
+"""
+type contacts_aggregate {
+  aggregate: contacts_aggregate_fields
+  nodes: [contacts!]!
+}
+
+input contacts_aggregate_bool_exp {
+  bool_and: contacts_aggregate_bool_exp_bool_and
+  bool_or: contacts_aggregate_bool_exp_bool_or
+  count: contacts_aggregate_bool_exp_count
+}
+
+input contacts_aggregate_bool_exp_bool_and {
+  arguments: contacts_select_column_contacts_aggregate_bool_exp_bool_and_arguments_columns!
+  distinct: Boolean
+  filter: contacts_bool_exp
+  predicate: Boolean_comparison_exp!
+}
+
+input contacts_aggregate_bool_exp_bool_or {
+  arguments: contacts_select_column_contacts_aggregate_bool_exp_bool_or_arguments_columns!
+  distinct: Boolean
+  filter: contacts_bool_exp
+  predicate: Boolean_comparison_exp!
+}
+
+input contacts_aggregate_bool_exp_count {
+  arguments: [contacts_select_column!]
+  distinct: Boolean
+  filter: contacts_bool_exp
+  predicate: Int_comparison_exp!
+}
+
+"""
+aggregate fields of "contacts"
+"""
+type contacts_aggregate_fields {
+  avg: contacts_avg_fields
+  count(columns: [contacts_select_column!], distinct: Boolean): Int!
+  max: contacts_max_fields
+  min: contacts_min_fields
+  stddev: contacts_stddev_fields
+  stddev_pop: contacts_stddev_pop_fields
+  stddev_samp: contacts_stddev_samp_fields
+  sum: contacts_sum_fields
+  var_pop: contacts_var_pop_fields
+  var_samp: contacts_var_samp_fields
+  variance: contacts_variance_fields
+}
+
+"""
+order by aggregate values of table "contacts"
+"""
+input contacts_aggregate_order_by {
+  avg: contacts_avg_order_by
+  count: order_by
+  max: contacts_max_order_by
+  min: contacts_min_order_by
+  stddev: contacts_stddev_order_by
+  stddev_pop: contacts_stddev_pop_order_by
+  stddev_samp: contacts_stddev_samp_order_by
+  sum: contacts_sum_order_by
+  var_pop: contacts_var_pop_order_by
+  var_samp: contacts_var_samp_order_by
+  variance: contacts_variance_order_by
+}
+
+"""
+input type for inserting array relation for remote table "contacts"
+"""
+input contacts_arr_rel_insert_input {
+  data: [contacts_insert_input!]!
+  """upsert condition"""
+  on_conflict: contacts_on_conflict
+}
+
+"""aggregate avg on columns"""
+type contacts_avg_fields {
+  """
+  Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers.
+  """
+  submission_count: Float
+}
+
+"""
+order by avg() on columns of table "contacts"
+"""
+input contacts_avg_order_by {
+  """
+  Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers.
+  """
+  submission_count: order_by
+}
+
+"""
+Boolean expression to filter rows from the table "contacts". All fields are combined with a logical 'AND'.
+"""
+input contacts_bool_exp {
+  _and: [contacts_bool_exp!]
+  _not: contacts_bool_exp
+  _or: [contacts_bool_exp!]
+  avatar_url: String_comparison_exp
+  company_name: String_comparison_exp
+  company_website: String_comparison_exp
+  created_at: timestamptz_comparison_exp
+  email: String_comparison_exp
+  email_verified: Boolean_comparison_exp
+  first_seen_at: timestamptz_comparison_exp
+  id: String_comparison_exp
+  job_title: String_comparison_exp
+  last_seen_at: timestamptz_comparison_exp
+  linkedin_url: String_comparison_exp
+  name: String_comparison_exp
+  organization: organizations_bool_exp
+  organization_id: String_comparison_exp
+  source: String_comparison_exp
+  source_form: forms_bool_exp
+  source_form_id: String_comparison_exp
+  submission_count: Int_comparison_exp
+  submissions: form_submissions_bool_exp
+  submissions_aggregate: form_submissions_aggregate_bool_exp
+  twitter_url: String_comparison_exp
+  updated_at: timestamptz_comparison_exp
+}
+
+"""
+unique or primary key constraints on table "contacts"
+"""
+enum contacts_constraint {
+  """
+  unique or primary key constraint on columns "email", "organization_id"
+  """
+  contacts_org_email_unique
+  """
+  unique or primary key constraint on columns "id"
+  """
+  contacts_pkey
+}
+
+"""
+input type for incrementing numeric columns in table "contacts"
+"""
+input contacts_inc_input {
+  """
+  Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers.
+  """
+  submission_count: Int
+}
+
+"""
+input type for inserting data into table "contacts"
+"""
+input contacts_insert_input {
+  """
+  URL to profile photo or avatar image. Displayed alongside testimonials for visual social proof and authenticity.
+  """
+  avatar_url: String
+  """
+  Name of the company or organization where the contact works. Used for B2B testimonial displays and logo integration.
+  """
+  company_name: String
+  """
+  URL to the contact's company website. May be used for automated logo fetching or company verification.
+  """
+  company_website: String
+  """
+  Timestamp when this contact record was first created. Set automatically on insert, never modified thereafter.
+  """
+  created_at: timestamptz
+  """
+  Primary identifier for the contact. Unique within each organization. Used for deduplication when same person submits multiple testimonials across different forms.
+  """
+  email: String
+  """
+  Boolean flag indicating if email ownership has been confirmed via verification link. Verified contacts may receive preferential display treatment.
+  """
+  email_verified: Boolean
+  """
+  Timestamp of first interaction with the organization. Set on creation and never modified. Used for cohort analysis and engagement metrics.
+  """
+  first_seen_at: timestamptz
+  """
+  Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification.
+  """
+  id: String
+  """
+  Professional title or role (e.g., "VP of Engineering", "Founder"). Adds credibility context to testimonials, especially for B2B use cases.
+  """
+  job_title: String
+  """
+  Timestamp of most recent activity. Updated on each new submission or interaction. Used for identifying active vs dormant contacts.
+  """
+  last_seen_at: timestamptz
+  """
+  URL to LinkedIn profile. Provides professional verification and enables social proof through platform recognition.
+  """
+  linkedin_url: String
+  """
+  Display name of the contact. Collected from form submission contact_info step or enriched from external data sources like LinkedIn.
+  """
+  name: String
+  organization: organizations_obj_rel_insert_input
+  """
+  Foreign key to organizations table. Establishes tenant boundary - all contacts are scoped to a single organization for multi-tenancy isolation.
+  """
+  organization_id: String
+  """
+  Origin of this contact record: form_submission (created during testimonial submission), import (bulk CSV/API import), manual (admin created). Used for analytics and attribution.
+  """
+  source: String
+  source_form: forms_obj_rel_insert_input
+  """
+  Foreign key to forms table. References the first form through which this contact was acquired. Preserved even if form is later deleted (set null).
+  """
+  source_form_id: String
+  """
+  Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers.
+  """
+  submission_count: Int
+  submissions: form_submissions_arr_rel_insert_input
+  """
+  URL to Twitter/X profile. Used for social sharing integration and additional verification of contact identity.
+  """
+  twitter_url: String
+  """
+  Timestamp of last modification to this record. Automatically updated by database trigger on any column change.
+  """
+  updated_at: timestamptz
+}
+
+"""aggregate max on columns"""
+type contacts_max_fields {
+  """
+  URL to profile photo or avatar image. Displayed alongside testimonials for visual social proof and authenticity.
+  """
+  avatar_url: String
+  """
+  Name of the company or organization where the contact works. Used for B2B testimonial displays and logo integration.
+  """
+  company_name: String
+  """
+  URL to the contact's company website. May be used for automated logo fetching or company verification.
+  """
+  company_website: String
+  """
+  Timestamp when this contact record was first created. Set automatically on insert, never modified thereafter.
+  """
+  created_at: timestamptz
+  """
+  Primary identifier for the contact. Unique within each organization. Used for deduplication when same person submits multiple testimonials across different forms.
+  """
+  email: String
+  """
+  Timestamp of first interaction with the organization. Set on creation and never modified. Used for cohort analysis and engagement metrics.
+  """
+  first_seen_at: timestamptz
+  """
+  Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification.
+  """
+  id: String
+  """
+  Professional title or role (e.g., "VP of Engineering", "Founder"). Adds credibility context to testimonials, especially for B2B use cases.
+  """
+  job_title: String
+  """
+  Timestamp of most recent activity. Updated on each new submission or interaction. Used for identifying active vs dormant contacts.
+  """
+  last_seen_at: timestamptz
+  """
+  URL to LinkedIn profile. Provides professional verification and enables social proof through platform recognition.
+  """
+  linkedin_url: String
+  """
+  Display name of the contact. Collected from form submission contact_info step or enriched from external data sources like LinkedIn.
+  """
+  name: String
+  """
+  Foreign key to organizations table. Establishes tenant boundary - all contacts are scoped to a single organization for multi-tenancy isolation.
+  """
+  organization_id: String
+  """
+  Origin of this contact record: form_submission (created during testimonial submission), import (bulk CSV/API import), manual (admin created). Used for analytics and attribution.
+  """
+  source: String
+  """
+  Foreign key to forms table. References the first form through which this contact was acquired. Preserved even if form is later deleted (set null).
+  """
+  source_form_id: String
+  """
+  Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers.
+  """
+  submission_count: Int
+  """
+  URL to Twitter/X profile. Used for social sharing integration and additional verification of contact identity.
+  """
+  twitter_url: String
+  """
+  Timestamp of last modification to this record. Automatically updated by database trigger on any column change.
+  """
+  updated_at: timestamptz
+}
+
+"""
+order by max() on columns of table "contacts"
+"""
+input contacts_max_order_by {
+  """
+  URL to profile photo or avatar image. Displayed alongside testimonials for visual social proof and authenticity.
+  """
+  avatar_url: order_by
+  """
+  Name of the company or organization where the contact works. Used for B2B testimonial displays and logo integration.
+  """
+  company_name: order_by
+  """
+  URL to the contact's company website. May be used for automated logo fetching or company verification.
+  """
+  company_website: order_by
+  """
+  Timestamp when this contact record was first created. Set automatically on insert, never modified thereafter.
+  """
+  created_at: order_by
+  """
+  Primary identifier for the contact. Unique within each organization. Used for deduplication when same person submits multiple testimonials across different forms.
+  """
+  email: order_by
+  """
+  Timestamp of first interaction with the organization. Set on creation and never modified. Used for cohort analysis and engagement metrics.
+  """
+  first_seen_at: order_by
+  """
+  Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification.
+  """
+  id: order_by
+  """
+  Professional title or role (e.g., "VP of Engineering", "Founder"). Adds credibility context to testimonials, especially for B2B use cases.
+  """
+  job_title: order_by
+  """
+  Timestamp of most recent activity. Updated on each new submission or interaction. Used for identifying active vs dormant contacts.
+  """
+  last_seen_at: order_by
+  """
+  URL to LinkedIn profile. Provides professional verification and enables social proof through platform recognition.
+  """
+  linkedin_url: order_by
+  """
+  Display name of the contact. Collected from form submission contact_info step or enriched from external data sources like LinkedIn.
+  """
+  name: order_by
+  """
+  Foreign key to organizations table. Establishes tenant boundary - all contacts are scoped to a single organization for multi-tenancy isolation.
+  """
+  organization_id: order_by
+  """
+  Origin of this contact record: form_submission (created during testimonial submission), import (bulk CSV/API import), manual (admin created). Used for analytics and attribution.
+  """
+  source: order_by
+  """
+  Foreign key to forms table. References the first form through which this contact was acquired. Preserved even if form is later deleted (set null).
+  """
+  source_form_id: order_by
+  """
+  Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers.
+  """
+  submission_count: order_by
+  """
+  URL to Twitter/X profile. Used for social sharing integration and additional verification of contact identity.
+  """
+  twitter_url: order_by
+  """
+  Timestamp of last modification to this record. Automatically updated by database trigger on any column change.
+  """
+  updated_at: order_by
+}
+
+"""aggregate min on columns"""
+type contacts_min_fields {
+  """
+  URL to profile photo or avatar image. Displayed alongside testimonials for visual social proof and authenticity.
+  """
+  avatar_url: String
+  """
+  Name of the company or organization where the contact works. Used for B2B testimonial displays and logo integration.
+  """
+  company_name: String
+  """
+  URL to the contact's company website. May be used for automated logo fetching or company verification.
+  """
+  company_website: String
+  """
+  Timestamp when this contact record was first created. Set automatically on insert, never modified thereafter.
+  """
+  created_at: timestamptz
+  """
+  Primary identifier for the contact. Unique within each organization. Used for deduplication when same person submits multiple testimonials across different forms.
+  """
+  email: String
+  """
+  Timestamp of first interaction with the organization. Set on creation and never modified. Used for cohort analysis and engagement metrics.
+  """
+  first_seen_at: timestamptz
+  """
+  Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification.
+  """
+  id: String
+  """
+  Professional title or role (e.g., "VP of Engineering", "Founder"). Adds credibility context to testimonials, especially for B2B use cases.
+  """
+  job_title: String
+  """
+  Timestamp of most recent activity. Updated on each new submission or interaction. Used for identifying active vs dormant contacts.
+  """
+  last_seen_at: timestamptz
+  """
+  URL to LinkedIn profile. Provides professional verification and enables social proof through platform recognition.
+  """
+  linkedin_url: String
+  """
+  Display name of the contact. Collected from form submission contact_info step or enriched from external data sources like LinkedIn.
+  """
+  name: String
+  """
+  Foreign key to organizations table. Establishes tenant boundary - all contacts are scoped to a single organization for multi-tenancy isolation.
+  """
+  organization_id: String
+  """
+  Origin of this contact record: form_submission (created during testimonial submission), import (bulk CSV/API import), manual (admin created). Used for analytics and attribution.
+  """
+  source: String
+  """
+  Foreign key to forms table. References the first form through which this contact was acquired. Preserved even if form is later deleted (set null).
+  """
+  source_form_id: String
+  """
+  Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers.
+  """
+  submission_count: Int
+  """
+  URL to Twitter/X profile. Used for social sharing integration and additional verification of contact identity.
+  """
+  twitter_url: String
+  """
+  Timestamp of last modification to this record. Automatically updated by database trigger on any column change.
+  """
+  updated_at: timestamptz
+}
+
+"""
+order by min() on columns of table "contacts"
+"""
+input contacts_min_order_by {
+  """
+  URL to profile photo or avatar image. Displayed alongside testimonials for visual social proof and authenticity.
+  """
+  avatar_url: order_by
+  """
+  Name of the company or organization where the contact works. Used for B2B testimonial displays and logo integration.
+  """
+  company_name: order_by
+  """
+  URL to the contact's company website. May be used for automated logo fetching or company verification.
+  """
+  company_website: order_by
+  """
+  Timestamp when this contact record was first created. Set automatically on insert, never modified thereafter.
+  """
+  created_at: order_by
+  """
+  Primary identifier for the contact. Unique within each organization. Used for deduplication when same person submits multiple testimonials across different forms.
+  """
+  email: order_by
+  """
+  Timestamp of first interaction with the organization. Set on creation and never modified. Used for cohort analysis and engagement metrics.
+  """
+  first_seen_at: order_by
+  """
+  Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification.
+  """
+  id: order_by
+  """
+  Professional title or role (e.g., "VP of Engineering", "Founder"). Adds credibility context to testimonials, especially for B2B use cases.
+  """
+  job_title: order_by
+  """
+  Timestamp of most recent activity. Updated on each new submission or interaction. Used for identifying active vs dormant contacts.
+  """
+  last_seen_at: order_by
+  """
+  URL to LinkedIn profile. Provides professional verification and enables social proof through platform recognition.
+  """
+  linkedin_url: order_by
+  """
+  Display name of the contact. Collected from form submission contact_info step or enriched from external data sources like LinkedIn.
+  """
+  name: order_by
+  """
+  Foreign key to organizations table. Establishes tenant boundary - all contacts are scoped to a single organization for multi-tenancy isolation.
+  """
+  organization_id: order_by
+  """
+  Origin of this contact record: form_submission (created during testimonial submission), import (bulk CSV/API import), manual (admin created). Used for analytics and attribution.
+  """
+  source: order_by
+  """
+  Foreign key to forms table. References the first form through which this contact was acquired. Preserved even if form is later deleted (set null).
+  """
+  source_form_id: order_by
+  """
+  Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers.
+  """
+  submission_count: order_by
+  """
+  URL to Twitter/X profile. Used for social sharing integration and additional verification of contact identity.
+  """
+  twitter_url: order_by
+  """
+  Timestamp of last modification to this record. Automatically updated by database trigger on any column change.
+  """
+  updated_at: order_by
+}
+
+"""
+response of any mutation on the table "contacts"
+"""
+type contacts_mutation_response {
+  """number of rows affected by the mutation"""
+  affected_rows: Int!
+  """data from the rows affected by the mutation"""
+  returning: [contacts!]!
+}
+
+"""
+input type for inserting object relation for remote table "contacts"
+"""
+input contacts_obj_rel_insert_input {
+  data: contacts_insert_input!
+  """upsert condition"""
+  on_conflict: contacts_on_conflict
+}
+
+"""
+on_conflict condition type for table "contacts"
+"""
+input contacts_on_conflict {
+  constraint: contacts_constraint!
+  update_columns: [contacts_update_column!]! = []
+  where: contacts_bool_exp
+}
+
+"""Ordering options when selecting data from "contacts"."""
+input contacts_order_by {
+  avatar_url: order_by
+  company_name: order_by
+  company_website: order_by
+  created_at: order_by
+  email: order_by
+  email_verified: order_by
+  first_seen_at: order_by
+  id: order_by
+  job_title: order_by
+  last_seen_at: order_by
+  linkedin_url: order_by
+  name: order_by
+  organization: organizations_order_by
+  organization_id: order_by
+  source: order_by
+  source_form: forms_order_by
+  source_form_id: order_by
+  submission_count: order_by
+  submissions_aggregate: form_submissions_aggregate_order_by
+  twitter_url: order_by
+  updated_at: order_by
+}
+
+"""primary key columns input for table: contacts"""
+input contacts_pk_columns_input {
+  """
+  Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification.
+  """
+  id: String!
+}
+
+"""
+select columns of table "contacts"
+"""
+enum contacts_select_column {
+  """column name"""
+  avatar_url
+  """column name"""
+  company_name
+  """column name"""
+  company_website
+  """column name"""
+  created_at
+  """column name"""
+  email
+  """column name"""
+  email_verified
+  """column name"""
+  first_seen_at
+  """column name"""
+  id
+  """column name"""
+  job_title
+  """column name"""
+  last_seen_at
+  """column name"""
+  linkedin_url
+  """column name"""
+  name
+  """column name"""
+  organization_id
+  """column name"""
+  source
+  """column name"""
+  source_form_id
+  """column name"""
+  submission_count
+  """column name"""
+  twitter_url
+  """column name"""
+  updated_at
+}
+
+"""
+select "contacts_aggregate_bool_exp_bool_and_arguments_columns" columns of table "contacts"
+"""
+enum contacts_select_column_contacts_aggregate_bool_exp_bool_and_arguments_columns {
+  """column name"""
+  email_verified
+}
+
+"""
+select "contacts_aggregate_bool_exp_bool_or_arguments_columns" columns of table "contacts"
+"""
+enum contacts_select_column_contacts_aggregate_bool_exp_bool_or_arguments_columns {
+  """column name"""
+  email_verified
+}
+
+"""
+input type for updating data in table "contacts"
+"""
+input contacts_set_input {
+  """
+  URL to profile photo or avatar image. Displayed alongside testimonials for visual social proof and authenticity.
+  """
+  avatar_url: String
+  """
+  Name of the company or organization where the contact works. Used for B2B testimonial displays and logo integration.
+  """
+  company_name: String
+  """
+  URL to the contact's company website. May be used for automated logo fetching or company verification.
+  """
+  company_website: String
+  """
+  Timestamp when this contact record was first created. Set automatically on insert, never modified thereafter.
+  """
+  created_at: timestamptz
+  """
+  Primary identifier for the contact. Unique within each organization. Used for deduplication when same person submits multiple testimonials across different forms.
+  """
+  email: String
+  """
+  Boolean flag indicating if email ownership has been confirmed via verification link. Verified contacts may receive preferential display treatment.
+  """
+  email_verified: Boolean
+  """
+  Timestamp of first interaction with the organization. Set on creation and never modified. Used for cohort analysis and engagement metrics.
+  """
+  first_seen_at: timestamptz
+  """
+  Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification.
+  """
+  id: String
+  """
+  Professional title or role (e.g., "VP of Engineering", "Founder"). Adds credibility context to testimonials, especially for B2B use cases.
+  """
+  job_title: String
+  """
+  Timestamp of most recent activity. Updated on each new submission or interaction. Used for identifying active vs dormant contacts.
+  """
+  last_seen_at: timestamptz
+  """
+  URL to LinkedIn profile. Provides professional verification and enables social proof through platform recognition.
+  """
+  linkedin_url: String
+  """
+  Display name of the contact. Collected from form submission contact_info step or enriched from external data sources like LinkedIn.
+  """
+  name: String
+  """
+  Foreign key to organizations table. Establishes tenant boundary - all contacts are scoped to a single organization for multi-tenancy isolation.
+  """
+  organization_id: String
+  """
+  Origin of this contact record: form_submission (created during testimonial submission), import (bulk CSV/API import), manual (admin created). Used for analytics and attribution.
+  """
+  source: String
+  """
+  Foreign key to forms table. References the first form through which this contact was acquired. Preserved even if form is later deleted (set null).
+  """
+  source_form_id: String
+  """
+  Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers.
+  """
+  submission_count: Int
+  """
+  URL to Twitter/X profile. Used for social sharing integration and additional verification of contact identity.
+  """
+  twitter_url: String
+  """
+  Timestamp of last modification to this record. Automatically updated by database trigger on any column change.
+  """
+  updated_at: timestamptz
+}
+
+"""aggregate stddev on columns"""
+type contacts_stddev_fields {
+  """
+  Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers.
+  """
+  submission_count: Float
+}
+
+"""
+order by stddev() on columns of table "contacts"
+"""
+input contacts_stddev_order_by {
+  """
+  Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers.
+  """
+  submission_count: order_by
+}
+
+"""aggregate stddev_pop on columns"""
+type contacts_stddev_pop_fields {
+  """
+  Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers.
+  """
+  submission_count: Float
+}
+
+"""
+order by stddev_pop() on columns of table "contacts"
+"""
+input contacts_stddev_pop_order_by {
+  """
+  Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers.
+  """
+  submission_count: order_by
+}
+
+"""aggregate stddev_samp on columns"""
+type contacts_stddev_samp_fields {
+  """
+  Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers.
+  """
+  submission_count: Float
+}
+
+"""
+order by stddev_samp() on columns of table "contacts"
+"""
+input contacts_stddev_samp_order_by {
+  """
+  Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers.
+  """
+  submission_count: order_by
+}
+
+"""
+Streaming cursor of the table "contacts"
+"""
+input contacts_stream_cursor_input {
+  """Stream column input with initial value"""
+  initial_value: contacts_stream_cursor_value_input!
+  """cursor ordering"""
+  ordering: cursor_ordering
+}
+
+"""Initial value of the column from where the streaming should start"""
+input contacts_stream_cursor_value_input {
+  """
+  URL to profile photo or avatar image. Displayed alongside testimonials for visual social proof and authenticity.
+  """
+  avatar_url: String
+  """
+  Name of the company or organization where the contact works. Used for B2B testimonial displays and logo integration.
+  """
+  company_name: String
+  """
+  URL to the contact's company website. May be used for automated logo fetching or company verification.
+  """
+  company_website: String
+  """
+  Timestamp when this contact record was first created. Set automatically on insert, never modified thereafter.
+  """
+  created_at: timestamptz
+  """
+  Primary identifier for the contact. Unique within each organization. Used for deduplication when same person submits multiple testimonials across different forms.
+  """
+  email: String
+  """
+  Boolean flag indicating if email ownership has been confirmed via verification link. Verified contacts may receive preferential display treatment.
+  """
+  email_verified: Boolean
+  """
+  Timestamp of first interaction with the organization. Set on creation and never modified. Used for cohort analysis and engagement metrics.
+  """
+  first_seen_at: timestamptz
+  """
+  Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification.
+  """
+  id: String
+  """
+  Professional title or role (e.g., "VP of Engineering", "Founder"). Adds credibility context to testimonials, especially for B2B use cases.
+  """
+  job_title: String
+  """
+  Timestamp of most recent activity. Updated on each new submission or interaction. Used for identifying active vs dormant contacts.
+  """
+  last_seen_at: timestamptz
+  """
+  URL to LinkedIn profile. Provides professional verification and enables social proof through platform recognition.
+  """
+  linkedin_url: String
+  """
+  Display name of the contact. Collected from form submission contact_info step or enriched from external data sources like LinkedIn.
+  """
+  name: String
+  """
+  Foreign key to organizations table. Establishes tenant boundary - all contacts are scoped to a single organization for multi-tenancy isolation.
+  """
+  organization_id: String
+  """
+  Origin of this contact record: form_submission (created during testimonial submission), import (bulk CSV/API import), manual (admin created). Used for analytics and attribution.
+  """
+  source: String
+  """
+  Foreign key to forms table. References the first form through which this contact was acquired. Preserved even if form is later deleted (set null).
+  """
+  source_form_id: String
+  """
+  Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers.
+  """
+  submission_count: Int
+  """
+  URL to Twitter/X profile. Used for social sharing integration and additional verification of contact identity.
+  """
+  twitter_url: String
+  """
+  Timestamp of last modification to this record. Automatically updated by database trigger on any column change.
+  """
+  updated_at: timestamptz
+}
+
+"""aggregate sum on columns"""
+type contacts_sum_fields {
+  """
+  Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers.
+  """
+  submission_count: Int
+}
+
+"""
+order by sum() on columns of table "contacts"
+"""
+input contacts_sum_order_by {
+  """
+  Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers.
+  """
+  submission_count: order_by
+}
+
+"""
+update columns of table "contacts"
+"""
+enum contacts_update_column {
+  """column name"""
+  avatar_url
+  """column name"""
+  company_name
+  """column name"""
+  company_website
+  """column name"""
+  created_at
+  """column name"""
+  email
+  """column name"""
+  email_verified
+  """column name"""
+  first_seen_at
+  """column name"""
+  id
+  """column name"""
+  job_title
+  """column name"""
+  last_seen_at
+  """column name"""
+  linkedin_url
+  """column name"""
+  name
+  """column name"""
+  organization_id
+  """column name"""
+  source
+  """column name"""
+  source_form_id
+  """column name"""
+  submission_count
+  """column name"""
+  twitter_url
+  """column name"""
+  updated_at
+}
+
+input contacts_updates {
+  """increments the numeric columns with given value of the filtered values"""
+  _inc: contacts_inc_input
+  """sets the columns of the filtered rows to the given values"""
+  _set: contacts_set_input
+  """filter the rows which have to be updated"""
+  where: contacts_bool_exp!
+}
+
+"""aggregate var_pop on columns"""
+type contacts_var_pop_fields {
+  """
+  Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers.
+  """
+  submission_count: Float
+}
+
+"""
+order by var_pop() on columns of table "contacts"
+"""
+input contacts_var_pop_order_by {
+  """
+  Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers.
+  """
+  submission_count: order_by
+}
+
+"""aggregate var_samp on columns"""
+type contacts_var_samp_fields {
+  """
+  Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers.
+  """
+  submission_count: Float
+}
+
+"""
+order by var_samp() on columns of table "contacts"
+"""
+input contacts_var_samp_order_by {
+  """
+  Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers.
+  """
+  submission_count: order_by
+}
+
+"""aggregate variance on columns"""
+type contacts_variance_fields {
+  """
+  Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers.
+  """
+  submission_count: Float
+}
+
+"""
+order by variance() on columns of table "contacts"
+"""
+input contacts_variance_order_by {
+  """
+  Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers.
+  """
+  submission_count: order_by
+}
+
 """ordering argument of a cursor"""
 enum cursor_ordering {
   """ascending ordering of the cursor"""
@@ -2229,9 +3321,942 @@ input form_questions_variance_order_by {
 }
 
 """
+Stores step configuration per form for the timeline editor. Each step represents a screen in the testimonial collection flow (welcome, questions, consent, contact info, reward, thank you).
+"""
+type form_steps {
+  """
+  JSONB payload with type-specific configuration. Structure varies by step_type. Empty for question/rating types which use form_questions table instead.
+  """
+  content(
+    """JSON select path"""
+    path: String
+  ): jsonb!
+  """
+  Timestamp when this step record was first created. Set automatically, never modified.
+  """
+  created_at: timestamptz!
+  """
+  Foreign key to users table. Records which user originally created this step for audit purposes.
+  """
+  created_by: String
+  """An object relationship"""
+  creator: users
+  """An object relationship"""
+  form: forms!
+  """
+  Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed.
+  """
+  form_id: String!
+  """
+  Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification.
+  """
+  id: String!
+  """
+  Soft delete flag. False hides step from form while preserving data for historical analysis and potential restoration.
+  """
+  is_active: Boolean!
+  """An object relationship"""
+  organization: organizations!
+  """
+  Foreign key to organizations table. Denormalized from form for efficient row-level security queries. Must match form.organization_id.
+  """
+  organization_id: String!
+  """An object relationship"""
+  question: form_questions
+  """
+  Foreign key to form_questions table. Required for question/rating step types to link validation config. Must be NULL for non-question types.
+  """
+  question_id: String
+  """
+  Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form.
+  """
+  step_order: smallint!
+  """
+  Enumerated type determining step behavior: welcome (intro screen), question (text input), rating (star/scale), consent (public/private choice), contact_info (submitter details), reward (incentive), thank_you (completion).
+  """
+  step_type: String!
+  """
+  Array of helper text strings shown to customers during question/rating steps. Provides guidance for better quality responses.
+  """
+  tips: [String!]
+  """
+  Timestamp of last modification. Automatically updated by database trigger on any column change.
+  """
+  updated_at: timestamptz!
+  """
+  Foreign key to users table. Records which user last modified this step for audit trail.
+  """
+  updated_by: String
+  """An object relationship"""
+  updater: users
+}
+
+"""
+aggregated selection of "form_steps"
+"""
+type form_steps_aggregate {
+  aggregate: form_steps_aggregate_fields
+  nodes: [form_steps!]!
+}
+
+input form_steps_aggregate_bool_exp {
+  bool_and: form_steps_aggregate_bool_exp_bool_and
+  bool_or: form_steps_aggregate_bool_exp_bool_or
+  count: form_steps_aggregate_bool_exp_count
+}
+
+input form_steps_aggregate_bool_exp_bool_and {
+  arguments: form_steps_select_column_form_steps_aggregate_bool_exp_bool_and_arguments_columns!
+  distinct: Boolean
+  filter: form_steps_bool_exp
+  predicate: Boolean_comparison_exp!
+}
+
+input form_steps_aggregate_bool_exp_bool_or {
+  arguments: form_steps_select_column_form_steps_aggregate_bool_exp_bool_or_arguments_columns!
+  distinct: Boolean
+  filter: form_steps_bool_exp
+  predicate: Boolean_comparison_exp!
+}
+
+input form_steps_aggregate_bool_exp_count {
+  arguments: [form_steps_select_column!]
+  distinct: Boolean
+  filter: form_steps_bool_exp
+  predicate: Int_comparison_exp!
+}
+
+"""
+aggregate fields of "form_steps"
+"""
+type form_steps_aggregate_fields {
+  avg: form_steps_avg_fields
+  count(columns: [form_steps_select_column!], distinct: Boolean): Int!
+  max: form_steps_max_fields
+  min: form_steps_min_fields
+  stddev: form_steps_stddev_fields
+  stddev_pop: form_steps_stddev_pop_fields
+  stddev_samp: form_steps_stddev_samp_fields
+  sum: form_steps_sum_fields
+  var_pop: form_steps_var_pop_fields
+  var_samp: form_steps_var_samp_fields
+  variance: form_steps_variance_fields
+}
+
+"""
+order by aggregate values of table "form_steps"
+"""
+input form_steps_aggregate_order_by {
+  avg: form_steps_avg_order_by
+  count: order_by
+  max: form_steps_max_order_by
+  min: form_steps_min_order_by
+  stddev: form_steps_stddev_order_by
+  stddev_pop: form_steps_stddev_pop_order_by
+  stddev_samp: form_steps_stddev_samp_order_by
+  sum: form_steps_sum_order_by
+  var_pop: form_steps_var_pop_order_by
+  var_samp: form_steps_var_samp_order_by
+  variance: form_steps_variance_order_by
+}
+
+"""append existing jsonb value of filtered columns with new jsonb value"""
+input form_steps_append_input {
+  """
+  JSONB payload with type-specific configuration. Structure varies by step_type. Empty for question/rating types which use form_questions table instead.
+  """
+  content: jsonb
+}
+
+"""
+input type for inserting array relation for remote table "form_steps"
+"""
+input form_steps_arr_rel_insert_input {
+  data: [form_steps_insert_input!]!
+  """upsert condition"""
+  on_conflict: form_steps_on_conflict
+}
+
+"""aggregate avg on columns"""
+type form_steps_avg_fields {
+  """
+  Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form.
+  """
+  step_order: Float
+}
+
+"""
+order by avg() on columns of table "form_steps"
+"""
+input form_steps_avg_order_by {
+  """
+  Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form.
+  """
+  step_order: order_by
+}
+
+"""
+Boolean expression to filter rows from the table "form_steps". All fields are combined with a logical 'AND'.
+"""
+input form_steps_bool_exp {
+  _and: [form_steps_bool_exp!]
+  _not: form_steps_bool_exp
+  _or: [form_steps_bool_exp!]
+  content: jsonb_comparison_exp
+  created_at: timestamptz_comparison_exp
+  created_by: String_comparison_exp
+  creator: users_bool_exp
+  form: forms_bool_exp
+  form_id: String_comparison_exp
+  id: String_comparison_exp
+  is_active: Boolean_comparison_exp
+  organization: organizations_bool_exp
+  organization_id: String_comparison_exp
+  question: form_questions_bool_exp
+  question_id: String_comparison_exp
+  step_order: smallint_comparison_exp
+  step_type: String_comparison_exp
+  tips: String_array_comparison_exp
+  updated_at: timestamptz_comparison_exp
+  updated_by: String_comparison_exp
+  updater: users_bool_exp
+}
+
+"""
+unique or primary key constraints on table "form_steps"
+"""
+enum form_steps_constraint {
+  """
+  unique or primary key constraint on columns "step_order", "form_id"
+  """
+  form_steps_form_order_unique
+  """
+  unique or primary key constraint on columns "id"
+  """
+  form_steps_pkey
+}
+
+"""
+delete the field or element with specified path (for JSON arrays, negative integers count from the end)
+"""
+input form_steps_delete_at_path_input {
+  """
+  JSONB payload with type-specific configuration. Structure varies by step_type. Empty for question/rating types which use form_questions table instead.
+  """
+  content: [String!]
+}
+
+"""
+delete the array element with specified index (negative integers count from the end). throws an error if top level container is not an array
+"""
+input form_steps_delete_elem_input {
+  """
+  JSONB payload with type-specific configuration. Structure varies by step_type. Empty for question/rating types which use form_questions table instead.
+  """
+  content: Int
+}
+
+"""
+delete key/value pair or string element. key/value pairs are matched based on their key value
+"""
+input form_steps_delete_key_input {
+  """
+  JSONB payload with type-specific configuration. Structure varies by step_type. Empty for question/rating types which use form_questions table instead.
+  """
+  content: String
+}
+
+"""
+input type for incrementing numeric columns in table "form_steps"
+"""
+input form_steps_inc_input {
+  """
+  Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form.
+  """
+  step_order: smallint
+}
+
+"""
+input type for inserting data into table "form_steps"
+"""
+input form_steps_insert_input {
+  """
+  JSONB payload with type-specific configuration. Structure varies by step_type. Empty for question/rating types which use form_questions table instead.
+  """
+  content: jsonb
+  """
+  Timestamp when this step record was first created. Set automatically, never modified.
+  """
+  created_at: timestamptz
+  """
+  Foreign key to users table. Records which user originally created this step for audit purposes.
+  """
+  created_by: String
+  creator: users_obj_rel_insert_input
+  form: forms_obj_rel_insert_input
+  """
+  Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed.
+  """
+  form_id: String
+  """
+  Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification.
+  """
+  id: String
+  """
+  Soft delete flag. False hides step from form while preserving data for historical analysis and potential restoration.
+  """
+  is_active: Boolean
+  organization: organizations_obj_rel_insert_input
+  """
+  Foreign key to organizations table. Denormalized from form for efficient row-level security queries. Must match form.organization_id.
+  """
+  organization_id: String
+  question: form_questions_obj_rel_insert_input
+  """
+  Foreign key to form_questions table. Required for question/rating step types to link validation config. Must be NULL for non-question types.
+  """
+  question_id: String
+  """
+  Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form.
+  """
+  step_order: smallint
+  """
+  Enumerated type determining step behavior: welcome (intro screen), question (text input), rating (star/scale), consent (public/private choice), contact_info (submitter details), reward (incentive), thank_you (completion).
+  """
+  step_type: String
+  """
+  Array of helper text strings shown to customers during question/rating steps. Provides guidance for better quality responses.
+  """
+  tips: [String!]
+  """
+  Timestamp of last modification. Automatically updated by database trigger on any column change.
+  """
+  updated_at: timestamptz
+  """
+  Foreign key to users table. Records which user last modified this step for audit trail.
+  """
+  updated_by: String
+  updater: users_obj_rel_insert_input
+}
+
+"""aggregate max on columns"""
+type form_steps_max_fields {
+  """
+  Timestamp when this step record was first created. Set automatically, never modified.
+  """
+  created_at: timestamptz
+  """
+  Foreign key to users table. Records which user originally created this step for audit purposes.
+  """
+  created_by: String
+  """
+  Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed.
+  """
+  form_id: String
+  """
+  Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification.
+  """
+  id: String
+  """
+  Foreign key to organizations table. Denormalized from form for efficient row-level security queries. Must match form.organization_id.
+  """
+  organization_id: String
+  """
+  Foreign key to form_questions table. Required for question/rating step types to link validation config. Must be NULL for non-question types.
+  """
+  question_id: String
+  """
+  Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form.
+  """
+  step_order: smallint
+  """
+  Enumerated type determining step behavior: welcome (intro screen), question (text input), rating (star/scale), consent (public/private choice), contact_info (submitter details), reward (incentive), thank_you (completion).
+  """
+  step_type: String
+  """
+  Array of helper text strings shown to customers during question/rating steps. Provides guidance for better quality responses.
+  """
+  tips: [String!]
+  """
+  Timestamp of last modification. Automatically updated by database trigger on any column change.
+  """
+  updated_at: timestamptz
+  """
+  Foreign key to users table. Records which user last modified this step for audit trail.
+  """
+  updated_by: String
+}
+
+"""
+order by max() on columns of table "form_steps"
+"""
+input form_steps_max_order_by {
+  """
+  Timestamp when this step record was first created. Set automatically, never modified.
+  """
+  created_at: order_by
+  """
+  Foreign key to users table. Records which user originally created this step for audit purposes.
+  """
+  created_by: order_by
+  """
+  Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed.
+  """
+  form_id: order_by
+  """
+  Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification.
+  """
+  id: order_by
+  """
+  Foreign key to organizations table. Denormalized from form for efficient row-level security queries. Must match form.organization_id.
+  """
+  organization_id: order_by
+  """
+  Foreign key to form_questions table. Required for question/rating step types to link validation config. Must be NULL for non-question types.
+  """
+  question_id: order_by
+  """
+  Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form.
+  """
+  step_order: order_by
+  """
+  Enumerated type determining step behavior: welcome (intro screen), question (text input), rating (star/scale), consent (public/private choice), contact_info (submitter details), reward (incentive), thank_you (completion).
+  """
+  step_type: order_by
+  """
+  Array of helper text strings shown to customers during question/rating steps. Provides guidance for better quality responses.
+  """
+  tips: order_by
+  """
+  Timestamp of last modification. Automatically updated by database trigger on any column change.
+  """
+  updated_at: order_by
+  """
+  Foreign key to users table. Records which user last modified this step for audit trail.
+  """
+  updated_by: order_by
+}
+
+"""aggregate min on columns"""
+type form_steps_min_fields {
+  """
+  Timestamp when this step record was first created. Set automatically, never modified.
+  """
+  created_at: timestamptz
+  """
+  Foreign key to users table. Records which user originally created this step for audit purposes.
+  """
+  created_by: String
+  """
+  Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed.
+  """
+  form_id: String
+  """
+  Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification.
+  """
+  id: String
+  """
+  Foreign key to organizations table. Denormalized from form for efficient row-level security queries. Must match form.organization_id.
+  """
+  organization_id: String
+  """
+  Foreign key to form_questions table. Required for question/rating step types to link validation config. Must be NULL for non-question types.
+  """
+  question_id: String
+  """
+  Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form.
+  """
+  step_order: smallint
+  """
+  Enumerated type determining step behavior: welcome (intro screen), question (text input), rating (star/scale), consent (public/private choice), contact_info (submitter details), reward (incentive), thank_you (completion).
+  """
+  step_type: String
+  """
+  Array of helper text strings shown to customers during question/rating steps. Provides guidance for better quality responses.
+  """
+  tips: [String!]
+  """
+  Timestamp of last modification. Automatically updated by database trigger on any column change.
+  """
+  updated_at: timestamptz
+  """
+  Foreign key to users table. Records which user last modified this step for audit trail.
+  """
+  updated_by: String
+}
+
+"""
+order by min() on columns of table "form_steps"
+"""
+input form_steps_min_order_by {
+  """
+  Timestamp when this step record was first created. Set automatically, never modified.
+  """
+  created_at: order_by
+  """
+  Foreign key to users table. Records which user originally created this step for audit purposes.
+  """
+  created_by: order_by
+  """
+  Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed.
+  """
+  form_id: order_by
+  """
+  Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification.
+  """
+  id: order_by
+  """
+  Foreign key to organizations table. Denormalized from form for efficient row-level security queries. Must match form.organization_id.
+  """
+  organization_id: order_by
+  """
+  Foreign key to form_questions table. Required for question/rating step types to link validation config. Must be NULL for non-question types.
+  """
+  question_id: order_by
+  """
+  Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form.
+  """
+  step_order: order_by
+  """
+  Enumerated type determining step behavior: welcome (intro screen), question (text input), rating (star/scale), consent (public/private choice), contact_info (submitter details), reward (incentive), thank_you (completion).
+  """
+  step_type: order_by
+  """
+  Array of helper text strings shown to customers during question/rating steps. Provides guidance for better quality responses.
+  """
+  tips: order_by
+  """
+  Timestamp of last modification. Automatically updated by database trigger on any column change.
+  """
+  updated_at: order_by
+  """
+  Foreign key to users table. Records which user last modified this step for audit trail.
+  """
+  updated_by: order_by
+}
+
+"""
+response of any mutation on the table "form_steps"
+"""
+type form_steps_mutation_response {
+  """number of rows affected by the mutation"""
+  affected_rows: Int!
+  """data from the rows affected by the mutation"""
+  returning: [form_steps!]!
+}
+
+"""
+on_conflict condition type for table "form_steps"
+"""
+input form_steps_on_conflict {
+  constraint: form_steps_constraint!
+  update_columns: [form_steps_update_column!]! = []
+  where: form_steps_bool_exp
+}
+
+"""Ordering options when selecting data from "form_steps"."""
+input form_steps_order_by {
+  content: order_by
+  created_at: order_by
+  created_by: order_by
+  creator: users_order_by
+  form: forms_order_by
+  form_id: order_by
+  id: order_by
+  is_active: order_by
+  organization: organizations_order_by
+  organization_id: order_by
+  question: form_questions_order_by
+  question_id: order_by
+  step_order: order_by
+  step_type: order_by
+  tips: order_by
+  updated_at: order_by
+  updated_by: order_by
+  updater: users_order_by
+}
+
+"""primary key columns input for table: form_steps"""
+input form_steps_pk_columns_input {
+  """
+  Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification.
+  """
+  id: String!
+}
+
+"""prepend existing jsonb value of filtered columns with new jsonb value"""
+input form_steps_prepend_input {
+  """
+  JSONB payload with type-specific configuration. Structure varies by step_type. Empty for question/rating types which use form_questions table instead.
+  """
+  content: jsonb
+}
+
+"""
+select columns of table "form_steps"
+"""
+enum form_steps_select_column {
+  """column name"""
+  content
+  """column name"""
+  created_at
+  """column name"""
+  created_by
+  """column name"""
+  form_id
+  """column name"""
+  id
+  """column name"""
+  is_active
+  """column name"""
+  organization_id
+  """column name"""
+  question_id
+  """column name"""
+  step_order
+  """column name"""
+  step_type
+  """column name"""
+  tips
+  """column name"""
+  updated_at
+  """column name"""
+  updated_by
+}
+
+"""
+select "form_steps_aggregate_bool_exp_bool_and_arguments_columns" columns of table "form_steps"
+"""
+enum form_steps_select_column_form_steps_aggregate_bool_exp_bool_and_arguments_columns {
+  """column name"""
+  is_active
+}
+
+"""
+select "form_steps_aggregate_bool_exp_bool_or_arguments_columns" columns of table "form_steps"
+"""
+enum form_steps_select_column_form_steps_aggregate_bool_exp_bool_or_arguments_columns {
+  """column name"""
+  is_active
+}
+
+"""
+input type for updating data in table "form_steps"
+"""
+input form_steps_set_input {
+  """
+  JSONB payload with type-specific configuration. Structure varies by step_type. Empty for question/rating types which use form_questions table instead.
+  """
+  content: jsonb
+  """
+  Timestamp when this step record was first created. Set automatically, never modified.
+  """
+  created_at: timestamptz
+  """
+  Foreign key to users table. Records which user originally created this step for audit purposes.
+  """
+  created_by: String
+  """
+  Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed.
+  """
+  form_id: String
+  """
+  Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification.
+  """
+  id: String
+  """
+  Soft delete flag. False hides step from form while preserving data for historical analysis and potential restoration.
+  """
+  is_active: Boolean
+  """
+  Foreign key to organizations table. Denormalized from form for efficient row-level security queries. Must match form.organization_id.
+  """
+  organization_id: String
+  """
+  Foreign key to form_questions table. Required for question/rating step types to link validation config. Must be NULL for non-question types.
+  """
+  question_id: String
+  """
+  Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form.
+  """
+  step_order: smallint
+  """
+  Enumerated type determining step behavior: welcome (intro screen), question (text input), rating (star/scale), consent (public/private choice), contact_info (submitter details), reward (incentive), thank_you (completion).
+  """
+  step_type: String
+  """
+  Array of helper text strings shown to customers during question/rating steps. Provides guidance for better quality responses.
+  """
+  tips: [String!]
+  """
+  Timestamp of last modification. Automatically updated by database trigger on any column change.
+  """
+  updated_at: timestamptz
+  """
+  Foreign key to users table. Records which user last modified this step for audit trail.
+  """
+  updated_by: String
+}
+
+"""aggregate stddev on columns"""
+type form_steps_stddev_fields {
+  """
+  Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form.
+  """
+  step_order: Float
+}
+
+"""
+order by stddev() on columns of table "form_steps"
+"""
+input form_steps_stddev_order_by {
+  """
+  Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form.
+  """
+  step_order: order_by
+}
+
+"""aggregate stddev_pop on columns"""
+type form_steps_stddev_pop_fields {
+  """
+  Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form.
+  """
+  step_order: Float
+}
+
+"""
+order by stddev_pop() on columns of table "form_steps"
+"""
+input form_steps_stddev_pop_order_by {
+  """
+  Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form.
+  """
+  step_order: order_by
+}
+
+"""aggregate stddev_samp on columns"""
+type form_steps_stddev_samp_fields {
+  """
+  Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form.
+  """
+  step_order: Float
+}
+
+"""
+order by stddev_samp() on columns of table "form_steps"
+"""
+input form_steps_stddev_samp_order_by {
+  """
+  Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form.
+  """
+  step_order: order_by
+}
+
+"""
+Streaming cursor of the table "form_steps"
+"""
+input form_steps_stream_cursor_input {
+  """Stream column input with initial value"""
+  initial_value: form_steps_stream_cursor_value_input!
+  """cursor ordering"""
+  ordering: cursor_ordering
+}
+
+"""Initial value of the column from where the streaming should start"""
+input form_steps_stream_cursor_value_input {
+  """
+  JSONB payload with type-specific configuration. Structure varies by step_type. Empty for question/rating types which use form_questions table instead.
+  """
+  content: jsonb
+  """
+  Timestamp when this step record was first created. Set automatically, never modified.
+  """
+  created_at: timestamptz
+  """
+  Foreign key to users table. Records which user originally created this step for audit purposes.
+  """
+  created_by: String
+  """
+  Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed.
+  """
+  form_id: String
+  """
+  Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification.
+  """
+  id: String
+  """
+  Soft delete flag. False hides step from form while preserving data for historical analysis and potential restoration.
+  """
+  is_active: Boolean
+  """
+  Foreign key to organizations table. Denormalized from form for efficient row-level security queries. Must match form.organization_id.
+  """
+  organization_id: String
+  """
+  Foreign key to form_questions table. Required for question/rating step types to link validation config. Must be NULL for non-question types.
+  """
+  question_id: String
+  """
+  Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form.
+  """
+  step_order: smallint
+  """
+  Enumerated type determining step behavior: welcome (intro screen), question (text input), rating (star/scale), consent (public/private choice), contact_info (submitter details), reward (incentive), thank_you (completion).
+  """
+  step_type: String
+  """
+  Array of helper text strings shown to customers during question/rating steps. Provides guidance for better quality responses.
+  """
+  tips: [String!]
+  """
+  Timestamp of last modification. Automatically updated by database trigger on any column change.
+  """
+  updated_at: timestamptz
+  """
+  Foreign key to users table. Records which user last modified this step for audit trail.
+  """
+  updated_by: String
+}
+
+"""aggregate sum on columns"""
+type form_steps_sum_fields {
+  """
+  Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form.
+  """
+  step_order: smallint
+}
+
+"""
+order by sum() on columns of table "form_steps"
+"""
+input form_steps_sum_order_by {
+  """
+  Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form.
+  """
+  step_order: order_by
+}
+
+"""
+update columns of table "form_steps"
+"""
+enum form_steps_update_column {
+  """column name"""
+  content
+  """column name"""
+  created_at
+  """column name"""
+  created_by
+  """column name"""
+  form_id
+  """column name"""
+  id
+  """column name"""
+  is_active
+  """column name"""
+  organization_id
+  """column name"""
+  question_id
+  """column name"""
+  step_order
+  """column name"""
+  step_type
+  """column name"""
+  tips
+  """column name"""
+  updated_at
+  """column name"""
+  updated_by
+}
+
+input form_steps_updates {
+  """append existing jsonb value of filtered columns with new jsonb value"""
+  _append: form_steps_append_input
+  """
+  delete the field or element with specified path (for JSON arrays, negative integers count from the end)
+  """
+  _delete_at_path: form_steps_delete_at_path_input
+  """
+  delete the array element with specified index (negative integers count from the end). throws an error if top level container is not an array
+  """
+  _delete_elem: form_steps_delete_elem_input
+  """
+  delete key/value pair or string element. key/value pairs are matched based on their key value
+  """
+  _delete_key: form_steps_delete_key_input
+  """increments the numeric columns with given value of the filtered values"""
+  _inc: form_steps_inc_input
+  """prepend existing jsonb value of filtered columns with new jsonb value"""
+  _prepend: form_steps_prepend_input
+  """sets the columns of the filtered rows to the given values"""
+  _set: form_steps_set_input
+  """filter the rows which have to be updated"""
+  where: form_steps_bool_exp!
+}
+
+"""aggregate var_pop on columns"""
+type form_steps_var_pop_fields {
+  """
+  Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form.
+  """
+  step_order: Float
+}
+
+"""
+order by var_pop() on columns of table "form_steps"
+"""
+input form_steps_var_pop_order_by {
+  """
+  Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form.
+  """
+  step_order: order_by
+}
+
+"""aggregate var_samp on columns"""
+type form_steps_var_samp_fields {
+  """
+  Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form.
+  """
+  step_order: Float
+}
+
+"""
+order by var_samp() on columns of table "form_steps"
+"""
+input form_steps_var_samp_order_by {
+  """
+  Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form.
+  """
+  step_order: order_by
+}
+
+"""aggregate variance on columns"""
+type form_steps_variance_fields {
+  """
+  Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form.
+  """
+  step_order: Float
+}
+
+"""
+order by variance() on columns of table "form_steps"
+"""
+input form_steps_variance_order_by {
+  """
+  Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form.
+  """
+  step_order: order_by
+}
+
+"""
 Raw form submission event - submitter info lives here, responses in form_question_responses
 """
 type form_submissions {
+  """An object relationship"""
+  contact: contacts
+  """
+  Foreign key to contacts table. Links this submission to a normalized contact record for deduplication and contact management. NULL for legacy submissions or anonymous submissions.
+  """
+  contact_id: String
   """Record creation timestamp. Same as submitted_at"""
   created_at: timestamptz!
   """An object relationship"""
@@ -2272,22 +4297,6 @@ type form_submissions {
   ): form_question_responses_aggregate!
   """When customer submitted the form. Immutable"""
   submitted_at: timestamptz!
-  """Profile photo URL. From Gravatar or upload"""
-  submitter_avatar_url: String
-  """Company name like "Acme Inc". Copied to testimonial for display"""
-  submitter_company: String
-  """Email for follow-up. NOT displayed publicly on widgets"""
-  submitter_email: String!
-  """LinkedIn profile URL for social proof verification"""
-  submitter_linkedin_url: String
-  """
-  Full name of person who submitted. Source of truth for customer identity
-  """
-  submitter_name: String!
-  """Job title like "Product Manager". Copied to testimonial for display"""
-  submitter_title: String
-  """Twitter/X profile URL for social proof verification"""
-  submitter_twitter_url: String
   """An array relationship"""
   testimonials(
     """distinct select on columns"""
@@ -2375,6 +4384,8 @@ input form_submissions_bool_exp {
   _and: [form_submissions_bool_exp!]
   _not: form_submissions_bool_exp
   _or: [form_submissions_bool_exp!]
+  contact: contacts_bool_exp
+  contact_id: String_comparison_exp
   created_at: timestamptz_comparison_exp
   form: forms_bool_exp
   form_id: String_comparison_exp
@@ -2384,13 +4395,6 @@ input form_submissions_bool_exp {
   responses: form_question_responses_bool_exp
   responses_aggregate: form_question_responses_aggregate_bool_exp
   submitted_at: timestamptz_comparison_exp
-  submitter_avatar_url: String_comparison_exp
-  submitter_company: String_comparison_exp
-  submitter_email: String_comparison_exp
-  submitter_linkedin_url: String_comparison_exp
-  submitter_name: String_comparison_exp
-  submitter_title: String_comparison_exp
-  submitter_twitter_url: String_comparison_exp
   testimonials: testimonials_bool_exp
   testimonials_aggregate: testimonials_aggregate_bool_exp
   updated_at: timestamptz_comparison_exp
@@ -2412,6 +4416,11 @@ enum form_submissions_constraint {
 input type for inserting data into table "form_submissions"
 """
 input form_submissions_insert_input {
+  contact: contacts_obj_rel_insert_input
+  """
+  Foreign key to contacts table. Links this submission to a normalized contact record for deduplication and contact management. NULL for legacy submissions or anonymous submissions.
+  """
+  contact_id: String
   """Record creation timestamp. Same as submitted_at"""
   created_at: timestamptz
   form: forms_obj_rel_insert_input
@@ -2425,22 +4434,6 @@ input form_submissions_insert_input {
   responses: form_question_responses_arr_rel_insert_input
   """When customer submitted the form. Immutable"""
   submitted_at: timestamptz
-  """Profile photo URL. From Gravatar or upload"""
-  submitter_avatar_url: String
-  """Company name like "Acme Inc". Copied to testimonial for display"""
-  submitter_company: String
-  """Email for follow-up. NOT displayed publicly on widgets"""
-  submitter_email: String
-  """LinkedIn profile URL for social proof verification"""
-  submitter_linkedin_url: String
-  """
-  Full name of person who submitted. Source of truth for customer identity
-  """
-  submitter_name: String
-  """Job title like "Product Manager". Copied to testimonial for display"""
-  submitter_title: String
-  """Twitter/X profile URL for social proof verification"""
-  submitter_twitter_url: String
   testimonials: testimonials_arr_rel_insert_input
   """Last modification. Auto-updated by trigger"""
   updated_at: timestamptz
@@ -2451,6 +4444,10 @@ input form_submissions_insert_input {
 
 """aggregate max on columns"""
 type form_submissions_max_fields {
+  """
+  Foreign key to contacts table. Links this submission to a normalized contact record for deduplication and contact management. NULL for legacy submissions or anonymous submissions.
+  """
+  contact_id: String
   """Record creation timestamp. Same as submitted_at"""
   created_at: timestamptz
   """FK to forms - which form was submitted"""
@@ -2461,22 +4458,6 @@ type form_submissions_max_fields {
   organization_id: String
   """When customer submitted the form. Immutable"""
   submitted_at: timestamptz
-  """Profile photo URL. From Gravatar or upload"""
-  submitter_avatar_url: String
-  """Company name like "Acme Inc". Copied to testimonial for display"""
-  submitter_company: String
-  """Email for follow-up. NOT displayed publicly on widgets"""
-  submitter_email: String
-  """LinkedIn profile URL for social proof verification"""
-  submitter_linkedin_url: String
-  """
-  Full name of person who submitted. Source of truth for customer identity
-  """
-  submitter_name: String
-  """Job title like "Product Manager". Copied to testimonial for display"""
-  submitter_title: String
-  """Twitter/X profile URL for social proof verification"""
-  submitter_twitter_url: String
   """Last modification. Auto-updated by trigger"""
   updated_at: timestamptz
   """FK to users - who made admin edits. NULL until first update"""
@@ -2487,6 +4468,10 @@ type form_submissions_max_fields {
 order by max() on columns of table "form_submissions"
 """
 input form_submissions_max_order_by {
+  """
+  Foreign key to contacts table. Links this submission to a normalized contact record for deduplication and contact management. NULL for legacy submissions or anonymous submissions.
+  """
+  contact_id: order_by
   """Record creation timestamp. Same as submitted_at"""
   created_at: order_by
   """FK to forms - which form was submitted"""
@@ -2497,22 +4482,6 @@ input form_submissions_max_order_by {
   organization_id: order_by
   """When customer submitted the form. Immutable"""
   submitted_at: order_by
-  """Profile photo URL. From Gravatar or upload"""
-  submitter_avatar_url: order_by
-  """Company name like "Acme Inc". Copied to testimonial for display"""
-  submitter_company: order_by
-  """Email for follow-up. NOT displayed publicly on widgets"""
-  submitter_email: order_by
-  """LinkedIn profile URL for social proof verification"""
-  submitter_linkedin_url: order_by
-  """
-  Full name of person who submitted. Source of truth for customer identity
-  """
-  submitter_name: order_by
-  """Job title like "Product Manager". Copied to testimonial for display"""
-  submitter_title: order_by
-  """Twitter/X profile URL for social proof verification"""
-  submitter_twitter_url: order_by
   """Last modification. Auto-updated by trigger"""
   updated_at: order_by
   """FK to users - who made admin edits. NULL until first update"""
@@ -2521,6 +4490,10 @@ input form_submissions_max_order_by {
 
 """aggregate min on columns"""
 type form_submissions_min_fields {
+  """
+  Foreign key to contacts table. Links this submission to a normalized contact record for deduplication and contact management. NULL for legacy submissions or anonymous submissions.
+  """
+  contact_id: String
   """Record creation timestamp. Same as submitted_at"""
   created_at: timestamptz
   """FK to forms - which form was submitted"""
@@ -2531,22 +4504,6 @@ type form_submissions_min_fields {
   organization_id: String
   """When customer submitted the form. Immutable"""
   submitted_at: timestamptz
-  """Profile photo URL. From Gravatar or upload"""
-  submitter_avatar_url: String
-  """Company name like "Acme Inc". Copied to testimonial for display"""
-  submitter_company: String
-  """Email for follow-up. NOT displayed publicly on widgets"""
-  submitter_email: String
-  """LinkedIn profile URL for social proof verification"""
-  submitter_linkedin_url: String
-  """
-  Full name of person who submitted. Source of truth for customer identity
-  """
-  submitter_name: String
-  """Job title like "Product Manager". Copied to testimonial for display"""
-  submitter_title: String
-  """Twitter/X profile URL for social proof verification"""
-  submitter_twitter_url: String
   """Last modification. Auto-updated by trigger"""
   updated_at: timestamptz
   """FK to users - who made admin edits. NULL until first update"""
@@ -2557,6 +4514,10 @@ type form_submissions_min_fields {
 order by min() on columns of table "form_submissions"
 """
 input form_submissions_min_order_by {
+  """
+  Foreign key to contacts table. Links this submission to a normalized contact record for deduplication and contact management. NULL for legacy submissions or anonymous submissions.
+  """
+  contact_id: order_by
   """Record creation timestamp. Same as submitted_at"""
   created_at: order_by
   """FK to forms - which form was submitted"""
@@ -2567,22 +4528,6 @@ input form_submissions_min_order_by {
   organization_id: order_by
   """When customer submitted the form. Immutable"""
   submitted_at: order_by
-  """Profile photo URL. From Gravatar or upload"""
-  submitter_avatar_url: order_by
-  """Company name like "Acme Inc". Copied to testimonial for display"""
-  submitter_company: order_by
-  """Email for follow-up. NOT displayed publicly on widgets"""
-  submitter_email: order_by
-  """LinkedIn profile URL for social proof verification"""
-  submitter_linkedin_url: order_by
-  """
-  Full name of person who submitted. Source of truth for customer identity
-  """
-  submitter_name: order_by
-  """Job title like "Product Manager". Copied to testimonial for display"""
-  submitter_title: order_by
-  """Twitter/X profile URL for social proof verification"""
-  submitter_twitter_url: order_by
   """Last modification. Auto-updated by trigger"""
   updated_at: order_by
   """FK to users - who made admin edits. NULL until first update"""
@@ -2619,6 +4564,8 @@ input form_submissions_on_conflict {
 
 """Ordering options when selecting data from "form_submissions"."""
 input form_submissions_order_by {
+  contact: contacts_order_by
+  contact_id: order_by
   created_at: order_by
   form: forms_order_by
   form_id: order_by
@@ -2627,13 +4574,6 @@ input form_submissions_order_by {
   organization_id: order_by
   responses_aggregate: form_question_responses_aggregate_order_by
   submitted_at: order_by
-  submitter_avatar_url: order_by
-  submitter_company: order_by
-  submitter_email: order_by
-  submitter_linkedin_url: order_by
-  submitter_name: order_by
-  submitter_title: order_by
-  submitter_twitter_url: order_by
   testimonials_aggregate: testimonials_aggregate_order_by
   updated_at: order_by
   updated_by: order_by
@@ -2651,6 +4591,8 @@ select columns of table "form_submissions"
 """
 enum form_submissions_select_column {
   """column name"""
+  contact_id
+  """column name"""
   created_at
   """column name"""
   form_id
@@ -2661,20 +4603,6 @@ enum form_submissions_select_column {
   """column name"""
   submitted_at
   """column name"""
-  submitter_avatar_url
-  """column name"""
-  submitter_company
-  """column name"""
-  submitter_email
-  """column name"""
-  submitter_linkedin_url
-  """column name"""
-  submitter_name
-  """column name"""
-  submitter_title
-  """column name"""
-  submitter_twitter_url
-  """column name"""
   updated_at
   """column name"""
   updated_by
@@ -2684,6 +4612,10 @@ enum form_submissions_select_column {
 input type for updating data in table "form_submissions"
 """
 input form_submissions_set_input {
+  """
+  Foreign key to contacts table. Links this submission to a normalized contact record for deduplication and contact management. NULL for legacy submissions or anonymous submissions.
+  """
+  contact_id: String
   """Record creation timestamp. Same as submitted_at"""
   created_at: timestamptz
   """FK to forms - which form was submitted"""
@@ -2694,22 +4626,6 @@ input form_submissions_set_input {
   organization_id: String
   """When customer submitted the form. Immutable"""
   submitted_at: timestamptz
-  """Profile photo URL. From Gravatar or upload"""
-  submitter_avatar_url: String
-  """Company name like "Acme Inc". Copied to testimonial for display"""
-  submitter_company: String
-  """Email for follow-up. NOT displayed publicly on widgets"""
-  submitter_email: String
-  """LinkedIn profile URL for social proof verification"""
-  submitter_linkedin_url: String
-  """
-  Full name of person who submitted. Source of truth for customer identity
-  """
-  submitter_name: String
-  """Job title like "Product Manager". Copied to testimonial for display"""
-  submitter_title: String
-  """Twitter/X profile URL for social proof verification"""
-  submitter_twitter_url: String
   """Last modification. Auto-updated by trigger"""
   updated_at: timestamptz
   """FK to users - who made admin edits. NULL until first update"""
@@ -2728,6 +4644,10 @@ input form_submissions_stream_cursor_input {
 
 """Initial value of the column from where the streaming should start"""
 input form_submissions_stream_cursor_value_input {
+  """
+  Foreign key to contacts table. Links this submission to a normalized contact record for deduplication and contact management. NULL for legacy submissions or anonymous submissions.
+  """
+  contact_id: String
   """Record creation timestamp. Same as submitted_at"""
   created_at: timestamptz
   """FK to forms - which form was submitted"""
@@ -2738,22 +4658,6 @@ input form_submissions_stream_cursor_value_input {
   organization_id: String
   """When customer submitted the form. Immutable"""
   submitted_at: timestamptz
-  """Profile photo URL. From Gravatar or upload"""
-  submitter_avatar_url: String
-  """Company name like "Acme Inc". Copied to testimonial for display"""
-  submitter_company: String
-  """Email for follow-up. NOT displayed publicly on widgets"""
-  submitter_email: String
-  """LinkedIn profile URL for social proof verification"""
-  submitter_linkedin_url: String
-  """
-  Full name of person who submitted. Source of truth for customer identity
-  """
-  submitter_name: String
-  """Job title like "Product Manager". Copied to testimonial for display"""
-  submitter_title: String
-  """Twitter/X profile URL for social proof verification"""
-  submitter_twitter_url: String
   """Last modification. Auto-updated by trigger"""
   updated_at: timestamptz
   """FK to users - who made admin edits. NULL until first update"""
@@ -2765,6 +4669,8 @@ update columns of table "form_submissions"
 """
 enum form_submissions_update_column {
   """column name"""
+  contact_id
+  """column name"""
   created_at
   """column name"""
   form_id
@@ -2774,20 +4680,6 @@ enum form_submissions_update_column {
   organization_id
   """column name"""
   submitted_at
-  """column name"""
-  submitter_avatar_url
-  """column name"""
-  submitter_company
-  """column name"""
-  submitter_email
-  """column name"""
-  submitter_linkedin_url
-  """column name"""
-  submitter_name
-  """column name"""
-  submitter_title
-  """column name"""
-  submitter_twitter_url
   """column name"""
   updated_at
   """column name"""
@@ -2805,6 +4697,32 @@ input form_submissions_updates {
 Testimonial collection forms - questions normalized to form_questions table
 """
 type forms {
+  """An array relationship"""
+  contacts(
+    """distinct select on columns"""
+    distinct_on: [contacts_select_column!]
+    """limit the number of rows returned"""
+    limit: Int
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+    """sort the rows by one or more columns"""
+    order_by: [contacts_order_by!]
+    """filter the rows returned"""
+    where: contacts_bool_exp
+  ): [contacts!]!
+  """An aggregate relationship"""
+  contacts_aggregate(
+    """distinct select on columns"""
+    distinct_on: [contacts_select_column!]
+    """limit the number of rows returned"""
+    limit: Int
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+    """sort the rows by one or more columns"""
+    order_by: [contacts_order_by!]
+    """filter the rows returned"""
+    where: contacts_bool_exp
+  ): contacts_aggregate!
   """Timestamp when form was created. Immutable after insert"""
   created_at: timestamptz!
   """FK to users - user who created this form"""
@@ -2866,6 +4784,32 @@ type forms {
   Form lifecycle status: draft (editing), published (public), archived (hidden)
   """
   status: String!
+  """An array relationship"""
+  steps(
+    """distinct select on columns"""
+    distinct_on: [form_steps_select_column!]
+    """limit the number of rows returned"""
+    limit: Int
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+    """sort the rows by one or more columns"""
+    order_by: [form_steps_order_by!]
+    """filter the rows returned"""
+    where: form_steps_bool_exp
+  ): [form_steps!]!
+  """An aggregate relationship"""
+  steps_aggregate(
+    """distinct select on columns"""
+    distinct_on: [form_steps_select_column!]
+    """limit the number of rows returned"""
+    limit: Int
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+    """sort the rows by one or more columns"""
+    order_by: [form_steps_order_by!]
+    """filter the rows returned"""
+    where: form_steps_bool_exp
+  ): form_steps_aggregate!
   """An array relationship"""
   submissions(
     """distinct select on columns"""
@@ -2977,6 +4921,8 @@ input forms_bool_exp {
   _and: [forms_bool_exp!]
   _not: forms_bool_exp
   _or: [forms_bool_exp!]
+  contacts: contacts_bool_exp
+  contacts_aggregate: contacts_aggregate_bool_exp
   created_at: timestamptz_comparison_exp
   created_by: String_comparison_exp
   creator: users_bool_exp
@@ -2991,6 +4937,8 @@ input forms_bool_exp {
   questions_aggregate: form_questions_aggregate_bool_exp
   settings: jsonb_comparison_exp
   status: String_comparison_exp
+  steps: form_steps_bool_exp
+  steps_aggregate: form_steps_aggregate_bool_exp
   submissions: form_submissions_bool_exp
   submissions_aggregate: form_submissions_aggregate_bool_exp
   updated_at: timestamptz_comparison_exp
@@ -3042,6 +4990,7 @@ input forms_delete_key_input {
 input type for inserting data into table "forms"
 """
 input forms_insert_input {
+  contacts: contacts_arr_rel_insert_input
   """Timestamp when form was created. Immutable after insert"""
   created_at: timestamptz
   """FK to users - user who created this form"""
@@ -3073,6 +5022,7 @@ input forms_insert_input {
   Form lifecycle status: draft (editing), published (public), archived (hidden)
   """
   status: String
+  steps: form_steps_arr_rel_insert_input
   submissions: form_submissions_arr_rel_insert_input
   """Timestamp of last modification. Auto-updated by trigger"""
   updated_at: timestamptz
@@ -3235,6 +5185,7 @@ input forms_on_conflict {
 
 """Ordering options when selecting data from "forms"."""
 input forms_order_by {
+  contacts_aggregate: contacts_aggregate_order_by
   created_at: order_by
   created_by: order_by
   creator: users_order_by
@@ -3248,6 +5199,7 @@ input forms_order_by {
   questions_aggregate: form_questions_aggregate_order_by
   settings: order_by
   status: order_by
+  steps_aggregate: form_steps_aggregate_order_by
   submissions_aggregate: form_submissions_aggregate_order_by
   updated_at: order_by
   updated_by: order_by
@@ -3486,6 +5438,22 @@ input jsonb_comparison_exp {
 """mutation root"""
 type mutation_root {
   """
+  delete data from the table: "contacts"
+  """
+  delete_contacts(
+    """filter the rows which have to be deleted"""
+    where: contacts_bool_exp!
+  ): contacts_mutation_response
+  """
+  delete single row from the table: "contacts"
+  """
+  delete_contacts_by_pk(
+    """
+    Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification.
+    """
+    id: String!
+  ): contacts
+  """
   delete data from the table: "form_question_responses"
   """
   delete_form_question_responses(
@@ -3513,6 +5481,22 @@ type mutation_root {
     """Primary key - NanoID 12-char unique identifier"""
     id: String!
   ): form_questions
+  """
+  delete data from the table: "form_steps"
+  """
+  delete_form_steps(
+    """filter the rows which have to be deleted"""
+    where: form_steps_bool_exp!
+  ): form_steps_mutation_response
+  """
+  delete single row from the table: "form_steps"
+  """
+  delete_form_steps_by_pk(
+    """
+    Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification.
+    """
+    id: String!
+  ): form_steps
   """
   delete data from the table: "form_submissions"
   """
@@ -3738,6 +5722,24 @@ type mutation_root {
     id: String!
   ): widgets
   """
+  insert data into the table: "contacts"
+  """
+  insert_contacts(
+    """the rows to be inserted"""
+    objects: [contacts_insert_input!]!
+    """upsert condition"""
+    on_conflict: contacts_on_conflict
+  ): contacts_mutation_response
+  """
+  insert a single row into the table: "contacts"
+  """
+  insert_contacts_one(
+    """the row to be inserted"""
+    object: contacts_insert_input!
+    """upsert condition"""
+    on_conflict: contacts_on_conflict
+  ): contacts
+  """
   insert data into the table: "form_question_responses"
   """
   insert_form_question_responses(
@@ -3773,6 +5775,24 @@ type mutation_root {
     """upsert condition"""
     on_conflict: form_questions_on_conflict
   ): form_questions
+  """
+  insert data into the table: "form_steps"
+  """
+  insert_form_steps(
+    """the rows to be inserted"""
+    objects: [form_steps_insert_input!]!
+    """upsert condition"""
+    on_conflict: form_steps_on_conflict
+  ): form_steps_mutation_response
+  """
+  insert a single row into the table: "form_steps"
+  """
+  insert_form_steps_one(
+    """the row to be inserted"""
+    object: form_steps_insert_input!
+    """upsert condition"""
+    on_conflict: form_steps_on_conflict
+  ): form_steps
   """
   insert data into the table: "form_submissions"
   """
@@ -4062,6 +6082,34 @@ type mutation_root {
     on_conflict: widgets_on_conflict
   ): widgets
   """
+  update data of the table: "contacts"
+  """
+  update_contacts(
+    """increments the numeric columns with given value of the filtered values"""
+    _inc: contacts_inc_input
+    """sets the columns of the filtered rows to the given values"""
+    _set: contacts_set_input
+    """filter the rows which have to be updated"""
+    where: contacts_bool_exp!
+  ): contacts_mutation_response
+  """
+  update single row of the table: "contacts"
+  """
+  update_contacts_by_pk(
+    """increments the numeric columns with given value of the filtered values"""
+    _inc: contacts_inc_input
+    """sets the columns of the filtered rows to the given values"""
+    _set: contacts_set_input
+    pk_columns: contacts_pk_columns_input!
+  ): contacts
+  """
+  update multiples rows of table: "contacts"
+  """
+  update_contacts_many(
+    """updates to execute, in order"""
+    updates: [contacts_updates!]!
+  ): [contacts_mutation_response]
+  """
   update data of the table: "form_question_responses"
   """
   update_form_question_responses(
@@ -4149,6 +6197,66 @@ type mutation_root {
     """updates to execute, in order"""
     updates: [form_questions_updates!]!
   ): [form_questions_mutation_response]
+  """
+  update data of the table: "form_steps"
+  """
+  update_form_steps(
+    """append existing jsonb value of filtered columns with new jsonb value"""
+    _append: form_steps_append_input
+    """
+    delete the field or element with specified path (for JSON arrays, negative integers count from the end)
+    """
+    _delete_at_path: form_steps_delete_at_path_input
+    """
+    delete the array element with specified index (negative integers count from the end). throws an error if top level container is not an array
+    """
+    _delete_elem: form_steps_delete_elem_input
+    """
+    delete key/value pair or string element. key/value pairs are matched based on their key value
+    """
+    _delete_key: form_steps_delete_key_input
+    """increments the numeric columns with given value of the filtered values"""
+    _inc: form_steps_inc_input
+    """prepend existing jsonb value of filtered columns with new jsonb value"""
+    _prepend: form_steps_prepend_input
+    """sets the columns of the filtered rows to the given values"""
+    _set: form_steps_set_input
+    """filter the rows which have to be updated"""
+    where: form_steps_bool_exp!
+  ): form_steps_mutation_response
+  """
+  update single row of the table: "form_steps"
+  """
+  update_form_steps_by_pk(
+    """append existing jsonb value of filtered columns with new jsonb value"""
+    _append: form_steps_append_input
+    """
+    delete the field or element with specified path (for JSON arrays, negative integers count from the end)
+    """
+    _delete_at_path: form_steps_delete_at_path_input
+    """
+    delete the array element with specified index (negative integers count from the end). throws an error if top level container is not an array
+    """
+    _delete_elem: form_steps_delete_elem_input
+    """
+    delete key/value pair or string element. key/value pairs are matched based on their key value
+    """
+    _delete_key: form_steps_delete_key_input
+    """increments the numeric columns with given value of the filtered values"""
+    _inc: form_steps_inc_input
+    """prepend existing jsonb value of filtered columns with new jsonb value"""
+    _prepend: form_steps_prepend_input
+    """sets the columns of the filtered rows to the given values"""
+    _set: form_steps_set_input
+    pk_columns: form_steps_pk_columns_input!
+  ): form_steps
+  """
+  update multiples rows of table: "form_steps"
+  """
+  update_form_steps_many(
+    """updates to execute, in order"""
+    updates: [form_steps_updates!]!
+  ): [form_steps_mutation_response]
   """
   update data of the table: "form_submissions"
   """
@@ -8312,6 +10420,39 @@ type plans_variance_fields {
 }
 
 type query_root {
+  """An array relationship"""
+  contacts(
+    """distinct select on columns"""
+    distinct_on: [contacts_select_column!]
+    """limit the number of rows returned"""
+    limit: Int
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+    """sort the rows by one or more columns"""
+    order_by: [contacts_order_by!]
+    """filter the rows returned"""
+    where: contacts_bool_exp
+  ): [contacts!]!
+  """An aggregate relationship"""
+  contacts_aggregate(
+    """distinct select on columns"""
+    distinct_on: [contacts_select_column!]
+    """limit the number of rows returned"""
+    limit: Int
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+    """sort the rows by one or more columns"""
+    order_by: [contacts_order_by!]
+    """filter the rows returned"""
+    where: contacts_bool_exp
+  ): contacts_aggregate!
+  """fetch data from the table: "contacts" using primary key columns"""
+  contacts_by_pk(
+    """
+    Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification.
+    """
+    id: String!
+  ): contacts
   """
   fetch data from the table: "form_question_responses"
   """
@@ -8384,6 +10525,43 @@ type query_root {
     """Primary key - NanoID 12-char unique identifier"""
     id: String!
   ): form_questions
+  """
+  fetch data from the table: "form_steps"
+  """
+  form_steps(
+    """distinct select on columns"""
+    distinct_on: [form_steps_select_column!]
+    """limit the number of rows returned"""
+    limit: Int
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+    """sort the rows by one or more columns"""
+    order_by: [form_steps_order_by!]
+    """filter the rows returned"""
+    where: form_steps_bool_exp
+  ): [form_steps!]!
+  """
+  fetch aggregated fields from the table: "form_steps"
+  """
+  form_steps_aggregate(
+    """distinct select on columns"""
+    distinct_on: [form_steps_select_column!]
+    """limit the number of rows returned"""
+    limit: Int
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+    """sort the rows by one or more columns"""
+    order_by: [form_steps_order_by!]
+    """filter the rows returned"""
+    where: form_steps_bool_exp
+  ): form_steps_aggregate!
+  """fetch data from the table: "form_steps" using primary key columns"""
+  form_steps_by_pk(
+    """
+    Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification.
+    """
+    id: String!
+  ): form_steps
   """
   fetch data from the table: "form_submissions"
   """
@@ -10668,6 +12846,50 @@ input smallint_comparison_exp {
 }
 
 type subscription_root {
+  """An array relationship"""
+  contacts(
+    """distinct select on columns"""
+    distinct_on: [contacts_select_column!]
+    """limit the number of rows returned"""
+    limit: Int
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+    """sort the rows by one or more columns"""
+    order_by: [contacts_order_by!]
+    """filter the rows returned"""
+    where: contacts_bool_exp
+  ): [contacts!]!
+  """An aggregate relationship"""
+  contacts_aggregate(
+    """distinct select on columns"""
+    distinct_on: [contacts_select_column!]
+    """limit the number of rows returned"""
+    limit: Int
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+    """sort the rows by one or more columns"""
+    order_by: [contacts_order_by!]
+    """filter the rows returned"""
+    where: contacts_bool_exp
+  ): contacts_aggregate!
+  """fetch data from the table: "contacts" using primary key columns"""
+  contacts_by_pk(
+    """
+    Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification.
+    """
+    id: String!
+  ): contacts
+  """
+  fetch data from the table in a streaming manner: "contacts"
+  """
+  contacts_stream(
+    """maximum number of rows returned in a single batch"""
+    batch_size: Int!
+    """cursor to stream the results returned by the query"""
+    cursor: [contacts_stream_cursor_input]!
+    """filter the rows returned"""
+    where: contacts_bool_exp
+  ): [contacts!]!
   """
   fetch data from the table: "form_question_responses"
   """
@@ -10762,6 +12984,54 @@ type subscription_root {
     """filter the rows returned"""
     where: form_questions_bool_exp
   ): [form_questions!]!
+  """
+  fetch data from the table: "form_steps"
+  """
+  form_steps(
+    """distinct select on columns"""
+    distinct_on: [form_steps_select_column!]
+    """limit the number of rows returned"""
+    limit: Int
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+    """sort the rows by one or more columns"""
+    order_by: [form_steps_order_by!]
+    """filter the rows returned"""
+    where: form_steps_bool_exp
+  ): [form_steps!]!
+  """
+  fetch aggregated fields from the table: "form_steps"
+  """
+  form_steps_aggregate(
+    """distinct select on columns"""
+    distinct_on: [form_steps_select_column!]
+    """limit the number of rows returned"""
+    limit: Int
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+    """sort the rows by one or more columns"""
+    order_by: [form_steps_order_by!]
+    """filter the rows returned"""
+    where: form_steps_bool_exp
+  ): form_steps_aggregate!
+  """fetch data from the table: "form_steps" using primary key columns"""
+  form_steps_by_pk(
+    """
+    Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification.
+    """
+    id: String!
+  ): form_steps
+  """
+  fetch data from the table in a streaming manner: "form_steps"
+  """
+  form_steps_stream(
+    """maximum number of rows returned in a single batch"""
+    batch_size: Int!
+    """cursor to stream the results returned by the query"""
+    cursor: [form_steps_stream_cursor_input]!
+    """filter the rows returned"""
+    where: form_steps_bool_exp
+  ): [form_steps!]!
   """
   fetch data from the table: "form_submissions"
   """

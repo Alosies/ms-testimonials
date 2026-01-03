@@ -1,45 +1,22 @@
 table:
-  name: form_submissions
+  name: contacts
   schema: public
 object_relationships:
-  - name: contact
-    using:
-      foreign_key_constraint_on: contact_id
-  - name: form
-    using:
-      foreign_key_constraint_on: form_id
   - name: organization
     using:
       foreign_key_constraint_on: organization_id
-  - name: updater
+  - name: source_form
     using:
-      foreign_key_constraint_on: updated_by
+      foreign_key_constraint_on: source_form_id
 array_relationships:
-  - name: responses
+  - name: submissions
     using:
       foreign_key_constraint_on:
-        column: submission_id
+        column: contact_id
         table:
-          name: form_question_responses
-          schema: public
-  - name: testimonials
-    using:
-      foreign_key_constraint_on:
-        column: submission_id
-        table:
-          name: testimonials
+          name: form_submissions
           schema: public
 insert_permissions:
-  - role: anonymous
-    permission:
-      check:
-        form:
-          is_active:
-            _eq: true
-      columns:
-        - organization_id
-        - form_id
-        - contact_id
   - role: member
     permission:
       check:

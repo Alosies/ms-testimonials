@@ -98,6 +98,741 @@ export type String_Comparison_Exp = {
   _similar?: InputMaybe<Scalars['String']['input']>;
 };
 
+/** Normalized contact data for testimonial submitters. Enables contact management, deduplication across forms, and tracking of repeat submissions within an organization. */
+export type Contacts = {
+  __typename?: 'contacts';
+  /** URL to profile photo or avatar image. Displayed alongside testimonials for visual social proof and authenticity. */
+  avatar_url?: Maybe<Scalars['String']['output']>;
+  /** Name of the company or organization where the contact works. Used for B2B testimonial displays and logo integration. */
+  company_name?: Maybe<Scalars['String']['output']>;
+  /** URL to the contact's company website. May be used for automated logo fetching or company verification. */
+  company_website?: Maybe<Scalars['String']['output']>;
+  /** Timestamp when this contact record was first created. Set automatically on insert, never modified thereafter. */
+  created_at: Scalars['timestamptz']['output'];
+  /** Primary identifier for the contact. Unique within each organization. Used for deduplication when same person submits multiple testimonials across different forms. */
+  email: Scalars['String']['output'];
+  /** Boolean flag indicating if email ownership has been confirmed via verification link. Verified contacts may receive preferential display treatment. */
+  email_verified: Scalars['Boolean']['output'];
+  /** Timestamp of first interaction with the organization. Set on creation and never modified. Used for cohort analysis and engagement metrics. */
+  first_seen_at: Scalars['timestamptz']['output'];
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
+  id: Scalars['String']['output'];
+  /** Professional title or role (e.g., "VP of Engineering", "Founder"). Adds credibility context to testimonials, especially for B2B use cases. */
+  job_title?: Maybe<Scalars['String']['output']>;
+  /** Timestamp of most recent activity. Updated on each new submission or interaction. Used for identifying active vs dormant contacts. */
+  last_seen_at: Scalars['timestamptz']['output'];
+  /** URL to LinkedIn profile. Provides professional verification and enables social proof through platform recognition. */
+  linkedin_url?: Maybe<Scalars['String']['output']>;
+  /** Display name of the contact. Collected from form submission contact_info step or enriched from external data sources like LinkedIn. */
+  name?: Maybe<Scalars['String']['output']>;
+  /** An object relationship */
+  organization: Organizations;
+  /** Foreign key to organizations table. Establishes tenant boundary - all contacts are scoped to a single organization for multi-tenancy isolation. */
+  organization_id: Scalars['String']['output'];
+  /** Origin of this contact record: form_submission (created during testimonial submission), import (bulk CSV/API import), manual (admin created). Used for analytics and attribution. */
+  source: Scalars['String']['output'];
+  /** An object relationship */
+  source_form?: Maybe<Forms>;
+  /** Foreign key to forms table. References the first form through which this contact was acquired. Preserved even if form is later deleted (set null). */
+  source_form_id?: Maybe<Scalars['String']['output']>;
+  /** Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers. */
+  submission_count: Scalars['Int']['output'];
+  /** An array relationship */
+  submissions: Array<Form_Submissions>;
+  /** An aggregate relationship */
+  submissions_aggregate: Form_Submissions_Aggregate;
+  /** URL to Twitter/X profile. Used for social sharing integration and additional verification of contact identity. */
+  twitter_url?: Maybe<Scalars['String']['output']>;
+  /** Timestamp of last modification to this record. Automatically updated by database trigger on any column change. */
+  updated_at: Scalars['timestamptz']['output'];
+};
+
+
+/** Normalized contact data for testimonial submitters. Enables contact management, deduplication across forms, and tracking of repeat submissions within an organization. */
+export type ContactsSubmissionsArgs = {
+  distinct_on?: InputMaybe<Array<Form_Submissions_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Form_Submissions_Order_By>>;
+  where?: InputMaybe<Form_Submissions_Bool_Exp>;
+};
+
+
+/** Normalized contact data for testimonial submitters. Enables contact management, deduplication across forms, and tracking of repeat submissions within an organization. */
+export type ContactsSubmissions_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Form_Submissions_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Form_Submissions_Order_By>>;
+  where?: InputMaybe<Form_Submissions_Bool_Exp>;
+};
+
+/** aggregated selection of "contacts" */
+export type Contacts_Aggregate = {
+  __typename?: 'contacts_aggregate';
+  aggregate?: Maybe<Contacts_Aggregate_Fields>;
+  nodes: Array<Contacts>;
+};
+
+export type Contacts_Aggregate_Bool_Exp = {
+  bool_and?: InputMaybe<Contacts_Aggregate_Bool_Exp_Bool_And>;
+  bool_or?: InputMaybe<Contacts_Aggregate_Bool_Exp_Bool_Or>;
+  count?: InputMaybe<Contacts_Aggregate_Bool_Exp_Count>;
+};
+
+export type Contacts_Aggregate_Bool_Exp_Bool_And = {
+  arguments: Contacts_Select_Column_Contacts_Aggregate_Bool_Exp_Bool_And_Arguments_Columns;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+  filter?: InputMaybe<Contacts_Bool_Exp>;
+  predicate: Boolean_Comparison_Exp;
+};
+
+export type Contacts_Aggregate_Bool_Exp_Bool_Or = {
+  arguments: Contacts_Select_Column_Contacts_Aggregate_Bool_Exp_Bool_Or_Arguments_Columns;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+  filter?: InputMaybe<Contacts_Bool_Exp>;
+  predicate: Boolean_Comparison_Exp;
+};
+
+export type Contacts_Aggregate_Bool_Exp_Count = {
+  arguments?: InputMaybe<Array<Contacts_Select_Column>>;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+  filter?: InputMaybe<Contacts_Bool_Exp>;
+  predicate: Int_Comparison_Exp;
+};
+
+/** aggregate fields of "contacts" */
+export type Contacts_Aggregate_Fields = {
+  __typename?: 'contacts_aggregate_fields';
+  avg?: Maybe<Contacts_Avg_Fields>;
+  count: Scalars['Int']['output'];
+  max?: Maybe<Contacts_Max_Fields>;
+  min?: Maybe<Contacts_Min_Fields>;
+  stddev?: Maybe<Contacts_Stddev_Fields>;
+  stddev_pop?: Maybe<Contacts_Stddev_Pop_Fields>;
+  stddev_samp?: Maybe<Contacts_Stddev_Samp_Fields>;
+  sum?: Maybe<Contacts_Sum_Fields>;
+  var_pop?: Maybe<Contacts_Var_Pop_Fields>;
+  var_samp?: Maybe<Contacts_Var_Samp_Fields>;
+  variance?: Maybe<Contacts_Variance_Fields>;
+};
+
+
+/** aggregate fields of "contacts" */
+export type Contacts_Aggregate_FieldsCountArgs = {
+  columns?: InputMaybe<Array<Contacts_Select_Column>>;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+/** order by aggregate values of table "contacts" */
+export type Contacts_Aggregate_Order_By = {
+  avg?: InputMaybe<Contacts_Avg_Order_By>;
+  count?: InputMaybe<Order_By>;
+  max?: InputMaybe<Contacts_Max_Order_By>;
+  min?: InputMaybe<Contacts_Min_Order_By>;
+  stddev?: InputMaybe<Contacts_Stddev_Order_By>;
+  stddev_pop?: InputMaybe<Contacts_Stddev_Pop_Order_By>;
+  stddev_samp?: InputMaybe<Contacts_Stddev_Samp_Order_By>;
+  sum?: InputMaybe<Contacts_Sum_Order_By>;
+  var_pop?: InputMaybe<Contacts_Var_Pop_Order_By>;
+  var_samp?: InputMaybe<Contacts_Var_Samp_Order_By>;
+  variance?: InputMaybe<Contacts_Variance_Order_By>;
+};
+
+/** input type for inserting array relation for remote table "contacts" */
+export type Contacts_Arr_Rel_Insert_Input = {
+  data: Array<Contacts_Insert_Input>;
+  /** upsert condition */
+  on_conflict?: InputMaybe<Contacts_On_Conflict>;
+};
+
+/** aggregate avg on columns */
+export type Contacts_Avg_Fields = {
+  __typename?: 'contacts_avg_fields';
+  /** Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers. */
+  submission_count?: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by avg() on columns of table "contacts" */
+export type Contacts_Avg_Order_By = {
+  /** Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers. */
+  submission_count?: InputMaybe<Order_By>;
+};
+
+/** Boolean expression to filter rows from the table "contacts". All fields are combined with a logical 'AND'. */
+export type Contacts_Bool_Exp = {
+  _and?: InputMaybe<Array<Contacts_Bool_Exp>>;
+  _not?: InputMaybe<Contacts_Bool_Exp>;
+  _or?: InputMaybe<Array<Contacts_Bool_Exp>>;
+  avatar_url?: InputMaybe<String_Comparison_Exp>;
+  company_name?: InputMaybe<String_Comparison_Exp>;
+  company_website?: InputMaybe<String_Comparison_Exp>;
+  created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  email?: InputMaybe<String_Comparison_Exp>;
+  email_verified?: InputMaybe<Boolean_Comparison_Exp>;
+  first_seen_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  id?: InputMaybe<String_Comparison_Exp>;
+  job_title?: InputMaybe<String_Comparison_Exp>;
+  last_seen_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  linkedin_url?: InputMaybe<String_Comparison_Exp>;
+  name?: InputMaybe<String_Comparison_Exp>;
+  organization?: InputMaybe<Organizations_Bool_Exp>;
+  organization_id?: InputMaybe<String_Comparison_Exp>;
+  source?: InputMaybe<String_Comparison_Exp>;
+  source_form?: InputMaybe<Forms_Bool_Exp>;
+  source_form_id?: InputMaybe<String_Comparison_Exp>;
+  submission_count?: InputMaybe<Int_Comparison_Exp>;
+  submissions?: InputMaybe<Form_Submissions_Bool_Exp>;
+  submissions_aggregate?: InputMaybe<Form_Submissions_Aggregate_Bool_Exp>;
+  twitter_url?: InputMaybe<String_Comparison_Exp>;
+  updated_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+};
+
+/** unique or primary key constraints on table "contacts" */
+export enum Contacts_Constraint {
+  /** unique or primary key constraint on columns "email", "organization_id" */
+  ContactsOrgEmailUnique = 'contacts_org_email_unique',
+  /** unique or primary key constraint on columns "id" */
+  ContactsPkey = 'contacts_pkey'
+}
+
+/** input type for incrementing numeric columns in table "contacts" */
+export type Contacts_Inc_Input = {
+  /** Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers. */
+  submission_count?: InputMaybe<Scalars['Int']['input']>;
+};
+
+/** input type for inserting data into table "contacts" */
+export type Contacts_Insert_Input = {
+  /** URL to profile photo or avatar image. Displayed alongside testimonials for visual social proof and authenticity. */
+  avatar_url?: InputMaybe<Scalars['String']['input']>;
+  /** Name of the company or organization where the contact works. Used for B2B testimonial displays and logo integration. */
+  company_name?: InputMaybe<Scalars['String']['input']>;
+  /** URL to the contact's company website. May be used for automated logo fetching or company verification. */
+  company_website?: InputMaybe<Scalars['String']['input']>;
+  /** Timestamp when this contact record was first created. Set automatically on insert, never modified thereafter. */
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Primary identifier for the contact. Unique within each organization. Used for deduplication when same person submits multiple testimonials across different forms. */
+  email?: InputMaybe<Scalars['String']['input']>;
+  /** Boolean flag indicating if email ownership has been confirmed via verification link. Verified contacts may receive preferential display treatment. */
+  email_verified?: InputMaybe<Scalars['Boolean']['input']>;
+  /** Timestamp of first interaction with the organization. Set on creation and never modified. Used for cohort analysis and engagement metrics. */
+  first_seen_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
+  id?: InputMaybe<Scalars['String']['input']>;
+  /** Professional title or role (e.g., "VP of Engineering", "Founder"). Adds credibility context to testimonials, especially for B2B use cases. */
+  job_title?: InputMaybe<Scalars['String']['input']>;
+  /** Timestamp of most recent activity. Updated on each new submission or interaction. Used for identifying active vs dormant contacts. */
+  last_seen_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** URL to LinkedIn profile. Provides professional verification and enables social proof through platform recognition. */
+  linkedin_url?: InputMaybe<Scalars['String']['input']>;
+  /** Display name of the contact. Collected from form submission contact_info step or enriched from external data sources like LinkedIn. */
+  name?: InputMaybe<Scalars['String']['input']>;
+  organization?: InputMaybe<Organizations_Obj_Rel_Insert_Input>;
+  /** Foreign key to organizations table. Establishes tenant boundary - all contacts are scoped to a single organization for multi-tenancy isolation. */
+  organization_id?: InputMaybe<Scalars['String']['input']>;
+  /** Origin of this contact record: form_submission (created during testimonial submission), import (bulk CSV/API import), manual (admin created). Used for analytics and attribution. */
+  source?: InputMaybe<Scalars['String']['input']>;
+  source_form?: InputMaybe<Forms_Obj_Rel_Insert_Input>;
+  /** Foreign key to forms table. References the first form through which this contact was acquired. Preserved even if form is later deleted (set null). */
+  source_form_id?: InputMaybe<Scalars['String']['input']>;
+  /** Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers. */
+  submission_count?: InputMaybe<Scalars['Int']['input']>;
+  submissions?: InputMaybe<Form_Submissions_Arr_Rel_Insert_Input>;
+  /** URL to Twitter/X profile. Used for social sharing integration and additional verification of contact identity. */
+  twitter_url?: InputMaybe<Scalars['String']['input']>;
+  /** Timestamp of last modification to this record. Automatically updated by database trigger on any column change. */
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+};
+
+/** aggregate max on columns */
+export type Contacts_Max_Fields = {
+  __typename?: 'contacts_max_fields';
+  /** URL to profile photo or avatar image. Displayed alongside testimonials for visual social proof and authenticity. */
+  avatar_url?: Maybe<Scalars['String']['output']>;
+  /** Name of the company or organization where the contact works. Used for B2B testimonial displays and logo integration. */
+  company_name?: Maybe<Scalars['String']['output']>;
+  /** URL to the contact's company website. May be used for automated logo fetching or company verification. */
+  company_website?: Maybe<Scalars['String']['output']>;
+  /** Timestamp when this contact record was first created. Set automatically on insert, never modified thereafter. */
+  created_at?: Maybe<Scalars['timestamptz']['output']>;
+  /** Primary identifier for the contact. Unique within each organization. Used for deduplication when same person submits multiple testimonials across different forms. */
+  email?: Maybe<Scalars['String']['output']>;
+  /** Timestamp of first interaction with the organization. Set on creation and never modified. Used for cohort analysis and engagement metrics. */
+  first_seen_at?: Maybe<Scalars['timestamptz']['output']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
+  id?: Maybe<Scalars['String']['output']>;
+  /** Professional title or role (e.g., "VP of Engineering", "Founder"). Adds credibility context to testimonials, especially for B2B use cases. */
+  job_title?: Maybe<Scalars['String']['output']>;
+  /** Timestamp of most recent activity. Updated on each new submission or interaction. Used for identifying active vs dormant contacts. */
+  last_seen_at?: Maybe<Scalars['timestamptz']['output']>;
+  /** URL to LinkedIn profile. Provides professional verification and enables social proof through platform recognition. */
+  linkedin_url?: Maybe<Scalars['String']['output']>;
+  /** Display name of the contact. Collected from form submission contact_info step or enriched from external data sources like LinkedIn. */
+  name?: Maybe<Scalars['String']['output']>;
+  /** Foreign key to organizations table. Establishes tenant boundary - all contacts are scoped to a single organization for multi-tenancy isolation. */
+  organization_id?: Maybe<Scalars['String']['output']>;
+  /** Origin of this contact record: form_submission (created during testimonial submission), import (bulk CSV/API import), manual (admin created). Used for analytics and attribution. */
+  source?: Maybe<Scalars['String']['output']>;
+  /** Foreign key to forms table. References the first form through which this contact was acquired. Preserved even if form is later deleted (set null). */
+  source_form_id?: Maybe<Scalars['String']['output']>;
+  /** Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers. */
+  submission_count?: Maybe<Scalars['Int']['output']>;
+  /** URL to Twitter/X profile. Used for social sharing integration and additional verification of contact identity. */
+  twitter_url?: Maybe<Scalars['String']['output']>;
+  /** Timestamp of last modification to this record. Automatically updated by database trigger on any column change. */
+  updated_at?: Maybe<Scalars['timestamptz']['output']>;
+};
+
+/** order by max() on columns of table "contacts" */
+export type Contacts_Max_Order_By = {
+  /** URL to profile photo or avatar image. Displayed alongside testimonials for visual social proof and authenticity. */
+  avatar_url?: InputMaybe<Order_By>;
+  /** Name of the company or organization where the contact works. Used for B2B testimonial displays and logo integration. */
+  company_name?: InputMaybe<Order_By>;
+  /** URL to the contact's company website. May be used for automated logo fetching or company verification. */
+  company_website?: InputMaybe<Order_By>;
+  /** Timestamp when this contact record was first created. Set automatically on insert, never modified thereafter. */
+  created_at?: InputMaybe<Order_By>;
+  /** Primary identifier for the contact. Unique within each organization. Used for deduplication when same person submits multiple testimonials across different forms. */
+  email?: InputMaybe<Order_By>;
+  /** Timestamp of first interaction with the organization. Set on creation and never modified. Used for cohort analysis and engagement metrics. */
+  first_seen_at?: InputMaybe<Order_By>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
+  id?: InputMaybe<Order_By>;
+  /** Professional title or role (e.g., "VP of Engineering", "Founder"). Adds credibility context to testimonials, especially for B2B use cases. */
+  job_title?: InputMaybe<Order_By>;
+  /** Timestamp of most recent activity. Updated on each new submission or interaction. Used for identifying active vs dormant contacts. */
+  last_seen_at?: InputMaybe<Order_By>;
+  /** URL to LinkedIn profile. Provides professional verification and enables social proof through platform recognition. */
+  linkedin_url?: InputMaybe<Order_By>;
+  /** Display name of the contact. Collected from form submission contact_info step or enriched from external data sources like LinkedIn. */
+  name?: InputMaybe<Order_By>;
+  /** Foreign key to organizations table. Establishes tenant boundary - all contacts are scoped to a single organization for multi-tenancy isolation. */
+  organization_id?: InputMaybe<Order_By>;
+  /** Origin of this contact record: form_submission (created during testimonial submission), import (bulk CSV/API import), manual (admin created). Used for analytics and attribution. */
+  source?: InputMaybe<Order_By>;
+  /** Foreign key to forms table. References the first form through which this contact was acquired. Preserved even if form is later deleted (set null). */
+  source_form_id?: InputMaybe<Order_By>;
+  /** Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers. */
+  submission_count?: InputMaybe<Order_By>;
+  /** URL to Twitter/X profile. Used for social sharing integration and additional verification of contact identity. */
+  twitter_url?: InputMaybe<Order_By>;
+  /** Timestamp of last modification to this record. Automatically updated by database trigger on any column change. */
+  updated_at?: InputMaybe<Order_By>;
+};
+
+/** aggregate min on columns */
+export type Contacts_Min_Fields = {
+  __typename?: 'contacts_min_fields';
+  /** URL to profile photo or avatar image. Displayed alongside testimonials for visual social proof and authenticity. */
+  avatar_url?: Maybe<Scalars['String']['output']>;
+  /** Name of the company or organization where the contact works. Used for B2B testimonial displays and logo integration. */
+  company_name?: Maybe<Scalars['String']['output']>;
+  /** URL to the contact's company website. May be used for automated logo fetching or company verification. */
+  company_website?: Maybe<Scalars['String']['output']>;
+  /** Timestamp when this contact record was first created. Set automatically on insert, never modified thereafter. */
+  created_at?: Maybe<Scalars['timestamptz']['output']>;
+  /** Primary identifier for the contact. Unique within each organization. Used for deduplication when same person submits multiple testimonials across different forms. */
+  email?: Maybe<Scalars['String']['output']>;
+  /** Timestamp of first interaction with the organization. Set on creation and never modified. Used for cohort analysis and engagement metrics. */
+  first_seen_at?: Maybe<Scalars['timestamptz']['output']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
+  id?: Maybe<Scalars['String']['output']>;
+  /** Professional title or role (e.g., "VP of Engineering", "Founder"). Adds credibility context to testimonials, especially for B2B use cases. */
+  job_title?: Maybe<Scalars['String']['output']>;
+  /** Timestamp of most recent activity. Updated on each new submission or interaction. Used for identifying active vs dormant contacts. */
+  last_seen_at?: Maybe<Scalars['timestamptz']['output']>;
+  /** URL to LinkedIn profile. Provides professional verification and enables social proof through platform recognition. */
+  linkedin_url?: Maybe<Scalars['String']['output']>;
+  /** Display name of the contact. Collected from form submission contact_info step or enriched from external data sources like LinkedIn. */
+  name?: Maybe<Scalars['String']['output']>;
+  /** Foreign key to organizations table. Establishes tenant boundary - all contacts are scoped to a single organization for multi-tenancy isolation. */
+  organization_id?: Maybe<Scalars['String']['output']>;
+  /** Origin of this contact record: form_submission (created during testimonial submission), import (bulk CSV/API import), manual (admin created). Used for analytics and attribution. */
+  source?: Maybe<Scalars['String']['output']>;
+  /** Foreign key to forms table. References the first form through which this contact was acquired. Preserved even if form is later deleted (set null). */
+  source_form_id?: Maybe<Scalars['String']['output']>;
+  /** Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers. */
+  submission_count?: Maybe<Scalars['Int']['output']>;
+  /** URL to Twitter/X profile. Used for social sharing integration and additional verification of contact identity. */
+  twitter_url?: Maybe<Scalars['String']['output']>;
+  /** Timestamp of last modification to this record. Automatically updated by database trigger on any column change. */
+  updated_at?: Maybe<Scalars['timestamptz']['output']>;
+};
+
+/** order by min() on columns of table "contacts" */
+export type Contacts_Min_Order_By = {
+  /** URL to profile photo or avatar image. Displayed alongside testimonials for visual social proof and authenticity. */
+  avatar_url?: InputMaybe<Order_By>;
+  /** Name of the company or organization where the contact works. Used for B2B testimonial displays and logo integration. */
+  company_name?: InputMaybe<Order_By>;
+  /** URL to the contact's company website. May be used for automated logo fetching or company verification. */
+  company_website?: InputMaybe<Order_By>;
+  /** Timestamp when this contact record was first created. Set automatically on insert, never modified thereafter. */
+  created_at?: InputMaybe<Order_By>;
+  /** Primary identifier for the contact. Unique within each organization. Used for deduplication when same person submits multiple testimonials across different forms. */
+  email?: InputMaybe<Order_By>;
+  /** Timestamp of first interaction with the organization. Set on creation and never modified. Used for cohort analysis and engagement metrics. */
+  first_seen_at?: InputMaybe<Order_By>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
+  id?: InputMaybe<Order_By>;
+  /** Professional title or role (e.g., "VP of Engineering", "Founder"). Adds credibility context to testimonials, especially for B2B use cases. */
+  job_title?: InputMaybe<Order_By>;
+  /** Timestamp of most recent activity. Updated on each new submission or interaction. Used for identifying active vs dormant contacts. */
+  last_seen_at?: InputMaybe<Order_By>;
+  /** URL to LinkedIn profile. Provides professional verification and enables social proof through platform recognition. */
+  linkedin_url?: InputMaybe<Order_By>;
+  /** Display name of the contact. Collected from form submission contact_info step or enriched from external data sources like LinkedIn. */
+  name?: InputMaybe<Order_By>;
+  /** Foreign key to organizations table. Establishes tenant boundary - all contacts are scoped to a single organization for multi-tenancy isolation. */
+  organization_id?: InputMaybe<Order_By>;
+  /** Origin of this contact record: form_submission (created during testimonial submission), import (bulk CSV/API import), manual (admin created). Used for analytics and attribution. */
+  source?: InputMaybe<Order_By>;
+  /** Foreign key to forms table. References the first form through which this contact was acquired. Preserved even if form is later deleted (set null). */
+  source_form_id?: InputMaybe<Order_By>;
+  /** Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers. */
+  submission_count?: InputMaybe<Order_By>;
+  /** URL to Twitter/X profile. Used for social sharing integration and additional verification of contact identity. */
+  twitter_url?: InputMaybe<Order_By>;
+  /** Timestamp of last modification to this record. Automatically updated by database trigger on any column change. */
+  updated_at?: InputMaybe<Order_By>;
+};
+
+/** response of any mutation on the table "contacts" */
+export type Contacts_Mutation_Response = {
+  __typename?: 'contacts_mutation_response';
+  /** number of rows affected by the mutation */
+  affected_rows: Scalars['Int']['output'];
+  /** data from the rows affected by the mutation */
+  returning: Array<Contacts>;
+};
+
+/** input type for inserting object relation for remote table "contacts" */
+export type Contacts_Obj_Rel_Insert_Input = {
+  data: Contacts_Insert_Input;
+  /** upsert condition */
+  on_conflict?: InputMaybe<Contacts_On_Conflict>;
+};
+
+/** on_conflict condition type for table "contacts" */
+export type Contacts_On_Conflict = {
+  constraint: Contacts_Constraint;
+  update_columns?: Array<Contacts_Update_Column>;
+  where?: InputMaybe<Contacts_Bool_Exp>;
+};
+
+/** Ordering options when selecting data from "contacts". */
+export type Contacts_Order_By = {
+  avatar_url?: InputMaybe<Order_By>;
+  company_name?: InputMaybe<Order_By>;
+  company_website?: InputMaybe<Order_By>;
+  created_at?: InputMaybe<Order_By>;
+  email?: InputMaybe<Order_By>;
+  email_verified?: InputMaybe<Order_By>;
+  first_seen_at?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
+  job_title?: InputMaybe<Order_By>;
+  last_seen_at?: InputMaybe<Order_By>;
+  linkedin_url?: InputMaybe<Order_By>;
+  name?: InputMaybe<Order_By>;
+  organization?: InputMaybe<Organizations_Order_By>;
+  organization_id?: InputMaybe<Order_By>;
+  source?: InputMaybe<Order_By>;
+  source_form?: InputMaybe<Forms_Order_By>;
+  source_form_id?: InputMaybe<Order_By>;
+  submission_count?: InputMaybe<Order_By>;
+  submissions_aggregate?: InputMaybe<Form_Submissions_Aggregate_Order_By>;
+  twitter_url?: InputMaybe<Order_By>;
+  updated_at?: InputMaybe<Order_By>;
+};
+
+/** primary key columns input for table: contacts */
+export type Contacts_Pk_Columns_Input = {
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
+  id: Scalars['String']['input'];
+};
+
+/** select columns of table "contacts" */
+export enum Contacts_Select_Column {
+  /** column name */
+  AvatarUrl = 'avatar_url',
+  /** column name */
+  CompanyName = 'company_name',
+  /** column name */
+  CompanyWebsite = 'company_website',
+  /** column name */
+  CreatedAt = 'created_at',
+  /** column name */
+  Email = 'email',
+  /** column name */
+  EmailVerified = 'email_verified',
+  /** column name */
+  FirstSeenAt = 'first_seen_at',
+  /** column name */
+  Id = 'id',
+  /** column name */
+  JobTitle = 'job_title',
+  /** column name */
+  LastSeenAt = 'last_seen_at',
+  /** column name */
+  LinkedinUrl = 'linkedin_url',
+  /** column name */
+  Name = 'name',
+  /** column name */
+  OrganizationId = 'organization_id',
+  /** column name */
+  Source = 'source',
+  /** column name */
+  SourceFormId = 'source_form_id',
+  /** column name */
+  SubmissionCount = 'submission_count',
+  /** column name */
+  TwitterUrl = 'twitter_url',
+  /** column name */
+  UpdatedAt = 'updated_at'
+}
+
+/** select "contacts_aggregate_bool_exp_bool_and_arguments_columns" columns of table "contacts" */
+export enum Contacts_Select_Column_Contacts_Aggregate_Bool_Exp_Bool_And_Arguments_Columns {
+  /** column name */
+  EmailVerified = 'email_verified'
+}
+
+/** select "contacts_aggregate_bool_exp_bool_or_arguments_columns" columns of table "contacts" */
+export enum Contacts_Select_Column_Contacts_Aggregate_Bool_Exp_Bool_Or_Arguments_Columns {
+  /** column name */
+  EmailVerified = 'email_verified'
+}
+
+/** input type for updating data in table "contacts" */
+export type Contacts_Set_Input = {
+  /** URL to profile photo or avatar image. Displayed alongside testimonials for visual social proof and authenticity. */
+  avatar_url?: InputMaybe<Scalars['String']['input']>;
+  /** Name of the company or organization where the contact works. Used for B2B testimonial displays and logo integration. */
+  company_name?: InputMaybe<Scalars['String']['input']>;
+  /** URL to the contact's company website. May be used for automated logo fetching or company verification. */
+  company_website?: InputMaybe<Scalars['String']['input']>;
+  /** Timestamp when this contact record was first created. Set automatically on insert, never modified thereafter. */
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Primary identifier for the contact. Unique within each organization. Used for deduplication when same person submits multiple testimonials across different forms. */
+  email?: InputMaybe<Scalars['String']['input']>;
+  /** Boolean flag indicating if email ownership has been confirmed via verification link. Verified contacts may receive preferential display treatment. */
+  email_verified?: InputMaybe<Scalars['Boolean']['input']>;
+  /** Timestamp of first interaction with the organization. Set on creation and never modified. Used for cohort analysis and engagement metrics. */
+  first_seen_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
+  id?: InputMaybe<Scalars['String']['input']>;
+  /** Professional title or role (e.g., "VP of Engineering", "Founder"). Adds credibility context to testimonials, especially for B2B use cases. */
+  job_title?: InputMaybe<Scalars['String']['input']>;
+  /** Timestamp of most recent activity. Updated on each new submission or interaction. Used for identifying active vs dormant contacts. */
+  last_seen_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** URL to LinkedIn profile. Provides professional verification and enables social proof through platform recognition. */
+  linkedin_url?: InputMaybe<Scalars['String']['input']>;
+  /** Display name of the contact. Collected from form submission contact_info step or enriched from external data sources like LinkedIn. */
+  name?: InputMaybe<Scalars['String']['input']>;
+  /** Foreign key to organizations table. Establishes tenant boundary - all contacts are scoped to a single organization for multi-tenancy isolation. */
+  organization_id?: InputMaybe<Scalars['String']['input']>;
+  /** Origin of this contact record: form_submission (created during testimonial submission), import (bulk CSV/API import), manual (admin created). Used for analytics and attribution. */
+  source?: InputMaybe<Scalars['String']['input']>;
+  /** Foreign key to forms table. References the first form through which this contact was acquired. Preserved even if form is later deleted (set null). */
+  source_form_id?: InputMaybe<Scalars['String']['input']>;
+  /** Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers. */
+  submission_count?: InputMaybe<Scalars['Int']['input']>;
+  /** URL to Twitter/X profile. Used for social sharing integration and additional verification of contact identity. */
+  twitter_url?: InputMaybe<Scalars['String']['input']>;
+  /** Timestamp of last modification to this record. Automatically updated by database trigger on any column change. */
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+};
+
+/** aggregate stddev on columns */
+export type Contacts_Stddev_Fields = {
+  __typename?: 'contacts_stddev_fields';
+  /** Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers. */
+  submission_count?: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by stddev() on columns of table "contacts" */
+export type Contacts_Stddev_Order_By = {
+  /** Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers. */
+  submission_count?: InputMaybe<Order_By>;
+};
+
+/** aggregate stddev_pop on columns */
+export type Contacts_Stddev_Pop_Fields = {
+  __typename?: 'contacts_stddev_pop_fields';
+  /** Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers. */
+  submission_count?: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by stddev_pop() on columns of table "contacts" */
+export type Contacts_Stddev_Pop_Order_By = {
+  /** Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers. */
+  submission_count?: InputMaybe<Order_By>;
+};
+
+/** aggregate stddev_samp on columns */
+export type Contacts_Stddev_Samp_Fields = {
+  __typename?: 'contacts_stddev_samp_fields';
+  /** Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers. */
+  submission_count?: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by stddev_samp() on columns of table "contacts" */
+export type Contacts_Stddev_Samp_Order_By = {
+  /** Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers. */
+  submission_count?: InputMaybe<Order_By>;
+};
+
+/** Streaming cursor of the table "contacts" */
+export type Contacts_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Contacts_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type Contacts_Stream_Cursor_Value_Input = {
+  /** URL to profile photo or avatar image. Displayed alongside testimonials for visual social proof and authenticity. */
+  avatar_url?: InputMaybe<Scalars['String']['input']>;
+  /** Name of the company or organization where the contact works. Used for B2B testimonial displays and logo integration. */
+  company_name?: InputMaybe<Scalars['String']['input']>;
+  /** URL to the contact's company website. May be used for automated logo fetching or company verification. */
+  company_website?: InputMaybe<Scalars['String']['input']>;
+  /** Timestamp when this contact record was first created. Set automatically on insert, never modified thereafter. */
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Primary identifier for the contact. Unique within each organization. Used for deduplication when same person submits multiple testimonials across different forms. */
+  email?: InputMaybe<Scalars['String']['input']>;
+  /** Boolean flag indicating if email ownership has been confirmed via verification link. Verified contacts may receive preferential display treatment. */
+  email_verified?: InputMaybe<Scalars['Boolean']['input']>;
+  /** Timestamp of first interaction with the organization. Set on creation and never modified. Used for cohort analysis and engagement metrics. */
+  first_seen_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
+  id?: InputMaybe<Scalars['String']['input']>;
+  /** Professional title or role (e.g., "VP of Engineering", "Founder"). Adds credibility context to testimonials, especially for B2B use cases. */
+  job_title?: InputMaybe<Scalars['String']['input']>;
+  /** Timestamp of most recent activity. Updated on each new submission or interaction. Used for identifying active vs dormant contacts. */
+  last_seen_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** URL to LinkedIn profile. Provides professional verification and enables social proof through platform recognition. */
+  linkedin_url?: InputMaybe<Scalars['String']['input']>;
+  /** Display name of the contact. Collected from form submission contact_info step or enriched from external data sources like LinkedIn. */
+  name?: InputMaybe<Scalars['String']['input']>;
+  /** Foreign key to organizations table. Establishes tenant boundary - all contacts are scoped to a single organization for multi-tenancy isolation. */
+  organization_id?: InputMaybe<Scalars['String']['input']>;
+  /** Origin of this contact record: form_submission (created during testimonial submission), import (bulk CSV/API import), manual (admin created). Used for analytics and attribution. */
+  source?: InputMaybe<Scalars['String']['input']>;
+  /** Foreign key to forms table. References the first form through which this contact was acquired. Preserved even if form is later deleted (set null). */
+  source_form_id?: InputMaybe<Scalars['String']['input']>;
+  /** Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers. */
+  submission_count?: InputMaybe<Scalars['Int']['input']>;
+  /** URL to Twitter/X profile. Used for social sharing integration and additional verification of contact identity. */
+  twitter_url?: InputMaybe<Scalars['String']['input']>;
+  /** Timestamp of last modification to this record. Automatically updated by database trigger on any column change. */
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+};
+
+/** aggregate sum on columns */
+export type Contacts_Sum_Fields = {
+  __typename?: 'contacts_sum_fields';
+  /** Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers. */
+  submission_count?: Maybe<Scalars['Int']['output']>;
+};
+
+/** order by sum() on columns of table "contacts" */
+export type Contacts_Sum_Order_By = {
+  /** Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers. */
+  submission_count?: InputMaybe<Order_By>;
+};
+
+/** update columns of table "contacts" */
+export enum Contacts_Update_Column {
+  /** column name */
+  AvatarUrl = 'avatar_url',
+  /** column name */
+  CompanyName = 'company_name',
+  /** column name */
+  CompanyWebsite = 'company_website',
+  /** column name */
+  CreatedAt = 'created_at',
+  /** column name */
+  Email = 'email',
+  /** column name */
+  EmailVerified = 'email_verified',
+  /** column name */
+  FirstSeenAt = 'first_seen_at',
+  /** column name */
+  Id = 'id',
+  /** column name */
+  JobTitle = 'job_title',
+  /** column name */
+  LastSeenAt = 'last_seen_at',
+  /** column name */
+  LinkedinUrl = 'linkedin_url',
+  /** column name */
+  Name = 'name',
+  /** column name */
+  OrganizationId = 'organization_id',
+  /** column name */
+  Source = 'source',
+  /** column name */
+  SourceFormId = 'source_form_id',
+  /** column name */
+  SubmissionCount = 'submission_count',
+  /** column name */
+  TwitterUrl = 'twitter_url',
+  /** column name */
+  UpdatedAt = 'updated_at'
+}
+
+export type Contacts_Updates = {
+  /** increments the numeric columns with given value of the filtered values */
+  _inc?: InputMaybe<Contacts_Inc_Input>;
+  /** sets the columns of the filtered rows to the given values */
+  _set?: InputMaybe<Contacts_Set_Input>;
+  /** filter the rows which have to be updated */
+  where: Contacts_Bool_Exp;
+};
+
+/** aggregate var_pop on columns */
+export type Contacts_Var_Pop_Fields = {
+  __typename?: 'contacts_var_pop_fields';
+  /** Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers. */
+  submission_count?: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by var_pop() on columns of table "contacts" */
+export type Contacts_Var_Pop_Order_By = {
+  /** Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers. */
+  submission_count?: InputMaybe<Order_By>;
+};
+
+/** aggregate var_samp on columns */
+export type Contacts_Var_Samp_Fields = {
+  __typename?: 'contacts_var_samp_fields';
+  /** Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers. */
+  submission_count?: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by var_samp() on columns of table "contacts" */
+export type Contacts_Var_Samp_Order_By = {
+  /** Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers. */
+  submission_count?: InputMaybe<Order_By>;
+};
+
+/** aggregate variance on columns */
+export type Contacts_Variance_Fields = {
+  __typename?: 'contacts_variance_fields';
+  /** Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers. */
+  submission_count?: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by variance() on columns of table "contacts" */
+export type Contacts_Variance_Order_By = {
+  /** Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers. */
+  submission_count?: InputMaybe<Order_By>;
+};
+
 /** ordering argument of a cursor */
 export enum Cursor_Ordering {
   /** ascending ordering of the cursor */
@@ -1795,9 +2530,656 @@ export type Form_Questions_Variance_Order_By = {
   min_value?: InputMaybe<Order_By>;
 };
 
+/** Stores step configuration per form for the timeline editor. Each step represents a screen in the testimonial collection flow (welcome, questions, consent, contact info, reward, thank you). */
+export type Form_Steps = {
+  __typename?: 'form_steps';
+  /** JSONB payload with type-specific configuration. Structure varies by step_type. Empty for question/rating types which use form_questions table instead. */
+  content: Scalars['jsonb']['output'];
+  /** Timestamp when this step record was first created. Set automatically, never modified. */
+  created_at: Scalars['timestamptz']['output'];
+  /** Foreign key to users table. Records which user originally created this step for audit purposes. */
+  created_by?: Maybe<Scalars['String']['output']>;
+  /** An object relationship */
+  creator?: Maybe<Users>;
+  /** An object relationship */
+  form: Forms;
+  /** Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed. */
+  form_id: Scalars['String']['output'];
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
+  id: Scalars['String']['output'];
+  /** Soft delete flag. False hides step from form while preserving data for historical analysis and potential restoration. */
+  is_active: Scalars['Boolean']['output'];
+  /** An object relationship */
+  organization: Organizations;
+  /** Foreign key to organizations table. Denormalized from form for efficient row-level security queries. Must match form.organization_id. */
+  organization_id: Scalars['String']['output'];
+  /** An object relationship */
+  question?: Maybe<Form_Questions>;
+  /** Foreign key to form_questions table. Required for question/rating step types to link validation config. Must be NULL for non-question types. */
+  question_id?: Maybe<Scalars['String']['output']>;
+  /** Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form. */
+  step_order: Scalars['smallint']['output'];
+  /** Enumerated type determining step behavior: welcome (intro screen), question (text input), rating (star/scale), consent (public/private choice), contact_info (submitter details), reward (incentive), thank_you (completion). */
+  step_type: Scalars['String']['output'];
+  /** Array of helper text strings shown to customers during question/rating steps. Provides guidance for better quality responses. */
+  tips?: Maybe<Array<Scalars['String']['output']>>;
+  /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
+  updated_at: Scalars['timestamptz']['output'];
+  /** Foreign key to users table. Records which user last modified this step for audit trail. */
+  updated_by?: Maybe<Scalars['String']['output']>;
+  /** An object relationship */
+  updater?: Maybe<Users>;
+};
+
+
+/** Stores step configuration per form for the timeline editor. Each step represents a screen in the testimonial collection flow (welcome, questions, consent, contact info, reward, thank you). */
+export type Form_StepsContentArgs = {
+  path?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** aggregated selection of "form_steps" */
+export type Form_Steps_Aggregate = {
+  __typename?: 'form_steps_aggregate';
+  aggregate?: Maybe<Form_Steps_Aggregate_Fields>;
+  nodes: Array<Form_Steps>;
+};
+
+export type Form_Steps_Aggregate_Bool_Exp = {
+  bool_and?: InputMaybe<Form_Steps_Aggregate_Bool_Exp_Bool_And>;
+  bool_or?: InputMaybe<Form_Steps_Aggregate_Bool_Exp_Bool_Or>;
+  count?: InputMaybe<Form_Steps_Aggregate_Bool_Exp_Count>;
+};
+
+export type Form_Steps_Aggregate_Bool_Exp_Bool_And = {
+  arguments: Form_Steps_Select_Column_Form_Steps_Aggregate_Bool_Exp_Bool_And_Arguments_Columns;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+  filter?: InputMaybe<Form_Steps_Bool_Exp>;
+  predicate: Boolean_Comparison_Exp;
+};
+
+export type Form_Steps_Aggregate_Bool_Exp_Bool_Or = {
+  arguments: Form_Steps_Select_Column_Form_Steps_Aggregate_Bool_Exp_Bool_Or_Arguments_Columns;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+  filter?: InputMaybe<Form_Steps_Bool_Exp>;
+  predicate: Boolean_Comparison_Exp;
+};
+
+export type Form_Steps_Aggregate_Bool_Exp_Count = {
+  arguments?: InputMaybe<Array<Form_Steps_Select_Column>>;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+  filter?: InputMaybe<Form_Steps_Bool_Exp>;
+  predicate: Int_Comparison_Exp;
+};
+
+/** aggregate fields of "form_steps" */
+export type Form_Steps_Aggregate_Fields = {
+  __typename?: 'form_steps_aggregate_fields';
+  avg?: Maybe<Form_Steps_Avg_Fields>;
+  count: Scalars['Int']['output'];
+  max?: Maybe<Form_Steps_Max_Fields>;
+  min?: Maybe<Form_Steps_Min_Fields>;
+  stddev?: Maybe<Form_Steps_Stddev_Fields>;
+  stddev_pop?: Maybe<Form_Steps_Stddev_Pop_Fields>;
+  stddev_samp?: Maybe<Form_Steps_Stddev_Samp_Fields>;
+  sum?: Maybe<Form_Steps_Sum_Fields>;
+  var_pop?: Maybe<Form_Steps_Var_Pop_Fields>;
+  var_samp?: Maybe<Form_Steps_Var_Samp_Fields>;
+  variance?: Maybe<Form_Steps_Variance_Fields>;
+};
+
+
+/** aggregate fields of "form_steps" */
+export type Form_Steps_Aggregate_FieldsCountArgs = {
+  columns?: InputMaybe<Array<Form_Steps_Select_Column>>;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+/** order by aggregate values of table "form_steps" */
+export type Form_Steps_Aggregate_Order_By = {
+  avg?: InputMaybe<Form_Steps_Avg_Order_By>;
+  count?: InputMaybe<Order_By>;
+  max?: InputMaybe<Form_Steps_Max_Order_By>;
+  min?: InputMaybe<Form_Steps_Min_Order_By>;
+  stddev?: InputMaybe<Form_Steps_Stddev_Order_By>;
+  stddev_pop?: InputMaybe<Form_Steps_Stddev_Pop_Order_By>;
+  stddev_samp?: InputMaybe<Form_Steps_Stddev_Samp_Order_By>;
+  sum?: InputMaybe<Form_Steps_Sum_Order_By>;
+  var_pop?: InputMaybe<Form_Steps_Var_Pop_Order_By>;
+  var_samp?: InputMaybe<Form_Steps_Var_Samp_Order_By>;
+  variance?: InputMaybe<Form_Steps_Variance_Order_By>;
+};
+
+/** append existing jsonb value of filtered columns with new jsonb value */
+export type Form_Steps_Append_Input = {
+  /** JSONB payload with type-specific configuration. Structure varies by step_type. Empty for question/rating types which use form_questions table instead. */
+  content?: InputMaybe<Scalars['jsonb']['input']>;
+};
+
+/** input type for inserting array relation for remote table "form_steps" */
+export type Form_Steps_Arr_Rel_Insert_Input = {
+  data: Array<Form_Steps_Insert_Input>;
+  /** upsert condition */
+  on_conflict?: InputMaybe<Form_Steps_On_Conflict>;
+};
+
+/** aggregate avg on columns */
+export type Form_Steps_Avg_Fields = {
+  __typename?: 'form_steps_avg_fields';
+  /** Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form. */
+  step_order?: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by avg() on columns of table "form_steps" */
+export type Form_Steps_Avg_Order_By = {
+  /** Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form. */
+  step_order?: InputMaybe<Order_By>;
+};
+
+/** Boolean expression to filter rows from the table "form_steps". All fields are combined with a logical 'AND'. */
+export type Form_Steps_Bool_Exp = {
+  _and?: InputMaybe<Array<Form_Steps_Bool_Exp>>;
+  _not?: InputMaybe<Form_Steps_Bool_Exp>;
+  _or?: InputMaybe<Array<Form_Steps_Bool_Exp>>;
+  content?: InputMaybe<Jsonb_Comparison_Exp>;
+  created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  created_by?: InputMaybe<String_Comparison_Exp>;
+  creator?: InputMaybe<Users_Bool_Exp>;
+  form?: InputMaybe<Forms_Bool_Exp>;
+  form_id?: InputMaybe<String_Comparison_Exp>;
+  id?: InputMaybe<String_Comparison_Exp>;
+  is_active?: InputMaybe<Boolean_Comparison_Exp>;
+  organization?: InputMaybe<Organizations_Bool_Exp>;
+  organization_id?: InputMaybe<String_Comparison_Exp>;
+  question?: InputMaybe<Form_Questions_Bool_Exp>;
+  question_id?: InputMaybe<String_Comparison_Exp>;
+  step_order?: InputMaybe<Smallint_Comparison_Exp>;
+  step_type?: InputMaybe<String_Comparison_Exp>;
+  tips?: InputMaybe<String_Array_Comparison_Exp>;
+  updated_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  updated_by?: InputMaybe<String_Comparison_Exp>;
+  updater?: InputMaybe<Users_Bool_Exp>;
+};
+
+/** unique or primary key constraints on table "form_steps" */
+export enum Form_Steps_Constraint {
+  /** unique or primary key constraint on columns "step_order", "form_id" */
+  FormStepsFormOrderUnique = 'form_steps_form_order_unique',
+  /** unique or primary key constraint on columns "id" */
+  FormStepsPkey = 'form_steps_pkey'
+}
+
+/** delete the field or element with specified path (for JSON arrays, negative integers count from the end) */
+export type Form_Steps_Delete_At_Path_Input = {
+  /** JSONB payload with type-specific configuration. Structure varies by step_type. Empty for question/rating types which use form_questions table instead. */
+  content?: InputMaybe<Array<Scalars['String']['input']>>;
+};
+
+/** delete the array element with specified index (negative integers count from the end). throws an error if top level container is not an array */
+export type Form_Steps_Delete_Elem_Input = {
+  /** JSONB payload with type-specific configuration. Structure varies by step_type. Empty for question/rating types which use form_questions table instead. */
+  content?: InputMaybe<Scalars['Int']['input']>;
+};
+
+/** delete key/value pair or string element. key/value pairs are matched based on their key value */
+export type Form_Steps_Delete_Key_Input = {
+  /** JSONB payload with type-specific configuration. Structure varies by step_type. Empty for question/rating types which use form_questions table instead. */
+  content?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** input type for incrementing numeric columns in table "form_steps" */
+export type Form_Steps_Inc_Input = {
+  /** Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form. */
+  step_order?: InputMaybe<Scalars['smallint']['input']>;
+};
+
+/** input type for inserting data into table "form_steps" */
+export type Form_Steps_Insert_Input = {
+  /** JSONB payload with type-specific configuration. Structure varies by step_type. Empty for question/rating types which use form_questions table instead. */
+  content?: InputMaybe<Scalars['jsonb']['input']>;
+  /** Timestamp when this step record was first created. Set automatically, never modified. */
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Foreign key to users table. Records which user originally created this step for audit purposes. */
+  created_by?: InputMaybe<Scalars['String']['input']>;
+  creator?: InputMaybe<Users_Obj_Rel_Insert_Input>;
+  form?: InputMaybe<Forms_Obj_Rel_Insert_Input>;
+  /** Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed. */
+  form_id?: InputMaybe<Scalars['String']['input']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
+  id?: InputMaybe<Scalars['String']['input']>;
+  /** Soft delete flag. False hides step from form while preserving data for historical analysis and potential restoration. */
+  is_active?: InputMaybe<Scalars['Boolean']['input']>;
+  organization?: InputMaybe<Organizations_Obj_Rel_Insert_Input>;
+  /** Foreign key to organizations table. Denormalized from form for efficient row-level security queries. Must match form.organization_id. */
+  organization_id?: InputMaybe<Scalars['String']['input']>;
+  question?: InputMaybe<Form_Questions_Obj_Rel_Insert_Input>;
+  /** Foreign key to form_questions table. Required for question/rating step types to link validation config. Must be NULL for non-question types. */
+  question_id?: InputMaybe<Scalars['String']['input']>;
+  /** Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form. */
+  step_order?: InputMaybe<Scalars['smallint']['input']>;
+  /** Enumerated type determining step behavior: welcome (intro screen), question (text input), rating (star/scale), consent (public/private choice), contact_info (submitter details), reward (incentive), thank_you (completion). */
+  step_type?: InputMaybe<Scalars['String']['input']>;
+  /** Array of helper text strings shown to customers during question/rating steps. Provides guidance for better quality responses. */
+  tips?: InputMaybe<Array<Scalars['String']['input']>>;
+  /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Foreign key to users table. Records which user last modified this step for audit trail. */
+  updated_by?: InputMaybe<Scalars['String']['input']>;
+  updater?: InputMaybe<Users_Obj_Rel_Insert_Input>;
+};
+
+/** aggregate max on columns */
+export type Form_Steps_Max_Fields = {
+  __typename?: 'form_steps_max_fields';
+  /** Timestamp when this step record was first created. Set automatically, never modified. */
+  created_at?: Maybe<Scalars['timestamptz']['output']>;
+  /** Foreign key to users table. Records which user originally created this step for audit purposes. */
+  created_by?: Maybe<Scalars['String']['output']>;
+  /** Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed. */
+  form_id?: Maybe<Scalars['String']['output']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
+  id?: Maybe<Scalars['String']['output']>;
+  /** Foreign key to organizations table. Denormalized from form for efficient row-level security queries. Must match form.organization_id. */
+  organization_id?: Maybe<Scalars['String']['output']>;
+  /** Foreign key to form_questions table. Required for question/rating step types to link validation config. Must be NULL for non-question types. */
+  question_id?: Maybe<Scalars['String']['output']>;
+  /** Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form. */
+  step_order?: Maybe<Scalars['smallint']['output']>;
+  /** Enumerated type determining step behavior: welcome (intro screen), question (text input), rating (star/scale), consent (public/private choice), contact_info (submitter details), reward (incentive), thank_you (completion). */
+  step_type?: Maybe<Scalars['String']['output']>;
+  /** Array of helper text strings shown to customers during question/rating steps. Provides guidance for better quality responses. */
+  tips?: Maybe<Array<Scalars['String']['output']>>;
+  /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
+  updated_at?: Maybe<Scalars['timestamptz']['output']>;
+  /** Foreign key to users table. Records which user last modified this step for audit trail. */
+  updated_by?: Maybe<Scalars['String']['output']>;
+};
+
+/** order by max() on columns of table "form_steps" */
+export type Form_Steps_Max_Order_By = {
+  /** Timestamp when this step record was first created. Set automatically, never modified. */
+  created_at?: InputMaybe<Order_By>;
+  /** Foreign key to users table. Records which user originally created this step for audit purposes. */
+  created_by?: InputMaybe<Order_By>;
+  /** Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed. */
+  form_id?: InputMaybe<Order_By>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
+  id?: InputMaybe<Order_By>;
+  /** Foreign key to organizations table. Denormalized from form for efficient row-level security queries. Must match form.organization_id. */
+  organization_id?: InputMaybe<Order_By>;
+  /** Foreign key to form_questions table. Required for question/rating step types to link validation config. Must be NULL for non-question types. */
+  question_id?: InputMaybe<Order_By>;
+  /** Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form. */
+  step_order?: InputMaybe<Order_By>;
+  /** Enumerated type determining step behavior: welcome (intro screen), question (text input), rating (star/scale), consent (public/private choice), contact_info (submitter details), reward (incentive), thank_you (completion). */
+  step_type?: InputMaybe<Order_By>;
+  /** Array of helper text strings shown to customers during question/rating steps. Provides guidance for better quality responses. */
+  tips?: InputMaybe<Order_By>;
+  /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
+  updated_at?: InputMaybe<Order_By>;
+  /** Foreign key to users table. Records which user last modified this step for audit trail. */
+  updated_by?: InputMaybe<Order_By>;
+};
+
+/** aggregate min on columns */
+export type Form_Steps_Min_Fields = {
+  __typename?: 'form_steps_min_fields';
+  /** Timestamp when this step record was first created. Set automatically, never modified. */
+  created_at?: Maybe<Scalars['timestamptz']['output']>;
+  /** Foreign key to users table. Records which user originally created this step for audit purposes. */
+  created_by?: Maybe<Scalars['String']['output']>;
+  /** Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed. */
+  form_id?: Maybe<Scalars['String']['output']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
+  id?: Maybe<Scalars['String']['output']>;
+  /** Foreign key to organizations table. Denormalized from form for efficient row-level security queries. Must match form.organization_id. */
+  organization_id?: Maybe<Scalars['String']['output']>;
+  /** Foreign key to form_questions table. Required for question/rating step types to link validation config. Must be NULL for non-question types. */
+  question_id?: Maybe<Scalars['String']['output']>;
+  /** Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form. */
+  step_order?: Maybe<Scalars['smallint']['output']>;
+  /** Enumerated type determining step behavior: welcome (intro screen), question (text input), rating (star/scale), consent (public/private choice), contact_info (submitter details), reward (incentive), thank_you (completion). */
+  step_type?: Maybe<Scalars['String']['output']>;
+  /** Array of helper text strings shown to customers during question/rating steps. Provides guidance for better quality responses. */
+  tips?: Maybe<Array<Scalars['String']['output']>>;
+  /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
+  updated_at?: Maybe<Scalars['timestamptz']['output']>;
+  /** Foreign key to users table. Records which user last modified this step for audit trail. */
+  updated_by?: Maybe<Scalars['String']['output']>;
+};
+
+/** order by min() on columns of table "form_steps" */
+export type Form_Steps_Min_Order_By = {
+  /** Timestamp when this step record was first created. Set automatically, never modified. */
+  created_at?: InputMaybe<Order_By>;
+  /** Foreign key to users table. Records which user originally created this step for audit purposes. */
+  created_by?: InputMaybe<Order_By>;
+  /** Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed. */
+  form_id?: InputMaybe<Order_By>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
+  id?: InputMaybe<Order_By>;
+  /** Foreign key to organizations table. Denormalized from form for efficient row-level security queries. Must match form.organization_id. */
+  organization_id?: InputMaybe<Order_By>;
+  /** Foreign key to form_questions table. Required for question/rating step types to link validation config. Must be NULL for non-question types. */
+  question_id?: InputMaybe<Order_By>;
+  /** Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form. */
+  step_order?: InputMaybe<Order_By>;
+  /** Enumerated type determining step behavior: welcome (intro screen), question (text input), rating (star/scale), consent (public/private choice), contact_info (submitter details), reward (incentive), thank_you (completion). */
+  step_type?: InputMaybe<Order_By>;
+  /** Array of helper text strings shown to customers during question/rating steps. Provides guidance for better quality responses. */
+  tips?: InputMaybe<Order_By>;
+  /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
+  updated_at?: InputMaybe<Order_By>;
+  /** Foreign key to users table. Records which user last modified this step for audit trail. */
+  updated_by?: InputMaybe<Order_By>;
+};
+
+/** response of any mutation on the table "form_steps" */
+export type Form_Steps_Mutation_Response = {
+  __typename?: 'form_steps_mutation_response';
+  /** number of rows affected by the mutation */
+  affected_rows: Scalars['Int']['output'];
+  /** data from the rows affected by the mutation */
+  returning: Array<Form_Steps>;
+};
+
+/** on_conflict condition type for table "form_steps" */
+export type Form_Steps_On_Conflict = {
+  constraint: Form_Steps_Constraint;
+  update_columns?: Array<Form_Steps_Update_Column>;
+  where?: InputMaybe<Form_Steps_Bool_Exp>;
+};
+
+/** Ordering options when selecting data from "form_steps". */
+export type Form_Steps_Order_By = {
+  content?: InputMaybe<Order_By>;
+  created_at?: InputMaybe<Order_By>;
+  created_by?: InputMaybe<Order_By>;
+  creator?: InputMaybe<Users_Order_By>;
+  form?: InputMaybe<Forms_Order_By>;
+  form_id?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
+  is_active?: InputMaybe<Order_By>;
+  organization?: InputMaybe<Organizations_Order_By>;
+  organization_id?: InputMaybe<Order_By>;
+  question?: InputMaybe<Form_Questions_Order_By>;
+  question_id?: InputMaybe<Order_By>;
+  step_order?: InputMaybe<Order_By>;
+  step_type?: InputMaybe<Order_By>;
+  tips?: InputMaybe<Order_By>;
+  updated_at?: InputMaybe<Order_By>;
+  updated_by?: InputMaybe<Order_By>;
+  updater?: InputMaybe<Users_Order_By>;
+};
+
+/** primary key columns input for table: form_steps */
+export type Form_Steps_Pk_Columns_Input = {
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
+  id: Scalars['String']['input'];
+};
+
+/** prepend existing jsonb value of filtered columns with new jsonb value */
+export type Form_Steps_Prepend_Input = {
+  /** JSONB payload with type-specific configuration. Structure varies by step_type. Empty for question/rating types which use form_questions table instead. */
+  content?: InputMaybe<Scalars['jsonb']['input']>;
+};
+
+/** select columns of table "form_steps" */
+export enum Form_Steps_Select_Column {
+  /** column name */
+  Content = 'content',
+  /** column name */
+  CreatedAt = 'created_at',
+  /** column name */
+  CreatedBy = 'created_by',
+  /** column name */
+  FormId = 'form_id',
+  /** column name */
+  Id = 'id',
+  /** column name */
+  IsActive = 'is_active',
+  /** column name */
+  OrganizationId = 'organization_id',
+  /** column name */
+  QuestionId = 'question_id',
+  /** column name */
+  StepOrder = 'step_order',
+  /** column name */
+  StepType = 'step_type',
+  /** column name */
+  Tips = 'tips',
+  /** column name */
+  UpdatedAt = 'updated_at',
+  /** column name */
+  UpdatedBy = 'updated_by'
+}
+
+/** select "form_steps_aggregate_bool_exp_bool_and_arguments_columns" columns of table "form_steps" */
+export enum Form_Steps_Select_Column_Form_Steps_Aggregate_Bool_Exp_Bool_And_Arguments_Columns {
+  /** column name */
+  IsActive = 'is_active'
+}
+
+/** select "form_steps_aggregate_bool_exp_bool_or_arguments_columns" columns of table "form_steps" */
+export enum Form_Steps_Select_Column_Form_Steps_Aggregate_Bool_Exp_Bool_Or_Arguments_Columns {
+  /** column name */
+  IsActive = 'is_active'
+}
+
+/** input type for updating data in table "form_steps" */
+export type Form_Steps_Set_Input = {
+  /** JSONB payload with type-specific configuration. Structure varies by step_type. Empty for question/rating types which use form_questions table instead. */
+  content?: InputMaybe<Scalars['jsonb']['input']>;
+  /** Timestamp when this step record was first created. Set automatically, never modified. */
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Foreign key to users table. Records which user originally created this step for audit purposes. */
+  created_by?: InputMaybe<Scalars['String']['input']>;
+  /** Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed. */
+  form_id?: InputMaybe<Scalars['String']['input']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
+  id?: InputMaybe<Scalars['String']['input']>;
+  /** Soft delete flag. False hides step from form while preserving data for historical analysis and potential restoration. */
+  is_active?: InputMaybe<Scalars['Boolean']['input']>;
+  /** Foreign key to organizations table. Denormalized from form for efficient row-level security queries. Must match form.organization_id. */
+  organization_id?: InputMaybe<Scalars['String']['input']>;
+  /** Foreign key to form_questions table. Required for question/rating step types to link validation config. Must be NULL for non-question types. */
+  question_id?: InputMaybe<Scalars['String']['input']>;
+  /** Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form. */
+  step_order?: InputMaybe<Scalars['smallint']['input']>;
+  /** Enumerated type determining step behavior: welcome (intro screen), question (text input), rating (star/scale), consent (public/private choice), contact_info (submitter details), reward (incentive), thank_you (completion). */
+  step_type?: InputMaybe<Scalars['String']['input']>;
+  /** Array of helper text strings shown to customers during question/rating steps. Provides guidance for better quality responses. */
+  tips?: InputMaybe<Array<Scalars['String']['input']>>;
+  /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Foreign key to users table. Records which user last modified this step for audit trail. */
+  updated_by?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** aggregate stddev on columns */
+export type Form_Steps_Stddev_Fields = {
+  __typename?: 'form_steps_stddev_fields';
+  /** Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form. */
+  step_order?: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by stddev() on columns of table "form_steps" */
+export type Form_Steps_Stddev_Order_By = {
+  /** Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form. */
+  step_order?: InputMaybe<Order_By>;
+};
+
+/** aggregate stddev_pop on columns */
+export type Form_Steps_Stddev_Pop_Fields = {
+  __typename?: 'form_steps_stddev_pop_fields';
+  /** Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form. */
+  step_order?: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by stddev_pop() on columns of table "form_steps" */
+export type Form_Steps_Stddev_Pop_Order_By = {
+  /** Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form. */
+  step_order?: InputMaybe<Order_By>;
+};
+
+/** aggregate stddev_samp on columns */
+export type Form_Steps_Stddev_Samp_Fields = {
+  __typename?: 'form_steps_stddev_samp_fields';
+  /** Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form. */
+  step_order?: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by stddev_samp() on columns of table "form_steps" */
+export type Form_Steps_Stddev_Samp_Order_By = {
+  /** Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form. */
+  step_order?: InputMaybe<Order_By>;
+};
+
+/** Streaming cursor of the table "form_steps" */
+export type Form_Steps_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Form_Steps_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type Form_Steps_Stream_Cursor_Value_Input = {
+  /** JSONB payload with type-specific configuration. Structure varies by step_type. Empty for question/rating types which use form_questions table instead. */
+  content?: InputMaybe<Scalars['jsonb']['input']>;
+  /** Timestamp when this step record was first created. Set automatically, never modified. */
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Foreign key to users table. Records which user originally created this step for audit purposes. */
+  created_by?: InputMaybe<Scalars['String']['input']>;
+  /** Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed. */
+  form_id?: InputMaybe<Scalars['String']['input']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
+  id?: InputMaybe<Scalars['String']['input']>;
+  /** Soft delete flag. False hides step from form while preserving data for historical analysis and potential restoration. */
+  is_active?: InputMaybe<Scalars['Boolean']['input']>;
+  /** Foreign key to organizations table. Denormalized from form for efficient row-level security queries. Must match form.organization_id. */
+  organization_id?: InputMaybe<Scalars['String']['input']>;
+  /** Foreign key to form_questions table. Required for question/rating step types to link validation config. Must be NULL for non-question types. */
+  question_id?: InputMaybe<Scalars['String']['input']>;
+  /** Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form. */
+  step_order?: InputMaybe<Scalars['smallint']['input']>;
+  /** Enumerated type determining step behavior: welcome (intro screen), question (text input), rating (star/scale), consent (public/private choice), contact_info (submitter details), reward (incentive), thank_you (completion). */
+  step_type?: InputMaybe<Scalars['String']['input']>;
+  /** Array of helper text strings shown to customers during question/rating steps. Provides guidance for better quality responses. */
+  tips?: InputMaybe<Array<Scalars['String']['input']>>;
+  /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Foreign key to users table. Records which user last modified this step for audit trail. */
+  updated_by?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** aggregate sum on columns */
+export type Form_Steps_Sum_Fields = {
+  __typename?: 'form_steps_sum_fields';
+  /** Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form. */
+  step_order?: Maybe<Scalars['smallint']['output']>;
+};
+
+/** order by sum() on columns of table "form_steps" */
+export type Form_Steps_Sum_Order_By = {
+  /** Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form. */
+  step_order?: InputMaybe<Order_By>;
+};
+
+/** update columns of table "form_steps" */
+export enum Form_Steps_Update_Column {
+  /** column name */
+  Content = 'content',
+  /** column name */
+  CreatedAt = 'created_at',
+  /** column name */
+  CreatedBy = 'created_by',
+  /** column name */
+  FormId = 'form_id',
+  /** column name */
+  Id = 'id',
+  /** column name */
+  IsActive = 'is_active',
+  /** column name */
+  OrganizationId = 'organization_id',
+  /** column name */
+  QuestionId = 'question_id',
+  /** column name */
+  StepOrder = 'step_order',
+  /** column name */
+  StepType = 'step_type',
+  /** column name */
+  Tips = 'tips',
+  /** column name */
+  UpdatedAt = 'updated_at',
+  /** column name */
+  UpdatedBy = 'updated_by'
+}
+
+export type Form_Steps_Updates = {
+  /** append existing jsonb value of filtered columns with new jsonb value */
+  _append?: InputMaybe<Form_Steps_Append_Input>;
+  /** delete the field or element with specified path (for JSON arrays, negative integers count from the end) */
+  _delete_at_path?: InputMaybe<Form_Steps_Delete_At_Path_Input>;
+  /** delete the array element with specified index (negative integers count from the end). throws an error if top level container is not an array */
+  _delete_elem?: InputMaybe<Form_Steps_Delete_Elem_Input>;
+  /** delete key/value pair or string element. key/value pairs are matched based on their key value */
+  _delete_key?: InputMaybe<Form_Steps_Delete_Key_Input>;
+  /** increments the numeric columns with given value of the filtered values */
+  _inc?: InputMaybe<Form_Steps_Inc_Input>;
+  /** prepend existing jsonb value of filtered columns with new jsonb value */
+  _prepend?: InputMaybe<Form_Steps_Prepend_Input>;
+  /** sets the columns of the filtered rows to the given values */
+  _set?: InputMaybe<Form_Steps_Set_Input>;
+  /** filter the rows which have to be updated */
+  where: Form_Steps_Bool_Exp;
+};
+
+/** aggregate var_pop on columns */
+export type Form_Steps_Var_Pop_Fields = {
+  __typename?: 'form_steps_var_pop_fields';
+  /** Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form. */
+  step_order?: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by var_pop() on columns of table "form_steps" */
+export type Form_Steps_Var_Pop_Order_By = {
+  /** Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form. */
+  step_order?: InputMaybe<Order_By>;
+};
+
+/** aggregate var_samp on columns */
+export type Form_Steps_Var_Samp_Fields = {
+  __typename?: 'form_steps_var_samp_fields';
+  /** Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form. */
+  step_order?: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by var_samp() on columns of table "form_steps" */
+export type Form_Steps_Var_Samp_Order_By = {
+  /** Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form. */
+  step_order?: InputMaybe<Order_By>;
+};
+
+/** aggregate variance on columns */
+export type Form_Steps_Variance_Fields = {
+  __typename?: 'form_steps_variance_fields';
+  /** Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form. */
+  step_order?: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by variance() on columns of table "form_steps" */
+export type Form_Steps_Variance_Order_By = {
+  /** Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form. */
+  step_order?: InputMaybe<Order_By>;
+};
+
 /** Raw form submission event - submitter info lives here, responses in form_question_responses */
 export type Form_Submissions = {
   __typename?: 'form_submissions';
+  /** An object relationship */
+  contact?: Maybe<Contacts>;
+  /** Foreign key to contacts table. Links this submission to a normalized contact record for deduplication and contact management. NULL for legacy submissions or anonymous submissions. */
+  contact_id?: Maybe<Scalars['String']['output']>;
   /** Record creation timestamp. Same as submitted_at */
   created_at: Scalars['timestamptz']['output'];
   /** An object relationship */
@@ -1816,20 +3198,6 @@ export type Form_Submissions = {
   responses_aggregate: Form_Question_Responses_Aggregate;
   /** When customer submitted the form. Immutable */
   submitted_at: Scalars['timestamptz']['output'];
-  /** Profile photo URL. From Gravatar or upload */
-  submitter_avatar_url?: Maybe<Scalars['String']['output']>;
-  /** Company name like "Acme Inc". Copied to testimonial for display */
-  submitter_company?: Maybe<Scalars['String']['output']>;
-  /** Email for follow-up. NOT displayed publicly on widgets */
-  submitter_email: Scalars['String']['output'];
-  /** LinkedIn profile URL for social proof verification */
-  submitter_linkedin_url?: Maybe<Scalars['String']['output']>;
-  /** Full name of person who submitted. Source of truth for customer identity */
-  submitter_name: Scalars['String']['output'];
-  /** Job title like "Product Manager". Copied to testimonial for display */
-  submitter_title?: Maybe<Scalars['String']['output']>;
-  /** Twitter/X profile URL for social proof verification */
-  submitter_twitter_url?: Maybe<Scalars['String']['output']>;
   /** An array relationship */
   testimonials: Array<Testimonials>;
   /** An aggregate relationship */
@@ -1934,6 +3302,8 @@ export type Form_Submissions_Bool_Exp = {
   _and?: InputMaybe<Array<Form_Submissions_Bool_Exp>>;
   _not?: InputMaybe<Form_Submissions_Bool_Exp>;
   _or?: InputMaybe<Array<Form_Submissions_Bool_Exp>>;
+  contact?: InputMaybe<Contacts_Bool_Exp>;
+  contact_id?: InputMaybe<String_Comparison_Exp>;
   created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
   form?: InputMaybe<Forms_Bool_Exp>;
   form_id?: InputMaybe<String_Comparison_Exp>;
@@ -1943,13 +3313,6 @@ export type Form_Submissions_Bool_Exp = {
   responses?: InputMaybe<Form_Question_Responses_Bool_Exp>;
   responses_aggregate?: InputMaybe<Form_Question_Responses_Aggregate_Bool_Exp>;
   submitted_at?: InputMaybe<Timestamptz_Comparison_Exp>;
-  submitter_avatar_url?: InputMaybe<String_Comparison_Exp>;
-  submitter_company?: InputMaybe<String_Comparison_Exp>;
-  submitter_email?: InputMaybe<String_Comparison_Exp>;
-  submitter_linkedin_url?: InputMaybe<String_Comparison_Exp>;
-  submitter_name?: InputMaybe<String_Comparison_Exp>;
-  submitter_title?: InputMaybe<String_Comparison_Exp>;
-  submitter_twitter_url?: InputMaybe<String_Comparison_Exp>;
   testimonials?: InputMaybe<Testimonials_Bool_Exp>;
   testimonials_aggregate?: InputMaybe<Testimonials_Aggregate_Bool_Exp>;
   updated_at?: InputMaybe<Timestamptz_Comparison_Exp>;
@@ -1965,6 +3328,9 @@ export enum Form_Submissions_Constraint {
 
 /** input type for inserting data into table "form_submissions" */
 export type Form_Submissions_Insert_Input = {
+  contact?: InputMaybe<Contacts_Obj_Rel_Insert_Input>;
+  /** Foreign key to contacts table. Links this submission to a normalized contact record for deduplication and contact management. NULL for legacy submissions or anonymous submissions. */
+  contact_id?: InputMaybe<Scalars['String']['input']>;
   /** Record creation timestamp. Same as submitted_at */
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
   form?: InputMaybe<Forms_Obj_Rel_Insert_Input>;
@@ -1978,20 +3344,6 @@ export type Form_Submissions_Insert_Input = {
   responses?: InputMaybe<Form_Question_Responses_Arr_Rel_Insert_Input>;
   /** When customer submitted the form. Immutable */
   submitted_at?: InputMaybe<Scalars['timestamptz']['input']>;
-  /** Profile photo URL. From Gravatar or upload */
-  submitter_avatar_url?: InputMaybe<Scalars['String']['input']>;
-  /** Company name like "Acme Inc". Copied to testimonial for display */
-  submitter_company?: InputMaybe<Scalars['String']['input']>;
-  /** Email for follow-up. NOT displayed publicly on widgets */
-  submitter_email?: InputMaybe<Scalars['String']['input']>;
-  /** LinkedIn profile URL for social proof verification */
-  submitter_linkedin_url?: InputMaybe<Scalars['String']['input']>;
-  /** Full name of person who submitted. Source of truth for customer identity */
-  submitter_name?: InputMaybe<Scalars['String']['input']>;
-  /** Job title like "Product Manager". Copied to testimonial for display */
-  submitter_title?: InputMaybe<Scalars['String']['input']>;
-  /** Twitter/X profile URL for social proof verification */
-  submitter_twitter_url?: InputMaybe<Scalars['String']['input']>;
   testimonials?: InputMaybe<Testimonials_Arr_Rel_Insert_Input>;
   /** Last modification. Auto-updated by trigger */
   updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
@@ -2003,6 +3355,8 @@ export type Form_Submissions_Insert_Input = {
 /** aggregate max on columns */
 export type Form_Submissions_Max_Fields = {
   __typename?: 'form_submissions_max_fields';
+  /** Foreign key to contacts table. Links this submission to a normalized contact record for deduplication and contact management. NULL for legacy submissions or anonymous submissions. */
+  contact_id?: Maybe<Scalars['String']['output']>;
   /** Record creation timestamp. Same as submitted_at */
   created_at?: Maybe<Scalars['timestamptz']['output']>;
   /** FK to forms - which form was submitted */
@@ -2013,20 +3367,6 @@ export type Form_Submissions_Max_Fields = {
   organization_id?: Maybe<Scalars['String']['output']>;
   /** When customer submitted the form. Immutable */
   submitted_at?: Maybe<Scalars['timestamptz']['output']>;
-  /** Profile photo URL. From Gravatar or upload */
-  submitter_avatar_url?: Maybe<Scalars['String']['output']>;
-  /** Company name like "Acme Inc". Copied to testimonial for display */
-  submitter_company?: Maybe<Scalars['String']['output']>;
-  /** Email for follow-up. NOT displayed publicly on widgets */
-  submitter_email?: Maybe<Scalars['String']['output']>;
-  /** LinkedIn profile URL for social proof verification */
-  submitter_linkedin_url?: Maybe<Scalars['String']['output']>;
-  /** Full name of person who submitted. Source of truth for customer identity */
-  submitter_name?: Maybe<Scalars['String']['output']>;
-  /** Job title like "Product Manager". Copied to testimonial for display */
-  submitter_title?: Maybe<Scalars['String']['output']>;
-  /** Twitter/X profile URL for social proof verification */
-  submitter_twitter_url?: Maybe<Scalars['String']['output']>;
   /** Last modification. Auto-updated by trigger */
   updated_at?: Maybe<Scalars['timestamptz']['output']>;
   /** FK to users - who made admin edits. NULL until first update */
@@ -2035,6 +3375,8 @@ export type Form_Submissions_Max_Fields = {
 
 /** order by max() on columns of table "form_submissions" */
 export type Form_Submissions_Max_Order_By = {
+  /** Foreign key to contacts table. Links this submission to a normalized contact record for deduplication and contact management. NULL for legacy submissions or anonymous submissions. */
+  contact_id?: InputMaybe<Order_By>;
   /** Record creation timestamp. Same as submitted_at */
   created_at?: InputMaybe<Order_By>;
   /** FK to forms - which form was submitted */
@@ -2045,20 +3387,6 @@ export type Form_Submissions_Max_Order_By = {
   organization_id?: InputMaybe<Order_By>;
   /** When customer submitted the form. Immutable */
   submitted_at?: InputMaybe<Order_By>;
-  /** Profile photo URL. From Gravatar or upload */
-  submitter_avatar_url?: InputMaybe<Order_By>;
-  /** Company name like "Acme Inc". Copied to testimonial for display */
-  submitter_company?: InputMaybe<Order_By>;
-  /** Email for follow-up. NOT displayed publicly on widgets */
-  submitter_email?: InputMaybe<Order_By>;
-  /** LinkedIn profile URL for social proof verification */
-  submitter_linkedin_url?: InputMaybe<Order_By>;
-  /** Full name of person who submitted. Source of truth for customer identity */
-  submitter_name?: InputMaybe<Order_By>;
-  /** Job title like "Product Manager". Copied to testimonial for display */
-  submitter_title?: InputMaybe<Order_By>;
-  /** Twitter/X profile URL for social proof verification */
-  submitter_twitter_url?: InputMaybe<Order_By>;
   /** Last modification. Auto-updated by trigger */
   updated_at?: InputMaybe<Order_By>;
   /** FK to users - who made admin edits. NULL until first update */
@@ -2068,6 +3396,8 @@ export type Form_Submissions_Max_Order_By = {
 /** aggregate min on columns */
 export type Form_Submissions_Min_Fields = {
   __typename?: 'form_submissions_min_fields';
+  /** Foreign key to contacts table. Links this submission to a normalized contact record for deduplication and contact management. NULL for legacy submissions or anonymous submissions. */
+  contact_id?: Maybe<Scalars['String']['output']>;
   /** Record creation timestamp. Same as submitted_at */
   created_at?: Maybe<Scalars['timestamptz']['output']>;
   /** FK to forms - which form was submitted */
@@ -2078,20 +3408,6 @@ export type Form_Submissions_Min_Fields = {
   organization_id?: Maybe<Scalars['String']['output']>;
   /** When customer submitted the form. Immutable */
   submitted_at?: Maybe<Scalars['timestamptz']['output']>;
-  /** Profile photo URL. From Gravatar or upload */
-  submitter_avatar_url?: Maybe<Scalars['String']['output']>;
-  /** Company name like "Acme Inc". Copied to testimonial for display */
-  submitter_company?: Maybe<Scalars['String']['output']>;
-  /** Email for follow-up. NOT displayed publicly on widgets */
-  submitter_email?: Maybe<Scalars['String']['output']>;
-  /** LinkedIn profile URL for social proof verification */
-  submitter_linkedin_url?: Maybe<Scalars['String']['output']>;
-  /** Full name of person who submitted. Source of truth for customer identity */
-  submitter_name?: Maybe<Scalars['String']['output']>;
-  /** Job title like "Product Manager". Copied to testimonial for display */
-  submitter_title?: Maybe<Scalars['String']['output']>;
-  /** Twitter/X profile URL for social proof verification */
-  submitter_twitter_url?: Maybe<Scalars['String']['output']>;
   /** Last modification. Auto-updated by trigger */
   updated_at?: Maybe<Scalars['timestamptz']['output']>;
   /** FK to users - who made admin edits. NULL until first update */
@@ -2100,6 +3416,8 @@ export type Form_Submissions_Min_Fields = {
 
 /** order by min() on columns of table "form_submissions" */
 export type Form_Submissions_Min_Order_By = {
+  /** Foreign key to contacts table. Links this submission to a normalized contact record for deduplication and contact management. NULL for legacy submissions or anonymous submissions. */
+  contact_id?: InputMaybe<Order_By>;
   /** Record creation timestamp. Same as submitted_at */
   created_at?: InputMaybe<Order_By>;
   /** FK to forms - which form was submitted */
@@ -2110,20 +3428,6 @@ export type Form_Submissions_Min_Order_By = {
   organization_id?: InputMaybe<Order_By>;
   /** When customer submitted the form. Immutable */
   submitted_at?: InputMaybe<Order_By>;
-  /** Profile photo URL. From Gravatar or upload */
-  submitter_avatar_url?: InputMaybe<Order_By>;
-  /** Company name like "Acme Inc". Copied to testimonial for display */
-  submitter_company?: InputMaybe<Order_By>;
-  /** Email for follow-up. NOT displayed publicly on widgets */
-  submitter_email?: InputMaybe<Order_By>;
-  /** LinkedIn profile URL for social proof verification */
-  submitter_linkedin_url?: InputMaybe<Order_By>;
-  /** Full name of person who submitted. Source of truth for customer identity */
-  submitter_name?: InputMaybe<Order_By>;
-  /** Job title like "Product Manager". Copied to testimonial for display */
-  submitter_title?: InputMaybe<Order_By>;
-  /** Twitter/X profile URL for social proof verification */
-  submitter_twitter_url?: InputMaybe<Order_By>;
   /** Last modification. Auto-updated by trigger */
   updated_at?: InputMaybe<Order_By>;
   /** FK to users - who made admin edits. NULL until first update */
@@ -2155,6 +3459,8 @@ export type Form_Submissions_On_Conflict = {
 
 /** Ordering options when selecting data from "form_submissions". */
 export type Form_Submissions_Order_By = {
+  contact?: InputMaybe<Contacts_Order_By>;
+  contact_id?: InputMaybe<Order_By>;
   created_at?: InputMaybe<Order_By>;
   form?: InputMaybe<Forms_Order_By>;
   form_id?: InputMaybe<Order_By>;
@@ -2163,13 +3469,6 @@ export type Form_Submissions_Order_By = {
   organization_id?: InputMaybe<Order_By>;
   responses_aggregate?: InputMaybe<Form_Question_Responses_Aggregate_Order_By>;
   submitted_at?: InputMaybe<Order_By>;
-  submitter_avatar_url?: InputMaybe<Order_By>;
-  submitter_company?: InputMaybe<Order_By>;
-  submitter_email?: InputMaybe<Order_By>;
-  submitter_linkedin_url?: InputMaybe<Order_By>;
-  submitter_name?: InputMaybe<Order_By>;
-  submitter_title?: InputMaybe<Order_By>;
-  submitter_twitter_url?: InputMaybe<Order_By>;
   testimonials_aggregate?: InputMaybe<Testimonials_Aggregate_Order_By>;
   updated_at?: InputMaybe<Order_By>;
   updated_by?: InputMaybe<Order_By>;
@@ -2185,6 +3484,8 @@ export type Form_Submissions_Pk_Columns_Input = {
 /** select columns of table "form_submissions" */
 export enum Form_Submissions_Select_Column {
   /** column name */
+  ContactId = 'contact_id',
+  /** column name */
   CreatedAt = 'created_at',
   /** column name */
   FormId = 'form_id',
@@ -2195,20 +3496,6 @@ export enum Form_Submissions_Select_Column {
   /** column name */
   SubmittedAt = 'submitted_at',
   /** column name */
-  SubmitterAvatarUrl = 'submitter_avatar_url',
-  /** column name */
-  SubmitterCompany = 'submitter_company',
-  /** column name */
-  SubmitterEmail = 'submitter_email',
-  /** column name */
-  SubmitterLinkedinUrl = 'submitter_linkedin_url',
-  /** column name */
-  SubmitterName = 'submitter_name',
-  /** column name */
-  SubmitterTitle = 'submitter_title',
-  /** column name */
-  SubmitterTwitterUrl = 'submitter_twitter_url',
-  /** column name */
   UpdatedAt = 'updated_at',
   /** column name */
   UpdatedBy = 'updated_by'
@@ -2216,6 +3503,8 @@ export enum Form_Submissions_Select_Column {
 
 /** input type for updating data in table "form_submissions" */
 export type Form_Submissions_Set_Input = {
+  /** Foreign key to contacts table. Links this submission to a normalized contact record for deduplication and contact management. NULL for legacy submissions or anonymous submissions. */
+  contact_id?: InputMaybe<Scalars['String']['input']>;
   /** Record creation timestamp. Same as submitted_at */
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
   /** FK to forms - which form was submitted */
@@ -2226,20 +3515,6 @@ export type Form_Submissions_Set_Input = {
   organization_id?: InputMaybe<Scalars['String']['input']>;
   /** When customer submitted the form. Immutable */
   submitted_at?: InputMaybe<Scalars['timestamptz']['input']>;
-  /** Profile photo URL. From Gravatar or upload */
-  submitter_avatar_url?: InputMaybe<Scalars['String']['input']>;
-  /** Company name like "Acme Inc". Copied to testimonial for display */
-  submitter_company?: InputMaybe<Scalars['String']['input']>;
-  /** Email for follow-up. NOT displayed publicly on widgets */
-  submitter_email?: InputMaybe<Scalars['String']['input']>;
-  /** LinkedIn profile URL for social proof verification */
-  submitter_linkedin_url?: InputMaybe<Scalars['String']['input']>;
-  /** Full name of person who submitted. Source of truth for customer identity */
-  submitter_name?: InputMaybe<Scalars['String']['input']>;
-  /** Job title like "Product Manager". Copied to testimonial for display */
-  submitter_title?: InputMaybe<Scalars['String']['input']>;
-  /** Twitter/X profile URL for social proof verification */
-  submitter_twitter_url?: InputMaybe<Scalars['String']['input']>;
   /** Last modification. Auto-updated by trigger */
   updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
   /** FK to users - who made admin edits. NULL until first update */
@@ -2256,6 +3531,8 @@ export type Form_Submissions_Stream_Cursor_Input = {
 
 /** Initial value of the column from where the streaming should start */
 export type Form_Submissions_Stream_Cursor_Value_Input = {
+  /** Foreign key to contacts table. Links this submission to a normalized contact record for deduplication and contact management. NULL for legacy submissions or anonymous submissions. */
+  contact_id?: InputMaybe<Scalars['String']['input']>;
   /** Record creation timestamp. Same as submitted_at */
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
   /** FK to forms - which form was submitted */
@@ -2266,20 +3543,6 @@ export type Form_Submissions_Stream_Cursor_Value_Input = {
   organization_id?: InputMaybe<Scalars['String']['input']>;
   /** When customer submitted the form. Immutable */
   submitted_at?: InputMaybe<Scalars['timestamptz']['input']>;
-  /** Profile photo URL. From Gravatar or upload */
-  submitter_avatar_url?: InputMaybe<Scalars['String']['input']>;
-  /** Company name like "Acme Inc". Copied to testimonial for display */
-  submitter_company?: InputMaybe<Scalars['String']['input']>;
-  /** Email for follow-up. NOT displayed publicly on widgets */
-  submitter_email?: InputMaybe<Scalars['String']['input']>;
-  /** LinkedIn profile URL for social proof verification */
-  submitter_linkedin_url?: InputMaybe<Scalars['String']['input']>;
-  /** Full name of person who submitted. Source of truth for customer identity */
-  submitter_name?: InputMaybe<Scalars['String']['input']>;
-  /** Job title like "Product Manager". Copied to testimonial for display */
-  submitter_title?: InputMaybe<Scalars['String']['input']>;
-  /** Twitter/X profile URL for social proof verification */
-  submitter_twitter_url?: InputMaybe<Scalars['String']['input']>;
   /** Last modification. Auto-updated by trigger */
   updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
   /** FK to users - who made admin edits. NULL until first update */
@@ -2288,6 +3551,8 @@ export type Form_Submissions_Stream_Cursor_Value_Input = {
 
 /** update columns of table "form_submissions" */
 export enum Form_Submissions_Update_Column {
+  /** column name */
+  ContactId = 'contact_id',
   /** column name */
   CreatedAt = 'created_at',
   /** column name */
@@ -2298,20 +3563,6 @@ export enum Form_Submissions_Update_Column {
   OrganizationId = 'organization_id',
   /** column name */
   SubmittedAt = 'submitted_at',
-  /** column name */
-  SubmitterAvatarUrl = 'submitter_avatar_url',
-  /** column name */
-  SubmitterCompany = 'submitter_company',
-  /** column name */
-  SubmitterEmail = 'submitter_email',
-  /** column name */
-  SubmitterLinkedinUrl = 'submitter_linkedin_url',
-  /** column name */
-  SubmitterName = 'submitter_name',
-  /** column name */
-  SubmitterTitle = 'submitter_title',
-  /** column name */
-  SubmitterTwitterUrl = 'submitter_twitter_url',
   /** column name */
   UpdatedAt = 'updated_at',
   /** column name */
@@ -2328,6 +3579,10 @@ export type Form_Submissions_Updates = {
 /** Testimonial collection forms - questions normalized to form_questions table */
 export type Forms = {
   __typename?: 'forms';
+  /** An array relationship */
+  contacts: Array<Contacts>;
+  /** An aggregate relationship */
+  contacts_aggregate: Contacts_Aggregate;
   /** Timestamp when form was created. Immutable after insert */
   created_at: Scalars['timestamptz']['output'];
   /** FK to users - user who created this form */
@@ -2357,6 +3612,10 @@ export type Forms = {
   /** Form lifecycle status: draft (editing), published (public), archived (hidden) */
   status: Scalars['String']['output'];
   /** An array relationship */
+  steps: Array<Form_Steps>;
+  /** An aggregate relationship */
+  steps_aggregate: Form_Steps_Aggregate;
+  /** An array relationship */
   submissions: Array<Form_Submissions>;
   /** An aggregate relationship */
   submissions_aggregate: Form_Submissions_Aggregate;
@@ -2366,6 +3625,26 @@ export type Forms = {
   updated_by?: Maybe<Scalars['String']['output']>;
   /** An object relationship */
   updater?: Maybe<Users>;
+};
+
+
+/** Testimonial collection forms - questions normalized to form_questions table */
+export type FormsContactsArgs = {
+  distinct_on?: InputMaybe<Array<Contacts_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Contacts_Order_By>>;
+  where?: InputMaybe<Contacts_Bool_Exp>;
+};
+
+
+/** Testimonial collection forms - questions normalized to form_questions table */
+export type FormsContacts_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Contacts_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Contacts_Order_By>>;
+  where?: InputMaybe<Contacts_Bool_Exp>;
 };
 
 
@@ -2392,6 +3671,26 @@ export type FormsQuestions_AggregateArgs = {
 /** Testimonial collection forms - questions normalized to form_questions table */
 export type FormsSettingsArgs = {
   path?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+/** Testimonial collection forms - questions normalized to form_questions table */
+export type FormsStepsArgs = {
+  distinct_on?: InputMaybe<Array<Form_Steps_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Form_Steps_Order_By>>;
+  where?: InputMaybe<Form_Steps_Bool_Exp>;
+};
+
+
+/** Testimonial collection forms - questions normalized to form_questions table */
+export type FormsSteps_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Form_Steps_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Form_Steps_Order_By>>;
+  where?: InputMaybe<Form_Steps_Bool_Exp>;
 };
 
 
@@ -2488,6 +3787,8 @@ export type Forms_Bool_Exp = {
   _and?: InputMaybe<Array<Forms_Bool_Exp>>;
   _not?: InputMaybe<Forms_Bool_Exp>;
   _or?: InputMaybe<Array<Forms_Bool_Exp>>;
+  contacts?: InputMaybe<Contacts_Bool_Exp>;
+  contacts_aggregate?: InputMaybe<Contacts_Aggregate_Bool_Exp>;
   created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
   created_by?: InputMaybe<String_Comparison_Exp>;
   creator?: InputMaybe<Users_Bool_Exp>;
@@ -2502,6 +3803,8 @@ export type Forms_Bool_Exp = {
   questions_aggregate?: InputMaybe<Form_Questions_Aggregate_Bool_Exp>;
   settings?: InputMaybe<Jsonb_Comparison_Exp>;
   status?: InputMaybe<String_Comparison_Exp>;
+  steps?: InputMaybe<Form_Steps_Bool_Exp>;
+  steps_aggregate?: InputMaybe<Form_Steps_Aggregate_Bool_Exp>;
   submissions?: InputMaybe<Form_Submissions_Bool_Exp>;
   submissions_aggregate?: InputMaybe<Form_Submissions_Aggregate_Bool_Exp>;
   updated_at?: InputMaybe<Timestamptz_Comparison_Exp>;
@@ -2535,6 +3838,7 @@ export type Forms_Delete_Key_Input = {
 
 /** input type for inserting data into table "forms" */
 export type Forms_Insert_Input = {
+  contacts?: InputMaybe<Contacts_Arr_Rel_Insert_Input>;
   /** Timestamp when form was created. Immutable after insert */
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
   /** FK to users - user who created this form */
@@ -2558,6 +3862,7 @@ export type Forms_Insert_Input = {
   settings?: InputMaybe<Scalars['jsonb']['input']>;
   /** Form lifecycle status: draft (editing), published (public), archived (hidden) */
   status?: InputMaybe<Scalars['String']['input']>;
+  steps?: InputMaybe<Form_Steps_Arr_Rel_Insert_Input>;
   submissions?: InputMaybe<Form_Submissions_Arr_Rel_Insert_Input>;
   /** Timestamp of last modification. Auto-updated by trigger */
   updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
@@ -2689,6 +3994,7 @@ export type Forms_On_Conflict = {
 
 /** Ordering options when selecting data from "forms". */
 export type Forms_Order_By = {
+  contacts_aggregate?: InputMaybe<Contacts_Aggregate_Order_By>;
   created_at?: InputMaybe<Order_By>;
   created_by?: InputMaybe<Order_By>;
   creator?: InputMaybe<Users_Order_By>;
@@ -2702,6 +4008,7 @@ export type Forms_Order_By = {
   questions_aggregate?: InputMaybe<Form_Questions_Aggregate_Order_By>;
   settings?: InputMaybe<Order_By>;
   status?: InputMaybe<Order_By>;
+  steps_aggregate?: InputMaybe<Form_Steps_Aggregate_Order_By>;
   submissions_aggregate?: InputMaybe<Form_Submissions_Aggregate_Order_By>;
   updated_at?: InputMaybe<Order_By>;
   updated_by?: InputMaybe<Order_By>;
@@ -2900,6 +4207,10 @@ export type Jsonb_Comparison_Exp = {
 /** mutation root */
 export type Mutation_Root = {
   __typename?: 'mutation_root';
+  /** delete data from the table: "contacts" */
+  delete_contacts?: Maybe<Contacts_Mutation_Response>;
+  /** delete single row from the table: "contacts" */
+  delete_contacts_by_pk?: Maybe<Contacts>;
   /** delete data from the table: "form_question_responses" */
   delete_form_question_responses?: Maybe<Form_Question_Responses_Mutation_Response>;
   /** delete single row from the table: "form_question_responses" */
@@ -2908,6 +4219,10 @@ export type Mutation_Root = {
   delete_form_questions?: Maybe<Form_Questions_Mutation_Response>;
   /** delete single row from the table: "form_questions" */
   delete_form_questions_by_pk?: Maybe<Form_Questions>;
+  /** delete data from the table: "form_steps" */
+  delete_form_steps?: Maybe<Form_Steps_Mutation_Response>;
+  /** delete single row from the table: "form_steps" */
+  delete_form_steps_by_pk?: Maybe<Form_Steps>;
   /** delete data from the table: "form_submissions" */
   delete_form_submissions?: Maybe<Form_Submissions_Mutation_Response>;
   /** delete single row from the table: "form_submissions" */
@@ -2972,6 +4287,10 @@ export type Mutation_Root = {
   delete_widgets?: Maybe<Widgets_Mutation_Response>;
   /** delete single row from the table: "widgets" */
   delete_widgets_by_pk?: Maybe<Widgets>;
+  /** insert data into the table: "contacts" */
+  insert_contacts?: Maybe<Contacts_Mutation_Response>;
+  /** insert a single row into the table: "contacts" */
+  insert_contacts_one?: Maybe<Contacts>;
   /** insert data into the table: "form_question_responses" */
   insert_form_question_responses?: Maybe<Form_Question_Responses_Mutation_Response>;
   /** insert a single row into the table: "form_question_responses" */
@@ -2980,6 +4299,10 @@ export type Mutation_Root = {
   insert_form_questions?: Maybe<Form_Questions_Mutation_Response>;
   /** insert a single row into the table: "form_questions" */
   insert_form_questions_one?: Maybe<Form_Questions>;
+  /** insert data into the table: "form_steps" */
+  insert_form_steps?: Maybe<Form_Steps_Mutation_Response>;
+  /** insert a single row into the table: "form_steps" */
+  insert_form_steps_one?: Maybe<Form_Steps>;
   /** insert data into the table: "form_submissions" */
   insert_form_submissions?: Maybe<Form_Submissions_Mutation_Response>;
   /** insert a single row into the table: "form_submissions" */
@@ -3044,6 +4367,12 @@ export type Mutation_Root = {
   insert_widgets?: Maybe<Widgets_Mutation_Response>;
   /** insert a single row into the table: "widgets" */
   insert_widgets_one?: Maybe<Widgets>;
+  /** update data of the table: "contacts" */
+  update_contacts?: Maybe<Contacts_Mutation_Response>;
+  /** update single row of the table: "contacts" */
+  update_contacts_by_pk?: Maybe<Contacts>;
+  /** update multiples rows of table: "contacts" */
+  update_contacts_many?: Maybe<Array<Maybe<Contacts_Mutation_Response>>>;
   /** update data of the table: "form_question_responses" */
   update_form_question_responses?: Maybe<Form_Question_Responses_Mutation_Response>;
   /** update single row of the table: "form_question_responses" */
@@ -3056,6 +4385,12 @@ export type Mutation_Root = {
   update_form_questions_by_pk?: Maybe<Form_Questions>;
   /** update multiples rows of table: "form_questions" */
   update_form_questions_many?: Maybe<Array<Maybe<Form_Questions_Mutation_Response>>>;
+  /** update data of the table: "form_steps" */
+  update_form_steps?: Maybe<Form_Steps_Mutation_Response>;
+  /** update single row of the table: "form_steps" */
+  update_form_steps_by_pk?: Maybe<Form_Steps>;
+  /** update multiples rows of table: "form_steps" */
+  update_form_steps_many?: Maybe<Array<Maybe<Form_Steps_Mutation_Response>>>;
   /** update data of the table: "form_submissions" */
   update_form_submissions?: Maybe<Form_Submissions_Mutation_Response>;
   /** update single row of the table: "form_submissions" */
@@ -3156,6 +4491,18 @@ export type Mutation_Root = {
 
 
 /** mutation root */
+export type Mutation_RootDelete_ContactsArgs = {
+  where: Contacts_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootDelete_Contacts_By_PkArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+/** mutation root */
 export type Mutation_RootDelete_Form_Question_ResponsesArgs = {
   where: Form_Question_Responses_Bool_Exp;
 };
@@ -3175,6 +4522,18 @@ export type Mutation_RootDelete_Form_QuestionsArgs = {
 
 /** mutation root */
 export type Mutation_RootDelete_Form_Questions_By_PkArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+/** mutation root */
+export type Mutation_RootDelete_Form_StepsArgs = {
+  where: Form_Steps_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootDelete_Form_Steps_By_PkArgs = {
   id: Scalars['String']['input'];
 };
 
@@ -3372,6 +4731,20 @@ export type Mutation_RootDelete_Widgets_By_PkArgs = {
 
 
 /** mutation root */
+export type Mutation_RootInsert_ContactsArgs = {
+  objects: Array<Contacts_Insert_Input>;
+  on_conflict?: InputMaybe<Contacts_On_Conflict>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_Contacts_OneArgs = {
+  object: Contacts_Insert_Input;
+  on_conflict?: InputMaybe<Contacts_On_Conflict>;
+};
+
+
+/** mutation root */
 export type Mutation_RootInsert_Form_Question_ResponsesArgs = {
   objects: Array<Form_Question_Responses_Insert_Input>;
   on_conflict?: InputMaybe<Form_Question_Responses_On_Conflict>;
@@ -3396,6 +4769,20 @@ export type Mutation_RootInsert_Form_QuestionsArgs = {
 export type Mutation_RootInsert_Form_Questions_OneArgs = {
   object: Form_Questions_Insert_Input;
   on_conflict?: InputMaybe<Form_Questions_On_Conflict>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_Form_StepsArgs = {
+  objects: Array<Form_Steps_Insert_Input>;
+  on_conflict?: InputMaybe<Form_Steps_On_Conflict>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_Form_Steps_OneArgs = {
+  object: Form_Steps_Insert_Input;
+  on_conflict?: InputMaybe<Form_Steps_On_Conflict>;
 };
 
 
@@ -3624,6 +5011,28 @@ export type Mutation_RootInsert_Widgets_OneArgs = {
 
 
 /** mutation root */
+export type Mutation_RootUpdate_ContactsArgs = {
+  _inc?: InputMaybe<Contacts_Inc_Input>;
+  _set?: InputMaybe<Contacts_Set_Input>;
+  where: Contacts_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Contacts_By_PkArgs = {
+  _inc?: InputMaybe<Contacts_Inc_Input>;
+  _set?: InputMaybe<Contacts_Set_Input>;
+  pk_columns: Contacts_Pk_Columns_Input;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Contacts_ManyArgs = {
+  updates: Array<Contacts_Updates>;
+};
+
+
+/** mutation root */
 export type Mutation_RootUpdate_Form_Question_ResponsesArgs = {
   _append?: InputMaybe<Form_Question_Responses_Append_Input>;
   _delete_at_path?: InputMaybe<Form_Question_Responses_Delete_At_Path_Input>;
@@ -3674,6 +5083,38 @@ export type Mutation_RootUpdate_Form_Questions_By_PkArgs = {
 /** mutation root */
 export type Mutation_RootUpdate_Form_Questions_ManyArgs = {
   updates: Array<Form_Questions_Updates>;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Form_StepsArgs = {
+  _append?: InputMaybe<Form_Steps_Append_Input>;
+  _delete_at_path?: InputMaybe<Form_Steps_Delete_At_Path_Input>;
+  _delete_elem?: InputMaybe<Form_Steps_Delete_Elem_Input>;
+  _delete_key?: InputMaybe<Form_Steps_Delete_Key_Input>;
+  _inc?: InputMaybe<Form_Steps_Inc_Input>;
+  _prepend?: InputMaybe<Form_Steps_Prepend_Input>;
+  _set?: InputMaybe<Form_Steps_Set_Input>;
+  where: Form_Steps_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Form_Steps_By_PkArgs = {
+  _append?: InputMaybe<Form_Steps_Append_Input>;
+  _delete_at_path?: InputMaybe<Form_Steps_Delete_At_Path_Input>;
+  _delete_elem?: InputMaybe<Form_Steps_Delete_Elem_Input>;
+  _delete_key?: InputMaybe<Form_Steps_Delete_Key_Input>;
+  _inc?: InputMaybe<Form_Steps_Inc_Input>;
+  _prepend?: InputMaybe<Form_Steps_Prepend_Input>;
+  _set?: InputMaybe<Form_Steps_Set_Input>;
+  pk_columns: Form_Steps_Pk_Columns_Input;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Form_Steps_ManyArgs = {
+  updates: Array<Form_Steps_Updates>;
 };
 
 
@@ -7445,6 +8886,12 @@ export type Plans_Variance_Fields = {
 
 export type Query_Root = {
   __typename?: 'query_root';
+  /** An array relationship */
+  contacts: Array<Contacts>;
+  /** An aggregate relationship */
+  contacts_aggregate: Contacts_Aggregate;
+  /** fetch data from the table: "contacts" using primary key columns */
+  contacts_by_pk?: Maybe<Contacts>;
   /** fetch data from the table: "form_question_responses" */
   form_question_responses: Array<Form_Question_Responses>;
   /** fetch aggregated fields from the table: "form_question_responses" */
@@ -7457,6 +8904,12 @@ export type Query_Root = {
   form_questions_aggregate: Form_Questions_Aggregate;
   /** fetch data from the table: "form_questions" using primary key columns */
   form_questions_by_pk?: Maybe<Form_Questions>;
+  /** fetch data from the table: "form_steps" */
+  form_steps: Array<Form_Steps>;
+  /** fetch aggregated fields from the table: "form_steps" */
+  form_steps_aggregate: Form_Steps_Aggregate;
+  /** fetch data from the table: "form_steps" using primary key columns */
+  form_steps_by_pk?: Maybe<Form_Steps>;
   /** fetch data from the table: "form_submissions" */
   form_submissions: Array<Form_Submissions>;
   /** fetch aggregated fields from the table: "form_submissions" */
@@ -7556,6 +9009,29 @@ export type Query_Root = {
 };
 
 
+export type Query_RootContactsArgs = {
+  distinct_on?: InputMaybe<Array<Contacts_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Contacts_Order_By>>;
+  where?: InputMaybe<Contacts_Bool_Exp>;
+};
+
+
+export type Query_RootContacts_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Contacts_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Contacts_Order_By>>;
+  where?: InputMaybe<Contacts_Bool_Exp>;
+};
+
+
+export type Query_RootContacts_By_PkArgs = {
+  id: Scalars['String']['input'];
+};
+
+
 export type Query_RootForm_Question_ResponsesArgs = {
   distinct_on?: InputMaybe<Array<Form_Question_Responses_Select_Column>>;
   limit?: InputMaybe<Scalars['Int']['input']>;
@@ -7598,6 +9074,29 @@ export type Query_RootForm_Questions_AggregateArgs = {
 
 
 export type Query_RootForm_Questions_By_PkArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+export type Query_RootForm_StepsArgs = {
+  distinct_on?: InputMaybe<Array<Form_Steps_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Form_Steps_Order_By>>;
+  where?: InputMaybe<Form_Steps_Bool_Exp>;
+};
+
+
+export type Query_RootForm_Steps_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Form_Steps_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Form_Steps_Order_By>>;
+  where?: InputMaybe<Form_Steps_Bool_Exp>;
+};
+
+
+export type Query_RootForm_Steps_By_PkArgs = {
   id: Scalars['String']['input'];
 };
 
@@ -9505,6 +11004,14 @@ export type Smallint_Comparison_Exp = {
 
 export type Subscription_Root = {
   __typename?: 'subscription_root';
+  /** An array relationship */
+  contacts: Array<Contacts>;
+  /** An aggregate relationship */
+  contacts_aggregate: Contacts_Aggregate;
+  /** fetch data from the table: "contacts" using primary key columns */
+  contacts_by_pk?: Maybe<Contacts>;
+  /** fetch data from the table in a streaming manner: "contacts" */
+  contacts_stream: Array<Contacts>;
   /** fetch data from the table: "form_question_responses" */
   form_question_responses: Array<Form_Question_Responses>;
   /** fetch aggregated fields from the table: "form_question_responses" */
@@ -9521,6 +11028,14 @@ export type Subscription_Root = {
   form_questions_by_pk?: Maybe<Form_Questions>;
   /** fetch data from the table in a streaming manner: "form_questions" */
   form_questions_stream: Array<Form_Questions>;
+  /** fetch data from the table: "form_steps" */
+  form_steps: Array<Form_Steps>;
+  /** fetch aggregated fields from the table: "form_steps" */
+  form_steps_aggregate: Form_Steps_Aggregate;
+  /** fetch data from the table: "form_steps" using primary key columns */
+  form_steps_by_pk?: Maybe<Form_Steps>;
+  /** fetch data from the table in a streaming manner: "form_steps" */
+  form_steps_stream: Array<Form_Steps>;
   /** fetch data from the table: "form_submissions" */
   form_submissions: Array<Form_Submissions>;
   /** fetch aggregated fields from the table: "form_submissions" */
@@ -9652,6 +11167,36 @@ export type Subscription_Root = {
 };
 
 
+export type Subscription_RootContactsArgs = {
+  distinct_on?: InputMaybe<Array<Contacts_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Contacts_Order_By>>;
+  where?: InputMaybe<Contacts_Bool_Exp>;
+};
+
+
+export type Subscription_RootContacts_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Contacts_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Contacts_Order_By>>;
+  where?: InputMaybe<Contacts_Bool_Exp>;
+};
+
+
+export type Subscription_RootContacts_By_PkArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+export type Subscription_RootContacts_StreamArgs = {
+  batch_size: Scalars['Int']['input'];
+  cursor: Array<InputMaybe<Contacts_Stream_Cursor_Input>>;
+  where?: InputMaybe<Contacts_Bool_Exp>;
+};
+
+
 export type Subscription_RootForm_Question_ResponsesArgs = {
   distinct_on?: InputMaybe<Array<Form_Question_Responses_Select_Column>>;
   limit?: InputMaybe<Scalars['Int']['input']>;
@@ -9709,6 +11254,36 @@ export type Subscription_RootForm_Questions_StreamArgs = {
   batch_size: Scalars['Int']['input'];
   cursor: Array<InputMaybe<Form_Questions_Stream_Cursor_Input>>;
   where?: InputMaybe<Form_Questions_Bool_Exp>;
+};
+
+
+export type Subscription_RootForm_StepsArgs = {
+  distinct_on?: InputMaybe<Array<Form_Steps_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Form_Steps_Order_By>>;
+  where?: InputMaybe<Form_Steps_Bool_Exp>;
+};
+
+
+export type Subscription_RootForm_Steps_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Form_Steps_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Form_Steps_Order_By>>;
+  where?: InputMaybe<Form_Steps_Bool_Exp>;
+};
+
+
+export type Subscription_RootForm_Steps_By_PkArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+export type Subscription_RootForm_Steps_StreamArgs = {
+  batch_size: Scalars['Int']['input'];
+  cursor: Array<InputMaybe<Form_Steps_Stream_Cursor_Input>>;
+  where?: InputMaybe<Form_Steps_Bool_Exp>;
 };
 
 
