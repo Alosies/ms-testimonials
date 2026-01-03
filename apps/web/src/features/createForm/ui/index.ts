@@ -18,3 +18,6 @@ export * from './stepsSidebar';
 
 // Timeline Editor - Canvas
 export * from './timelineCanvas';
+
+// Form Edit Page
+export * from './formEditPage';
