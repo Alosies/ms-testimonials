@@ -295,8 +295,10 @@ export const useTimelineEditor = createSharedComposable(() => {
   function handleNavigateEditor(direction: 'prev' | 'next') {
     if (direction === 'prev' && canGoPrev.value) {
       goPrev();
+      scrollToStep(selectedIndex.value);
     } else if (direction === 'next' && canGoNext.value) {
       goNext();
+      scrollToStep(selectedIndex.value);
     }
   }
 
