@@ -6,7 +6,7 @@ import type { AIQuestion, AIContext } from '@/shared/api';
 // Types
 // ============================================================================
 
-export type ConceptType = 'product' | 'service' | 'event';
+export type ConceptType = 'product' | 'service' | 'course' | 'community' | 'event' | 'other';
 export type WizardScreen = 1 | 2 | 3 | 4 | 5;
 
 export interface WizardState {
