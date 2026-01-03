@@ -2,6 +2,15 @@
 // For now, define placeholders that match expected schema
 // export type { Form_Steps, Contacts } from '@/shared/graphql/generated/operations';
 
+/**
+ * Context for creating dynamic step content
+ * Contains form-specific information for personalized defaults
+ */
+export interface FormContext {
+  productName?: string;
+  productDescription?: string;
+}
+
 // Step type literal union
 export type StepType =
   | 'welcome'
