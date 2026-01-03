@@ -11,8 +11,8 @@
 
     <!-- Three-panel body -->
     <div class="flex flex-1 overflow-hidden">
-      <!-- Left: Steps Sidebar (80px) -->
-      <aside class="w-20 shrink-0 border-r border-border bg-muted/30 overflow-y-auto">
+      <!-- Left: Steps Sidebar (240px) -->
+      <aside class="w-60 shrink-0 border-r border-border bg-muted/30 overflow-y-auto">
         <slot name="sidebar" />
       </aside>
 
