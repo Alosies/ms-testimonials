@@ -9,6 +9,7 @@
 import { computed, provide, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { definePage } from 'unplugin-vue-router/runtime';
+import { onKeyStroke } from '@vueuse/core';
 import FormEditorLayout from '@/layouts/FormEditorLayout.vue';
 import FormEditorHeader from '@/features/createForm/ui/FormEditorHeader.vue';
 import { PropertiesPanel } from '@/features/createForm/ui/propertiesPanel';
@@ -62,6 +63,46 @@ function handleFormNameUpdate(name: string) {
   formName.value = name;
   saveStatus.value = 'unsaved';
 }
+
+// Keyboard navigation for timeline using VueUse
+function isInputFocused() {
+  const el = document.activeElement;
+  return el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement;
+}
+
+function navigateNext() {
+  if (isInputFocused()) return;
+  const stepsCount = editor.steps.value.length;
+  const currentIndex = editor.selectedIndex.value ?? 0;
+  if (stepsCount > 0 && currentIndex < stepsCount - 1) {
+    const newIndex = currentIndex + 1;
+    editor.selectStep(newIndex);
+    editor.scrollToStep(newIndex);
+  }
+}
+
+function navigatePrev() {
+  if (isInputFocused()) return;
+  const currentIndex = editor.selectedIndex.value ?? 0;
+  if (currentIndex > 0) {
+    const newIndex = currentIndex - 1;
+    editor.selectStep(newIndex);
+    editor.scrollToStep(newIndex);
+  }
+}
+
+function openEditor() {
+  if (isInputFocused()) return;
+  const currentIndex = editor.selectedIndex.value ?? 0;
+  if (editor.steps.value.length > 0) {
+    editor.handleEditStep(currentIndex);
+  }
+}
+
+// Arrow keys and vim-style navigation
+onKeyStroke(['ArrowDown', 'j'], navigateNext, { eventName: 'keydown' });
+onKeyStroke(['ArrowUp', 'k'], navigatePrev, { eventName: 'keydown' });
+onKeyStroke(['Enter', ' '], openEditor, { eventName: 'keydown' });
 </script>
 
 <template>
@@ -87,7 +128,7 @@ function handleFormNameUpdate(name: string) {
           :key="step.id"
           class="mb-2 p-2 bg-background rounded cursor-pointer"
           :class="{ 'ring-2 ring-primary': index === editor.selectedIndex.value }"
-          @click="editor.selectStep(index)"
+          @click="editor.selectStep(index); editor.scrollToStep(index)"
         >
           {{ index + 1 }}. {{ step.stepType }}
         </div>
@@ -118,7 +159,7 @@ function handleFormNameUpdate(name: string) {
           }"
         >
           <!-- Step header bar -->
-          <div class="flex items-center justify-between mb-3 px-1">
+          <div class="flex items-center justify-between mb-2 px-1">
             <div class="flex items-center gap-2">
               <span
                 class="flex items-center justify-center w-6 h-6 rounded-full text-xs font-medium"
@@ -138,15 +179,15 @@ function handleFormNameUpdate(name: string) {
           <!-- Step card (large, Senja-style) -->
           <div
             class="step-card"
-            :class="{ 'ring-2 ring-primary': index === editor.selectedIndex.value }"
+            :class="{ 'ring-2 ring-primary ring-offset-2': index === editor.selectedIndex.value }"
             @click="editor.handleEditStep(index)"
           >
-            <!-- Card content preview -->
-            <div class="p-8 min-h-[280px] flex flex-col items-center justify-center text-center">
-              <h3 class="text-xl font-semibold mb-2">
+            <!-- Card content preview - Large centered content -->
+            <div class="step-card-content">
+              <h3 class="text-2xl font-semibold mb-3">
                 {{ (step.content as Record<string, unknown>).title || 'Untitled Step' }}
               </h3>
-              <p class="text-muted-foreground max-w-sm">
+              <p class="text-lg text-muted-foreground max-w-md leading-relaxed">
                 {{ (step.content as Record<string, unknown>).subtitle || (step.content as Record<string, unknown>).message || (step.content as Record<string, unknown>).description || 'Click to edit this step' }}
               </p>
             </div>
@@ -188,23 +229,23 @@ function handleFormNameUpdate(name: string) {
 <style scoped>
 /* Senja-inspired timeline with scroll-snap and zoom animations */
 .timeline-container {
-  padding: 0 2rem;
-  max-width: 640px;
+  padding: 0 3rem;
+  max-width: 800px;
   margin: 0 auto;
 }
 
-/* Spacers allow first/last steps to center */
+/* Spacers allow first/last steps to center in viewport */
 .timeline-spacer {
-  height: 35vh;
+  height: 40vh;
   scroll-snap-align: start;
 }
 
 /* Each step snaps to center */
 .timeline-step {
   scroll-snap-align: center;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease;
   transform-origin: center center;
-  padding: 1rem 0;
+  padding: 0.5rem 0;
 }
 
 /* Active step: full size and opacity */
@@ -213,53 +254,75 @@ function handleFormNameUpdate(name: string) {
   opacity: 1;
 }
 
-/* Inactive steps: slightly smaller and faded */
+/* Inactive steps: smaller and faded for visual hierarchy */
 .timeline-step-inactive {
-  transform: scale(0.94);
-  opacity: 0.6;
+  transform: scale(0.88);
+  opacity: 0.5;
 }
 
 .timeline-step-inactive:hover {
-  opacity: 0.85;
-  transform: scale(0.96);
+  opacity: 0.75;
+  transform: scale(0.91);
 }
 
-/* Step card styling */
+/* Step card styling - Large Senja-style cards mimicking webpage screens */
 .step-card {
   background: hsl(var(--background));
   border: 1px solid hsl(var(--border));
   border-radius: 1rem;
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+  box-shadow:
+    0 4px 6px -1px rgb(0 0 0 / 0.05),
+    0 2px 4px -2px rgb(0 0 0 / 0.05),
+    0 0 0 1px rgb(0 0 0 / 0.02);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.25s ease;
   overflow: hidden;
+  /* Webpage-like aspect ratio (16:10 like a screen) */
+  aspect-ratio: 16 / 10;
+  width: 100%;
 }
 
 .step-card:hover {
-  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.05);
-  border-color: hsl(var(--primary) / 0.3);
+  box-shadow:
+    0 20px 25px -5px rgb(0 0 0 / 0.1),
+    0 8px 10px -6px rgb(0 0 0 / 0.1);
+  border-color: hsl(var(--primary) / 0.4);
+  transform: translateY(-2px);
 }
 
-/* Timeline connector between steps */
+/* Card content - Centered content for screen-like feel */
+.step-card-content {
+  padding: 3rem 2.5rem;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+/* Timeline connector between steps - connects cards visually */
 .timeline-connector {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 0.75rem 0;
+  padding: 0;
+  margin: -1px 0; /* Overlap slightly with card borders */
 }
 
 .connector-line {
   width: 2px;
-  height: 1rem;
+  height: 2rem;
   background: hsl(var(--border));
 }
 
 .connector-dot {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
-  background: hsl(var(--border));
+  background: hsl(var(--muted-foreground) / 0.3);
   margin: 0.25rem 0;
+  flex-shrink: 0;
 }
 
 /* Empty state */
@@ -268,7 +331,7 @@ function handleFormNameUpdate(name: string) {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 50vh;
+  min-height: 60vh;
   color: hsl(var(--muted-foreground));
   scroll-snap-align: center;
 }
