@@ -114,7 +114,9 @@ function deleteSelectedStep() {
 function addNewStep() {
   if (isInputFocused()) return;
   if (editor.isEditorOpen.value) return; // Don't add while editing
-  editor.handleAddStep('question');
+  // Add welcome step if empty, otherwise add question step
+  const stepType = editor.steps.value.length === 0 ? 'welcome' : 'question';
+  editor.handleAddStep(stepType);
 }
 
 // Arrow keys and vim-style navigation
@@ -341,10 +343,11 @@ onUnmounted(() => {
         <div v-if="editor.steps.value.length === 0" class="empty-state">
           <p class="mb-4">No steps yet. Add your first step to get started.</p>
           <button
-            class="px-6 py-3 border-2 border-dashed rounded-xl hover:bg-muted/50 hover:border-primary/50 transition-all"
+            class="px-6 py-3 border-2 border-dashed rounded-xl hover:bg-muted/50 hover:border-primary/50 transition-all flex items-center gap-2"
             @click="editor.handleAddStep('welcome')"
           >
-            + Add Welcome Step
+            <span>Add Welcome Step</span>
+            <Kbd size="sm">N</Kbd>
           </button>
         </div>
       </div>
