@@ -271,14 +271,14 @@ export function getStepLabel(step: FormStep): string {
 
 export function getStepIcon(stepType: StepType): string {
   switch (stepType) {
-    case 'welcome': return '👋';
-    case 'question': return '❓';
-    case 'rating': return '⭐';
-    case 'consent': return '✅';
-    case 'contact_info': return '👤';
-    case 'reward': return '🎁';
-    case 'thank_you': return '🎉';
-    default: return '📄';
+    case 'welcome': return 'heroicons:hand-raised';
+    case 'question': return 'heroicons:question-mark-circle';
+    case 'rating': return 'heroicons:star';
+    case 'consent': return 'heroicons:check-circle';
+    case 'contact_info': return 'heroicons:user';
+    case 'reward': return 'heroicons:gift';
+    case 'thank_you': return 'heroicons:sparkles';
+    default: return 'heroicons:document';
   }
 }
 ```
@@ -316,8 +316,8 @@ Create the three-panel layout shell with slots.
 
     <!-- Three-panel body -->
     <div class="flex flex-1 overflow-hidden">
-      <!-- Left: Steps Sidebar (80px) -->
-      <aside class="w-20 shrink-0 border-r border-border bg-muted/30 overflow-y-auto">
+      <!-- Left: Steps Sidebar (240px) -->
+      <aside class="w-60 shrink-0 border-r border-border bg-muted/30 overflow-y-auto">
         <slot name="sidebar" />
       </aside>
 
@@ -338,7 +338,7 @@ Create the three-panel layout shell with slots.
 **Acceptance Criteria**:
 - [ ] Three-panel layout renders correctly
 - [ ] All three slots accept content
-- [ ] Panels have correct widths (80px, fluid, 280px)
+- [ ] Panels have correct widths (240px, fluid, 280px)
 - [ ] Overflow scroll works in each panel
 
 ---
