@@ -16,15 +16,23 @@
         <slot name="sidebar" />
       </aside>
 
-      <!-- Center: Timeline Canvas (fluid) -->
-      <main class="flex-1 overflow-y-auto bg-muted/10">
+      <!-- Center: Timeline Canvas (fluid) - Figma-style dotted grid -->
+      <main class="flex-1 overflow-y-auto canvas-grid">
         <slot name="timeline" />
       </main>
 
       <!-- Right: Properties Panel (280px) -->
-      <aside class="w-72 shrink-0 border-l border-border overflow-y-auto">
+      <aside class="w-72 shrink-0 border-l border-border bg-background overflow-y-auto">
         <slot name="properties" />
       </aside>
     </div>
   </div>
 </template>
+
+<style scoped>
+.canvas-grid {
+  background-color: hsl(var(--muted) / 0.3);
+  background-image: radial-gradient(circle, hsl(var(--muted-foreground) / 0.15) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+</style>
