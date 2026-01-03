@@ -34,6 +34,10 @@ export const useTimelineEditor = createSharedComposable(() => {
   const isEditorOpen = ref(false);
   const editorMode = ref<'edit' | 'add'>('edit');
 
+  // Flag to prevent scroll detection from overriding programmatic selections
+  const isProgrammaticScroll = ref(false);
+  let programmaticScrollTimeout: ReturnType<typeof setTimeout> | null = null;
+
   // ============================================
   // Computed
   // ============================================
@@ -126,10 +130,22 @@ export const useTimelineEditor = createSharedComposable(() => {
   /**
    * Scroll to a step element in the timeline canvas.
    * Uses data-attribute selector to stay loosely coupled from render implementation.
+   * Sets isProgrammaticScroll flag to prevent scroll detection from overriding selection.
    */
   function scrollToStep(index: number) {
+    // Set flag to prevent scroll detection from fighting this
+    isProgrammaticScroll.value = true;
+    if (programmaticScrollTimeout) {
+      clearTimeout(programmaticScrollTimeout);
+    }
+
     const element = document.querySelector(`[data-step-index="${index}"]`);
     element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+    // Clear flag after animation completes (~500ms for smooth scroll)
+    programmaticScrollTimeout = setTimeout(() => {
+      isProgrammaticScroll.value = false;
+    }, 600);
   }
 
   // ============================================
@@ -298,6 +314,7 @@ export const useTimelineEditor = createSharedComposable(() => {
     hasSteps,
     isEditorOpen,
     editorMode,
+    isProgrammaticScroll: readonly(isProgrammaticScroll),
 
     // Navigation
     canGoNext,

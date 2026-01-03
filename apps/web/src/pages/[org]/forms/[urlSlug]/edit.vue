@@ -111,6 +111,8 @@ const timelineRef = ref<HTMLElement | null>(null);
 let scrollTimeout: ReturnType<typeof setTimeout> | null = null;
 
 function findCenteredStep() {
+  // Don't override selection during programmatic scroll
+  if (editor.isProgrammaticScroll.value) return;
   if (!timelineRef.value) return;
 
   const container = timelineRef.value;
