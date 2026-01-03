@@ -7,3 +7,6 @@ export { useFormEditor } from './useFormEditor';
 export { useFormSections } from './useFormSections';
 export { useQuestionGeneration } from './useQuestionGeneration';
 export { useQuestionSave } from './useQuestionSave';
+
+// Timeline editor
+export * from './timeline';
