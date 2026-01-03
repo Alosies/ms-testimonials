@@ -104,54 +104,60 @@ onKeyStroke(['ArrowDown', 'j'], navigateNext, { eventName: 'keydown' });
 onKeyStroke(['ArrowUp', 'k'], navigatePrev, { eventName: 'keydown' });
 onKeyStroke(['Enter', ' '], openEditor, { eventName: 'keydown' });
 
-// Scroll-based step detection using IntersectionObserver
-// This ensures mouse scrolling also updates the selected step
+// Scroll-based step detection
+// Uses scroll event with throttling to find the step closest to viewport center
 const timelineRef = ref<HTMLElement | null>(null);
-let intersectionObserver: IntersectionObserver | null = null;
+let scrollTimeout: ReturnType<typeof setTimeout> | null = null;
+
+function findCenteredStep() {
+  if (!timelineRef.value) return;
+
+  const container = timelineRef.value;
+  const containerRect = container.getBoundingClientRect();
+  const containerCenter = containerRect.top + containerRect.height / 2;
+
+  const stepElements = container.querySelectorAll('[data-step-index]');
+  let closestIndex = -1;
+  let closestDistance = Infinity;
+
+  stepElements.forEach((el) => {
+    const rect = el.getBoundingClientRect();
+    const elementCenter = rect.top + rect.height / 2;
+    const distance = Math.abs(elementCenter - containerCenter);
+
+    if (distance < closestDistance) {
+      closestDistance = distance;
+      const indexAttr = el.getAttribute('data-step-index');
+      if (indexAttr !== null) {
+        closestIndex = parseInt(indexAttr, 10);
+      }
+    }
+  });
+
+  // Update selection if a different step is now centered
+  if (closestIndex !== -1 && closestIndex !== editor.selectedIndex.value) {
+    editor.selectStep(closestIndex);
+  }
+}
+
+function handleScroll() {
+  // Throttle scroll handling to avoid excessive updates
+  if (scrollTimeout) {
+    clearTimeout(scrollTimeout);
+  }
+  scrollTimeout = setTimeout(() => {
+    findCenteredStep();
+  }, 50);
+}
 
 function setupScrollObserver() {
   if (!timelineRef.value) return;
 
-  // Clean up existing observer
-  if (intersectionObserver) {
-    intersectionObserver.disconnect();
-  }
+  // Remove existing listener
+  timelineRef.value.removeEventListener('scroll', handleScroll);
 
-  // Create observer that detects when steps cross the center of the viewport
-  intersectionObserver = new IntersectionObserver(
-    (entries) => {
-      // Find the entry with highest intersection ratio (most visible)
-      let mostVisibleEntry: IntersectionObserverEntry | null = null;
-      let maxRatio = 0;
-
-      for (const entry of entries) {
-        if (entry.intersectionRatio > maxRatio) {
-          maxRatio = entry.intersectionRatio;
-          mostVisibleEntry = entry;
-        }
-      }
-
-      // Update selected step if we found a visible one with significant visibility
-      if (mostVisibleEntry && maxRatio > 0.5) {
-        const stepIndex = mostVisibleEntry.target.getAttribute('data-step-index');
-        if (stepIndex !== null) {
-          const index = parseInt(stepIndex, 10);
-          if (index !== editor.selectedIndex.value) {
-            editor.selectStep(index);
-          }
-        }
-      }
-    },
-    {
-      root: timelineRef.value,
-      rootMargin: '-40% 0px -40% 0px', // Only trigger when step is in center 20% of viewport
-      threshold: [0, 0.25, 0.5, 0.75, 1],
-    }
-  );
-
-  // Observe all step elements
-  const stepElements = timelineRef.value.querySelectorAll('[data-step-index]');
-  stepElements.forEach((el) => intersectionObserver?.observe(el));
+  // Add scroll listener
+  timelineRef.value.addEventListener('scroll', handleScroll, { passive: true });
 }
 
 // Re-setup observer when steps change
@@ -170,8 +176,11 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-  if (intersectionObserver) {
-    intersectionObserver.disconnect();
+  if (timelineRef.value) {
+    timelineRef.value.removeEventListener('scroll', handleScroll);
+  }
+  if (scrollTimeout) {
+    clearTimeout(scrollTimeout);
   }
 });
 </script>

@@ -1,4 +1,4 @@
-import { ref, readonly, type Ref } from 'vue';
+import { ref, readonly, nextTick, type Ref } from 'vue';
 import { useStepState } from './useStepState';
 import { useStepNavigation } from './useStepNavigation';
 import { useStepOperations } from './useStepOperations';
@@ -36,11 +36,15 @@ export function useTimelineEditor(formId: Ref<string>) {
     const newStep = addStep(type, afterIndex);
     const newIndex = steps.value.indexOf(newStep);
     selectStep(newIndex);
-    scrollToStep(newIndex);
 
     // Open editor for new step
     editorMode.value = 'add';
     isEditorOpen.value = true;
+
+    // Scroll to new step after DOM updates
+    nextTick(() => {
+      scrollToStep(newIndex);
+    });
   }
 
   function handleEditStep(index: number) {

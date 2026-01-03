@@ -102,9 +102,12 @@ export function useStepNavigation(steps: Ref<FormStep[]>) {
     }
   }
 
-  // Initialize from URL
+  // Initialize from URL (only once when steps first load)
+  // Using a flag to prevent re-syncing when steps change programmatically
+  let initialSyncDone = false;
   watch(() => steps.value.length, () => {
-    if (steps.value.length > 0) {
+    if (steps.value.length > 0 && !initialSyncDone) {
+      initialSyncDone = true;
       syncFromUrl();
     }
   }, { immediate: true });
