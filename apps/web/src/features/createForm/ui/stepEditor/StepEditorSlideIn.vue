@@ -23,30 +23,15 @@ import RewardStepEditor from './editors/RewardStepEditor.vue';
 import ThankYouStepEditor from './editors/ThankYouStepEditor.vue';
 import { useTimelineEditor } from '../../composables/timeline';
 import type { StepContent, StepType } from '../../models/stepContent';
-import { getStepLabel, getStepIcon } from '../../functions';
-
-interface StepTypeOption {
-  type: StepType;
-  label: string;
-  description: string;
-}
-
-const stepTypeOptions: StepTypeOption[] = [
-  { type: 'welcome', label: 'Welcome', description: 'Introduce your form' },
-  { type: 'question', label: 'Question', description: 'Text or video response' },
-  { type: 'rating', label: 'Rating', description: 'Star or scale rating' },
-  { type: 'consent', label: 'Consent', description: 'Public/private choice' },
-  { type: 'contact_info', label: 'Contact Info', description: 'Name, email, company' },
-  { type: 'reward', label: 'Reward', description: 'Coupon or download' },
-  { type: 'thank_you', label: 'Thank You', description: 'Confirmation message' },
-];
+import { getStepLabel } from '../../functions';
+import { STEP_TYPE_OPTIONS, STEP_TYPE_CONFIGS } from '../../constants';
 
 // Direct import - fully typed, no inject needed
 const editor = useTimelineEditor();
 
 const selectedStep = computed(() => editor.selectedStep.value);
 const stepLabel = computed(() => selectedStep.value ? getStepLabel(selectedStep.value) : '');
-const stepIcon = computed(() => selectedStep.value ? getStepIcon(selectedStep.value.stepType) : '');
+const stepConfig = computed(() => selectedStep.value ? STEP_TYPE_CONFIGS[selectedStep.value.stepType] : null);
 
 const editorComponents: Record<string, Component> = {
   welcome: WelcomeStepEditor,
@@ -107,7 +92,7 @@ onUnmounted(() => {
       <SheetHeader class="border-b pb-4">
         <div class="flex items-center justify-between">
           <SheetTitle class="flex items-center gap-2">
-            <Icon :icon="stepIcon" class="w-5 h-5" />
+            <Icon v-if="stepConfig" :icon="stepConfig.icon" class="w-5 h-5" />
             <span>Edit {{ stepLabel }}</span>
           </SheetTitle>
           <div class="flex items-center gap-1">
@@ -144,21 +129,21 @@ onUnmounted(() => {
           >
             <SelectTrigger class="w-full">
               <SelectValue placeholder="Select step type">
-                <div v-if="selectedStep" class="flex items-center gap-2">
-                  <Icon :icon="getStepIcon(selectedStep.stepType)" class="h-4 w-4" />
-                  <span>{{ stepTypeOptions.find(o => o.type === selectedStep.stepType)?.label }}</span>
+                <div v-if="stepConfig" class="flex items-center gap-2">
+                  <Icon :icon="stepConfig.icon" class="h-4 w-4" />
+                  <span>{{ stepConfig.label }}</span>
                 </div>
               </SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectItem
-                v-for="option in stepTypeOptions"
+                v-for="option in STEP_TYPE_OPTIONS"
                 :key="option.type"
                 :value="option.type"
                 class="cursor-pointer"
               >
                 <div class="flex items-center gap-2">
-                  <Icon :icon="getStepIcon(option.type)" class="h-4 w-4" />
+                  <Icon :icon="option.icon" class="h-4 w-4" />
                   <div>
                     <div class="font-medium">{{ option.label }}</div>
                     <div class="text-xs text-muted-foreground">{{ option.description }}</div>
