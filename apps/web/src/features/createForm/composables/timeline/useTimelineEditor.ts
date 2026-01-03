@@ -37,11 +37,8 @@ export function useTimelineEditor(formId: Ref<string>) {
     const newIndex = steps.value.indexOf(newStep);
     selectStep(newIndex);
 
-    // Open editor for new step
-    editorMode.value = 'add';
-    isEditorOpen.value = true;
-
     // Scroll to new step after DOM updates
+    // Editor opens only when user clicks on the step
     nextTick(() => {
       scrollToStep(newIndex);
     });

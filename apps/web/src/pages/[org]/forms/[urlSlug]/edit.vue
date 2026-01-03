@@ -397,7 +397,7 @@ onUnmounted(() => {
 
 .connector-line {
   width: 2px;
-  height: 4rem;
+  height: 6rem;
   background: linear-gradient(
     to bottom,
     hsl(var(--border)),
