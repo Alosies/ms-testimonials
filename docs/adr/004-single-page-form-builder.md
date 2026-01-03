@@ -16,7 +16,9 @@
 
 ## Status
 
-**Accepted** - 2026-01-02
+**Superseded** - 2026-01-03
+
+Superseded by: [ADR-006: Timeline Form Editor Layout](./006-timeline-form-editor.md)
 
 ## Context
 
