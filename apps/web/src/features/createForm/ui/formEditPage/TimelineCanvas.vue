@@ -7,10 +7,15 @@
  */
 import { useTimelineEditor } from '../../composables/timeline';
 import type { FormStep } from '../../models';
+import type { StepType } from '../../models/stepContent';
 import TimelineStepCard from './TimelineStepCard.vue';
 import TimelineEmptyState from './TimelineEmptyState.vue';
 
 const editor = useTimelineEditor();
+
+function handleInsert(afterIndex: number, type: StepType) {
+  editor.handleAddStep(type, afterIndex);
+}
 </script>
 
 <template>
@@ -27,6 +32,7 @@ const editor = useTimelineEditor();
       @select="editor.selectStep"
       @edit="editor.handleEditStep"
       @remove="editor.handleRemoveStep"
+      @insert="handleInsert"
     />
 
     <div v-if="editor.steps.value.length > 0" class="timeline-spacer" />

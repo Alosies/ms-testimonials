@@ -143,6 +143,8 @@ export const useTimelineEditor = createSharedComposable(() => {
    * Scroll to a step element in the timeline canvas.
    * Uses data-attribute selector to stay loosely coupled from render implementation.
    * Sets isProgrammaticScroll flag to prevent scroll detection from overriding selection.
+   *
+   * Uses scrollTo on the container instead of scrollIntoView to work better with scroll-snap.
    */
   function scrollToStep(index: number) {
     // Set flag to prevent scroll detection from fighting this
@@ -151,8 +153,25 @@ export const useTimelineEditor = createSharedComposable(() => {
       clearTimeout(programmaticScrollTimeout);
     }
 
+    const container = document.querySelector('.timeline-scroll');
     const element = document.querySelector(`[data-step-index="${index}"]`);
-    element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+    if (container && element) {
+      // Calculate scroll position to center the element in the container
+      const containerRect = container.getBoundingClientRect();
+      const elementRect = element.getBoundingClientRect();
+
+      // Current scroll position + element's position relative to container - offset to center
+      const scrollTop = container.scrollTop
+        + (elementRect.top - containerRect.top)
+        - (containerRect.height / 2)
+        + (elementRect.height / 2);
+
+      container.scrollTo({
+        top: scrollTop,
+        behavior: 'smooth',
+      });
+    }
 
     // Clear flag after animation completes (~500ms for smooth scroll)
     programmaticScrollTimeout = setTimeout(() => {

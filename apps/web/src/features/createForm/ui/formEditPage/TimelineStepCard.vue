@@ -3,12 +3,15 @@
  * Timeline Step Card - Individual step card in the timeline
  *
  * Displays a step with header, content preview, and action buttons.
+ * Uses TimelineConnector for the interactive insert functionality.
  */
 import { Icon } from '@testimonials/icons';
 import { Kbd } from '@testimonials/ui';
 import type { FormStep } from '../../models';
+import type { StepType } from '../../models/stepContent';
+import TimelineConnector from './TimelineConnector.vue';
 
-defineProps<{
+const props = defineProps<{
   step: FormStep;
   index: number;
   isActive: boolean;
@@ -19,7 +22,12 @@ const emit = defineEmits<{
   select: [index: number];
   edit: [index: number];
   remove: [index: number];
+  insert: [afterIndex: number, type: StepType];
 }>();
+
+function handleInsert(type: StepType) {
+  emit('insert', props.index, type);
+}
 
 function getStepTitle(content: Record<string, unknown>): string {
   return (content.title as string) || 'Untitled Step';
@@ -93,9 +101,11 @@ function getStepDescription(content: Record<string, unknown>): string {
       </div>
     </div>
 
-    <div v-if="!isLast" class="timeline-connector">
-      <div class="connector-line" />
-    </div>
+    <!-- Connector with insert button -->
+    <TimelineConnector
+      v-if="!isLast"
+      @insert="handleInsert"
+    />
   </div>
 </template>
 
@@ -162,23 +172,5 @@ function getStepDescription(content: Record<string, unknown>): string {
   justify-content: center;
   text-align: center;
   padding: 3rem 2.5rem;
-}
-
-.timeline-connector {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.connector-line {
-  width: 2px;
-  height: 6rem;
-  background: linear-gradient(
-    to bottom,
-    hsl(var(--border)),
-    hsl(var(--muted-foreground) / 0.3),
-    hsl(var(--border))
-  );
-  border-radius: 1px;
 }
 </style>
