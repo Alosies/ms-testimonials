@@ -306,7 +306,7 @@ onUnmounted(() => {
 /* Senja-inspired timeline with scroll-snap and zoom animations */
 .timeline-container {
   padding: 0 2rem;
-  max-width: 900px;
+  max-width: 990px; /* 10% larger than 900px */
   margin: 0 auto;
 }
 
@@ -391,13 +391,20 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 1rem 0;
+  padding: 1.5rem 0;
+  margin-top: 0.5rem;
 }
 
 .connector-line {
   width: 2px;
-  height: 3rem;
-  background: hsl(var(--border));
+  height: 4rem;
+  background: linear-gradient(
+    to bottom,
+    hsl(var(--border)),
+    hsl(var(--muted-foreground) / 0.3),
+    hsl(var(--border))
+  );
+  border-radius: 1px;
 }
 
 /* Empty state */
