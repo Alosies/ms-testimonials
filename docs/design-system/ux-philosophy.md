@@ -41,18 +41,24 @@ Dirty State  →  Action State  →  Success State  →  Clean State
 
 **Implementation:**
 ```vue
-<!-- Saved state (green) - disappears after 1.5s -->
-<div v-if="justSaved" class="... bg-emerald-50 text-emerald-700">
-  <Icon icon="lucide:check" />
-  Saved
-</div>
+<script setup>
+import { Kbd } from '@testimonials/ui';
+</script>
 
-<!-- Unsaved state (amber) - clickable -->
-<button v-else class="... bg-amber-50 text-amber-700">
-  <span class="h-1.5 w-1.5 rounded-full bg-amber-500" />
-  {{ count }} unsaved
-  <kbd>⌘S</kbd>
-</button>
+<template>
+  <!-- Saved state (green) - disappears after 1.5s -->
+  <div v-if="justSaved" class="... bg-emerald-50 text-emerald-700">
+    <Icon icon="lucide:check" />
+    Saved
+  </div>
+
+  <!-- Unsaved state (amber) - clickable -->
+  <button v-else class="... bg-amber-50 text-amber-700">
+    <span class="h-1.5 w-1.5 rounded-full bg-amber-500" />
+    {{ count }} unsaved
+    <Kbd size="sm">⌘S</Kbd>
+  </button>
+</template>
 ```
 
 ---
@@ -72,6 +78,38 @@ Dirty State  →  Action State  →  Success State  →  Clean State
 
 ## 3. Keyboard Shortcut Discovery
 
+### The Kbd Component
+
+Use the standardized `Kbd` component from `@testimonials/ui` for all keyboard shortcut hints.
+
+```vue
+<script setup>
+import { Kbd } from '@testimonials/ui';
+</script>
+
+<template>
+  <!-- Default size - for standalone hints -->
+  <div class="flex items-center gap-2">
+    <Kbd>↑</Kbd>
+    <Kbd>↓</Kbd>
+    <span>to navigate</span>
+  </div>
+
+  <!-- Small size - for inline with icons/buttons -->
+  <button class="flex items-center gap-1.5">
+    <Icon icon="heroicons:pencil" />
+    <Kbd size="sm">E</Kbd>
+  </button>
+</template>
+```
+
+### Size Variants
+
+| Size | Use Case | Example |
+|------|----------|---------|
+| `default` | Standalone navigation hints, prominent shortcuts | `<Kbd>↑</Kbd>` |
+| `sm` | Inline with icons, action buttons, compact UI | `<Kbd size="sm">E</Kbd>` |
+
 ### Inline Shortcut Hints
 
 Display shortcuts directly in the UI to train power users.
@@ -79,15 +117,15 @@ Display shortcuts directly in the UI to train power users.
 ```vue
 <button class="...">
   Save
-  <kbd class="ml-1 rounded bg-gray-100 px-1 py-0.5 font-mono text-[10px]">
-    ⌘S
-  </kbd>
+  <Kbd size="sm" class="ml-1">⌘S</Kbd>
 </button>
 ```
 
 **Rules:**
+- Always use the `Kbd` component (never inline `<kbd>` styling)
 - Show shortcuts for frequent actions (save, submit, navigate)
-- Use `<kbd>` element with subtle styling
+- Use `size="sm"` when inline with other elements
+- Use default size for standalone hint chips
 - Hide during action state (e.g., hide ⌘S while saving)
 - Use platform-appropriate symbols (⌘ for Mac, Ctrl for Windows)
 

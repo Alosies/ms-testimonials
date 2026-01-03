@@ -260,6 +260,45 @@ export const useTimelineEditor = createSharedComposable(() => {
     return duplicate;
   }
 
+  function changeStepType(index: number, newType: StepType) {
+    const step = steps.value[index];
+    if (!step || step.stepType === newType) return;
+
+    // Create default content for the new type
+    let newContent: StepContent = {};
+
+    switch (newType) {
+      case 'welcome':
+        newContent = createDefaultWelcomeContent();
+        break;
+      case 'thank_you':
+        newContent = createDefaultThankYouContent();
+        break;
+      case 'contact_info':
+        newContent = createDefaultContactInfoContent();
+        break;
+      case 'consent':
+        newContent = createDefaultConsentContent();
+        break;
+      case 'reward':
+        newContent = createDefaultRewardContent();
+        break;
+      case 'question':
+      case 'rating':
+        // These need question_id, content is empty
+        newContent = {};
+        break;
+    }
+
+    steps.value[index] = {
+      ...step,
+      stepType: newType,
+      content: newContent,
+      questionId: null, // Reset question association
+      isModified: true,
+    };
+  }
+
   // ============================================
   // Coordinated Actions (UI handlers)
   // ============================================
@@ -340,6 +379,7 @@ export const useTimelineEditor = createSharedComposable(() => {
     updateStepTips,
     moveStep,
     duplicateStep,
+    changeStepType,
 
     // Coordinated Actions
     handleAddStep,

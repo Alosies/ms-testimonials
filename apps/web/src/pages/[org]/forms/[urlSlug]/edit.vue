@@ -10,6 +10,8 @@ import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { definePage } from 'unplugin-vue-router/runtime';
 import { onKeyStroke } from '@vueuse/core';
+import { Icon } from '@testimonials/icons';
+import { Kbd } from '@testimonials/ui';
 import FormEditorLayout from '@/layouts/FormEditorLayout.vue';
 import FormEditorHeader from '@/features/createForm/ui/FormEditorHeader.vue';
 import { PropertiesPanel } from '@/features/createForm/ui/propertiesPanel';
@@ -100,10 +102,27 @@ function openEditor() {
   }
 }
 
+function deleteSelectedStep() {
+  if (isInputFocused()) return;
+  if (editor.isEditorOpen.value) return; // Don't delete while editing
+  const currentIndex = editor.selectedIndex.value ?? 0;
+  if (editor.steps.value.length > 0) {
+    editor.handleRemoveStep(currentIndex);
+  }
+}
+
+function addNewStep() {
+  if (isInputFocused()) return;
+  if (editor.isEditorOpen.value) return; // Don't add while editing
+  editor.handleAddStep('question');
+}
+
 // Arrow keys and vim-style navigation
 onKeyStroke(['ArrowDown', 'j'], navigateNext, { eventName: 'keydown' });
 onKeyStroke(['ArrowUp', 'k'], navigatePrev, { eventName: 'keydown' });
-onKeyStroke(['Enter', ' '], openEditor, { eventName: 'keydown' });
+onKeyStroke(['Enter', ' ', 'e'], openEditor, { eventName: 'keydown' });
+onKeyStroke(['Backspace', 'Delete'], deleteSelectedStep, { eventName: 'keydown' });
+onKeyStroke('n', addNewStep, { eventName: 'keydown' });
 
 // Scroll-based step detection
 // Uses scroll event with throttling to find the step closest to viewport center
@@ -216,10 +235,11 @@ onUnmounted(() => {
           {{ index + 1 }}. {{ step.stepType }}
         </div>
         <button
-          class="w-full p-2 border border-dashed rounded text-center hover:bg-muted/50"
+          class="w-full p-2 border border-dashed rounded text-center hover:bg-muted/50 flex items-center justify-center gap-2"
           @click="editor.handleAddStep('question')"
         >
-          + Add
+          <span>Add new</span>
+          <Kbd size="sm">N</Kbd>
         </button>
       </div>
     </template>
@@ -230,8 +250,8 @@ onUnmounted(() => {
         v-if="editor.steps.value.length > 1"
         class="absolute top-4 right-4 hidden md:flex items-center gap-2 px-3 py-2 rounded-lg bg-background/90 backdrop-blur-sm border border-border/50 text-muted-foreground text-sm shadow-sm pointer-events-auto"
       >
-        <kbd class="min-w-6 px-2 py-1 rounded bg-muted font-mono text-xs text-center">↑</kbd>
-        <kbd class="min-w-6 px-2 py-1 rounded bg-muted font-mono text-xs text-center">↓</kbd>
+        <Kbd>↑</Kbd>
+        <Kbd>↓</Kbd>
         <span class="ml-1 text-xs">to navigate</span>
       </div>
     </template>
@@ -271,10 +291,32 @@ onUnmounted(() => {
 
           <!-- Step card (webpage preview - shows how the actual page will look) -->
           <div
-            class="step-card"
+            class="step-card group"
             :class="{ 'ring-2 ring-primary ring-offset-4': index === editor.selectedIndex.value }"
-            @click="editor.handleEditStep(index)"
+            @click="editor.selectStep(index)"
           >
+            <!-- Top-right action icons - faded by default, full opacity on hover -->
+            <div
+              class="absolute top-4 right-4 z-10 flex items-center gap-2 rounded-lg bg-background/90 backdrop-blur-sm px-2 py-1.5 shadow-sm border border-border/50 opacity-40 group-hover:opacity-100 transition-opacity duration-200"
+            >
+              <button
+                class="flex items-center gap-1.5 px-2 py-1 rounded-md hover:bg-muted transition-colors"
+                title="Edit step"
+                @click.stop="editor.handleEditStep(index)"
+              >
+                <Icon icon="heroicons:pencil" class="h-4 w-4 text-muted-foreground" />
+                <Kbd size="sm">E</Kbd>
+              </button>
+              <button
+                class="flex items-center gap-1.5 px-2 py-1 rounded-md hover:bg-destructive/10 transition-colors"
+                title="Delete step"
+                @click.stop="editor.handleRemoveStep(index)"
+              >
+                <Icon icon="heroicons:trash" class="h-4 w-4 text-muted-foreground hover:text-destructive" />
+                <Kbd size="sm">⌫</Kbd>
+              </button>
+            </div>
+
             <!-- Card content - Mimics actual webpage appearance -->
             <div class="step-card-content">
               <h3 class="text-3xl font-bold mb-4">
@@ -367,6 +409,7 @@ onUnmounted(() => {
 
 /* Step card styling - Cards with webpage aspect ratio (like Senja ~1.55:1) */
 .step-card {
+  position: relative;
   background: hsl(var(--background));
   border: 1px solid hsl(var(--border));
   border-radius: 1rem;

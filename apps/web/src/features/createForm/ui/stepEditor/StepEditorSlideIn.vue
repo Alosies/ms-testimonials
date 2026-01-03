@@ -1,6 +1,18 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, type Component } from 'vue';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, Button } from '@testimonials/ui';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  Button,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Label,
+} from '@testimonials/ui';
 import { Icon } from '@testimonials/icons';
 import WelcomeStepEditor from './editors/WelcomeStepEditor.vue';
 import QuestionStepEditor from './editors/QuestionStepEditor.vue';
@@ -10,8 +22,24 @@ import ContactInfoStepEditor from './editors/ContactInfoStepEditor.vue';
 import RewardStepEditor from './editors/RewardStepEditor.vue';
 import ThankYouStepEditor from './editors/ThankYouStepEditor.vue';
 import { useTimelineEditor } from '../../composables/timeline';
-import type { StepContent } from '../../models/stepContent';
+import type { StepContent, StepType } from '../../models/stepContent';
 import { getStepLabel, getStepIcon } from '../../functions';
+
+interface StepTypeOption {
+  type: StepType;
+  label: string;
+  description: string;
+}
+
+const stepTypeOptions: StepTypeOption[] = [
+  { type: 'welcome', label: 'Welcome', description: 'Introduce your form' },
+  { type: 'question', label: 'Question', description: 'Text or video response' },
+  { type: 'rating', label: 'Rating', description: 'Star or scale rating' },
+  { type: 'consent', label: 'Consent', description: 'Public/private choice' },
+  { type: 'contact_info', label: 'Contact Info', description: 'Name, email, company' },
+  { type: 'reward', label: 'Reward', description: 'Coupon or download' },
+  { type: 'thank_you', label: 'Thank You', description: 'Confirmation message' },
+];
 
 // Direct import - fully typed, no inject needed
 const editor = useTimelineEditor();
@@ -38,6 +66,12 @@ const currentEditor = computed(() => {
 function handleContentUpdate(content: StepContent) {
   if (editor.selectedIndex.value !== null) {
     editor.updateStepContent(editor.selectedIndex.value, content);
+  }
+}
+
+function handleStepTypeChange(newType: StepType) {
+  if (editor.selectedIndex.value !== null) {
+    editor.changeStepType(editor.selectedIndex.value, newType);
   }
 }
 
@@ -100,7 +134,42 @@ onUnmounted(() => {
         </p>
       </SheetHeader>
 
-      <div class="py-4">
+      <div class="py-4 space-y-6">
+        <!-- Step Type Selector -->
+        <div class="space-y-2">
+          <Label class="text-sm font-medium">Step Type</Label>
+          <Select
+            :model-value="selectedStep?.stepType"
+            @update:model-value="handleStepTypeChange($event as StepType)"
+          >
+            <SelectTrigger class="w-full">
+              <SelectValue placeholder="Select step type">
+                <div v-if="selectedStep" class="flex items-center gap-2">
+                  <Icon :icon="getStepIcon(selectedStep.stepType)" class="h-4 w-4" />
+                  <span>{{ stepTypeOptions.find(o => o.type === selectedStep.stepType)?.label }}</span>
+                </div>
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem
+                v-for="option in stepTypeOptions"
+                :key="option.type"
+                :value="option.type"
+                class="cursor-pointer"
+              >
+                <div class="flex items-center gap-2">
+                  <Icon :icon="getStepIcon(option.type)" class="h-4 w-4" />
+                  <div>
+                    <div class="font-medium">{{ option.label }}</div>
+                    <div class="text-xs text-muted-foreground">{{ option.description }}</div>
+                  </div>
+                </div>
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <!-- Step Content Editor -->
         <component
           v-if="currentEditor && selectedStep"
           :is="currentEditor"
