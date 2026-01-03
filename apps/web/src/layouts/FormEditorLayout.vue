@@ -31,7 +31,7 @@
 
 <style scoped>
 .canvas-grid {
-  background-color: hsl(var(--muted) / 0.3);
+  background-color: hsl(var(--muted) / 0.5);
   background-image: radial-gradient(circle, hsl(var(--muted-foreground) / 0.15) 1px, transparent 1px);
   background-size: 20px 20px;
 }

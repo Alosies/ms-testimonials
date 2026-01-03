@@ -6,7 +6,7 @@
  * Uses Notion-inspired URL pattern: {readable-slug}_{entity_id}
  * The slug is cosmetic; only the entity_id is used for data fetching.
  */
-import { computed, provide, ref } from 'vue';
+import { computed, nextTick, onMounted, onUnmounted, provide, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { definePage } from 'unplugin-vue-router/runtime';
 import { onKeyStroke } from '@vueuse/core';
@@ -103,6 +103,77 @@ function openEditor() {
 onKeyStroke(['ArrowDown', 'j'], navigateNext, { eventName: 'keydown' });
 onKeyStroke(['ArrowUp', 'k'], navigatePrev, { eventName: 'keydown' });
 onKeyStroke(['Enter', ' '], openEditor, { eventName: 'keydown' });
+
+// Scroll-based step detection using IntersectionObserver
+// This ensures mouse scrolling also updates the selected step
+const timelineRef = ref<HTMLElement | null>(null);
+let intersectionObserver: IntersectionObserver | null = null;
+
+function setupScrollObserver() {
+  if (!timelineRef.value) return;
+
+  // Clean up existing observer
+  if (intersectionObserver) {
+    intersectionObserver.disconnect();
+  }
+
+  // Create observer that detects when steps cross the center of the viewport
+  intersectionObserver = new IntersectionObserver(
+    (entries) => {
+      // Find the entry with highest intersection ratio (most visible)
+      let mostVisibleEntry: IntersectionObserverEntry | null = null;
+      let maxRatio = 0;
+
+      for (const entry of entries) {
+        if (entry.intersectionRatio > maxRatio) {
+          maxRatio = entry.intersectionRatio;
+          mostVisibleEntry = entry;
+        }
+      }
+
+      // Update selected step if we found a visible one with significant visibility
+      if (mostVisibleEntry && maxRatio > 0.5) {
+        const stepIndex = mostVisibleEntry.target.getAttribute('data-step-index');
+        if (stepIndex !== null) {
+          const index = parseInt(stepIndex, 10);
+          if (index !== editor.selectedIndex.value) {
+            editor.selectStep(index);
+          }
+        }
+      }
+    },
+    {
+      root: timelineRef.value,
+      rootMargin: '-40% 0px -40% 0px', // Only trigger when step is in center 20% of viewport
+      threshold: [0, 0.25, 0.5, 0.75, 1],
+    }
+  );
+
+  // Observe all step elements
+  const stepElements = timelineRef.value.querySelectorAll('[data-step-index]');
+  stepElements.forEach((el) => intersectionObserver?.observe(el));
+}
+
+// Re-setup observer when steps change
+watch(
+  () => editor.steps.value.length,
+  () => {
+    nextTick(() => setupScrollObserver());
+  }
+);
+
+onMounted(() => {
+  nextTick(() => {
+    timelineRef.value = document.querySelector('.timeline-scroll');
+    setupScrollObserver();
+  });
+});
+
+onUnmounted(() => {
+  if (intersectionObserver) {
+    intersectionObserver.disconnect();
+  }
+});
 </script>
 
 <template>
@@ -158,45 +229,41 @@ onKeyStroke(['Enter', ' '], openEditor, { eventName: 'keydown' });
             'timeline-step-inactive': index !== editor.selectedIndex.value,
           }"
         >
-          <!-- Step header bar -->
-          <div class="flex items-center justify-between mb-2 px-1">
-            <div class="flex items-center gap-2">
-              <span
-                class="flex items-center justify-center w-6 h-6 rounded-full text-xs font-medium"
-                :class="{
-                  'bg-primary text-primary-foreground': index === editor.selectedIndex.value,
-                  'bg-muted text-muted-foreground': index !== editor.selectedIndex.value,
-                }"
-              >
-                {{ index + 1 }}
-              </span>
-              <span class="text-sm font-medium uppercase tracking-wide text-muted-foreground">
-                {{ step.stepType.replace('_', ' ') }}
-              </span>
-            </div>
+          <!-- Step header (outside card - shows step number reference) -->
+          <div class="step-header">
+            <span
+              class="flex items-center justify-center w-7 h-7 rounded-full text-sm font-semibold"
+              :class="{
+                'bg-primary text-primary-foreground': index === editor.selectedIndex.value,
+                'bg-muted text-muted-foreground': index !== editor.selectedIndex.value,
+              }"
+            >
+              {{ index + 1 }}
+            </span>
+            <span class="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+              {{ step.stepType.replace('_', ' ') }}
+            </span>
           </div>
 
-          <!-- Step card (large, Senja-style) -->
+          <!-- Step card (webpage preview - shows how the actual page will look) -->
           <div
             class="step-card"
-            :class="{ 'ring-2 ring-primary ring-offset-2': index === editor.selectedIndex.value }"
+            :class="{ 'ring-2 ring-primary ring-offset-4': index === editor.selectedIndex.value }"
             @click="editor.handleEditStep(index)"
           >
-            <!-- Card content preview - Large centered content -->
+            <!-- Card content - Mimics actual webpage appearance -->
             <div class="step-card-content">
-              <h3 class="text-2xl font-semibold mb-3">
+              <h3 class="text-3xl font-bold mb-4">
                 {{ (step.content as Record<string, unknown>).title || 'Untitled Step' }}
               </h3>
-              <p class="text-lg text-muted-foreground max-w-md leading-relaxed">
+              <p class="text-xl text-muted-foreground max-w-lg leading-relaxed">
                 {{ (step.content as Record<string, unknown>).subtitle || (step.content as Record<string, unknown>).message || (step.content as Record<string, unknown>).description || 'Click to edit this step' }}
               </p>
             </div>
           </div>
 
-          <!-- Connector to next step -->
+          <!-- Timeline connector to next step -->
           <div v-if="index < editor.steps.value.length - 1" class="timeline-connector">
-            <div class="connector-line" />
-            <div class="connector-dot" />
             <div class="connector-line" />
           </div>
         </div>
@@ -229,14 +296,14 @@ onKeyStroke(['Enter', ' '], openEditor, { eventName: 'keydown' });
 <style scoped>
 /* Senja-inspired timeline with scroll-snap and zoom animations */
 .timeline-container {
-  padding: 0 3rem;
-  max-width: 800px;
+  padding: 0 2rem;
+  max-width: 900px;
   margin: 0 auto;
 }
 
 /* Spacers allow first/last steps to center in viewport */
 .timeline-spacer {
-  height: 40vh;
+  height: 15vh;
   scroll-snap-align: start;
 }
 
@@ -245,7 +312,7 @@ onKeyStroke(['Enter', ' '], openEditor, { eventName: 'keydown' });
   scroll-snap-align: center;
   transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease;
   transform-origin: center center;
-  padding: 0.5rem 0;
+  margin-bottom: 1.5rem;
 }
 
 /* Active step: full size and opacity */
@@ -256,16 +323,25 @@ onKeyStroke(['Enter', ' '], openEditor, { eventName: 'keydown' });
 
 /* Inactive steps: smaller and faded for visual hierarchy */
 .timeline-step-inactive {
-  transform: scale(0.88);
+  transform: scale(0.92);
   opacity: 0.5;
 }
 
 .timeline-step-inactive:hover {
-  opacity: 0.75;
-  transform: scale(0.91);
+  opacity: 0.7;
+  transform: scale(0.94);
 }
 
-/* Step card styling - Large Senja-style cards mimicking webpage screens */
+/* Step header (outside card) - shows step number reference */
+.step-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+  padding-left: 0.25rem;
+}
+
+/* Step card styling - Large cards that mimic actual webpage appearance */
 .step-card {
   background: hsl(var(--background));
   border: 1px solid hsl(var(--border));
@@ -277,9 +353,10 @@ onKeyStroke(['Enter', ' '], openEditor, { eventName: 'keydown' });
   cursor: pointer;
   transition: all 0.25s ease;
   overflow: hidden;
-  /* Webpage-like aspect ratio (16:10 like a screen) */
-  aspect-ratio: 16 / 10;
-  width: 100%;
+  /* Full viewport-height card - mimics actual webpage */
+  min-height: 70vh;
+  display: flex;
+  flex-direction: column;
 }
 
 .step-card:hover {
@@ -287,42 +364,31 @@ onKeyStroke(['Enter', ' '], openEditor, { eventName: 'keydown' });
     0 20px 25px -5px rgb(0 0 0 / 0.1),
     0 8px 10px -6px rgb(0 0 0 / 0.1);
   border-color: hsl(var(--primary) / 0.4);
-  transform: translateY(-2px);
 }
 
-/* Card content - Centered content for screen-like feel */
+/* Card content - Centered content mimicking actual webpage */
 .step-card-content {
-  padding: 3rem 2.5rem;
-  height: 100%;
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
+  padding: 3rem 2.5rem;
 }
 
-/* Timeline connector between steps - connects cards visually */
+/* Timeline connector between steps */
 .timeline-connector {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 0;
-  margin: -1px 0; /* Overlap slightly with card borders */
+  padding: 1rem 0;
 }
 
 .connector-line {
   width: 2px;
-  height: 2rem;
+  height: 3rem;
   background: hsl(var(--border));
-}
-
-.connector-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: hsl(var(--muted-foreground) / 0.3);
-  margin: 0.25rem 0;
-  flex-shrink: 0;
 }
 
 /* Empty state */
