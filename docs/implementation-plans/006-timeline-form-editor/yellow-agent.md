@@ -1055,6 +1055,59 @@ Test the full integration with actual Green and Blue components.
 
 ---
 
+### Y8: Timeline Scroll Snap & Zoom Animations
+**Priority**: Medium
+**Depends On**: Y6
+**Blocks**: None
+
+Implement Senja-inspired scroll experience for the timeline canvas with:
+- CSS scroll-snap to center each step
+- Large step cards showing partial prev/next steps when snapped
+- Zoom animation: current step scales up, others scale down
+- Custom subtle scrollbar using project's `.scrollbar-subtle` class
+
+**Files Modified**:
+- `apps/web/src/layouts/FormEditorLayout.vue` - Add scrollbar class
+- `apps/web/src/pages/[org]/forms/[urlSlug]/edit.vue` - Add scroll-snap and zoom styles
+
+**Implementation**:
+
+```css
+/* Timeline scroll container */
+.timeline-scroll {
+  scroll-snap-type: y mandatory;
+  scroll-behavior: smooth;
+}
+
+/* Each step card */
+.timeline-step {
+  scroll-snap-align: center;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+/* Scale effect based on position */
+.timeline-step[data-active="true"] {
+  transform: scale(1);
+  opacity: 1;
+}
+
+.timeline-step[data-active="false"] {
+  transform: scale(0.92);
+  opacity: 0.7;
+}
+```
+
+**Acceptance Criteria**:
+- [ ] Scroll snaps to center of each step
+- [ ] Current step appears larger (scale 1.0)
+- [ ] Adjacent steps appear smaller (scale ~0.92)
+- [ ] Partial prev/next steps visible when centered
+- [ ] Smooth transitions between steps
+- [ ] Custom scrollbar using `.scrollbar-subtle`
+- [ ] Works with keyboard navigation
+
+---
+
 ## Barrel Exports
 
 Update these files to export your new code:

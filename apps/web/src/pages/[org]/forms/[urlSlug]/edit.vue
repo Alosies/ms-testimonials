@@ -101,35 +101,72 @@ function handleFormNameUpdate(name: string) {
 
     <template #timeline>
       <!-- TODO: Replace with TimelineCanvas when Green completes G8 -->
-      <div class="p-8">
+      <!-- Senja-inspired scroll-snap timeline with zoom animations -->
+      <div class="timeline-container">
+        <!-- Top spacer for first step centering -->
+        <div class="timeline-spacer" />
+
         <div
           v-for="(step, index) in editor.steps.value"
           :key="step.id"
           :data-step-index="index"
-          class="mb-8"
+          class="timeline-step"
+          :class="{
+            'timeline-step-active': index === editor.selectedIndex.value,
+            'timeline-step-inactive': index !== editor.selectedIndex.value,
+          }"
         >
+          <!-- Step header bar -->
+          <div class="flex items-center justify-between mb-3 px-1">
+            <div class="flex items-center gap-2">
+              <span
+                class="flex items-center justify-center w-6 h-6 rounded-full text-xs font-medium"
+                :class="{
+                  'bg-primary text-primary-foreground': index === editor.selectedIndex.value,
+                  'bg-muted text-muted-foreground': index !== editor.selectedIndex.value,
+                }"
+              >
+                {{ index + 1 }}
+              </span>
+              <span class="text-sm font-medium uppercase tracking-wide text-muted-foreground">
+                {{ step.stepType.replace('_', ' ') }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Step card (large, Senja-style) -->
           <div
-            class="max-w-md mx-auto p-6 bg-background rounded-lg border shadow-sm cursor-pointer transition-all hover:shadow-md"
+            class="step-card"
             :class="{ 'ring-2 ring-primary': index === editor.selectedIndex.value }"
             @click="editor.handleEditStep(index)"
           >
-            <div class="text-sm text-muted-foreground mb-2">
-              Step {{ index + 1 }}: {{ step.stepType }}
-            </div>
-            <div class="font-medium">
-              {{ (step.content as Record<string, unknown>).title || 'Untitled' }}
+            <!-- Card content preview -->
+            <div class="p-8 min-h-[280px] flex flex-col items-center justify-center text-center">
+              <h3 class="text-xl font-semibold mb-2">
+                {{ (step.content as Record<string, unknown>).title || 'Untitled Step' }}
+              </h3>
+              <p class="text-muted-foreground max-w-sm">
+                {{ (step.content as Record<string, unknown>).subtitle || (step.content as Record<string, unknown>).message || (step.content as Record<string, unknown>).description || 'Click to edit this step' }}
+              </p>
             </div>
           </div>
-          <!-- Connector -->
-          <div v-if="index < editor.steps.value.length - 1" class="flex justify-center my-4">
-            <div class="w-0.5 h-8 bg-border" />
+
+          <!-- Connector to next step -->
+          <div v-if="index < editor.steps.value.length - 1" class="timeline-connector">
+            <div class="connector-line" />
+            <div class="connector-dot" />
+            <div class="connector-line" />
           </div>
         </div>
+
+        <!-- Bottom spacer for last step centering -->
+        <div class="timeline-spacer" />
+
         <!-- Empty state -->
-        <div v-if="editor.steps.value.length === 0" class="text-center py-12 text-muted-foreground">
+        <div v-if="editor.steps.value.length === 0" class="empty-state">
           <p class="mb-4">No steps yet. Add your first step to get started.</p>
           <button
-            class="px-4 py-2 border border-dashed rounded-lg hover:bg-muted/50"
+            class="px-6 py-3 border-2 border-dashed rounded-xl hover:bg-muted/50 hover:border-primary/50 transition-all"
             @click="editor.handleAddStep('welcome')"
           >
             + Add Welcome Step
@@ -143,3 +180,92 @@ function handleFormNameUpdate(name: string) {
     </template>
   </FormEditorLayout>
 </template>
+
+<style scoped>
+/* Senja-inspired timeline with scroll-snap and zoom animations */
+.timeline-container {
+  padding: 0 2rem;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+/* Spacers allow first/last steps to center */
+.timeline-spacer {
+  height: 35vh;
+  scroll-snap-align: start;
+}
+
+/* Each step snaps to center */
+.timeline-step {
+  scroll-snap-align: center;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+  transform-origin: center center;
+  padding: 1rem 0;
+}
+
+/* Active step: full size and opacity */
+.timeline-step-active {
+  transform: scale(1);
+  opacity: 1;
+}
+
+/* Inactive steps: slightly smaller and faded */
+.timeline-step-inactive {
+  transform: scale(0.94);
+  opacity: 0.6;
+}
+
+.timeline-step-inactive:hover {
+  opacity: 0.85;
+  transform: scale(0.96);
+}
+
+/* Step card styling */
+.step-card {
+  background: hsl(var(--background));
+  border: 1px solid hsl(var(--border));
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  overflow: hidden;
+}
+
+.step-card:hover {
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.05);
+  border-color: hsl(var(--primary) / 0.3);
+}
+
+/* Timeline connector between steps */
+.timeline-connector {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.75rem 0;
+}
+
+.connector-line {
+  width: 2px;
+  height: 1rem;
+  background: hsl(var(--border));
+}
+
+.connector-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: hsl(var(--border));
+  margin: 0.25rem 0;
+}
+
+/* Empty state */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  color: hsl(var(--muted-foreground));
+  scroll-snap-align: center;
+}
+</style>
