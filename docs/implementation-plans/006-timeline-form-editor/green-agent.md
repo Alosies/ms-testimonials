@@ -1039,6 +1039,190 @@ Test the full sidebar and canvas integration.
 
 ---
 
+### G10: Create form_steps Database Migration
+**Priority**: High
+**Depends On**: None
+**Blocks**: GraphQL codegen for `Form_Steps` type
+
+Create the `form_steps` table to store step configuration per form.
+
+**Command**:
+```bash
+cd db/hasura && hasura migrate create "add_form_steps_table" --database-name default
+```
+
+**Migration SQL** (from `reference.md`):
+
+```sql
+-- UP Migration
+CREATE TABLE form_steps (
+  id TEXT NOT NULL DEFAULT generate_nanoid_12(),
+  form_id TEXT NOT NULL REFERENCES forms(id) ON DELETE CASCADE,
+  organization_id TEXT NOT NULL REFERENCES organizations(id),
+
+  -- Step identification
+  step_type TEXT NOT NULL CHECK (step_type IN (
+    'welcome', 'question', 'rating', 'consent',
+    'contact_info', 'reward', 'thank_you'
+  )),
+  step_order SMALLINT NOT NULL,
+
+  -- For 'question'/'rating' types, links to detailed validation config
+  question_id TEXT REFERENCES form_questions(id) ON DELETE CASCADE,
+
+  -- For non-question types, JSONB content (typed per step_type)
+  content JSONB NOT NULL DEFAULT '{}',
+
+  -- Tips shown to customer (applicable to question/rating steps)
+  tips TEXT[] DEFAULT '{}',
+
+  -- Soft delete
+  is_active BOOLEAN NOT NULL DEFAULT true,
+
+  -- Audit columns
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  created_by TEXT REFERENCES users(id),
+  updated_by TEXT REFERENCES users(id),
+
+  PRIMARY KEY (id),
+  UNIQUE (form_id, step_order),  -- Enforce order uniqueness per form
+
+  -- Constraint: question_id required for question/rating types
+  CONSTRAINT form_steps_question_id_check CHECK (
+    (step_type IN ('question', 'rating') AND question_id IS NOT NULL) OR
+    (step_type NOT IN ('question', 'rating') AND question_id IS NULL)
+  )
+);
+
+-- Indexes
+CREATE INDEX idx_form_steps_form_id ON form_steps(form_id);
+CREATE INDEX idx_form_steps_question_id ON form_steps(question_id);
+CREATE INDEX idx_form_steps_organization_id ON form_steps(organization_id);
+
+-- Trigger for updated_at
+CREATE TRIGGER set_form_steps_updated_at
+  BEFORE UPDATE ON form_steps
+  FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+```
+
+```sql
+-- DOWN Migration
+DROP TRIGGER IF EXISTS set_form_steps_updated_at ON form_steps;
+DROP TABLE IF EXISTS form_steps;
+```
+
+**Post-migration**:
+1. Apply migration: `hasura migrate apply --database-name default`
+2. Track table in Hasura: `hasura metadata apply` or via console
+3. Configure permissions (organization-based RLS)
+4. Run codegen: `pnpm codegen:web`
+
+**Acceptance Criteria**:
+- [ ] Migration creates `form_steps` table
+- [ ] All constraints work (step_type check, question_id check)
+- [ ] Indexes are created
+- [ ] `updated_at` trigger works
+- [ ] Table is tracked in Hasura
+- [ ] Permissions configured for organization isolation
+- [ ] `Form_Steps` type available in generated GraphQL types
+
+---
+
+### G11: Create contacts Database Migration
+**Priority**: Medium
+**Depends On**: G10
+**Blocks**: GraphQL codegen for `Contacts` type
+
+Create the `contacts` table for normalized contact data.
+
+**Command**:
+```bash
+cd db/hasura && hasura migrate create "add_contacts_table" --database-name default
+```
+
+**Migration SQL** (from `reference.md`):
+
+```sql
+-- UP Migration
+CREATE TABLE contacts (
+  id TEXT NOT NULL DEFAULT generate_nanoid_12(),
+  organization_id TEXT NOT NULL REFERENCES organizations(id),
+
+  -- Primary identifier (unique per org)
+  email TEXT NOT NULL,
+  email_verified BOOLEAN NOT NULL DEFAULT false,
+
+  -- Profile information
+  name TEXT,
+  avatar_url TEXT,
+  job_title TEXT,
+  company_name TEXT,
+  company_website TEXT,
+
+  -- Social profiles
+  linkedin_url TEXT,
+  twitter_url TEXT,
+
+  -- Source tracking
+  source TEXT NOT NULL DEFAULT 'form_submission',  -- 'form_submission', 'import', 'manual'
+  source_form_id TEXT REFERENCES forms(id),        -- First form they submitted
+
+  -- Activity tracking
+  first_seen_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  last_seen_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  submission_count INT NOT NULL DEFAULT 1,
+
+  -- Audit
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+  PRIMARY KEY (id),
+  UNIQUE (organization_id, email)  -- One contact per email per org
+);
+
+-- Indexes
+CREATE INDEX idx_contacts_organization_id ON contacts(organization_id);
+CREATE INDEX idx_contacts_email ON contacts(email);
+
+-- Update form_submissions to reference contact
+ALTER TABLE form_submissions
+  ADD COLUMN contact_id TEXT REFERENCES contacts(id);
+
+-- Index for the new FK
+CREATE INDEX idx_form_submissions_contact_id ON form_submissions(contact_id);
+
+-- Trigger for updated_at
+CREATE TRIGGER set_contacts_updated_at
+  BEFORE UPDATE ON contacts
+  FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+```
+
+```sql
+-- DOWN Migration
+DROP TRIGGER IF EXISTS set_contacts_updated_at ON contacts;
+ALTER TABLE form_submissions DROP COLUMN IF EXISTS contact_id;
+DROP TABLE IF EXISTS contacts;
+```
+
+**Post-migration**:
+1. Apply migration: `hasura migrate apply --database-name default`
+2. Track table in Hasura
+3. Configure permissions (organization-based RLS)
+4. Add relationship: `form_submissions.contact` → `contacts`
+5. Run codegen: `pnpm codegen:web`
+
+**Acceptance Criteria**:
+- [ ] Migration creates `contacts` table
+- [ ] Unique constraint on (organization_id, email) works
+- [ ] `form_submissions.contact_id` FK added
+- [ ] Table is tracked in Hasura
+- [ ] Permissions configured for organization isolation
+- [ ] Relationship configured in Hasura
+- [ ] `Contacts` type available in generated GraphQL types
+
+---
+
 ## Barrel Exports
 
 ### ui/stepsSidebar/index.ts

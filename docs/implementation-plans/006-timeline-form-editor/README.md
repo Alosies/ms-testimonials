@@ -48,7 +48,7 @@ Transform the form editor from a collapsible-section layout to a three-panel tim
 
 ## Task Reference
 
-### Yellow Agent Tasks (Y1-Y7)
+### Yellow Agent Tasks (Y1-Y8)
 See: [yellow-agent.md](./yellow-agent.md)
 
 | Task | Description |
@@ -60,8 +60,9 @@ See: [yellow-agent.md](./yellow-agent.md)
 | Y5 | Create useTimelineEditor orchestrator |
 | Y6 | Update page to use new layout |
 | Y7 | Integration testing with mock slot content |
+| Y8 | Timeline scroll snap & zoom animations |
 
-### Green Agent Tasks (G1-G9)
+### Green Agent Tasks (G1-G11)
 See: [green-agent.md](./green-agent.md)
 
 | Task | Description |
@@ -75,6 +76,8 @@ See: [green-agent.md](./green-agent.md)
 | G7 | Create all step card variants (7 types) |
 | G8 | Create TimelineCanvas.vue container |
 | G9 | Integration testing |
+| G10 | Create form_steps database migration |
+| G11 | Create contacts database migration |
 
 ### Blue Agent Tasks (B1-B8)
 See: [blue-agent.md](./blue-agent.md)
