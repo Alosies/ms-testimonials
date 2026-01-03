@@ -232,10 +232,10 @@ DAY 4 - AFTERNOON
 
 ## Checkpoints
 
-### Checkpoint 1: Types Ready (After Y1)
-- [ ] `StepType`, `FormStep`, content interfaces exported
-- [ ] Type guards working
-- [ ] Green and Blue can import types
+### Checkpoint 1: Types Ready (After Y1) ✅
+- [x] `StepType`, `FormStep`, content interfaces exported
+- [x] Type guards working
+- [x] Green and Blue can import types
 
 ### Checkpoint 2: Layout Shell (After Y2, Y3)
 - [ ] Three-panel layout renders
@@ -259,6 +259,52 @@ DAY 4 - AFTERNOON
 - [ ] Keyboard navigation works
 - [ ] Auto-save works
 - [ ] No console errors
+
+---
+
+## Commit Convention
+
+### Format
+
+```
+ADR-006-{TASK_ID}: {description} [{STATUS}]
+```
+
+### Components
+
+| Component | Description | Example |
+|-----------|-------------|---------|
+| `ADR-006` | Reference to the ADR this work implements | `ADR-006` |
+| `{TASK_ID}` | Task identifier from agent plan | `Y1`, `G4`, `B7` |
+| `{description}` | Brief description of the change | `add step content types and factories` |
+| `[{STATUS}]` | Work status indicator | `[done]` or `[wip]` |
+
+### Status Indicators
+
+| Status | Meaning | When to Use |
+|--------|---------|-------------|
+| `[done]` | Task is complete | All acceptance criteria met |
+| `[wip]` | Work in progress | Partial implementation, needs more work |
+
+### Examples
+
+```bash
+# Complete task
+ADR-006-Y1: add step content types and factories [done]
+
+# Work in progress
+ADR-006-G7: add welcome and question step cards [wip]
+
+# Multiple tasks in one commit (avoid if possible)
+ADR-006-Y2,Y3: add layout shell and header components [done]
+```
+
+### Guidelines
+
+1. **One task per commit** - Prefer atomic commits for each task
+2. **Always include status** - Makes progress tracking clear
+3. **Use imperative mood** - "add", "create", "fix" (not "added", "creates")
+4. **Keep description concise** - Under 50 chars if possible
 
 ---
 

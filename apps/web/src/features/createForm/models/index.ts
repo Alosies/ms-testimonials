@@ -1,5 +1,8 @@
 import type { AIQuestion, AIContext } from '@/shared/api';
 
+// Step types
+export * from './stepContent';
+
 // Save Status Types
 export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
