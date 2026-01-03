@@ -3,6 +3,13 @@ import type { AIQuestion, AIContext } from '@/shared/api';
 // Step types
 export * from './stepContent';
 
+// Help content for properties panel
+export interface HelpContent {
+  title: string;
+  description: string;
+  tips: string[];
+}
+
 // Save Status Types
 export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
