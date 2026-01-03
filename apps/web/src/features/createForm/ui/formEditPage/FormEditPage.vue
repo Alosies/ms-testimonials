@@ -5,7 +5,7 @@
  * Main feature component for the timeline-based form editor.
  * Handles all editor logic, keyboard navigation, and scroll detection.
  */
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 import { Kbd } from '@testimonials/ui';
 import FormEditorLayout from '@/layouts/FormEditorLayout.vue';
 import FormEditorHeader from '../FormEditorHeader.vue';
@@ -16,6 +16,7 @@ import {
   useKeyboardNavigation,
   useScrollStepDetection,
 } from '../../composables/timeline';
+import { useGetForm } from '@/entities/form';
 import TimelineSidebar from './TimelineSidebar.vue';
 import TimelineCanvas from './TimelineCanvas.vue';
 
@@ -36,6 +37,20 @@ useScrollStepDetection();
 
 // Initialize editor with formId (resets state if formId changes)
 watch(() => props.formId, (id) => editor.setFormId(id), { immediate: true });
+
+// Fetch form data for context
+const formQueryVars = computed(() => ({ formId: props.formId }));
+const { form } = useGetForm(formQueryVars);
+
+// Update form context when form data loads (for dynamic step defaults)
+watch(form, (loadedForm) => {
+  if (loadedForm) {
+    editor.setFormContext({
+      productName: loadedForm.product_name ?? undefined,
+      productDescription: loadedForm.product_description ?? undefined,
+    });
+  }
+}, { immediate: true });
 
 // Header state
 const formName = ref('My Test Form');
