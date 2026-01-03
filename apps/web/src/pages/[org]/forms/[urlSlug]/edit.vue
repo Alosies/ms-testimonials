@@ -11,12 +11,12 @@ import { useRoute, useRouter } from 'vue-router';
 import { definePage } from 'unplugin-vue-router/runtime';
 import FormEditorLayout from '@/layouts/FormEditorLayout.vue';
 import FormEditorHeader from '@/features/createForm/ui/FormEditorHeader.vue';
+import { PropertiesPanel } from '@/features/createForm/ui/propertiesPanel';
 import { useTimelineEditor } from '@/features/createForm/composables/timeline/useTimelineEditor';
 import { extractEntityIdFromSlug } from '@/shared/urls';
-// TODO: Import actual components when ready
+// TODO: Import actual components when Green agent completes G4, G8
 // import StepsSidebar from '@/features/createForm/ui/stepsSidebar/StepsSidebar.vue';
 // import TimelineCanvas from '@/features/createForm/ui/timelineCanvas/TimelineCanvas.vue';
-// import PropertiesPanel from '@/features/createForm/ui/propertiesPanel/PropertiesPanel.vue';
 
 definePage({
   meta: {
@@ -139,34 +139,7 @@ function handleFormNameUpdate(name: string) {
     </template>
 
     <template #properties>
-      <!-- TODO: Replace with PropertiesPanel when Blue completes B4 -->
-      <div class="p-4">
-        <div v-if="editor.selectedStep.value">
-          <h3 class="font-semibold mb-2">Properties</h3>
-          <div class="text-sm text-muted-foreground">
-            Selected: {{ editor.selectedStep.value.stepType }}
-          </div>
-          <div class="mt-4">
-            <h4 class="text-sm font-medium mb-2">Tips</h4>
-            <div
-              v-for="(tip, i) in editor.selectedStep.value.tips"
-              :key="i"
-              class="text-sm p-2 bg-muted rounded mb-1"
-            >
-              {{ tip }}
-            </div>
-            <button
-              class="text-sm text-primary hover:underline"
-              @click="editor.updateStepTips(editor.selectedIndex.value, [...editor.selectedStep.value.tips, 'New tip'])"
-            >
-              + Add tip
-            </button>
-          </div>
-        </div>
-        <div v-else class="text-sm text-muted-foreground">
-          Select a step to see properties
-        </div>
-      </div>
+      <PropertiesPanel />
     </template>
   </FormEditorLayout>
 </template>
