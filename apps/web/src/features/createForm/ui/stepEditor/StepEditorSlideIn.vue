@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, inject, onMounted, onUnmounted, type Component } from 'vue';
+import { computed, onMounted, onUnmounted, type Component } from 'vue';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, Button } from '@testimonials/ui';
 import { Icon } from '@testimonials/icons';
 import WelcomeStepEditor from './editors/WelcomeStepEditor.vue';
@@ -9,11 +9,12 @@ import ConsentStepEditor from './editors/ConsentStepEditor.vue';
 import ContactInfoStepEditor from './editors/ContactInfoStepEditor.vue';
 import RewardStepEditor from './editors/RewardStepEditor.vue';
 import ThankYouStepEditor from './editors/ThankYouStepEditor.vue';
-import type { TimelineEditorContext } from '../../composables/timeline';
+import { useTimelineEditor } from '../../composables/timeline';
 import type { StepContent } from '../../models/stepContent';
 import { getStepLabel, getStepIcon } from '../../functions';
 
-const editor = inject<TimelineEditorContext>('timelineEditor')!;
+// Direct import - fully typed, no inject needed
+const editor = useTimelineEditor();
 
 const selectedStep = computed(() => editor.selectedStep.value);
 const stepLabel = computed(() => selectedStep.value ? getStepLabel(selectedStep.value) : '');

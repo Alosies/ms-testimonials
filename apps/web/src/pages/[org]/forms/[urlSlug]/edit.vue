@@ -6,7 +6,7 @@
  * Uses Notion-inspired URL pattern: {readable-slug}_{entity_id}
  * The slug is cosmetic; only the entity_id is used for data fetching.
  */
-import { computed, nextTick, onMounted, onUnmounted, provide, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { definePage } from 'unplugin-vue-router/runtime';
 import { onKeyStroke } from '@vueuse/core';
@@ -37,10 +37,11 @@ const formId = computed(() => {
   return result?.isValid ? result.entityId : urlSlug.value;
 });
 
-const editor = useTimelineEditor(formId);
+// Shared composable - no provide/inject needed
+const editor = useTimelineEditor();
 
-// Provide editor context to child components
-provide('timelineEditor', editor);
+// Initialize editor with formId (resets state if formId changes)
+watch(formId, (id) => editor.setFormId(id), { immediate: true });
 
 // Header state
 const formName = ref('My Test Form');

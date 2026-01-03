@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { inject, computed } from 'vue';
+import { computed } from 'vue';
 import ContextualHelp from './ContextualHelp.vue';
 import QuestionTips from './QuestionTips.vue';
 import DesignSettings from './DesignSettings.vue';
-import type { TimelineEditorContext } from '../../composables/timeline';
+import { useTimelineEditor } from '../../composables/timeline';
 
-const editor = inject<TimelineEditorContext>('timelineEditor')!;
+// Direct import - fully typed, no inject needed
+const editor = useTimelineEditor();
 
 const selectedStep = computed(() => editor.selectedStep.value);
 const showTips = computed(() => {

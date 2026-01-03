@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import { ref, inject } from 'vue';
+import { ref } from 'vue';
 import { Icon } from '@testimonials/icons';
 import StepThumbnail from './StepThumbnail.vue';
 import InsertStepButton from './InsertStepButton.vue';
 import StepTypePicker from './StepTypePicker.vue';
-import type { TimelineEditorContext } from '../../composables/timeline/useTimelineEditor';
+import { useTimelineEditor } from '../../composables/timeline';
 import type { StepType, FormStep } from '../../models/stepContent';
 
-// Inject editor context from page
-const editor = inject<TimelineEditorContext>('timelineEditor')!;
+// Direct import - fully typed, no inject needed
+const editor = useTimelineEditor();
 
 const pickerOpen = ref(false);
 const insertAfterIndex = ref<number | null>(null);

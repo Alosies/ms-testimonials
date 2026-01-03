@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, inject, watch } from 'vue';
+import { ref, watch } from 'vue';
 import StepCard from './StepCard.vue';
 import TimelineConnector from './TimelineConnector.vue';
 import WelcomeStepCard from './stepCards/WelcomeStepCard.vue';
@@ -10,10 +10,11 @@ import ContactInfoStepCard from './stepCards/ContactInfoStepCard.vue';
 import RewardStepCard from './stepCards/RewardStepCard.vue';
 import ThankYouStepCard from './stepCards/ThankYouStepCard.vue';
 import StepTypePicker from '../stepsSidebar/StepTypePicker.vue';
-import type { TimelineEditorContext } from '../../composables/timeline/useTimelineEditor';
+import { useTimelineEditor } from '../../composables/timeline';
 import type { StepType, FormStep } from '../../models/stepContent';
 
-const editor = inject<TimelineEditorContext>('timelineEditor')!;
+// Direct import - fully typed, no inject needed
+const editor = useTimelineEditor();
 
 const scrollContainer = ref<HTMLElement | null>(null);
 const pickerOpen = ref(false);
