@@ -46,12 +46,48 @@ export function useStepNavigation(steps: Ref<FormStep[]>) {
     }
   }
 
+  /**
+   * Scroll to a step element in the timeline canvas.
+   *
+   * DESIGN DECISION: Uses document.querySelector instead of Vue template refs.
+   *
+   * Considerations:
+   * - Template refs would be more "Vue-idiomatic" and type-safe
+   * - However, step elements are rendered by child components (TimelineCanvas)
+   *   that this composable doesn't own
+   * - Using refs would require prop drilling or provide/inject for ref registration
+   * - Data-attribute selector keeps composable loosely coupled from render implementation
+   * - Child components only need to add `data-step-index` attribute
+   * - SSR is not a concern here (editor requires auth, client-only)
+   *
+   * If this pattern is needed elsewhere, consider a shared provide/inject pattern
+   * for cross-component element registration.
+   */
   function scrollToStep(index: number) {
     const element = document.querySelector(`[data-step-index="${index}"]`);
     element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 
-  // URL sync
+  // ============================================
+  // URL State Sync
+  // ============================================
+
+  /**
+   * Sync selected step to URL query parameter.
+   *
+   * DESIGN DECISION: Uses direct router.replace instead of useRouting composable.
+   *
+   * Considerations:
+   * - useRouting (@/shared/routing) is for cross-page navigation with org context
+   * - This is in-page state persistence (like scroll position, active tab)
+   * - useRouting.navigate() replaces entire query; we need to merge with existing
+   * - These are fundamentally different use cases:
+   *   - useRouting: goToFormEdit(form) → changes route path
+   *   - This: ?step=abc123 → persists UI state on same page
+   *
+   * If query param state sync is needed in 2-3+ more places, consider adding
+   * updateQueryParams(params, options) utility to useRouting.
+   */
   function syncToUrl() {
     const step = steps.value[selectedIndex.value];
     if (step) {
