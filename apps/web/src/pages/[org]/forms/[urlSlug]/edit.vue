@@ -350,7 +350,7 @@ onUnmounted(() => {
   padding-left: 0.25rem;
 }
 
-/* Step card styling - Large cards that mimic actual webpage appearance */
+/* Step card styling - Cards with webpage aspect ratio (like Senja ~1.55:1) */
 .step-card {
   background: hsl(var(--background));
   border: 1px solid hsl(var(--border));
@@ -362,8 +362,8 @@ onUnmounted(() => {
   cursor: pointer;
   transition: all 0.25s ease;
   overflow: hidden;
-  /* Full viewport-height card - mimics actual webpage */
-  min-height: 70vh;
+  /* Webpage-like aspect ratio (16:10 ≈ 1.6:1) instead of fixed height */
+  aspect-ratio: 16 / 10;
   display: flex;
   flex-direction: column;
 }
