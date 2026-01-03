@@ -6,6 +6,7 @@
  * Uses shared timeline editor composable for state.
  */
 import { useTimelineEditor } from '../../composables/timeline';
+import type { FormStep } from '../../models';
 import TimelineStepCard from './TimelineStepCard.vue';
 import TimelineEmptyState from './TimelineEmptyState.vue';
 
@@ -19,7 +20,7 @@ const editor = useTimelineEditor();
     <TimelineStepCard
       v-for="(step, index) in editor.steps.value"
       :key="step.id"
-      :step="step"
+      :step="(step as FormStep)"
       :index="index"
       :is-active="index === editor.selectedIndex.value"
       :is-last="index === editor.steps.value.length - 1"

@@ -6,9 +6,10 @@
  */
 import { Icon } from '@testimonials/icons';
 import { Kbd } from '@testimonials/ui';
+import type { StepType } from '../../models';
 
 const emit = defineEmits<{
-  addStep: [stepType: string];
+  addStep: [stepType: StepType];
 }>();
 </script>
 
