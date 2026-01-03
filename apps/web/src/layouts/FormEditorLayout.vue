@@ -17,8 +17,15 @@
       </aside>
 
       <!-- Center: Timeline Canvas (fluid) - Figma-style dotted grid with scroll-snap -->
-      <main class="flex-1 overflow-y-auto canvas-grid scrollbar-subtle timeline-scroll">
-        <slot name="timeline" />
+      <main class="relative flex-1 overflow-hidden">
+        <!-- Fixed overlay for keyboard hints (desktop only, doesn't scroll) -->
+        <div class="absolute inset-0 pointer-events-none z-10">
+          <slot name="canvas-overlay" />
+        </div>
+        <!-- Scrollable timeline content -->
+        <div class="h-full overflow-y-auto canvas-grid scrollbar-subtle timeline-scroll">
+          <slot name="timeline" />
+        </div>
       </main>
 
       <!-- Right: Properties Panel (280px) -->

@@ -221,6 +221,18 @@ onUnmounted(() => {
       </div>
     </template>
 
+    <template #canvas-overlay>
+      <!-- Keyboard navigation hint - fixed top right, desktop only -->
+      <div
+        v-if="editor.steps.value.length > 1"
+        class="absolute top-4 right-4 hidden md:flex items-center gap-2 px-3 py-2 rounded-lg bg-background/90 backdrop-blur-sm border border-border/50 text-muted-foreground text-sm shadow-sm pointer-events-auto"
+      >
+        <kbd class="min-w-6 px-2 py-1 rounded bg-muted font-mono text-xs text-center">↑</kbd>
+        <kbd class="min-w-6 px-2 py-1 rounded bg-muted font-mono text-xs text-center">↓</kbd>
+        <span class="ml-1 text-xs">to navigate</span>
+      </div>
+    </template>
+
     <template #timeline>
       <!-- TODO: Replace with TimelineCanvas when Green completes G8 -->
       <!-- Senja-inspired scroll-snap timeline with zoom animations -->
