@@ -1,6 +1,6 @@
 import { ref, readonly, computed, nextTick } from 'vue';
 import { createSharedComposable } from '@vueuse/core';
-import type { FormStep, StepType, StepContent } from '../../models/stepContent';
+import type { FormStep, StepType, StepContent, FormContext } from '../../models/stepContent';
 import {
   createDefaultWelcomeContent,
   createDefaultThankYouContent,
@@ -33,6 +33,9 @@ export const useTimelineEditor = createSharedComposable(() => {
   const selectedIndex = ref(0);
   const isEditorOpen = ref(false);
   const editorMode = ref<'edit' | 'add'>('edit');
+
+  // Form context for dynamic step defaults (e.g., product name)
+  const formContext = ref<FormContext>({});
 
   // Flag to prevent scroll detection from overriding programmatic selections
   const isProgrammaticScroll = ref(false);
@@ -81,6 +84,15 @@ export const useTimelineEditor = createSharedComposable(() => {
     selectedIndex.value = 0;
     isEditorOpen.value = false;
     editorMode.value = 'edit';
+    formContext.value = {};
+  }
+
+  /**
+   * Set form context for dynamic step defaults.
+   * Call this when the form's product name changes.
+   */
+  function setFormContext(ctx: FormContext) {
+    formContext.value = ctx;
   }
 
   // ============================================
@@ -152,6 +164,8 @@ export const useTimelineEditor = createSharedComposable(() => {
   // Step Operations
   // ============================================
   function createStep(type: StepType, order: number): FormStep {
+    const ctx = formContext.value;
+
     const baseStep: FormStep = {
       id: generateTempId(),
       formId: currentFormId.value ?? '',
@@ -165,22 +179,22 @@ export const useTimelineEditor = createSharedComposable(() => {
       isModified: false,
     };
 
-    // Set default content based on type
+    // Set default content based on type, using form context for personalization
     switch (type) {
       case 'welcome':
-        baseStep.content = createDefaultWelcomeContent();
+        baseStep.content = createDefaultWelcomeContent(ctx);
         break;
       case 'thank_you':
-        baseStep.content = createDefaultThankYouContent();
+        baseStep.content = createDefaultThankYouContent(ctx);
         break;
       case 'contact_info':
-        baseStep.content = createDefaultContactInfoContent();
+        baseStep.content = createDefaultContactInfoContent(ctx);
         break;
       case 'consent':
-        baseStep.content = createDefaultConsentContent();
+        baseStep.content = createDefaultConsentContent(ctx);
         break;
       case 'reward':
-        baseStep.content = createDefaultRewardContent();
+        baseStep.content = createDefaultRewardContent(ctx);
         break;
       case 'question':
       case 'rating':
@@ -264,24 +278,26 @@ export const useTimelineEditor = createSharedComposable(() => {
     const step = steps.value[index];
     if (!step || step.stepType === newType) return;
 
-    // Create default content for the new type
+    const ctx = formContext.value;
+
+    // Create default content for the new type, using form context
     let newContent: StepContent = {};
 
     switch (newType) {
       case 'welcome':
-        newContent = createDefaultWelcomeContent();
+        newContent = createDefaultWelcomeContent(ctx);
         break;
       case 'thank_you':
-        newContent = createDefaultThankYouContent();
+        newContent = createDefaultThankYouContent(ctx);
         break;
       case 'contact_info':
-        newContent = createDefaultContactInfoContent();
+        newContent = createDefaultContactInfoContent(ctx);
         break;
       case 'consent':
-        newContent = createDefaultConsentContent();
+        newContent = createDefaultConsentContent(ctx);
         break;
       case 'reward':
-        newContent = createDefaultRewardContent();
+        newContent = createDefaultRewardContent(ctx);
         break;
       case 'question':
       case 'rating':
@@ -346,6 +362,10 @@ export const useTimelineEditor = createSharedComposable(() => {
     currentFormId: readonly(currentFormId),
     setFormId,
     resetState,
+
+    // Form Context (for dynamic step defaults)
+    formContext: readonly(formContext),
+    setFormContext,
 
     // State (readonly where appropriate)
     steps: readonly(steps),
