@@ -391,8 +391,6 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 1.5rem 0;
-  margin-top: 0.5rem;
 }
 
 .connector-line {
