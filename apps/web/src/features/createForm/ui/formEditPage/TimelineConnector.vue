@@ -10,6 +10,10 @@ import { Icon } from '@testimonials/icons';
 import type { StepType } from '@/shared/stepCards';
 import StepTypePicker from '../stepsSidebar/StepTypePicker.vue';
 
+defineProps<{
+  compact?: boolean;
+}>();
+
 const emit = defineEmits<{
   insert: [type: StepType];
 }>();
@@ -26,6 +30,7 @@ function handleSelectType(type: StepType) {
 <template>
   <div
     class="timeline-connector"
+    :class="{ 'timeline-connector-compact': compact }"
     @mouseenter="isHovered = true"
     @mouseleave="isHovered = false"
   >
@@ -107,5 +112,25 @@ function handleSelectType(type: StepType) {
   border-color: hsl(var(--primary));
   background: hsl(var(--primary) / 0.1);
   transform: scale(1.1);
+}
+
+/* Compact mode for branched view */
+.timeline-connector-compact {
+  padding: 0.25rem 0;
+}
+
+.timeline-connector-compact .connector-line-top,
+.timeline-connector-compact .connector-line-bottom {
+  height: 1rem;
+}
+
+.timeline-connector-compact .insert-button {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.timeline-connector-compact .connector-dot {
+  width: 6px;
+  height: 6px;
 }
 </style>

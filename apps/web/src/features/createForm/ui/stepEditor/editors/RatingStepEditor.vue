@@ -14,6 +14,8 @@ import {
 } from '@testimonials/ui';
 import { Icon } from '@testimonials/icons';
 import type { FormStep, LinkedQuestion } from '@/shared/stepCards';
+import { FLOW_METADATA } from '@/entities/form';
+import { useTimelineEditor } from '../../../composables/timeline';
 
 interface Props {
   step: FormStep;
@@ -25,6 +27,8 @@ const emit = defineEmits<{
   (e: 'update:question', question: Partial<LinkedQuestion>): void;
 }>();
 
+const editor = useTimelineEditor();
+
 // Get current question data
 const question = computed(() => props.step.question);
 
@@ -32,6 +36,27 @@ const question = computed(() => props.step.question);
 function updateField<K extends keyof LinkedQuestion>(field: K, value: LinkedQuestion[K]) {
   if (!question.value) return;
   emit('update:question', { [field]: value });
+}
+
+// Branching state
+const isBranchingEnabled = computed(() => editor.isBranchingEnabled.value);
+const isThisStepBranchPoint = computed(() =>
+  editor.branchingConfig.value.ratingStepId === props.step.id,
+);
+const threshold = computed(() => editor.branchingConfig.value.threshold);
+
+function handleBranchingToggle(enabled: boolean) {
+  if (enabled) {
+    editor.enableBranching(props.step.id, 4);
+  } else {
+    editor.disableBranching();
+  }
+}
+
+function handleThresholdChange(value: unknown) {
+  if (typeof value === 'string') {
+    editor.setBranchingThreshold(parseInt(value, 10));
+  }
 }
 </script>
 
@@ -141,6 +166,93 @@ function updateField<K extends keyof LinkedQuestion>(field: K, value: LinkedQues
         @update:model-value="(v) => updateField('helpText', String(v) || null)"
       />
       <p class="mt-1 text-xs text-gray-500">Shown below the rating to provide context</p>
+    </div>
+
+    <Separator class="my-4" />
+
+    <!-- Conditional Branching Section -->
+    <div>
+      <div class="flex items-center justify-between">
+        <div>
+          <Label class="flex items-center gap-2">
+            <Icon icon="mdi:source-branch" class="w-4 h-4 text-primary" />
+            Conditional Branching
+          </Label>
+          <p class="text-xs text-muted-foreground">
+            Route respondents to different paths based on their rating
+          </p>
+        </div>
+        <Switch
+          :model-value="isBranchingEnabled && isThisStepBranchPoint"
+          :disabled="isBranchingEnabled && !isThisStepBranchPoint"
+          @update:model-value="handleBranchingToggle"
+        />
+      </div>
+
+      <!-- Branching is enabled on different step warning -->
+      <div
+        v-if="isBranchingEnabled && !isThisStepBranchPoint"
+        class="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-md"
+      >
+        <p class="text-sm text-amber-700">
+          Branching is already enabled on another rating step.
+          Disable it there first to use branching on this step.
+        </p>
+      </div>
+
+      <!-- Branching configuration -->
+      <div
+        v-if="isBranchingEnabled && isThisStepBranchPoint"
+        class="mt-4 space-y-4"
+      >
+        <div>
+          <Label>Threshold Rating</Label>
+          <p class="text-xs text-muted-foreground mb-3">
+            Ratings at or above this value go to the testimonial flow
+          </p>
+          <Select
+            :model-value="String(threshold)"
+            @update:model-value="handleThresholdChange"
+          >
+            <SelectTrigger class="w-full">
+              <SelectValue :placeholder="String(threshold)" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="2">2 (lenient)</SelectItem>
+              <SelectItem value="3">3</SelectItem>
+              <SelectItem value="4">4 (default)</SelectItem>
+              <SelectItem value="5">5 (strict)</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <!-- Flow preview -->
+        <div class="grid grid-cols-2 gap-3 mt-4">
+          <div class="p-3 rounded-lg" :class="[FLOW_METADATA.testimonial.bgClass, FLOW_METADATA.testimonial.borderClass]" style="border-width: 1px;">
+            <div class="flex items-center gap-2 mb-1">
+              <Icon :icon="FLOW_METADATA.testimonial.icon" class="w-4 h-4" :class="FLOW_METADATA.testimonial.colorClass" />
+              <span class="font-medium text-sm" :class="FLOW_METADATA.testimonial.colorClass">
+                Testimonial
+              </span>
+            </div>
+            <p class="text-xs text-muted-foreground">
+              Rating {{ threshold }}+
+            </p>
+          </div>
+
+          <div class="p-3 rounded-lg" :class="[FLOW_METADATA.improvement.bgClass, FLOW_METADATA.improvement.borderClass]" style="border-width: 1px;">
+            <div class="flex items-center gap-2 mb-1">
+              <Icon :icon="FLOW_METADATA.improvement.icon" class="w-4 h-4" :class="FLOW_METADATA.improvement.colorClass" />
+              <span class="font-medium text-sm" :class="FLOW_METADATA.improvement.colorClass">
+                Improvement
+              </span>
+            </div>
+            <p class="text-xs text-muted-foreground">
+              Rating {{ threshold - 1 }} or below
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 

@@ -3,6 +3,7 @@
  * Timeline Canvas - Senja-inspired scroll-snap timeline
  *
  * Orchestrates the display of step cards or empty state.
+ * Conditionally renders branched view when branching is enabled.
  * Uses shared timeline editor composable for state.
  */
 import { useTimelineEditor } from '../../composables/timeline';
@@ -10,6 +11,7 @@ import type { FormStep } from '../../models';
 import type { StepType } from '@/shared/stepCards';
 import TimelineStepCard from './TimelineStepCard.vue';
 import TimelineEmptyState from './TimelineEmptyState.vue';
+import BranchedTimelineCanvas from './BranchedTimelineCanvas.vue';
 
 const editor = useTimelineEditor();
 
@@ -19,7 +21,11 @@ function handleInsert(afterIndex: number, type: StepType) {
 </script>
 
 <template>
-  <div class="timeline-container">
+  <!-- Branched view when branching is enabled -->
+  <BranchedTimelineCanvas v-if="editor.isBranchingEnabled.value" />
+
+  <!-- Standard linear view -->
+  <div v-else class="timeline-container">
     <div v-if="editor.steps.value.length > 0" class="timeline-spacer" />
 
     <TimelineStepCard
