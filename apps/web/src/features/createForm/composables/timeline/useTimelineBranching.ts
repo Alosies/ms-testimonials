@@ -12,12 +12,22 @@ import { generateTempId, reorderSteps } from './useStepOperations';
 
 interface BranchingDeps {
   steps: Ref<FormStep[]>;
+  originalSteps: Ref<FormStep[]>;
   formId: Ref<string | null>;
   selectStepById: (id: string) => void;
 }
 
+/**
+ * Check if a step's flowMembership changed from its original value
+ */
+function hasFlowMembershipChanged(step: FormStep, originalSteps: FormStep[]): boolean {
+  const original = originalSteps.find(s => s.id === step.id);
+  if (!original) return true; // New step
+  return step.flowMembership !== original.flowMembership;
+}
+
 export function useTimelineBranching(deps: BranchingDeps) {
-  const { steps, formId, selectStepById } = deps;
+  const { steps, originalSteps, formId, selectStepById } = deps;
 
   // ============================================
   // State
@@ -78,14 +88,16 @@ export function useTimelineBranching(deps: BranchingDeps) {
     const ratingIndex = steps.value.findIndex(s => s.id === ratingStepId);
     if (ratingIndex === -1) return;
 
-    // Mark steps before rating as shared, after as testimonial
+    // Update flowMembership: before rating = shared, after = testimonial
+    // Track modification state based on comparison with original
     steps.value.forEach((step, index) => {
-      if (index <= ratingIndex) {
-        step.flowMembership = 'shared';
-      } else {
-        step.flowMembership = 'testimonial';
+      const newMembership = index <= ratingIndex ? 'shared' : 'testimonial';
+      if (step.flowMembership !== newMembership) {
+        step.flowMembership = newMembership;
       }
-      step.isModified = true;
+      // Update isModified based on whether current state differs from original
+      // This handles both setting true when changed AND resetting to false when restored
+      step.isModified = hasFlowMembershipChanged(step, originalSteps.value);
     });
 
     addDefaultImprovementSteps();
@@ -99,10 +111,14 @@ export function useTimelineBranching(deps: BranchingDeps) {
     steps.value.length = 0;
     steps.value.push(...filtered);
 
-    // Mark all remaining as shared
+    // Set all remaining as shared and update modification state
     steps.value.forEach(step => {
-      step.flowMembership = 'shared';
-      step.isModified = true;
+      if (step.flowMembership !== 'shared') {
+        step.flowMembership = 'shared';
+      }
+      // Update isModified based on whether current state differs from original
+      // This resets isModified to false when step returns to original state
+      step.isModified = hasFlowMembershipChanged(step, originalSteps.value);
     });
 
     reorderSteps(steps.value);

@@ -228,6 +228,7 @@ export const useTimelineEditor = createSharedComposable(() => {
   // ============================================
   const branching = useTimelineBranching({
     steps,
+    originalSteps,
     formId: currentFormId,
     selectStepById,
   });
