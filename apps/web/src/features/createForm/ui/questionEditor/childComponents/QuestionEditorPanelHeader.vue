@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import {
   Button,
   SheetTitle,
@@ -6,8 +7,9 @@ import {
 } from '@testimonials/ui';
 import { VisuallyHidden } from 'reka-ui';
 import { Icon } from '@testimonials/icons';
+import { SaveStatusPill, type SaveStatus } from '@/shared/widgets';
 
-defineProps<{
+const props = defineProps<{
   /** Whether in edit mode (vs add mode) */
   isEditMode: boolean;
   /** Current question index (edit mode) */
@@ -38,6 +40,14 @@ const emit = defineEmits<{
   enableNavigation: [];
   disableNavigation: [];
 }>();
+
+// Compute save status from individual props
+const saveStatus = computed<SaveStatus>(() => {
+  if (props.justSaved) return 'saved';
+  if (props.isSaving) return 'saving';
+  if (props.isDirty) return 'unsaved';
+  return 'idle';
+});
 </script>
 
 <template>
@@ -108,37 +118,17 @@ const emit = defineEmits<{
 
     <!-- Edit Mode Actions -->
     <div class="flex items-center gap-2">
-      <!-- Save status pill: Unsaved → Saving → Saved -->
-      <template v-if="isDirty || isSaving || justSaved">
-        <!-- Saved state (green, fades out) -->
-        <div
-          v-if="justSaved"
-          class="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700 transition-all"
-        >
-          <Icon icon="lucide:check" class="h-3 w-3" />
-          Saved
-        </div>
+      <!-- Save status pill -->
+      <SaveStatusPill
+        :status="saveStatus"
+        @save="emit('save')"
+      />
 
-        <!-- Unsaved/Saving state (amber, clickable) -->
-        <button
-          v-else
-          :disabled="isSaving"
-          class="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700 transition-all hover:bg-amber-100 disabled:cursor-wait"
-          @click="emit('save')"
-        >
-          <Icon
-            v-if="isSaving"
-            icon="lucide:loader-2"
-            class="h-3 w-3 animate-spin"
-          />
-          <span v-else class="h-1.5 w-1.5 rounded-full bg-amber-500" />
-          {{ isSaving ? 'Saving...' : 'Unsaved' }}
-          <kbd v-if="!isSaving" class="rounded bg-amber-100/80 px-1 py-0.5 font-mono text-[10px] text-amber-600">
-            ⌘S
-          </kbd>
-        </button>
-        <div class="mx-1 h-6 w-px bg-gray-200" />
-      </template>
+      <!-- Divider when status is visible -->
+      <div
+        v-if="saveStatus !== 'idle'"
+        class="h-6 w-px bg-gray-200"
+      />
 
       <Button
         variant="ghost"

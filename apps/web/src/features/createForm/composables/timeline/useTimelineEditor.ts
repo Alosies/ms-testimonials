@@ -254,8 +254,8 @@ export const useTimelineEditor = createSharedComposable(() => {
     if (index >= 0 && index < steps.value.length) {
       steps.value[index] = {
         ...steps.value[index],
-        ...updates,
-        isModified: true,
+        isModified: true, // Default: mark as modified
+        ...updates,       // But allow explicit isModified override
       };
     }
   }
@@ -266,6 +266,20 @@ export const useTimelineEditor = createSharedComposable(() => {
 
   function updateStepTips(index: number, tips: string[]) {
     updateStep(index, { tips });
+  }
+
+  function updateStepQuestion(index: number, questionUpdates: Partial<FormStep['question']>) {
+    const step = steps.value[index];
+    if (!step || !step.question) return;
+
+    steps.value[index] = {
+      ...step,
+      question: {
+        ...step.question,
+        ...questionUpdates,
+      },
+      isModified: true,
+    };
   }
 
   function moveStep(fromIndex: number, toIndex: number) {
@@ -416,6 +430,7 @@ export const useTimelineEditor = createSharedComposable(() => {
     updateStep,
     updateStepContent,
     updateStepTips,
+    updateStepQuestion,
     moveStep,
     duplicateStep,
     changeStepType,

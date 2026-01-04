@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, type Component } from 'vue';
+import { computed, onMounted, onUnmounted, toRef, type Component } from 'vue';
 import {
   Sheet,
   SheetContent,
@@ -21,13 +21,15 @@ import ConsentStepEditor from './editors/ConsentStepEditor.vue';
 import ContactInfoStepEditor from './editors/ContactInfoStepEditor.vue';
 import RewardStepEditor from './editors/RewardStepEditor.vue';
 import ThankYouStepEditor from './editors/ThankYouStepEditor.vue';
-import { useTimelineEditor } from '../../composables/timeline';
-import type { StepContent, StepType } from '@/shared/stepCards';
+import { useTimelineEditor, useStepSave } from '../../composables/timeline';
+import { SaveStatusPill, useSaveStatus } from '@/shared/widgets';
+import type { StepContent, StepType, LinkedQuestion } from '@/shared/stepCards';
 import { getStepLabel } from '../../functions';
 import { STEP_TYPE_OPTIONS, STEP_TYPE_CONFIGS } from '../../constants';
 
 // Direct import - fully typed, no inject needed
 const editor = useTimelineEditor();
+const stepSave = useStepSave();
 
 const selectedStep = computed(() => editor.selectedStep.value);
 const stepLabel = computed(() => selectedStep.value ? getStepLabel(selectedStep.value) : '');
@@ -48,9 +50,38 @@ const currentEditor = computed(() => {
   return editorComponents[selectedStep.value.stepType];
 });
 
+// Determine if the current step needs a wider panel (question/rating steps)
+const needsWiderPanel = computed(() => {
+  const stepType = selectedStep.value?.stepType;
+  return stepType === 'question' || stepType === 'rating';
+});
+
+// Check if current step has unsaved changes
+const isCurrentStepDirty = computed(() => {
+  if (!selectedStep.value) return false;
+  return selectedStep.value.isModified ?? false;
+});
+
+// Use the save status composable for state transitions
+const { status: saveStatus } = useSaveStatus({
+  isDirty: isCurrentStepDirty,
+  isSaving: toRef(() => stepSave.isSaving.value),
+});
+
+// Handle save
+async function handleSave() {
+  await stepSave.saveCurrentStep();
+}
+
 function handleContentUpdate(content: StepContent) {
   if (editor.selectedIndex.value !== null) {
     editor.updateStepContent(editor.selectedIndex.value, content);
+  }
+}
+
+function handleQuestionUpdate(questionUpdates: Partial<LinkedQuestion>) {
+  if (editor.selectedIndex.value !== null) {
+    editor.updateStepQuestion(editor.selectedIndex.value, questionUpdates);
   }
 }
 
@@ -60,12 +91,19 @@ function handleStepTypeChange(newType: StepType) {
   }
 }
 
-// Keyboard navigation
+// Keyboard navigation and shortcuts
 function handleKeydown(event: KeyboardEvent) {
   if (!editor.isEditorOpen.value) return;
 
   if (event.key === 'Escape') {
     editor.handleCloseEditor();
+  }
+  // Cmd/Ctrl + S to save
+  if ((event.metaKey || event.ctrlKey) && event.key === 's') {
+    event.preventDefault();
+    if (saveStatus.value === 'unsaved') {
+      handleSave();
+    }
   }
   if ((event.metaKey || event.ctrlKey) && event.key === 'ArrowUp') {
     event.preventDefault();
@@ -88,30 +126,50 @@ onUnmounted(() => {
 
 <template>
   <Sheet :open="editor.isEditorOpen.value" @update:open="editor.handleCloseEditor">
-    <SheetContent side="right" class="w-[400px] sm:w-[540px] overflow-y-auto">
+    <SheetContent
+      side="right"
+      :class="`overflow-y-auto transition-all duration-200 ${needsWiderPanel ? 'w-[500px] sm:w-[640px]' : 'w-[400px] sm:w-[540px]'}`"
+    >
       <SheetHeader class="border-b pb-4">
         <div class="flex items-center justify-between">
           <SheetTitle class="flex items-center gap-2">
             <Icon v-if="stepConfig" :icon="stepConfig.icon" class="w-5 h-5" />
             <span>Edit {{ stepLabel }}</span>
           </SheetTitle>
-          <div class="flex items-center gap-1">
-            <Button
-              variant="ghost"
-              size="icon"
-              :disabled="!editor.canGoPrev.value"
-              @click="editor.handleNavigateEditor('prev')"
-            >
-              <Icon icon="heroicons:chevron-up" class="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              :disabled="!editor.canGoNext.value"
-              @click="editor.handleNavigateEditor('next')"
-            >
-              <Icon icon="heroicons:chevron-down" class="h-4 w-4" />
-            </Button>
+          <div class="flex items-center gap-2">
+            <!-- Save status pill -->
+            <SaveStatusPill
+              :status="saveStatus"
+              @save="handleSave"
+            />
+
+            <!-- Divider when status is visible -->
+            <div
+              v-if="saveStatus !== 'idle'"
+              class="h-6 w-px bg-gray-200"
+            />
+
+            <!-- Navigation buttons -->
+            <div class="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                class="h-7 w-7"
+                :disabled="!editor.canGoPrev.value"
+                @click="editor.handleNavigateEditor('prev')"
+              >
+                <Icon icon="heroicons:chevron-up" class="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                class="h-7 w-7"
+                :disabled="!editor.canGoNext.value"
+                @click="editor.handleNavigateEditor('next')"
+              >
+                <Icon icon="heroicons:chevron-down" class="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </div>
         <p class="text-sm text-muted-foreground">
@@ -160,6 +218,7 @@ onUnmounted(() => {
           :is="currentEditor"
           :step="selectedStep"
           @update="handleContentUpdate"
+          @update:question="handleQuestionUpdate"
         />
       </div>
     </SheetContent>

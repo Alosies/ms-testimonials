@@ -66,6 +66,7 @@ const stepCardComponents: Record<string, unknown> = {
             mode="edit"
             :is-selected="index === editor.selectedIndex.value"
             :step-type="step.stepType"
+            :has-unsaved-changes="step.isModified ?? false"
             @select="editor.selectStep(index)"
             @edit="editor.handleEditStep(index)"
             @delete="editor.handleRemoveStep(index)"

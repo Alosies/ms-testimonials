@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { Button } from '@testimonials/ui';
 import { Icon } from '@testimonials/icons';
+import { SaveStatusPill, type SaveStatus } from '@/shared/widgets';
 
 interface Props {
   formName: string;
-  saveStatus: 'saved' | 'saving' | 'unsaved' | 'error';
+  saveStatus: SaveStatus;
   canPublish: boolean;
 }
 
@@ -21,10 +22,6 @@ const emit = defineEmits<{
 function handleBack() {
   // TODO: Check for unsaved changes
   emit('back');
-}
-
-function handleSave() {
-  emit('save');
 }
 </script>
 
@@ -52,46 +49,11 @@ function handleSave() {
           @input="emit('update:formName', ($event.target as HTMLInputElement).value)"
         />
 
-        <!-- Status Pill - Modern pattern from UX philosophy -->
-        <!-- Saved state (green pill, will disappear) -->
-        <div
-          v-if="saveStatus === 'saved'"
-          class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-medium transition-all"
-        >
-          <Icon icon="heroicons:check" class="size-3.5" />
-          <span>Saved</span>
-        </div>
-
-        <!-- Saving state (amber pill with spinner) -->
-        <div
-          v-else-if="saveStatus === 'saving'"
-          class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 text-xs font-medium"
-        >
-          <Icon icon="heroicons:arrow-path" class="size-3.5 animate-spin" />
-          <span>Saving</span>
-        </div>
-
-        <!-- Unsaved state (amber pill with dot + keyboard hint) -->
-        <button
-          v-else-if="saveStatus === 'unsaved'"
-          class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 text-xs font-medium hover:bg-amber-100 transition-colors"
-          @click="handleSave"
-        >
-          <span class="size-1.5 rounded-full bg-amber-500" />
-          <span>Unsaved</span>
-          <kbd class="ml-0.5 rounded bg-amber-100 px-1 py-0.5 font-mono text-[10px] text-amber-600">
-            ⌘S
-          </kbd>
-        </button>
-
-        <!-- Error state (red pill) -->
-        <div
-          v-else-if="saveStatus === 'error'"
-          class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-50 text-red-700 text-xs font-medium"
-        >
-          <Icon icon="heroicons:exclamation-circle" class="size-3.5" />
-          <span>Error saving</span>
-        </div>
+        <!-- Status Pill -->
+        <SaveStatusPill
+          :status="saveStatus"
+          @save="emit('save')"
+        />
       </div>
     </div>
 

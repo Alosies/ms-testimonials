@@ -11,11 +11,14 @@ interface Props {
   isSelected?: boolean;
   /** Step type identifier */
   stepType: string;
+  /** Whether this step has unsaved changes */
+  hasUnsavedChanges?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   mode: 'preview',
   isSelected: false,
+  hasUnsavedChanges: false,
 });
 
 const emit = defineEmits<{
@@ -38,6 +41,19 @@ const isEditMode = computed(() => props.mode === 'edit');
     }"
     @click="isEditMode && emit('select')"
   >
+    <!-- Unsaved indicator badge -->
+    <div
+      v-if="isEditMode && hasUnsavedChanges"
+      class="absolute -top-2 -right-2 z-20"
+    >
+      <div
+        class="flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-amber-100 text-amber-700 rounded-full border border-amber-200 shadow-sm"
+      >
+        <span class="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
+        <span>Unsaved</span>
+      </div>
+    </div>
+
     <!-- Edit mode: Top-right action icons -->
     <div
       v-if="isEditMode"
