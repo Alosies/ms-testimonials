@@ -22,7 +22,7 @@ const { forms: formsData, isLoading } = useGetForms(variables)
 const forms = computed(() => formsData.value)
 
 const route = useRoute()
-const { goToNewForm, goToForm, goToFormResponses, goToFormSettings, getFormPath } = useRouting()
+const { goToNewForm, goToForm, goToFormStudio, goToFormResponses, goToFormSettings, getFormPath } = useRouting()
 
 const expandedFormIds = ref<Set<string>>(new Set())
 const allExpanded = ref(false)
@@ -61,6 +61,9 @@ const isSubItemActive = (form: FormItem, segment: string) => {
 
 const navigateToSubItem = (form: FormItem, segment: string) => {
   switch (segment) {
+    case 'studio':
+      goToFormStudio(form)
+      break
     case 'responses':
       goToFormResponses(form)
       break
@@ -79,6 +82,7 @@ const truncateTitle = (title: string, maxLength = 20) => {
 
 const formSubItems = [
   { id: 'overview', label: 'Overview', icon: 'heroicons:chart-bar', segment: '' },
+  { id: 'studio', label: 'Studio', icon: 'heroicons:paint-brush', segment: 'studio' },
   { id: 'responses', label: 'Responses', icon: 'heroicons:inbox', segment: 'responses' },
   { id: 'settings', label: 'Settings', icon: 'heroicons:cog-6-tooth', segment: 'settings' },
 ]
@@ -198,7 +202,7 @@ const getStatusBadge = (form: FormItem) => {
         <!-- Sub Navigation (Expanded) -->
         <div
           class="overflow-hidden transition-all duration-200 ease-in-out"
-          :class="isFormExpanded(form.id) ? 'max-h-40' : 'max-h-0'"
+          :class="isFormExpanded(form.id) ? 'max-h-48' : 'max-h-0'"
         >
           <div class="ml-4 mt-1 pl-2 border-l border-gray-200 space-y-0.5">
             <button
