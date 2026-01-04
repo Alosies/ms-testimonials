@@ -5,8 +5,10 @@
  * Displays a step with header, content preview, and action buttons.
  * Uses TimelineConnector for the interactive insert functionality.
  */
+import { computed } from 'vue';
 import { Icon } from '@testimonials/icons';
 import { Kbd } from '@testimonials/ui';
+import { QuestionInput } from '@/shared/formInputs';
 import type { FormStep } from '../../models';
 import type { StepType } from '../../models/stepContent';
 import TimelineConnector from './TimelineConnector.vue';
@@ -24,6 +26,16 @@ const emit = defineEmits<{
   remove: [index: number];
   insert: [afterIndex: number, type: StepType];
 }>();
+
+// Check if step is a question/rating type that needs input preview
+const isQuestionStep = computed(() =>
+  (props.step.stepType === 'question' || props.step.stepType === 'rating') && props.step.question
+);
+
+// Get question type ID for QuestionInput component
+const questionTypeId = computed(() =>
+  props.step.question?.questionType?.uniqueName || 'text_long'
+);
 
 function handleInsert(type: StepType) {
   emit('insert', props.index, type);
@@ -110,7 +122,19 @@ function getStepDescription(): string {
         <h3 class="text-3xl font-bold mb-4">
           {{ getStepTitle() }}
         </h3>
-        <p class="text-xl text-muted-foreground max-w-lg leading-relaxed">
+
+        <!-- Question/Rating steps: show input preview -->
+        <div v-if="isQuestionStep" class="w-full max-w-md mt-2" @click.stop>
+          <QuestionInput
+            :question-id="step.question!.id"
+            :question_type_id="questionTypeId"
+            :placeholder="'Your answer...'"
+            :disabled="true"
+          />
+        </div>
+
+        <!-- Other steps: show description -->
+        <p v-else class="text-xl text-muted-foreground max-w-lg leading-relaxed">
           {{ getStepDescription() }}
         </p>
       </div>
