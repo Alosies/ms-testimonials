@@ -1,6 +1,12 @@
 <script setup lang="ts">
+/**
+ * Question Step Card - Text input question
+ *
+ * Displays question text with input field.
+ * Matches Form Studio layout for visual consistency.
+ */
 import { computed } from 'vue';
-import { Icon } from '@testimonials/icons';
+import { QuestionInput } from '@/shared/formInputs';
 import type { FormStep, StepCardMode } from '../models';
 
 interface Props {
@@ -14,46 +20,49 @@ const props = withDefaults(defineProps<Props>(), {
   mode: 'preview',
 });
 
+const modelValue = defineModel<string>({ default: '' });
+
 // Extract from step.question if props not provided
 const displayText = computed(() =>
   props.questionText ||
   props.step.question?.questionText ||
   (props.mode === 'edit' ? 'Question text...' : ''),
 );
-const displayType = computed(() =>
-  props.questionType || props.step.question?.questionType?.name || 'text',
+
+// Get question type ID for input component
+const questionTypeId = computed(() =>
+  props.step.question?.questionType?.uniqueName || 'text_long',
 );
 
-const typeIcon = computed(() => {
-  switch (displayType.value) {
-    case 'rating':
-      return 'heroicons:star';
-    case 'video':
-      return 'heroicons:video-camera';
-    default:
-      return 'heroicons:chat-bubble-left-right';
-  }
-});
+// Get placeholder text
+const placeholderText = computed(() =>
+  props.step.question?.placeholder || 'Your answer...',
+);
+
+// Input is disabled in edit mode, interactive in preview
+const isInputDisabled = computed(() => props.mode === 'edit');
 </script>
 
 <template>
-  <div>
-    <div class="flex items-start gap-3">
-      <div
-        class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0"
-      >
-        <Icon :icon="typeIcon" class="w-5 h-5 text-primary" />
-      </div>
-      <div class="flex-1">
-        <p class="font-medium">{{ displayText }}</p>
-        <p class="text-sm text-muted-foreground mt-1">
-          {{ displayType }} response
-        </p>
-      </div>
+  <div class="text-center">
+    <!-- Question text as heading -->
+    <h3 class="text-xl md:text-2xl font-semibold mb-6">
+      {{ displayText }}
+    </h3>
+
+    <!-- Input field - matches Form Studio -->
+    <div class="w-full max-w-md mx-auto">
+      <QuestionInput
+        v-model="modelValue"
+        :question-id="step.question?.id ?? step.id"
+        :question_type_id="questionTypeId"
+        :placeholder="placeholderText"
+        :disabled="isInputDisabled"
+      />
     </div>
 
-    <!-- Tips preview -->
-    <div v-if="step.tips.length > 0" class="mt-4 pl-13">
+    <!-- Tips preview (only in edit mode) -->
+    <div v-if="mode === 'edit' && step.tips.length > 0" class="mt-6 text-left max-w-md mx-auto">
       <div class="text-xs font-medium text-muted-foreground mb-1">Tips:</div>
       <ul class="text-sm text-muted-foreground space-y-1">
         <li
@@ -61,10 +70,7 @@ const typeIcon = computed(() => {
           :key="i"
           class="flex items-start gap-2"
         >
-          <Icon
-            icon="heroicons:light-bulb"
-            class="w-4 h-4 text-amber-500 shrink-0 mt-0.5"
-          />
+          <span class="text-amber-500">💡</span>
           <span>{{ tip }}</span>
         </li>
         <li v-if="step.tips.length > 2" class="text-xs">

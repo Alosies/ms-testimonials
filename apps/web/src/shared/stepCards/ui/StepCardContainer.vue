@@ -29,12 +29,17 @@ const emit = defineEmits<{
 }>();
 
 const isEditMode = computed(() => props.mode === 'edit');
+const isPreviewMode = computed(() => props.mode === 'preview');
 </script>
 
 <template>
   <div
-    class="relative max-w-lg mx-auto rounded-xl border bg-background shadow-sm transition-all duration-200"
+    class="relative mx-auto rounded-xl border bg-background shadow-sm transition-all duration-200"
     :class="{
+      // Preview mode: larger card matching Form Studio dimensions
+      'max-w-2xl aspect-[16/10]': isPreviewMode,
+      // Edit mode: smaller card
+      'max-w-lg': isEditMode,
       'group': isEditMode,
       'ring-2 ring-primary border-primary': isEditMode && isSelected,
       'hover:border-primary/50 hover:shadow-md cursor-pointer': isEditMode && !isSelected,
@@ -99,7 +104,10 @@ const isEditMode = computed(() => props.mode === 'edit');
     </div>
 
     <!-- Card content -->
-    <div class="p-6">
+    <div
+      class="h-full flex flex-col items-center justify-center"
+      :class="isPreviewMode ? 'p-8 md:p-12' : 'p-6'"
+    >
       <slot />
     </div>
   </div>

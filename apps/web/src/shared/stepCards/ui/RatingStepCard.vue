@@ -73,9 +73,10 @@ function handleMouseLeave() {
 
 <template>
   <div class="text-center">
-    <p class="font-medium mb-4">
+    <!-- Question text as heading - matches Form Studio -->
+    <h3 class="text-xl md:text-2xl font-semibold mb-6">
       {{ displayText }}
-    </p>
+    </h3>
     <div
       class="flex justify-center gap-2"
       @mouseleave="handleMouseLeave"
