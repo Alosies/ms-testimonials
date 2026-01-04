@@ -29,11 +29,26 @@ function handleInsert(type: StepType) {
   emit('insert', props.index, type);
 }
 
-function getStepTitle(content: Record<string, unknown>): string {
+function getStepTitle(): string {
+  // For question/rating steps, get title from the linked question
+  if ((props.step.stepType === 'question' || props.step.stepType === 'rating') && props.step.question) {
+    return props.step.question.questionText || 'Untitled Question';
+  }
+
+  // For other steps, get from content
+  const content = props.step.content as Record<string, unknown>;
   return (content.title as string) || 'Untitled Step';
 }
 
-function getStepDescription(content: Record<string, unknown>): string {
+function getStepDescription(): string {
+  // For question/rating steps, show the question type
+  if ((props.step.stepType === 'question' || props.step.stepType === 'rating') && props.step.question) {
+    const typeName = props.step.question.questionType?.uniqueName || 'text';
+    return `${typeName} response`;
+  }
+
+  // For other steps, get from content
+  const content = props.step.content as Record<string, unknown>;
   return (content.subtitle as string)
     || (content.message as string)
     || (content.description as string)
@@ -93,10 +108,10 @@ function getStepDescription(content: Record<string, unknown>): string {
 
       <div class="step-card-content">
         <h3 class="text-3xl font-bold mb-4">
-          {{ getStepTitle(step.content as Record<string, unknown>) }}
+          {{ getStepTitle() }}
         </h3>
         <p class="text-xl text-muted-foreground max-w-lg leading-relaxed">
-          {{ getStepDescription(step.content as Record<string, unknown>) }}
+          {{ getStepDescription() }}
         </p>
       </div>
     </div>

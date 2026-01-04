@@ -1,10 +1,10 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import { Icon } from '@testimonials/icons';
 import type { FormStep } from '../../../models/stepContent';
 
 interface Props {
   step: FormStep;
-  questionText?: string;
   minValue?: number;
   maxValue?: number;
 }
@@ -13,12 +13,16 @@ const props = withDefaults(defineProps<Props>(), {
   minValue: 1,
   maxValue: 5,
 });
+
+const displayText = computed(() =>
+  props.step.question?.questionText || 'How would you rate your experience?'
+);
 </script>
 
 <template>
   <div class="text-center">
     <p class="font-medium mb-4">
-      {{ props.questionText || 'How would you rate your experience?' }}
+      {{ displayText }}
     </p>
     <div class="flex justify-center gap-2">
       <div

@@ -69,6 +69,15 @@ watch(formSteps, (steps) => {
       stepType: step.step_type as StepType,
       stepOrder: step.step_order,
       questionId: step.question_id ?? null,
+      question: step.question ? {
+        id: step.question.id,
+        questionText: step.question.question_text,
+        questionType: step.question.question_type ? {
+          id: step.question.question_type.id,
+          uniqueName: step.question.question_type.unique_name,
+          category: step.question.question_type.category,
+        } : undefined,
+      } : null,
       content: (step.content as StepContent) ?? {},
       tips: (step.tips as string[]) ?? [],
       isActive: step.is_active,

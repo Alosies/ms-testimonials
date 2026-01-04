@@ -5,14 +5,12 @@ import type { FormStep } from '../../../models/stepContent';
 
 interface Props {
   step: FormStep;
-  questionText?: string;
-  questionType?: string;
 }
 
 const props = defineProps<Props>();
 
-const displayText = computed(() => props.questionText || 'Question text...');
-const displayType = computed(() => props.questionType || 'text');
+const displayText = computed(() => props.step.question?.questionText || 'Question text...');
+const displayType = computed(() => props.step.question?.questionType?.uniqueName || 'text');
 
 const typeIcon = computed(() => {
   switch (displayType.value) {

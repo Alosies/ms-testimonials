@@ -92,6 +92,20 @@ export type StepContent =
   | Record<string, never>; // Empty for question/rating (data in form_questions)
 
 // =================================================================
+// Question data for question/rating steps
+// =================================================================
+
+export interface StepQuestion {
+  id: string;
+  questionText: string;
+  questionType?: {
+    id: string;
+    uniqueName: string;
+    category: string;
+  };
+}
+
+// =================================================================
 // Form Step Interface (local state representation)
 // =================================================================
 
@@ -101,6 +115,7 @@ export interface FormStep {
   stepType: StepType;
   stepOrder: number;
   questionId?: string | null;
+  question?: StepQuestion | null;
   content: StepContent;
   tips: string[];
   isActive: boolean;
