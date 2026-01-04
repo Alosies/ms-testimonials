@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import ContextualHelp from './ContextualHelp.vue';
 import QuestionTips from './QuestionTips.vue';
+import BranchingSettings from './BranchingSettings.vue';
 import DesignSettings from './DesignSettings.vue';
 import { useTimelineEditor } from '../../composables/timeline';
 
@@ -41,6 +42,9 @@ function handleUpdateTips(tips: string[]) {
         :tips="selectedStep.tips"
         @update="handleUpdateTips"
       />
+
+      <!-- Branching settings (only for rating steps) -->
+      <BranchingSettings />
 
       <!-- Design settings -->
       <DesignSettings />

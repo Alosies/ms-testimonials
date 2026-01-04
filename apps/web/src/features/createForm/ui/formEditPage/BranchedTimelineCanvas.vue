@@ -5,11 +5,14 @@
  * Displays shared steps at top, then splits into two columns:
  * - Left: Testimonial flow (positive rating path)
  * - Right: Improvement flow (negative rating path)
+ *
+ * Supports expanded view for detailed editing of a single flow.
  */
 import { computed } from 'vue';
 import { Icon } from '@testimonials/icons';
-import { Kbd } from '@testimonials/ui';
+import { Kbd, Button } from '@testimonials/ui';
 import { FLOW_METADATA } from '@/entities/form';
+import type { FlowMembership } from '@/shared/stepCards';
 import { useTimelineEditor } from '../../composables/timeline';
 import type { FormStep } from '../../models';
 import type { StepType } from '@/shared/stepCards';
@@ -23,6 +26,27 @@ const threshold = computed(() => editor.branchingConfig.value.threshold);
 // The branch point is the rating step
 const branchPointStep = computed(() => editor.branchPointStep.value);
 
+// Use shared expandedFlow state from editor for keyboard navigation sync
+const expandedFlow = computed(() => editor.expandedFlow.value);
+
+// Computed for expanded flow metadata
+const expandedFlowMetadata = computed(() => {
+  if (!expandedFlow.value) return null;
+  return FLOW_METADATA[expandedFlow.value];
+});
+
+const expandedFlowSteps = computed(() => {
+  if (expandedFlow.value === 'testimonial') return editor.testimonialSteps.value;
+  if (expandedFlow.value === 'improvement') return editor.improvementSteps.value;
+  return [];
+});
+
+const expandedFlowDescription = computed(() => {
+  if (expandedFlow.value === 'testimonial') return `Rating ≥ ${threshold.value}`;
+  if (expandedFlow.value === 'improvement') return `Rating < ${threshold.value}`;
+  return '';
+});
+
 function handleInsert(afterIndex: number, type: StepType) {
   editor.handleAddStep(type, afterIndex);
 }
@@ -34,12 +58,68 @@ function handleFocusTestimonial() {
 function handleFocusImprovement() {
   editor.focusFlow('improvement');
 }
+
+function handleExpandFlow(flow: 'testimonial' | 'improvement') {
+  editor.setExpandedFlow(flow);
+}
+
+function handleCollapseFlow() {
+  editor.collapseFlow();
+}
+
+// Get index of a flow step in the expanded view (for display numbering)
+function getFlowStepIndex(step: FormStep): number {
+  return expandedFlowSteps.value.findIndex(s => s.id === step.id);
+}
+
+// Get main array index for operations
+function getMainIndex(step: FormStep): number {
+  return editor.steps.value.findIndex(s => s.id === step.id);
+}
+
+function handleExpandedStepSelect(step: FormStep) {
+  const mainIndex = getMainIndex(step);
+  if (mainIndex !== -1) {
+    editor.selectStep(mainIndex);
+  }
+}
+
+function handleExpandedStepEdit(step: FormStep) {
+  const mainIndex = getMainIndex(step);
+  if (mainIndex !== -1) {
+    editor.handleEditStep(mainIndex);
+  }
+}
+
+function handleExpandedStepRemove(step: FormStep) {
+  const mainIndex = getMainIndex(step);
+  if (mainIndex !== -1) {
+    editor.handleRemoveStep(mainIndex);
+  }
+}
+
+function isExpandedStepActive(step: FormStep): boolean {
+  const mainIndex = getMainIndex(step);
+  return mainIndex === editor.selectedIndex.value;
+}
+
+function handleExpandedInsert(afterStep: FormStep, type: StepType) {
+  if (!expandedFlow.value) return;
+  const flowStepIndex = expandedFlowSteps.value.findIndex(s => s.id === afterStep.id);
+  editor.addStepToFlow(type, expandedFlow.value as FlowMembership, flowStepIndex);
+}
+
+// Expose for parent component access
+defineExpose({
+  handleExpandFlow,
+  handleCollapseFlow,
+});
 </script>
 
 <template>
   <div class="branched-timeline">
-    <!-- Shared Steps (before branch point) -->
-    <div class="shared-section">
+    <!-- Shared Steps (before branch point) - always shown -->
+    <div v-if="!expandedFlow" class="shared-section">
       <div class="shared-spacer" />
 
       <template v-for="(step, index) in editor.stepsBeforeBranch.value" :key="step.id">
@@ -56,12 +136,12 @@ function handleFocusImprovement() {
       </template>
     </div>
 
-    <!-- Branch Point Indicator -->
-    <div v-if="branchPointStep" class="branch-point">
+    <!-- Branch Point Indicator - hidden in expanded view -->
+    <div v-if="branchPointStep && !expandedFlow" class="branch-point">
       <div class="branch-indicator">
         <div class="branch-line branch-line-left" />
         <div class="branch-node">
-          <Icon icon="heroicons:arrows-pointing-out" class="w-5 h-5 text-primary" />
+          <Icon icon="mdi:source-branch" class="w-5 h-5 text-primary" />
         </div>
         <div class="branch-line branch-line-right" />
       </div>
@@ -87,13 +167,15 @@ function handleFocusImprovement() {
       </div>
     </div>
 
-    <!-- Flow Columns -->
-    <div class="flow-columns">
+    <!-- Side-by-side Flow Columns - normal view -->
+    <div v-if="!expandedFlow" class="flow-columns">
       <FlowColumn
         flow-type="testimonial"
         :steps="editor.testimonialSteps.value"
         :is-focused="editor.currentFlowFocus.value === 'testimonial'"
+        :is-expanded="false"
         @focus="handleFocusTestimonial"
+        @expand="handleExpandFlow('testimonial')"
       />
 
       <div class="column-divider" />
@@ -102,8 +184,62 @@ function handleFocusImprovement() {
         flow-type="improvement"
         :steps="editor.improvementSteps.value"
         :is-focused="editor.currentFlowFocus.value === 'improvement'"
+        :is-expanded="false"
         @focus="handleFocusImprovement"
+        @expand="handleExpandFlow('improvement')"
       />
+    </div>
+
+    <!-- Expanded Flow View - full-size editing -->
+    <div v-if="expandedFlow && expandedFlowMetadata" class="expanded-flow">
+      <!-- Expanded Header -->
+      <div
+        class="expanded-header"
+        :class="[expandedFlowMetadata.bgClass, expandedFlowMetadata.borderClass]"
+      >
+        <div class="flex items-center gap-3">
+          <Button
+            variant="ghost"
+            size="icon"
+            class="h-8 w-8"
+            title="Back to side-by-side view (Esc)"
+            @click="handleCollapseFlow"
+          >
+            <Icon icon="heroicons:arrow-left" class="w-5 h-5" />
+          </Button>
+          <Icon :icon="expandedFlowMetadata.icon" class="w-6 h-6" :class="expandedFlowMetadata.colorClass" />
+          <span class="font-semibold text-lg" :class="expandedFlowMetadata.colorClass">
+            {{ expandedFlowMetadata.label }}
+          </span>
+          <span class="text-sm text-muted-foreground">
+            {{ expandedFlowDescription }}
+          </span>
+        </div>
+        <div class="flex items-center gap-2">
+          <Kbd size="sm">Esc</Kbd>
+          <span class="text-xs text-muted-foreground">collapse</span>
+        </div>
+      </div>
+
+      <!-- Expanded Steps - Full Size TimelineStepCard -->
+      <div class="expanded-steps">
+        <div class="expanded-spacer" />
+
+        <template v-for="(step, index) in expandedFlowSteps" :key="step.id">
+          <TimelineStepCard
+            :step="(step as FormStep)"
+            :index="getFlowStepIndex(step)"
+            :is-active="isExpandedStepActive(step)"
+            :is-last="index === expandedFlowSteps.length - 1"
+            @select="handleExpandedStepSelect(step)"
+            @edit="handleExpandedStepEdit(step)"
+            @remove="handleExpandedStepRemove(step)"
+            @insert="(_, type) => handleExpandedInsert(step, type)"
+          />
+        </template>
+
+        <div class="expanded-spacer" />
+      </div>
     </div>
   </div>
 </template>
@@ -209,5 +345,35 @@ function handleFocusImprovement() {
   width: 1px;
   background: hsl(var(--border));
   margin: 1rem 0;
+}
+
+/* Expanded Flow View */
+.expanded-flow {
+  max-width: 990px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.expanded-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  border: 1px solid;
+  border-radius: 0.75rem;
+  margin-bottom: 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  backdrop-filter: blur(8px);
+}
+
+.expanded-steps {
+  padding: 0 1rem;
+}
+
+.expanded-spacer {
+  height: 15vh;
+  scroll-snap-align: start;
 }
 </style>

@@ -293,6 +293,7 @@ export const useTimelineEditor = createSharedComposable(() => {
     switchFlow: branching.switchFlow,
     expandCurrentFlow: branching.expandCurrentFlow,
     collapseFlow: branching.collapseFlow,
+    setExpandedFlow: branching.setExpandedFlow,
 
     // Coordinated Actions
     handleAddStep,

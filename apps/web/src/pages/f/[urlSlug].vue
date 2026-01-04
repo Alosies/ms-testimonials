@@ -11,7 +11,7 @@ import { definePage } from 'unplugin-vue-router/runtime';
 import { useRoute, useRouter } from 'vue-router';
 import { computed, watchEffect } from 'vue';
 import { extractEntityIdFromSlug } from '@/shared/urls';
-import { useGetForm } from '@/entities/form';
+import { useGetForm, parseBranchingConfig } from '@/entities/form';
 import { useGetFormSteps } from '@/entities/formStep';
 import { PublicFormFlow } from '@/features/publicForm';
 import type { FormStep } from '@/shared/stepCards';
@@ -63,6 +63,12 @@ const steps = computed((): FormStep[] => {
 
 const isLoading = computed(() => formLoading.value || stepsLoading.value);
 const hasSteps = computed(() => steps.value.length > 0);
+
+// Parse branching config from form data
+const branchingConfig = computed(() => {
+  if (!form.value?.branching_config) return null;
+  return parseBranchingConfig(form.value.branching_config);
+});
 </script>
 
 <template>
@@ -113,6 +119,7 @@ const hasSteps = computed(() => steps.value.length > 0);
       v-else
       :steps="steps"
       :form-name="form.name"
+      :branching-config="branchingConfig"
     />
   </div>
 </template>

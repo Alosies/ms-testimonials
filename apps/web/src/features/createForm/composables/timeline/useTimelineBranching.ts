@@ -24,6 +24,7 @@ export function useTimelineBranching(deps: BranchingDeps) {
   // ============================================
   const branchingConfig = ref<BranchingConfig>({ ...DEFAULT_BRANCHING_CONFIG });
   const currentFlowFocus = ref<'testimonial' | 'improvement' | null>(null);
+  const expandedFlow = ref<'testimonial' | 'improvement' | null>(null);
 
   // ============================================
   // Computed
@@ -209,10 +210,28 @@ export function useTimelineBranching(deps: BranchingDeps) {
     }
   }
 
+  function expandCurrentFlow() {
+    if (currentFlowFocus.value) {
+      expandedFlow.value = currentFlowFocus.value;
+    }
+  }
+
+  function collapseFlow() {
+    expandedFlow.value = null;
+  }
+
+  function setExpandedFlow(flow: 'testimonial' | 'improvement' | null) {
+    expandedFlow.value = flow;
+    if (flow) {
+      focusFlow(flow);
+    }
+  }
+
   return {
     // State
     branchingConfig,
     currentFlowFocus,
+    expandedFlow,
 
     // Computed
     isBranchingEnabled,
@@ -231,5 +250,8 @@ export function useTimelineBranching(deps: BranchingDeps) {
     addStepToFlow,
     focusFlow,
     switchFlow,
+    expandCurrentFlow,
+    collapseFlow,
+    setExpandedFlow,
   };
 }

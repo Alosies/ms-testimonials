@@ -4,11 +4,13 @@
  *
  * Renders form steps in preview mode for testimonial collection.
  * Uses shared step card components with mode="preview".
+ * Supports conditional branching based on rating responses.
  */
 import { computed, toRef, type Component } from 'vue';
 import { Button } from '@testimonials/ui';
 import { Icon } from '@testimonials/icons';
 import type { FormStep, StepType } from '@/shared/stepCards';
+import type { BranchingConfig } from '@/entities/form';
 import {
   StepCardContainer,
   WelcomeStepCard,
@@ -24,12 +26,35 @@ import { usePublicFormFlow } from '../composables';
 interface Props {
   steps: FormStep[];
   formName?: string;
+  branchingConfig?: BranchingConfig | null;
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  branchingConfig: null,
+});
 
 const stepsRef = toRef(props, 'steps');
-const flow = usePublicFormFlow(stepsRef);
+const branchingConfigRef = toRef(props, 'branchingConfig');
+const flow = usePublicFormFlow({
+  steps: stepsRef,
+  branchingConfig: branchingConfigRef,
+});
+
+// Rating response for v-model binding
+const ratingResponse = computed({
+  get: () => {
+    const stepId = flow.currentStep.value?.id;
+    if (!stepId) return null;
+    const value = flow.getResponse(stepId);
+    return typeof value === 'number' ? value : null;
+  },
+  set: (value: number | null) => {
+    const stepId = flow.currentStep.value?.id;
+    if (stepId && value !== null) {
+      flow.setResponse(stepId, value);
+    }
+  },
+});
 
 const stepCardComponents: Record<StepType, Component> = {
   welcome: WelcomeStepCard,
@@ -43,11 +68,20 @@ const stepCardComponents: Record<StepType, Component> = {
 
 const isWelcomeStep = computed(() => flow.currentStep.value?.stepType === 'welcome');
 const isThankYouStep = computed(() => flow.currentStep.value?.stepType === 'thank_you');
+const isRatingStep = computed(() => flow.currentStep.value?.stepType === 'rating');
 
 // Navigation visibility - hide on welcome (has its own button) and thank you (end state)
 const showNavigation = computed(() => !isWelcomeStep.value && !isThankYouStep.value);
 const showBackButton = computed(() => !flow.isFirstStep.value && showNavigation.value);
 const showNextButton = computed(() => !flow.isLastStep.value && showNavigation.value);
+
+// Disable next on rating step if no rating selected yet
+const isNextDisabled = computed(() => {
+  if (isRatingStep.value && ratingResponse.value === null) {
+    return true;
+  }
+  return false;
+});
 
 function handleWelcomeStart() {
   flow.goToNext();
@@ -78,6 +112,13 @@ function handleWelcomeStart() {
           mode="preview"
           @start="handleWelcomeStart"
         />
+        <!-- Rating step with v-model for response -->
+        <RatingStepCard
+          v-else-if="isRatingStep"
+          v-model="ratingResponse"
+          :step="flow.currentStep.value"
+          mode="preview"
+        />
         <!-- Other step types -->
         <component
           v-else
@@ -106,6 +147,7 @@ function handleWelcomeStart() {
         <!-- Next/Continue button -->
         <Button
           v-if="showNextButton"
+          :disabled="isNextDisabled"
           @click="flow.goToNext"
         >
           Continue
@@ -115,6 +157,7 @@ function handleWelcomeStart() {
         <!-- Submit button (on last non-thank-you step) -->
         <Button
           v-else-if="!isThankYouStep"
+          :disabled="isNextDisabled"
           @click="flow.goToNext"
         >
           Submit
@@ -122,10 +165,10 @@ function handleWelcomeStart() {
         </Button>
       </div>
 
-      <!-- Step indicator -->
+      <!-- Step indicator (uses visible steps for branching) -->
       <div class="mt-6 flex justify-center gap-2">
         <button
-          v-for="(step, index) in steps"
+          v-for="(step, index) in flow.visibleSteps.value"
           :key="step.id"
           class="w-2 h-2 rounded-full transition-colors"
           :class="{

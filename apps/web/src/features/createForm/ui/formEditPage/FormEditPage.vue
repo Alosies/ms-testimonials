@@ -24,6 +24,7 @@ import { useGetFormSteps } from '@/entities/formStep';
 import type { FormStep, StepType, StepContent } from '@/shared/stepCards';
 import TimelineSidebar from './TimelineSidebar.vue';
 import TimelineCanvas from './TimelineCanvas.vue';
+import BranchedTimelineCanvas from './BranchedTimelineCanvas.vue';
 
 const props = defineProps<{
   formId: string;
@@ -169,7 +170,8 @@ function handleNavigate(index: number) {
     </template>
 
     <template #timeline>
-      <TimelineCanvas />
+      <BranchedTimelineCanvas v-if="editor.isBranchingEnabled.value" />
+      <TimelineCanvas v-else />
     </template>
 
     <template #properties>

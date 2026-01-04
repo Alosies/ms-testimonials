@@ -4,10 +4,12 @@
  *
  * Displays steps for a specific flow (testimonial or improvement)
  * with color-coded header and step cards.
+ *
+ * Supports expanded view for full-size editing.
  */
 import { computed } from 'vue';
 import { Icon } from '@testimonials/icons';
-import { Kbd } from '@testimonials/ui';
+import { Kbd, Button } from '@testimonials/ui';
 import { FLOW_METADATA } from '@/entities/form';
 import type { FlowMembership } from '@/shared/stepCards';
 import type { FormStep } from '../../models';
@@ -20,10 +22,13 @@ const props = defineProps<{
   flowType: Exclude<FlowMembership, 'shared'>;
   steps: readonly FormStep[];
   isFocused: boolean;
+  isExpanded?: boolean;
 }>();
 
 const emit = defineEmits<{
   focus: [];
+  expand: [];
+  collapse: [];
 }>();
 
 const editor = useTimelineEditor();
@@ -75,6 +80,24 @@ function isStepActive(step: FormStep): boolean {
   const mainIndex = getMainIndex(step);
   return mainIndex === editor.selectedIndex.value;
 }
+
+function handleHeaderDoubleClick() {
+  if (props.isExpanded) {
+    emit('collapse');
+  } else {
+    emit('expand');
+  }
+}
+
+function handleExpandClick(e: Event) {
+  e.stopPropagation();
+  emit('expand');
+}
+
+function handleCollapseClick(e: Event) {
+  e.stopPropagation();
+  emit('collapse');
+}
 </script>
 
 <template>
@@ -82,6 +105,7 @@ function isStepActive(step: FormStep): boolean {
     class="flow-column"
     :class="{
       'flow-column-focused': isFocused,
+      'flow-column-expanded': isExpanded,
       'flow-column-testimonial': flowType === 'testimonial',
       'flow-column-improvement': flowType === 'improvement',
     }"
@@ -91,6 +115,7 @@ function isStepActive(step: FormStep): boolean {
     <div
       class="flow-header"
       :class="[metadata.bgClass, metadata.borderClass]"
+      @dblclick="handleHeaderDoubleClick"
     >
       <div class="flex items-center gap-2">
         <Icon :icon="metadata.icon" class="w-5 h-5" :class="metadata.colorClass" />
@@ -98,9 +123,32 @@ function isStepActive(step: FormStep): boolean {
           {{ metadata.label }}
         </span>
       </div>
-      <span class="text-xs text-muted-foreground">
-        {{ headerDescription }}
-      </span>
+      <div class="flex items-center gap-2">
+        <span class="text-xs text-muted-foreground">
+          {{ headerDescription }}
+        </span>
+        <!-- Expand/Collapse button -->
+        <Button
+          v-if="!isExpanded"
+          variant="ghost"
+          size="icon"
+          class="h-6 w-6"
+          title="Expand flow (F)"
+          @click="handleExpandClick"
+        >
+          <Icon icon="heroicons:arrows-pointing-out" class="w-4 h-4" :class="metadata.colorClass" />
+        </Button>
+        <Button
+          v-else
+          variant="ghost"
+          size="icon"
+          class="h-6 w-6"
+          title="Collapse flow (Esc)"
+          @click="handleCollapseClick"
+        >
+          <Icon icon="heroicons:arrows-pointing-in" class="w-4 h-4" :class="metadata.colorClass" />
+        </Button>
+      </div>
     </div>
 
     <!-- Flow Steps -->
@@ -153,7 +201,10 @@ function isStepActive(step: FormStep): boolean {
       <span class="text-muted-foreground/50">·</span>
       <Kbd size="sm">←</Kbd>
       <Kbd size="sm">→</Kbd>
-      <span class="text-xs text-muted-foreground mx-1">switch flow</span>
+      <span class="text-xs text-muted-foreground mx-1">switch</span>
+      <span class="text-muted-foreground/50">·</span>
+      <Kbd size="sm">F</Kbd>
+      <span class="text-xs text-muted-foreground mx-1">expand</span>
     </div>
   </div>
 </template>
@@ -166,11 +217,38 @@ function isStepActive(step: FormStep): boolean {
   min-width: 0;
   position: relative;
   border-radius: 0.75rem;
+  border: 1px solid hsl(var(--border));
+  background: hsl(var(--background));
   transition: all 0.2s ease;
+}
+
+/* Testimonial flow specific border */
+.flow-column-testimonial {
+  border-color: hsl(var(--emerald-200, 167 85% 89%));
+}
+
+/* Improvement flow specific border */
+.flow-column-improvement {
+  border-color: hsl(var(--sky-200, 201 94% 86%));
 }
 
 .flow-column-focused {
   box-shadow: 0 0 0 2px hsl(var(--primary) / 0.3);
+}
+
+.flow-column-focused.flow-column-testimonial {
+  border-color: hsl(var(--emerald-400, 158 64% 52%));
+}
+
+.flow-column-focused.flow-column-improvement {
+  border-color: hsl(var(--sky-400, 198 93% 60%));
+}
+
+.flow-column-expanded {
+  flex: none;
+  width: 100%;
+  max-width: 990px;
+  margin: 0 auto;
 }
 
 .flow-header {

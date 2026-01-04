@@ -4,16 +4,18 @@
  *
  * Displays list of steps with selection and add functionality.
  * Emits navigate event for parent to handle scroll navigation.
+ * Shows visual indicators for flow membership (testimonial/improvement).
  *
  * @see FormEditPage.vue - Handles navigate event with useScrollSnapNavigation
  */
-import { ref, nextTick } from 'vue';
+import { ref, computed, nextTick } from 'vue';
 import { Icon } from '@testimonials/icons';
 import { Kbd } from '@testimonials/ui';
 import { useTimelineEditor } from '../../composables/timeline';
 import { STEP_TYPE_CONFIGS } from '../../constants';
+import { FLOW_METADATA } from '@/entities/form';
 import StepTypePicker from '../stepsSidebar/StepTypePicker.vue';
-import type { StepType } from '@/shared/stepCards';
+import type { StepType, FlowMembership } from '@/shared/stepCards';
 
 const editor = useTimelineEditor();
 
@@ -25,6 +27,17 @@ const emit = defineEmits<{
 // Track which insert picker is open (null = none, number = index after which to insert)
 const openPickerIndex = ref<number | null>(null);
 const addAtEndPickerOpen = ref(false);
+
+// Branching state
+const isBranchingEnabled = computed(() => editor.isBranchingEnabled.value);
+
+// Get flow indicator styles for a step
+function getFlowIndicator(flowMembership: FlowMembership | undefined) {
+  if (!isBranchingEnabled.value || !flowMembership || flowMembership === 'shared') {
+    return null;
+  }
+  return FLOW_METADATA[flowMembership];
+}
 
 function handleStepClick(index: number) {
   emit('navigate', index);
@@ -52,24 +65,31 @@ function handleAddAtEnd(type: StepType) {
     <template v-for="(step, index) in editor.steps.value" :key="step.id">
       <!-- Step item -->
       <div
-        class="p-2 bg-background rounded cursor-pointer flex items-center gap-2 border-l-2 transition-colors"
+        class="step-item p-2 bg-background rounded cursor-pointer flex items-center gap-2 border-l-2 transition-colors"
         :class="[
-          index === editor.selectedIndex.value
-            ? 'ring-2 ring-primary'
-            : '',
-          step.isModified
+          index === editor.selectedIndex.value ? 'ring-2 ring-primary' : '',
+          step.isModified && !getFlowIndicator(step.flowMembership)
             ? 'border-l-amber-400 bg-amber-50/50'
-            : 'border-l-transparent',
+            : getFlowIndicator(step.flowMembership)?.borderClass ?? 'border-l-transparent',
         ]"
+        :style="getFlowIndicator(step.flowMembership) ? 'border-left-width: 3px' : ''"
         @click="handleStepClick(index)"
       >
-        <span>{{ index + 1 }}.</span>
-        <Icon :icon="STEP_TYPE_CONFIGS[step.stepType].icon" class="w-4 h-4" />
-        <span class="flex-1">{{ STEP_TYPE_CONFIGS[step.stepType].label }}</span>
-        <!-- Unsaved indicator dot -->
+        <span class="shrink-0">{{ index + 1 }}.</span>
+        <Icon :icon="STEP_TYPE_CONFIGS[step.stepType].icon" class="w-4 h-4 shrink-0" />
+        <span class="truncate flex-1">{{ STEP_TYPE_CONFIGS[step.stepType].label }}</span>
+        <!-- Show flow icon on the right for branch steps -->
+        <Icon
+          v-if="getFlowIndicator(step.flowMembership)"
+          :icon="getFlowIndicator(step.flowMembership)!.icon"
+          class="w-3.5 h-3.5 shrink-0"
+          :class="getFlowIndicator(step.flowMembership)?.colorClass"
+          :title="getFlowIndicator(step.flowMembership)?.label"
+        />
+        <!-- Unsaved indicator dot (only if not a flow step) -->
         <span
-          v-if="step.isModified"
-          class="h-2 w-2 rounded-full bg-amber-400 animate-pulse"
+          v-else-if="step.isModified"
+          class="h-2 w-2 rounded-full bg-amber-400 animate-pulse shrink-0"
           title="Unsaved changes"
         />
       </div>
