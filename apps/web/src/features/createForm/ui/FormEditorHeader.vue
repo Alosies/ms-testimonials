@@ -29,13 +29,13 @@ function handleBack() {
   <div class="flex h-14 items-center justify-between px-4 bg-background">
     <!-- Left: Back button + Divider + Title -->
     <div class="flex items-center">
-      <!-- Back button -->
+      <!-- Exit Studio button -->
       <button
         class="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors px-2 py-1.5 -ml-2 rounded-md hover:bg-muted/50"
         @click="handleBack"
       >
         <Icon icon="heroicons:arrow-left" class="size-4" />
-        <span>Forms</span>
+        <span>Exit Studio</span>
       </button>
 
       <!-- Divider -->
