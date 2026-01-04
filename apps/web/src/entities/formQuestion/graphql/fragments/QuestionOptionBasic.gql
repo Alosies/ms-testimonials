@@ -1,0 +1,9 @@
+fragment QuestionOptionBasic on question_options {
+  id
+  question_id
+  option_value
+  option_label
+  display_order
+  is_default
+  is_active
+}

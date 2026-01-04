@@ -1,4 +1,5 @@
 #import "../fragments/FormStepBasic.gql"
+#import "@/entities/formQuestion/graphql/fragments/FormQuestionWithOptions.gql"
 
 query GetFormSteps($formId: String!) {
   form_steps(
@@ -7,13 +8,7 @@ query GetFormSteps($formId: String!) {
   ) {
     ...FormStepBasic
     question {
-      id
-      question_text
-      question_type {
-        id
-        unique_name
-        category
-      }
+      ...FormQuestionWithOptions
     }
   }
 }

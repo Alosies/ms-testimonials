@@ -14743,6 +14743,10 @@ export type GetFormsQuery = { __typename?: 'query_root', forms: Array<{ __typena
 
 export type FormQuestionBasicFragment = { __typename?: 'form_questions', id: string, form_id: string, organization_id: string, question_type_id: string, question_key: string, question_text: string, placeholder?: string | null, help_text?: string | null, display_order: number, is_required: boolean, min_length?: number | null, max_length?: number | null, min_value?: number | null, max_value?: number | null, validation_pattern?: string | null, allowed_file_types?: Array<string> | null, max_file_size_kb?: number | null, is_active: boolean, created_at: string, updated_at: string, question_type: { __typename?: 'question_types', id: string, unique_name: string, name: string, category: string, input_component: string } };
 
+export type FormQuestionWithOptionsFragment = { __typename?: 'form_questions', scale_min_label?: string | null, scale_max_label?: string | null, id: string, form_id: string, organization_id: string, question_type_id: string, question_key: string, question_text: string, placeholder?: string | null, help_text?: string | null, display_order: number, is_required: boolean, min_length?: number | null, max_length?: number | null, min_value?: number | null, max_value?: number | null, validation_pattern?: string | null, allowed_file_types?: Array<string> | null, max_file_size_kb?: number | null, is_active: boolean, created_at: string, updated_at: string, options: Array<{ __typename?: 'question_options', id: string, question_id: string, option_value: string, option_label: string, display_order: number, is_default: boolean, is_active: boolean }>, question_type: { __typename?: 'question_types', id: string, unique_name: string, name: string, category: string, input_component: string } };
+
+export type QuestionOptionBasicFragment = { __typename?: 'question_options', id: string, question_id: string, option_value: string, option_label: string, display_order: number, is_default: boolean, is_active: boolean };
+
 export type CreateFormQuestionMutationVariables = Exact<{
   input: Form_Questions_Insert_Input;
 }>;
@@ -14807,7 +14811,7 @@ export type GetFormStepsQueryVariables = Exact<{
 }>;
 
 
-export type GetFormStepsQuery = { __typename?: 'query_root', form_steps: Array<{ __typename?: 'form_steps', id: string, form_id: string, step_type: string, step_order: number, question_id?: string | null, content: any, tips?: Array<string> | null, is_active: boolean, created_at: string, updated_at: string, question?: { __typename?: 'form_questions', id: string, question_text: string, question_type: { __typename?: 'question_types', id: string, unique_name: string, category: string } } | null }> };
+export type GetFormStepsQuery = { __typename?: 'query_root', form_steps: Array<{ __typename?: 'form_steps', id: string, form_id: string, step_type: string, step_order: number, question_id?: string | null, content: any, tips?: Array<string> | null, is_active: boolean, created_at: string, updated_at: string, question?: { __typename?: 'form_questions', scale_min_label?: string | null, scale_max_label?: string | null, id: string, form_id: string, organization_id: string, question_type_id: string, question_key: string, question_text: string, placeholder?: string | null, help_text?: string | null, display_order: number, is_required: boolean, min_length?: number | null, max_length?: number | null, min_value?: number | null, max_value?: number | null, validation_pattern?: string | null, allowed_file_types?: Array<string> | null, max_file_size_kb?: number | null, is_active: boolean, created_at: string, updated_at: string, options: Array<{ __typename?: 'question_options', id: string, question_id: string, option_value: string, option_label: string, display_order: number, is_default: boolean, is_active: boolean }>, question_type: { __typename?: 'question_types', id: string, unique_name: string, name: string, category: string, input_component: string } } | null }> };
 
 export type OrganizationBasicFragment = { __typename?: 'organizations', id: string, name: string, slug: string, logo_url?: string | null, setup_status: 'pending_setup' | 'completed', is_active: boolean, settings: any, created_at: string, updated_at: string, plans: Array<{ __typename?: 'organization_plans', id: string, plan_id: string, status: string, plan: { __typename?: 'plans', id: string, unique_name: string, name: string, question_types: Array<{ __typename?: 'plan_question_types', question_type: { __typename?: 'question_types', id: string, unique_name: string, name: string, category: string, description?: string | null, icon?: string | null, input_component: string, answer_data_type: string, display_order: number, supports_options: boolean } }> } }> };
 
@@ -14972,6 +14976,28 @@ export const FormQuestionBasicFragmentDoc = gql`
   }
 }
     `;
+export const QuestionOptionBasicFragmentDoc = gql`
+    fragment QuestionOptionBasic on question_options {
+  id
+  question_id
+  option_value
+  option_label
+  display_order
+  is_default
+  is_active
+}
+    `;
+export const FormQuestionWithOptionsFragmentDoc = gql`
+    fragment FormQuestionWithOptions on form_questions {
+  ...FormQuestionBasic
+  scale_min_label
+  scale_max_label
+  options(order_by: {display_order: asc}, where: {is_active: {_eq: true}}) {
+    ...QuestionOptionBasic
+  }
+}
+    ${FormQuestionBasicFragmentDoc}
+${QuestionOptionBasicFragmentDoc}`;
 export const FormStepBasicFragmentDoc = gql`
     fragment FormStepBasic on form_steps {
   id
@@ -15599,17 +15625,12 @@ export const GetFormStepsDocument = gql`
   form_steps(where: {form_id: {_eq: $formId}}, order_by: {step_order: asc}) {
     ...FormStepBasic
     question {
-      id
-      question_text
-      question_type {
-        id
-        unique_name
-        category
-      }
+      ...FormQuestionWithOptions
     }
   }
 }
-    ${FormStepBasicFragmentDoc}`;
+    ${FormStepBasicFragmentDoc}
+${FormQuestionWithOptionsFragmentDoc}`;
 
 /**
  * __useGetFormStepsQuery__

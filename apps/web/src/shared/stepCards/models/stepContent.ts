@@ -99,17 +99,39 @@ export type StepContent =
   | Record<string, never>; // Empty for question/rating (data in form_questions)
 
 // =================================================================
-// Question Type for linked questions
+// Question data for linked questions
 // =================================================================
 
 export interface LinkedQuestionType {
+  id: string;
   uniqueName: string;
+  name: string;
+  category: string;
+  inputComponent: string;
+}
+
+export interface QuestionOption {
+  id: string;
+  optionValue: string;
+  optionLabel: string;
+  displayOrder: number;
+  isDefault: boolean;
 }
 
 export interface LinkedQuestion {
   id: string;
   questionText: string;
-  questionType?: LinkedQuestionType | null;
+  placeholder?: string | null;
+  helpText?: string | null;
+  isRequired: boolean;
+  minValue?: number | null;
+  maxValue?: number | null;
+  minLength?: number | null;
+  maxLength?: number | null;
+  scaleMinLabel?: string | null;
+  scaleMaxLabel?: string | null;
+  questionType: LinkedQuestionType;
+  options: QuestionOption[];
 }
 
 // =================================================================

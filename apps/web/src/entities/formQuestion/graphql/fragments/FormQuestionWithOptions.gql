@@ -1,0 +1,11 @@
+#import "./FormQuestionBasic.gql"
+#import "./QuestionOptionBasic.gql"
+
+fragment FormQuestionWithOptions on form_questions {
+  ...FormQuestionBasic
+  scale_min_label
+  scale_max_label
+  options(order_by: { display_order: asc }, where: { is_active: { _eq: true } }) {
+    ...QuestionOptionBasic
+  }
+}
