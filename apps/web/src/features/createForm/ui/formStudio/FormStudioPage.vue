@@ -1,8 +1,8 @@
 <script setup lang="ts">
 /**
- * Form Edit Page Feature Component
+ * Form Studio Page Feature Component
  *
- * Main feature component for the timeline-based form editor.
+ * Main feature component for the timeline-based form studio.
  * Uses centralized useScrollSnapNavigation for keyboard and scroll handling.
  *
  * ARCHITECTURE:

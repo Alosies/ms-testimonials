@@ -1,14 +1,14 @@
 <script setup lang="ts">
 /**
- * Edit form page - Timeline Editor
- * Route: /:org/forms/:urlSlug/edit
+ * Form Studio page
+ * Route: /:org/forms/:urlSlug/studio
  *
  * Thin wrapper that handles route params and renders the feature component.
  */
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { definePage } from 'unplugin-vue-router/runtime';
-import { FormEditPage } from '@/features/createForm/ui';
+import { FormStudioPage } from '@/features/createForm/ui';
 import { extractEntityIdFromSlug, createPublicFormUrl } from '@/shared/urls';
 import { useGetForm } from '@/entities/form';
 
@@ -49,7 +49,7 @@ function handlePublish() {
 </script>
 
 <template>
-  <FormEditPage
+  <FormStudioPage
     :form-id="formId"
     @back="handleBack"
     @preview="handlePreview"

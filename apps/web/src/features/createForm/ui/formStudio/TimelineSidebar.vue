@@ -1,12 +1,12 @@
 <script setup lang="ts">
 /**
- * Timeline Sidebar - Step list for the form editor
+ * Timeline Sidebar - Step list for Form Studio
  *
  * Displays list of steps with selection and add functionality.
  * Emits navigate event for parent to handle scroll navigation.
  * Shows visual indicators for flow membership (testimonial/improvement).
  *
- * @see FormEditPage.vue - Handles navigate event with useScrollSnapNavigation
+ * @see FormStudioPage.vue - Handles navigate event with useScrollSnapNavigation
  */
 import { ref, computed, nextTick } from 'vue';
 import { Icon } from '@testimonials/icons';
