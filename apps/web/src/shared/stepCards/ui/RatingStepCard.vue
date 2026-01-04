@@ -72,23 +72,24 @@ function handleMouseLeave() {
 </script>
 
 <template>
-  <div class="text-center">
-    <!-- Question text as heading - matches Form Studio -->
-    <h3 class="text-xl md:text-2xl font-semibold mb-6">
+  <div class="text-center w-full">
+    <!-- Question text as heading -->
+    <h3 class="text-2xl md:text-3xl font-bold text-gray-900 mb-8 leading-tight">
       {{ displayText }}
     </h3>
+
+    <!-- Star rating container -->
     <div
-      class="flex justify-center gap-2"
+      class="inline-flex items-center gap-3 rounded-2xl bg-gray-50/80 px-5 py-4"
       @mouseleave="handleMouseLeave"
     >
       <button
         v-for="n in starCount"
         :key="n"
         type="button"
-        class="w-10 h-10 rounded-lg border flex items-center justify-center transition-colors"
+        class="group relative rounded-lg p-2 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
         :class="{
-          'hover:bg-muted cursor-pointer': mode === 'preview',
-          'bg-yellow-50 border-yellow-300': isStarFilled(n),
+          'cursor-pointer hover:-translate-y-0.5 hover:scale-110 active:scale-95': mode === 'preview',
           'cursor-default': mode !== 'preview',
         }"
         :disabled="mode !== 'preview'"
@@ -97,18 +98,20 @@ function handleMouseLeave() {
       >
         <Icon
           :icon="isStarFilled(n) ? 'heroicons:star-solid' : 'heroicons:star'"
-          class="w-5 h-5 transition-colors"
+          class="w-10 h-10 transition-all duration-200"
           :class="{
-            'text-yellow-500': isStarFilled(n),
-            'text-muted-foreground': !isStarFilled(n),
+            'text-amber-400 drop-shadow-[0_2px_4px_rgba(251,191,36,0.4)]': isStarFilled(n),
+            'text-gray-300 group-hover:text-amber-300': !isStarFilled(n) && mode === 'preview',
+            'text-gray-300': !isStarFilled(n) && mode !== 'preview',
           }"
         />
       </button>
     </div>
+
     <!-- Show selected rating text -->
     <p
       v-if="modelValue !== null && mode === 'preview'"
-      class="mt-3 text-sm text-muted-foreground"
+      class="mt-4 text-base font-medium text-gray-600"
     >
       You rated {{ modelValue }} out of {{ maxValue }}
     </p>

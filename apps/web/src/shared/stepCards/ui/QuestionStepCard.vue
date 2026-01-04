@@ -44,14 +44,14 @@ const isInputDisabled = computed(() => props.mode === 'edit');
 </script>
 
 <template>
-  <div class="text-center">
+  <div class="text-center w-full">
     <!-- Question text as heading -->
-    <h3 class="text-xl md:text-2xl font-semibold mb-6">
+    <h3 class="text-2xl md:text-3xl font-bold text-gray-900 mb-8 leading-tight">
       {{ displayText }}
     </h3>
 
-    <!-- Input field - matches Form Studio -->
-    <div class="w-full max-w-md mx-auto">
+    <!-- Input field - wider for better UX -->
+    <div class="w-full max-w-lg mx-auto">
       <QuestionInput
         v-model="modelValue"
         :question-id="step.question?.id ?? step.id"
@@ -62,9 +62,9 @@ const isInputDisabled = computed(() => props.mode === 'edit');
     </div>
 
     <!-- Tips preview (only in edit mode) -->
-    <div v-if="mode === 'edit' && step.tips.length > 0" class="mt-6 text-left max-w-md mx-auto">
-      <div class="text-xs font-medium text-muted-foreground mb-1">Tips:</div>
-      <ul class="text-sm text-muted-foreground space-y-1">
+    <div v-if="mode === 'edit' && step.tips.length > 0" class="mt-8 text-left max-w-lg mx-auto">
+      <div class="text-xs font-medium text-muted-foreground mb-2">Tips:</div>
+      <ul class="text-sm text-muted-foreground space-y-1.5">
         <li
           v-for="(tip, i) in step.tips.slice(0, 2)"
           :key="i"

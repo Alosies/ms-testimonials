@@ -1,5 +1,10 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+/**
+ * RatingScaleInput - Modern numeric scale rating (NPS-style)
+ *
+ * Features a polished pill-shaped design with smooth hover and selection states.
+ */
+import { computed, ref } from 'vue';
 import { cn } from '@testimonials/ui';
 import type { QuestionInputProps } from '../models';
 
@@ -8,6 +13,7 @@ const modelValue = defineModel<number | null>({ default: null });
 
 const minVal = computed(() => props.min_value ?? 1);
 const maxVal = computed(() => props.max_value ?? 10);
+const hoverValue = ref<number | null>(null);
 
 const scaleValues = computed(() => {
   const values: number[] = [];
@@ -22,11 +28,24 @@ function selectValue(value: number) {
     modelValue.value = value;
   }
 }
+
+function handleMouseEnter(value: number) {
+  if (!props.disabled) {
+    hoverValue.value = value;
+  }
+}
+
+function handleMouseLeave() {
+  hoverValue.value = null;
+}
 </script>
 
 <template>
-  <div>
-    <div class="flex flex-wrap justify-between gap-1">
+  <div class="w-full">
+    <div
+      class="inline-flex flex-wrap items-center justify-center gap-2 rounded-2xl bg-gray-50/80 p-3"
+      @mouseleave="handleMouseLeave"
+    >
       <button
         v-for="n in scaleValues"
         :key="n"
@@ -35,22 +54,25 @@ function selectValue(value: number) {
         :aria-pressed="modelValue === n"
         :class="
           cn(
-            'flex h-10 w-10 items-center justify-center rounded border text-sm font-medium transition-colors',
-            'focus:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+            'flex h-11 w-11 items-center justify-center rounded-xl text-sm font-semibold transition-all duration-200',
+            'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50',
             modelValue === n
-              ? 'border-primary bg-primary text-primary-foreground'
-              : 'border-gray-200 bg-gray-50 hover:border-primary hover:bg-primary/10',
-            disabled && 'cursor-default opacity-60',
+              ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/30 scale-105'
+              : hoverValue === n
+                ? 'bg-primary/20 text-primary scale-105'
+                : 'bg-white text-gray-600 shadow-sm hover:bg-gray-100',
+            disabled ? 'cursor-default opacity-60' : 'cursor-pointer active:scale-95',
           )
         "
         @click="selectValue(n)"
+        @mouseenter="handleMouseEnter(n)"
       >
         {{ n }}
       </button>
     </div>
-    <div class="mt-2 flex justify-between text-xs text-gray-500">
-      <span>{{ scaleMinLabel || 'Low' }}</span>
-      <span>{{ scaleMaxLabel || 'High' }}</span>
+    <div class="mt-3 flex justify-between px-1 text-sm text-gray-500">
+      <span class="font-medium">{{ scaleMinLabel || 'Not likely' }}</span>
+      <span class="font-medium">{{ scaleMaxLabel || 'Very likely' }}</span>
     </div>
   </div>
 </template>
