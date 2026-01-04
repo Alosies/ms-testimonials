@@ -41,10 +41,10 @@ const isEditMode = computed(() => props.mode === 'edit');
     }"
     @click="isEditMode && emit('select')"
   >
-    <!-- Unsaved indicator badge -->
+    <!-- Unsaved indicator badge - NOTE: Not used in form editor which uses TimelineStepCard.vue -->
     <div
       v-if="isEditMode && hasUnsavedChanges"
-      class="absolute -top-2 -right-2 z-20"
+      class="absolute top-3 left-3 z-20"
     >
       <div
         class="flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-amber-100 text-amber-700 rounded-full border border-amber-200 shadow-sm"

@@ -43,7 +43,26 @@
   background-size: 20px 20px;
 }
 
-/* Senja-inspired scroll snap for timeline */
+/*
+ * CRITICAL: Scroll-snap configuration for timeline navigation
+ * ===========================================================
+ * This scroll-snap CSS works with useScrollSnapNavigation composable which uses
+ * scrollIntoView() for navigation. DO NOT change without understanding the full system.
+ *
+ * Related files:
+ * - @/shared/composables/useScrollSnapNavigation.ts - Centralized scroll navigation
+ * - FormEditPage.vue - Sets up navigation with this container
+ * - TimelineStepCard.vue - Has scroll-snap-align: center on .timeline-step
+ *
+ * Why mandatory snap:
+ * - Provides Senja-like UX where steps "snap" to center
+ * - Works WITH scrollIntoView() for keyboard navigation
+ * - Allows manual scroll to naturally settle on steps
+ *
+ * Previous bug (2026-01): Using scrollTo() with manual position calculation
+ * caused steps to "skip" during keyboard navigation due to scroll-snap conflicts.
+ * Fixed by centralizing navigation in useScrollSnapNavigation.
+ */
 .timeline-scroll {
   scroll-snap-type: y mandatory;
   scroll-behavior: smooth;

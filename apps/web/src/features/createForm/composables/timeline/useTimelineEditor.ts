@@ -1,4 +1,4 @@
-import { ref, readonly, computed, nextTick } from 'vue';
+import { ref, readonly, computed } from 'vue';
 import { createSharedComposable } from '@vueuse/core';
 import type { FormStep, StepType, StepContent, FormContext } from '@/shared/stepCards';
 import {
@@ -16,12 +16,20 @@ function generateTempId(): string {
 /**
  * Timeline Editor - Shared Composable
  *
- * Single source of truth for form timeline editing.
+ * Single source of truth for form timeline editing STATE.
  * Uses createSharedComposable for singleton pattern with full type safety.
+ *
+ * ARCHITECTURE NOTE:
+ * This composable handles step CRUD and state management ONLY.
+ * Scroll-snap navigation (keyboard nav, scroll detection) is handled by
+ * useScrollSnapNavigation which should be set up at the component level.
  *
  * Usage:
  * - Page: const editor = useTimelineEditor(); editor.setFormId(formId);
  * - Components: const editor = useTimelineEditor(); // Just import and use
+ *
+ * @see useScrollSnapNavigation - Handles keyboard nav and scroll detection
+ * @see FormEditPage.vue - Sets up scroll navigation with this editor's state
  */
 export const useTimelineEditor = createSharedComposable(() => {
   // ============================================
@@ -36,10 +44,6 @@ export const useTimelineEditor = createSharedComposable(() => {
 
   // Form context for dynamic step defaults (e.g., product name)
   const formContext = ref<FormContext>({});
-
-  // Flag to prevent scroll detection from overriding programmatic selections
-  const isProgrammaticScroll = ref(false);
-  let programmaticScrollTimeout: ReturnType<typeof setTimeout> | null = null;
 
   // ============================================
   // Computed
@@ -112,8 +116,13 @@ export const useTimelineEditor = createSharedComposable(() => {
   }
 
   // ============================================
-  // Navigation
+  // Selection (no scroll - scroll handled by useScrollSnapNavigation)
   // ============================================
+
+  /**
+   * Select a step by index WITHOUT scrolling.
+   * For navigation with scrolling, use useScrollSnapNavigation.navigateTo()
+   */
   function selectStep(index: number) {
     if (index >= 0 && index < steps.value.length) {
       selectedIndex.value = index;
@@ -125,58 +134,6 @@ export const useTimelineEditor = createSharedComposable(() => {
     if (index !== -1) {
       selectStep(index);
     }
-  }
-
-  function goNext() {
-    if (canGoNext.value) {
-      selectStep(selectedIndex.value + 1);
-    }
-  }
-
-  function goPrev() {
-    if (canGoPrev.value) {
-      selectStep(selectedIndex.value - 1);
-    }
-  }
-
-  /**
-   * Scroll to a step element in the timeline canvas.
-   * Uses data-attribute selector to stay loosely coupled from render implementation.
-   * Sets isProgrammaticScroll flag to prevent scroll detection from overriding selection.
-   *
-   * Uses scrollTo on the container instead of scrollIntoView to work better with scroll-snap.
-   */
-  function scrollToStep(index: number) {
-    // Set flag to prevent scroll detection from fighting this
-    isProgrammaticScroll.value = true;
-    if (programmaticScrollTimeout) {
-      clearTimeout(programmaticScrollTimeout);
-    }
-
-    const container = document.querySelector('.timeline-scroll');
-    const element = document.querySelector(`[data-step-index="${index}"]`);
-
-    if (container && element) {
-      // Calculate scroll position to center the element in the container
-      const containerRect = container.getBoundingClientRect();
-      const elementRect = element.getBoundingClientRect();
-
-      // Current scroll position + element's position relative to container - offset to center
-      const scrollTop = container.scrollTop
-        + (elementRect.top - containerRect.top)
-        - (containerRect.height / 2)
-        + (elementRect.height / 2);
-
-      container.scrollTo({
-        top: scrollTop,
-        behavior: 'smooth',
-      });
-    }
-
-    // Clear flag after animation completes (~500ms for smooth scroll)
-    programmaticScrollTimeout = setTimeout(() => {
-      isProgrammaticScroll.value = false;
-    }, 600);
   }
 
   // ============================================
@@ -351,15 +308,16 @@ export const useTimelineEditor = createSharedComposable(() => {
   // ============================================
   // Coordinated Actions (UI handlers)
   // ============================================
-  function handleAddStep(type: StepType, afterIndex?: number) {
+
+  /**
+   * Add a step and select it. Returns the new index for scrolling.
+   * The component should call navigation.navigateTo(index) to scroll.
+   */
+  function handleAddStep(type: StepType, afterIndex?: number): number {
     const newStep = addStep(type, afterIndex);
     const newIndex = steps.value.indexOf(newStep);
     selectStep(newIndex);
-
-    // Scroll to new step after DOM updates
-    nextTick(() => {
-      scrollToStep(newIndex);
-    });
+    return newIndex;
   }
 
   function handleEditStep(index: number) {
@@ -380,16 +338,6 @@ export const useTimelineEditor = createSharedComposable(() => {
     isEditorOpen.value = false;
   }
 
-  function handleNavigateEditor(direction: 'prev' | 'next') {
-    if (direction === 'prev' && canGoPrev.value) {
-      goPrev();
-      scrollToStep(selectedIndex.value);
-    } else if (direction === 'next' && canGoNext.value) {
-      goNext();
-      scrollToStep(selectedIndex.value);
-    }
-  }
-
   return {
     // Form ID
     currentFormId: readonly(currentFormId),
@@ -408,16 +356,12 @@ export const useTimelineEditor = createSharedComposable(() => {
     hasSteps,
     isEditorOpen,
     editorMode,
-    isProgrammaticScroll: readonly(isProgrammaticScroll),
 
-    // Navigation
+    // Selection (for scroll navigation, use useScrollSnapNavigation)
     canGoNext,
     canGoPrev,
     selectStep,
     selectStepById,
-    goNext,
-    goPrev,
-    scrollToStep,
 
     // Step State
     setSteps,
@@ -440,7 +384,6 @@ export const useTimelineEditor = createSharedComposable(() => {
     handleEditStep,
     handleRemoveStep,
     handleCloseEditor,
-    handleNavigateEditor,
   };
 });
 

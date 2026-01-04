@@ -9,6 +9,7 @@ import { computed } from 'vue';
 import { Icon } from '@testimonials/icons';
 import { Kbd } from '@testimonials/ui';
 import { QuestionInput } from '@/shared/formInputs';
+import { useStepSave } from '../../composables/timeline';
 import type { FormStep } from '../../models';
 import type { StepType } from '@/shared/stepCards';
 import TimelineConnector from './TimelineConnector.vue';
@@ -26,6 +27,13 @@ const emit = defineEmits<{
   remove: [index: number];
   insert: [afterIndex: number, type: StepType];
 }>();
+
+const stepSave = useStepSave();
+
+// Handle save when clicking the unsaved chip
+async function handleSaveClick() {
+  await stepSave.saveStepQuestion(props.index);
+}
 
 // Check if step is a question/rating type that needs input preview
 const isQuestionStep = computed(() =>
@@ -78,25 +86,45 @@ function getStepDescription(): string {
     }"
   >
     <div class="step-header">
-      <span
-        class="flex items-center justify-center w-7 h-7 rounded-full text-sm font-semibold"
-        :class="{
-          'bg-primary text-primary-foreground': isActive,
-          'bg-muted text-muted-foreground': !isActive,
-        }"
+      <div class="flex items-center gap-3">
+        <span
+          class="flex items-center justify-center w-7 h-7 rounded-full text-sm font-semibold"
+          :class="{
+            'bg-amber-500 text-white': step.isModified,
+            'bg-primary text-primary-foreground': isActive && !step.isModified,
+            'bg-muted text-muted-foreground': !isActive && !step.isModified,
+          }"
+        >
+          {{ index + 1 }}
+        </span>
+        <span class="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+          {{ step.stepType.replace('_', ' ') }}
+        </span>
+      </div>
+
+      <!-- Unsaved indicator badge - clickable to save -->
+      <button
+        v-if="step.isModified"
+        class="flex items-center gap-1 px-2.5 py-1 text-xs font-medium bg-amber-100 text-amber-700 rounded-full border border-amber-200 hover:bg-amber-200 transition-colors cursor-pointer shadow-sm"
+        title="Click to save changes"
+        :disabled="stepSave.isSaving.value"
+        @click.stop="handleSaveClick"
       >
-        {{ index + 1 }}
-      </span>
-      <span class="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-        {{ step.stepType.replace('_', ' ') }}
-      </span>
+        <span v-if="stepSave.isSaving.value" class="h-1.5 w-1.5 rounded-full bg-amber-500 animate-spin" />
+        <span v-else class="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
+        <span>{{ stepSave.isSaving.value ? 'Saving...' : 'Unsaved' }}</span>
+      </button>
     </div>
 
     <div
       class="step-card group"
-      :class="{ 'ring-2 ring-primary ring-offset-4': isActive }"
+      :class="{
+        'ring-2 ring-primary ring-offset-4': isActive,
+        'border-amber-400': step.isModified,
+      }"
       @click="emit('select', index)"
     >
+      <!-- Action buttons - faded until hover -->
       <div
         class="absolute top-4 right-4 z-10 flex items-center gap-2 rounded-lg bg-background/90 backdrop-blur-sm px-2 py-1.5 shadow-sm border border-border/50 opacity-40 group-hover:opacity-100 transition-opacity duration-200"
       >
@@ -149,6 +177,19 @@ function getStepDescription(): string {
 </template>
 
 <style scoped>
+/*
+ * CRITICAL: scroll-snap-align is required for keyboard navigation
+ * ================================================================
+ * This works with FormEditorLayout.vue's .timeline-scroll (scroll-snap-type: y mandatory)
+ * and useScrollSnapNavigation which uses scrollIntoView({ block: 'center' }).
+ *
+ * The scroll-snap-align: center ensures that when scrollIntoView is called,
+ * the browser snaps this element to the center of the viewport.
+ *
+ * DO NOT REMOVE scroll-snap-align without updating the scroll system.
+ * @see FormEditorLayout.vue - Parent scroll container with scroll-snap-type
+ * @see @/shared/composables/useScrollSnapNavigation - Centralized navigation
+ */
 .timeline-step {
   scroll-snap-align: center;
   transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease;
@@ -174,6 +215,7 @@ function getStepDescription(): string {
 .step-header {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 0.75rem;
   margin-bottom: 0.75rem;
   padding-left: 0.25rem;
@@ -190,10 +232,19 @@ function getStepDescription(): string {
     0 0 0 1px rgb(0 0 0 / 0.02);
   cursor: pointer;
   transition: all 0.25s ease;
-  overflow: hidden;
+  overflow: visible;
   aspect-ratio: 16 / 10;
   display: flex;
   flex-direction: column;
+}
+
+/*
+ * Override border color for modified steps.
+ * Uses Tailwind's amber-400 color value directly to avoid @apply circular dependency.
+ * The class .border-amber-400 is added dynamically in the template.
+ */
+.step-card.border-amber-400 {
+  border-color: rgb(251 191 36);
 }
 
 .step-card:hover {

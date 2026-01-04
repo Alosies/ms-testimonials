@@ -3,7 +3,13 @@
  * Form Edit Page Feature Component
  *
  * Main feature component for the timeline-based form editor.
- * Handles all editor logic, keyboard navigation, and scroll detection.
+ * Uses centralized useScrollSnapNavigation for keyboard and scroll handling.
+ *
+ * ARCHITECTURE:
+ * - useTimelineEditor: Step CRUD and state management (singleton)
+ * - useScrollSnapNavigation: Keyboard nav + scroll detection (component-level)
+ *
+ * @see useScrollSnapNavigation - Centralized scroll-snap navigation
  */
 import { ref, watch, computed } from 'vue';
 import { Kbd } from '@testimonials/ui';
@@ -11,11 +17,8 @@ import FormEditorLayout from '@/layouts/FormEditorLayout.vue';
 import FormEditorHeader from '../FormEditorHeader.vue';
 import { PropertiesPanel } from '../propertiesPanel';
 import StepEditorSlideIn from '../stepEditor/StepEditorSlideIn.vue';
-import {
-  useTimelineEditor,
-  useKeyboardNavigation,
-  useScrollStepDetection,
-} from '../../composables/timeline';
+import { useTimelineEditor } from '../../composables/timeline';
+import { useScrollSnapNavigation } from '@/shared/composables';
 import { useGetForm } from '@/entities/form';
 import { useGetFormSteps } from '@/entities/formStep';
 import type { FormStep, StepType, StepContent } from '@/shared/stepCards';
@@ -32,10 +35,20 @@ const emit = defineEmits<{
   publish: [];
 }>();
 
-// Initialize editor composables
+// Initialize editor (state management)
 const editor = useTimelineEditor();
-useKeyboardNavigation();
-useScrollStepDetection();
+
+// Initialize scroll-snap navigation (keyboard + scroll detection)
+// This is set up at component level to properly bind to DOM lifecycle
+const navigation = useScrollSnapNavigation({
+  containerSelector: '.timeline-scroll',
+  itemSelector: '[data-step-index]',
+  itemCount: () => editor.steps.value.length,
+  selectedIndex: editor.selectedIndex,
+  onSelect: (index) => editor.selectStep(index),
+  enableKeyboard: true,
+  enableScrollDetection: true,
+});
 
 // Initialize editor with formId (resets state if formId changes)
 watch(() => props.formId, (id) => editor.setFormId(id), { immediate: true });
@@ -115,6 +128,14 @@ function handleFormNameUpdate(name: string) {
   formName.value = name;
   saveStatus.value = 'unsaved';
 }
+
+/**
+ * Handle navigation requests from child components (sidebar, canvas, etc.)
+ * Uses the centralized navigation composable for scroll-snap coordination.
+ */
+function handleNavigate(index: number) {
+  navigation.navigateTo(index);
+}
 </script>
 
 <template>
@@ -132,7 +153,7 @@ function handleFormNameUpdate(name: string) {
     </template>
 
     <template #sidebar>
-      <TimelineSidebar />
+      <TimelineSidebar @navigate="handleNavigate" />
     </template>
 
     <template #canvas-overlay>
@@ -155,5 +176,5 @@ function handleFormNameUpdate(name: string) {
     </template>
   </FormEditorLayout>
 
-  <StepEditorSlideIn />
+  <StepEditorSlideIn @navigate="handleNavigate" />
 </template>

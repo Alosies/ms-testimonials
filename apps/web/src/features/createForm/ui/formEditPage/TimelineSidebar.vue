@@ -3,9 +3,11 @@
  * Timeline Sidebar - Step list for the form editor
  *
  * Displays list of steps with selection and add functionality.
- * Uses shared timeline editor composable for state.
+ * Emits navigate event for parent to handle scroll navigation.
+ *
+ * @see FormEditPage.vue - Handles navigate event with useScrollSnapNavigation
  */
-import { ref } from 'vue';
+import { ref, nextTick } from 'vue';
 import { Icon } from '@testimonials/icons';
 import { Kbd } from '@testimonials/ui';
 import { useTimelineEditor } from '../../composables/timeline';
@@ -15,23 +17,31 @@ import type { StepType } from '@/shared/stepCards';
 
 const editor = useTimelineEditor();
 
+const emit = defineEmits<{
+  /** Emitted when user clicks a step - parent should scroll to this index */
+  navigate: [index: number];
+}>();
+
 // Track which insert picker is open (null = none, number = index after which to insert)
 const openPickerIndex = ref<number | null>(null);
 const addAtEndPickerOpen = ref(false);
 
 function handleStepClick(index: number) {
-  editor.selectStep(index);
-  editor.scrollToStep(index);
+  emit('navigate', index);
 }
 
 function handleInsertAt(afterIndex: number, type: StepType) {
-  editor.handleAddStep(type, afterIndex);
+  const newIndex = editor.handleAddStep(type, afterIndex);
   openPickerIndex.value = null;
+  // Scroll to new step after DOM updates
+  nextTick(() => emit('navigate', newIndex));
 }
 
 function handleAddAtEnd(type: StepType) {
-  editor.handleAddStep(type);
+  const newIndex = editor.handleAddStep(type);
   addAtEndPickerOpen.value = false;
+  // Scroll to new step after DOM updates
+  nextTick(() => emit('navigate', newIndex));
 }
 </script>
 
@@ -42,13 +52,26 @@ function handleAddAtEnd(type: StepType) {
     <template v-for="(step, index) in editor.steps.value" :key="step.id">
       <!-- Step item -->
       <div
-        class="p-2 bg-background rounded cursor-pointer flex items-center gap-2"
-        :class="{ 'ring-2 ring-primary': index === editor.selectedIndex.value }"
+        class="p-2 bg-background rounded cursor-pointer flex items-center gap-2 border-l-2 transition-colors"
+        :class="[
+          index === editor.selectedIndex.value
+            ? 'ring-2 ring-primary'
+            : '',
+          step.isModified
+            ? 'border-l-amber-400 bg-amber-50/50'
+            : 'border-l-transparent',
+        ]"
         @click="handleStepClick(index)"
       >
         <span>{{ index + 1 }}.</span>
         <Icon :icon="STEP_TYPE_CONFIGS[step.stepType].icon" class="w-4 h-4" />
-        <span>{{ STEP_TYPE_CONFIGS[step.stepType].label }}</span>
+        <span class="flex-1">{{ STEP_TYPE_CONFIGS[step.stepType].label }}</span>
+        <!-- Unsaved indicator dot -->
+        <span
+          v-if="step.isModified"
+          class="h-2 w-2 rounded-full bg-amber-400 animate-pulse"
+          title="Unsaved changes"
+        />
       </div>
 
       <!-- Insert button between steps (not after last step) -->

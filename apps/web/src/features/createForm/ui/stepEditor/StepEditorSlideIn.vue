@@ -1,4 +1,12 @@
 <script setup lang="ts">
+/**
+ * Step Editor Slide-in Panel
+ *
+ * Allows editing individual step content. Emits navigate events
+ * for parent to handle with scroll-snap navigation.
+ *
+ * @see FormEditPage.vue - Handles navigate events
+ */
 import { computed, onMounted, onUnmounted, toRef, type Component } from 'vue';
 import {
   Sheet,
@@ -26,6 +34,11 @@ import { SaveStatusPill, useSaveStatus } from '@/shared/widgets';
 import type { StepContent, StepType, LinkedQuestion } from '@/shared/stepCards';
 import { getStepLabel } from '../../functions';
 import { STEP_TYPE_OPTIONS, STEP_TYPE_CONFIGS } from '../../constants';
+
+const emit = defineEmits<{
+  /** Emitted when navigating to a different step - parent should scroll to this index */
+  navigate: [index: number];
+}>();
 
 // Direct import - fully typed, no inject needed
 const editor = useTimelineEditor();
@@ -91,6 +104,19 @@ function handleStepTypeChange(newType: StepType) {
   }
 }
 
+/**
+ * Navigate to previous or next step.
+ * Emits navigate event for parent to handle with scroll-snap.
+ */
+function navigateToStep(direction: 'prev' | 'next') {
+  const currentIndex = editor.selectedIndex.value;
+  if (direction === 'prev' && editor.canGoPrev.value) {
+    emit('navigate', currentIndex - 1);
+  } else if (direction === 'next' && editor.canGoNext.value) {
+    emit('navigate', currentIndex + 1);
+  }
+}
+
 // Keyboard navigation and shortcuts
 function handleKeydown(event: KeyboardEvent) {
   if (!editor.isEditorOpen.value) return;
@@ -107,11 +133,11 @@ function handleKeydown(event: KeyboardEvent) {
   }
   if ((event.metaKey || event.ctrlKey) && event.key === 'ArrowUp') {
     event.preventDefault();
-    editor.handleNavigateEditor('prev');
+    navigateToStep('prev');
   }
   if ((event.metaKey || event.ctrlKey) && event.key === 'ArrowDown') {
     event.preventDefault();
-    editor.handleNavigateEditor('next');
+    navigateToStep('next');
   }
 }
 
@@ -156,7 +182,7 @@ onUnmounted(() => {
                 size="icon"
                 class="h-7 w-7"
                 :disabled="!editor.canGoPrev.value"
-                @click="editor.handleNavigateEditor('prev')"
+                @click="navigateToStep('prev')"
               >
                 <Icon icon="heroicons:chevron-up" class="h-4 w-4" />
               </Button>
@@ -165,7 +191,7 @@ onUnmounted(() => {
                 size="icon"
                 class="h-7 w-7"
                 :disabled="!editor.canGoNext.value"
-                @click="editor.handleNavigateEditor('next')"
+                @click="navigateToStep('next')"
               >
                 <Icon icon="heroicons:chevron-down" class="h-4 w-4" />
               </Button>
