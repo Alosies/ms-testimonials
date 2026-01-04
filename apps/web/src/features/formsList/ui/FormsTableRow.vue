@@ -110,11 +110,11 @@ const formatDate = (dateString: string): string => {
           variant="ghost"
           size="icon-sm"
           class="opacity-40 group-hover:opacity-100 hover:bg-muted transition-all"
-          title="Edit form"
+          title="Open Studio"
           @click="emit('edit')"
         >
-          <Icon icon="heroicons:pencil-square" class="h-4 w-4 text-muted-foreground" />
-          <span class="sr-only">Edit form</span>
+          <Icon icon="heroicons:paint-brush" class="h-4 w-4 text-muted-foreground" />
+          <span class="sr-only">Open Studio</span>
         </Button>
 
         <Button

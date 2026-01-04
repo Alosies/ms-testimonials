@@ -22,7 +22,7 @@ definePage({
 })
 
 const route = useRoute()
-const { goToFormEdit } = useRouting()
+const { goToFormStudio } = useRouting()
 
 const urlSlug = computed(() => route.params.urlSlug as string)
 const entityInfo = computed(() => extractEntityIdFromSlug(urlSlug.value))
@@ -60,11 +60,11 @@ const formRef = computed(() => ({
             <Button
               variant="ghost"
               size="sm"
-              @click="goToFormEdit(formRef)"
+              @click="goToFormStudio(formRef)"
               class="gap-1.5 text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-150"
             >
-              <Icon icon="heroicons:pencil" class="h-3.5 w-3.5" />
-              Edit
+              <Icon icon="heroicons:paint-brush" class="h-3.5 w-3.5" />
+              Studio
             </Button>
           </header>
 
