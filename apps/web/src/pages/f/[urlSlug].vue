@@ -54,6 +54,36 @@ const steps = computed((): FormStep[] => {
     stepType: step.step_type as FormStep['stepType'],
     stepOrder: step.step_order,
     questionId: step.question_id ?? null,
+    question: step.question
+      ? {
+          id: step.question.id,
+          questionText: step.question.question_text,
+          placeholder: step.question.placeholder ?? null,
+          helpText: step.question.help_text ?? null,
+          isRequired: step.question.is_required,
+          minValue: step.question.min_value ?? null,
+          maxValue: step.question.max_value ?? null,
+          minLength: step.question.min_length ?? null,
+          maxLength: step.question.max_length ?? null,
+          scaleMinLabel: step.question.scale_min_label ?? null,
+          scaleMaxLabel: step.question.scale_max_label ?? null,
+          questionType: {
+            id: step.question.question_type.id,
+            uniqueName: step.question.question_type.unique_name,
+            name: step.question.question_type.name,
+            category: step.question.question_type.category,
+            inputComponent: step.question.question_type.input_component,
+          },
+          options:
+            step.question.options?.map((opt) => ({
+              id: opt.id,
+              optionValue: opt.option_value,
+              optionLabel: opt.option_label,
+              displayOrder: opt.display_order,
+              isDefault: opt.is_default,
+            })) ?? [],
+        }
+      : null,
     content: (step.content as FormStep['content']) ?? {},
     tips: (step.tips as string[]) ?? [],
     flowMembership: (step.flow_membership as FormStep['flowMembership']) ?? 'shared',

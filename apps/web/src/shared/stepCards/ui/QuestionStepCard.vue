@@ -14,10 +14,15 @@ const props = withDefaults(defineProps<Props>(), {
   mode: 'preview',
 });
 
+// Extract from step.question if props not provided
 const displayText = computed(() =>
-  props.questionText || (props.mode === 'edit' ? 'Question text...' : ''),
+  props.questionText ||
+  props.step.question?.questionText ||
+  (props.mode === 'edit' ? 'Question text...' : ''),
 );
-const displayType = computed(() => props.questionType || 'text');
+const displayType = computed(() =>
+  props.questionType || props.step.question?.questionType?.name || 'text',
+);
 
 const typeIcon = computed(() => {
   switch (displayType.value) {
