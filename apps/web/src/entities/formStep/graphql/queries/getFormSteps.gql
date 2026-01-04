@@ -1,5 +1,5 @@
 #import "../fragments/FormStepBasic.gql"
-#import "@/entities/formQuestion/graphql/fragments/FormQuestionWithOptions.gql"
+#import "../../../formQuestion/graphql/fragments/FormQuestionWithOptions.gql"
 
 query GetFormSteps($formId: String!) {
   form_steps(
