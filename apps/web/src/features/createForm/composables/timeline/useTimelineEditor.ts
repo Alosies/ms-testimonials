@@ -32,7 +32,7 @@ import { useTimelineDesignConfig } from './useTimelineDesignConfig';
  * - Components: const editor = useTimelineEditor(); // Just import and use
  *
  * @see useScrollSnapNavigation - Handles keyboard nav and scroll detection
- * @see FormEditPage.vue - Sets up scroll navigation with this editor's state
+ * @see FormStudioPage.vue - Sets up scroll navigation with this editor's state
  */
 export const useTimelineEditor = createSharedComposable(() => {
   // ============================================

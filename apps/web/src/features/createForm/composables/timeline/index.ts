@@ -7,10 +7,10 @@
  *
  * For scroll-snap navigation (keyboard nav, scroll detection),
  * use useScrollSnapNavigation from @/shared/composables instead.
- * This is set up at the component level in FormEditPage.vue.
+ * This is set up at the component level in FormStudioPage.vue.
  *
  * @see @/shared/composables/useScrollSnapNavigation
- * @see FormEditPage.vue
+ * @see FormStudioPage.vue
  */
 export { useTimelineEditor, type TimelineEditorContext } from './useTimelineEditor';
 export { useStepSave } from './useStepSave';

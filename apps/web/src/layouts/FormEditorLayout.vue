@@ -51,7 +51,7 @@
  *
  * Related files:
  * - @/shared/composables/useScrollSnapNavigation.ts - Centralized scroll navigation
- * - FormEditPage.vue - Sets up navigation with this container
+ * - FormStudioPage.vue - Sets up navigation with this container
  * - TimelineStepCard.vue - Has scroll-snap-align: center on .timeline-step
  *
  * Why mandatory snap:

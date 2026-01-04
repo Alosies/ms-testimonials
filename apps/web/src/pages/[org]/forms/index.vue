@@ -58,7 +58,7 @@ const handleDeleteForm = (form: FormItem) => {
 }
 
 // Routing
-const { goToNewForm, goToForm, goToFormEdit, goToFormResponses, goToFormSettings } = useRouting()
+const { goToNewForm, goToForm, goToFormStudio, goToFormResponses, goToFormSettings } = useRouting()
 
 // Table state (search & sort)
 const {
@@ -132,7 +132,7 @@ const showNoResults = computed(() => !showLoading.value && hasForms.value && !ha
           :sort-direction="sortDirection"
           @sort="toggleSort"
           @view-form="goToForm"
-          @edit-form="goToFormEdit"
+          @edit-form="goToFormStudio"
           @view-responses="goToFormResponses"
           @open-settings="goToFormSettings"
           @delete-form="handleDeleteForm"

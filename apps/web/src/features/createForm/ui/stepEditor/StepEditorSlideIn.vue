@@ -5,7 +5,7 @@
  * Allows editing individual step content. Emits navigate events
  * for parent to handle with scroll-snap navigation.
  *
- * @see FormEditPage.vue - Handles navigate events
+ * @see FormStudioPage.vue - Handles navigate events
  */
 import { computed, onMounted, onUnmounted, toRef, type Component } from 'vue';
 import {

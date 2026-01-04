@@ -17,7 +17,7 @@ import FocusAreasScreen from './screens/FocusAreasScreen.vue';
 import GeneratingScreen from './screens/GeneratingScreen.vue';
 import PreviewScreen from './screens/PreviewScreen.vue';
 
-const { goToFormEdit, goToForms } = useRouting();
+const { goToFormStudio, goToForms } = useRouting();
 
 // Initialize wizard state
 const wizard = useFormWizard();
@@ -47,7 +47,7 @@ async function handleCustomize() {
 
     if (result) {
       // Navigate to Form Studio
-      goToFormEdit(
+      goToFormStudio(
         { name: wizard.conceptName.value, id: result.formId },
         { replace: true }
       );
