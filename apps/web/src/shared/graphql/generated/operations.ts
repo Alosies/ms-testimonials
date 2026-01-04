@@ -2541,6 +2541,8 @@ export type Form_Steps = {
   created_by?: Maybe<Scalars['String']['output']>;
   /** An object relationship */
   creator?: Maybe<Users>;
+  /** Which flow this step belongs to: shared (all paths), testimonial (positive rating), or improvement (negative rating) */
+  flow_membership: Scalars['String']['output'];
   /** An object relationship */
   form: Forms;
   /** Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed. */
@@ -2684,6 +2686,7 @@ export type Form_Steps_Bool_Exp = {
   created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
   created_by?: InputMaybe<String_Comparison_Exp>;
   creator?: InputMaybe<Users_Bool_Exp>;
+  flow_membership?: InputMaybe<String_Comparison_Exp>;
   form?: InputMaybe<Forms_Bool_Exp>;
   form_id?: InputMaybe<String_Comparison_Exp>;
   id?: InputMaybe<String_Comparison_Exp>;
@@ -2741,6 +2744,8 @@ export type Form_Steps_Insert_Input = {
   /** Foreign key to users table. Records which user originally created this step for audit purposes. */
   created_by?: InputMaybe<Scalars['String']['input']>;
   creator?: InputMaybe<Users_Obj_Rel_Insert_Input>;
+  /** Which flow this step belongs to: shared (all paths), testimonial (positive rating), or improvement (negative rating) */
+  flow_membership?: InputMaybe<Scalars['String']['input']>;
   form?: InputMaybe<Forms_Obj_Rel_Insert_Input>;
   /** Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed. */
   form_id?: InputMaybe<Scalars['String']['input']>;
@@ -2774,6 +2779,8 @@ export type Form_Steps_Max_Fields = {
   created_at?: Maybe<Scalars['timestamptz']['output']>;
   /** Foreign key to users table. Records which user originally created this step for audit purposes. */
   created_by?: Maybe<Scalars['String']['output']>;
+  /** Which flow this step belongs to: shared (all paths), testimonial (positive rating), or improvement (negative rating) */
+  flow_membership?: Maybe<Scalars['String']['output']>;
   /** Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed. */
   form_id?: Maybe<Scalars['String']['output']>;
   /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
@@ -2800,6 +2807,8 @@ export type Form_Steps_Max_Order_By = {
   created_at?: InputMaybe<Order_By>;
   /** Foreign key to users table. Records which user originally created this step for audit purposes. */
   created_by?: InputMaybe<Order_By>;
+  /** Which flow this step belongs to: shared (all paths), testimonial (positive rating), or improvement (negative rating) */
+  flow_membership?: InputMaybe<Order_By>;
   /** Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed. */
   form_id?: InputMaybe<Order_By>;
   /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
@@ -2827,6 +2836,8 @@ export type Form_Steps_Min_Fields = {
   created_at?: Maybe<Scalars['timestamptz']['output']>;
   /** Foreign key to users table. Records which user originally created this step for audit purposes. */
   created_by?: Maybe<Scalars['String']['output']>;
+  /** Which flow this step belongs to: shared (all paths), testimonial (positive rating), or improvement (negative rating) */
+  flow_membership?: Maybe<Scalars['String']['output']>;
   /** Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed. */
   form_id?: Maybe<Scalars['String']['output']>;
   /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
@@ -2853,6 +2864,8 @@ export type Form_Steps_Min_Order_By = {
   created_at?: InputMaybe<Order_By>;
   /** Foreign key to users table. Records which user originally created this step for audit purposes. */
   created_by?: InputMaybe<Order_By>;
+  /** Which flow this step belongs to: shared (all paths), testimonial (positive rating), or improvement (negative rating) */
+  flow_membership?: InputMaybe<Order_By>;
   /** Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed. */
   form_id?: InputMaybe<Order_By>;
   /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
@@ -2895,6 +2908,7 @@ export type Form_Steps_Order_By = {
   created_at?: InputMaybe<Order_By>;
   created_by?: InputMaybe<Order_By>;
   creator?: InputMaybe<Users_Order_By>;
+  flow_membership?: InputMaybe<Order_By>;
   form?: InputMaybe<Forms_Order_By>;
   form_id?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
@@ -2931,6 +2945,8 @@ export enum Form_Steps_Select_Column {
   CreatedAt = 'created_at',
   /** column name */
   CreatedBy = 'created_by',
+  /** column name */
+  FlowMembership = 'flow_membership',
   /** column name */
   FormId = 'form_id',
   /** column name */
@@ -2973,6 +2989,8 @@ export type Form_Steps_Set_Input = {
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
   /** Foreign key to users table. Records which user originally created this step for audit purposes. */
   created_by?: InputMaybe<Scalars['String']['input']>;
+  /** Which flow this step belongs to: shared (all paths), testimonial (positive rating), or improvement (negative rating) */
+  flow_membership?: InputMaybe<Scalars['String']['input']>;
   /** Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed. */
   form_id?: InputMaybe<Scalars['String']['input']>;
   /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
@@ -3050,6 +3068,8 @@ export type Form_Steps_Stream_Cursor_Value_Input = {
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
   /** Foreign key to users table. Records which user originally created this step for audit purposes. */
   created_by?: InputMaybe<Scalars['String']['input']>;
+  /** Which flow this step belongs to: shared (all paths), testimonial (positive rating), or improvement (negative rating) */
+  flow_membership?: InputMaybe<Scalars['String']['input']>;
   /** Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed. */
   form_id?: InputMaybe<Scalars['String']['input']>;
   /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
@@ -3093,6 +3113,8 @@ export enum Form_Steps_Update_Column {
   CreatedAt = 'created_at',
   /** column name */
   CreatedBy = 'created_by',
+  /** column name */
+  FlowMembership = 'flow_membership',
   /** column name */
   FormId = 'form_id',
   /** column name */
@@ -3579,6 +3601,8 @@ export type Form_Submissions_Updates = {
 /** Testimonial collection forms - questions normalized to form_questions table */
 export type Forms = {
   __typename?: 'forms';
+  /** Branching configuration: { enabled: boolean, threshold: number (rating cutoff), ratingStepId: string | null (step that triggers branching) } */
+  branching_config: Scalars['jsonb']['output'];
   /** An array relationship */
   contacts: Array<Contacts>;
   /** An aggregate relationship */
@@ -3625,6 +3649,12 @@ export type Forms = {
   updated_by?: Maybe<Scalars['String']['output']>;
   /** An object relationship */
   updater?: Maybe<Users>;
+};
+
+
+/** Testimonial collection forms - questions normalized to form_questions table */
+export type FormsBranching_ConfigArgs = {
+  path?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -3771,6 +3801,8 @@ export type Forms_Aggregate_Order_By = {
 
 /** append existing jsonb value of filtered columns with new jsonb value */
 export type Forms_Append_Input = {
+  /** Branching configuration: { enabled: boolean, threshold: number (rating cutoff), ratingStepId: string | null (step that triggers branching) } */
+  branching_config?: InputMaybe<Scalars['jsonb']['input']>;
   /** UI preferences only (theme colors, branding) - NOT business logic. JSONB appropriate here */
   settings?: InputMaybe<Scalars['jsonb']['input']>;
 };
@@ -3787,6 +3819,7 @@ export type Forms_Bool_Exp = {
   _and?: InputMaybe<Array<Forms_Bool_Exp>>;
   _not?: InputMaybe<Forms_Bool_Exp>;
   _or?: InputMaybe<Array<Forms_Bool_Exp>>;
+  branching_config?: InputMaybe<Jsonb_Comparison_Exp>;
   contacts?: InputMaybe<Contacts_Bool_Exp>;
   contacts_aggregate?: InputMaybe<Contacts_Aggregate_Bool_Exp>;
   created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
@@ -3820,24 +3853,32 @@ export enum Forms_Constraint {
 
 /** delete the field or element with specified path (for JSON arrays, negative integers count from the end) */
 export type Forms_Delete_At_Path_Input = {
+  /** Branching configuration: { enabled: boolean, threshold: number (rating cutoff), ratingStepId: string | null (step that triggers branching) } */
+  branching_config?: InputMaybe<Array<Scalars['String']['input']>>;
   /** UI preferences only (theme colors, branding) - NOT business logic. JSONB appropriate here */
   settings?: InputMaybe<Array<Scalars['String']['input']>>;
 };
 
 /** delete the array element with specified index (negative integers count from the end). throws an error if top level container is not an array */
 export type Forms_Delete_Elem_Input = {
+  /** Branching configuration: { enabled: boolean, threshold: number (rating cutoff), ratingStepId: string | null (step that triggers branching) } */
+  branching_config?: InputMaybe<Scalars['Int']['input']>;
   /** UI preferences only (theme colors, branding) - NOT business logic. JSONB appropriate here */
   settings?: InputMaybe<Scalars['Int']['input']>;
 };
 
 /** delete key/value pair or string element. key/value pairs are matched based on their key value */
 export type Forms_Delete_Key_Input = {
+  /** Branching configuration: { enabled: boolean, threshold: number (rating cutoff), ratingStepId: string | null (step that triggers branching) } */
+  branching_config?: InputMaybe<Scalars['String']['input']>;
   /** UI preferences only (theme colors, branding) - NOT business logic. JSONB appropriate here */
   settings?: InputMaybe<Scalars['String']['input']>;
 };
 
 /** input type for inserting data into table "forms" */
 export type Forms_Insert_Input = {
+  /** Branching configuration: { enabled: boolean, threshold: number (rating cutoff), ratingStepId: string | null (step that triggers branching) } */
+  branching_config?: InputMaybe<Scalars['jsonb']['input']>;
   contacts?: InputMaybe<Contacts_Arr_Rel_Insert_Input>;
   /** Timestamp when form was created. Immutable after insert */
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
@@ -3994,6 +4035,7 @@ export type Forms_On_Conflict = {
 
 /** Ordering options when selecting data from "forms". */
 export type Forms_Order_By = {
+  branching_config?: InputMaybe<Order_By>;
   contacts_aggregate?: InputMaybe<Contacts_Aggregate_Order_By>;
   created_at?: InputMaybe<Order_By>;
   created_by?: InputMaybe<Order_By>;
@@ -4023,12 +4065,16 @@ export type Forms_Pk_Columns_Input = {
 
 /** prepend existing jsonb value of filtered columns with new jsonb value */
 export type Forms_Prepend_Input = {
+  /** Branching configuration: { enabled: boolean, threshold: number (rating cutoff), ratingStepId: string | null (step that triggers branching) } */
+  branching_config?: InputMaybe<Scalars['jsonb']['input']>;
   /** UI preferences only (theme colors, branding) - NOT business logic. JSONB appropriate here */
   settings?: InputMaybe<Scalars['jsonb']['input']>;
 };
 
 /** select columns of table "forms" */
 export enum Forms_Select_Column {
+  /** column name */
+  BranchingConfig = 'branching_config',
   /** column name */
   CreatedAt = 'created_at',
   /** column name */
@@ -4069,6 +4115,8 @@ export enum Forms_Select_Column_Forms_Aggregate_Bool_Exp_Bool_Or_Arguments_Colum
 
 /** input type for updating data in table "forms" */
 export type Forms_Set_Input = {
+  /** Branching configuration: { enabled: boolean, threshold: number (rating cutoff), ratingStepId: string | null (step that triggers branching) } */
+  branching_config?: InputMaybe<Scalars['jsonb']['input']>;
   /** Timestamp when form was created. Immutable after insert */
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
   /** FK to users - user who created this form */
@@ -4105,6 +4153,8 @@ export type Forms_Stream_Cursor_Input = {
 
 /** Initial value of the column from where the streaming should start */
 export type Forms_Stream_Cursor_Value_Input = {
+  /** Branching configuration: { enabled: boolean, threshold: number (rating cutoff), ratingStepId: string | null (step that triggers branching) } */
+  branching_config?: InputMaybe<Scalars['jsonb']['input']>;
   /** Timestamp when form was created. Immutable after insert */
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
   /** FK to users - user who created this form */
@@ -4133,6 +4183,8 @@ export type Forms_Stream_Cursor_Value_Input = {
 
 /** update columns of table "forms" */
 export enum Forms_Update_Column {
+  /** column name */
+  BranchingConfig = 'branching_config',
   /** column name */
   CreatedAt = 'created_at',
   /** column name */
@@ -14688,7 +14740,7 @@ export type Widgets_Variance_Order_By = {
   max_display?: InputMaybe<Order_By>;
 };
 
-export type FormBasicFragment = { __typename?: 'forms', id: string, name: string, product_name: string, product_description?: string | null, settings: any, status: string, is_active: boolean, organization_id: string, created_by: string, created_at: string, updated_at: string };
+export type FormBasicFragment = { __typename?: 'forms', id: string, name: string, product_name: string, product_description?: string | null, settings: any, branching_config: any, status: string, is_active: boolean, organization_id: string, created_by: string, created_at: string, updated_at: string };
 
 export type CreateFormMutationVariables = Exact<{
   form: Forms_Insert_Input;
@@ -14732,20 +14784,16 @@ export type GetFormQueryVariables = Exact<{
 }>;
 
 
-export type GetFormQuery = { __typename?: 'query_root', forms_by_pk?: { __typename?: 'forms', id: string, name: string, product_name: string, product_description?: string | null, settings: any, status: string, is_active: boolean, organization_id: string, created_by: string, created_at: string, updated_at: string } | null };
+export type GetFormQuery = { __typename?: 'query_root', forms_by_pk?: { __typename?: 'forms', id: string, name: string, product_name: string, product_description?: string | null, settings: any, branching_config: any, status: string, is_active: boolean, organization_id: string, created_by: string, created_at: string, updated_at: string } | null };
 
 export type GetFormsQueryVariables = Exact<{
   organizationId: Scalars['String']['input'];
 }>;
 
 
-export type GetFormsQuery = { __typename?: 'query_root', forms: Array<{ __typename?: 'forms', id: string, name: string, product_name: string, product_description?: string | null, settings: any, status: string, is_active: boolean, organization_id: string, created_by: string, created_at: string, updated_at: string }> };
+export type GetFormsQuery = { __typename?: 'query_root', forms: Array<{ __typename?: 'forms', id: string, name: string, product_name: string, product_description?: string | null, settings: any, branching_config: any, status: string, is_active: boolean, organization_id: string, created_by: string, created_at: string, updated_at: string }> };
 
 export type FormQuestionBasicFragment = { __typename?: 'form_questions', id: string, form_id: string, organization_id: string, question_type_id: string, question_key: string, question_text: string, placeholder?: string | null, help_text?: string | null, display_order: number, is_required: boolean, min_length?: number | null, max_length?: number | null, min_value?: number | null, max_value?: number | null, validation_pattern?: string | null, allowed_file_types?: Array<string> | null, max_file_size_kb?: number | null, is_active: boolean, created_at: string, updated_at: string, question_type: { __typename?: 'question_types', id: string, unique_name: string, name: string, category: string, input_component: string } };
-
-export type FormQuestionWithOptionsFragment = { __typename?: 'form_questions', scale_min_label?: string | null, scale_max_label?: string | null, id: string, form_id: string, organization_id: string, question_type_id: string, question_key: string, question_text: string, placeholder?: string | null, help_text?: string | null, display_order: number, is_required: boolean, min_length?: number | null, max_length?: number | null, min_value?: number | null, max_value?: number | null, validation_pattern?: string | null, allowed_file_types?: Array<string> | null, max_file_size_kb?: number | null, is_active: boolean, created_at: string, updated_at: string, options: Array<{ __typename?: 'question_options', id: string, question_id: string, option_value: string, option_label: string, display_order: number, is_default: boolean, is_active: boolean }>, question_type: { __typename?: 'question_types', id: string, unique_name: string, name: string, category: string, input_component: string } };
-
-export type QuestionOptionBasicFragment = { __typename?: 'question_options', id: string, question_id: string, option_value: string, option_label: string, display_order: number, is_default: boolean, is_active: boolean };
 
 export type CreateFormQuestionMutationVariables = Exact<{
   input: Form_Questions_Insert_Input;
@@ -14797,21 +14845,21 @@ export type GetFormQuestionsQueryVariables = Exact<{
 
 export type GetFormQuestionsQuery = { __typename?: 'query_root', form_questions: Array<{ __typename?: 'form_questions', id: string, form_id: string, organization_id: string, question_type_id: string, question_key: string, question_text: string, placeholder?: string | null, help_text?: string | null, display_order: number, is_required: boolean, min_length?: number | null, max_length?: number | null, min_value?: number | null, max_value?: number | null, validation_pattern?: string | null, allowed_file_types?: Array<string> | null, max_file_size_kb?: number | null, is_active: boolean, created_at: string, updated_at: string, question_type: { __typename?: 'question_types', id: string, unique_name: string, name: string, category: string, input_component: string } }> };
 
-export type FormStepBasicFragment = { __typename?: 'form_steps', id: string, form_id: string, step_type: string, step_order: number, question_id?: string | null, content: any, tips?: Array<string> | null, is_active: boolean, created_at: string, updated_at: string };
+export type FormStepBasicFragment = { __typename?: 'form_steps', id: string, form_id: string, step_type: string, step_order: number, question_id?: string | null, content: any, tips?: Array<string> | null, flow_membership: string, is_active: boolean, created_at: string, updated_at: string };
 
 export type CreateFormStepsMutationVariables = Exact<{
   inputs: Array<Form_Steps_Insert_Input> | Form_Steps_Insert_Input;
 }>;
 
 
-export type CreateFormStepsMutation = { __typename?: 'mutation_root', insert_form_steps?: { __typename?: 'form_steps_mutation_response', returning: Array<{ __typename?: 'form_steps', id: string, form_id: string, step_type: string, step_order: number, question_id?: string | null, content: any, tips?: Array<string> | null, is_active: boolean, created_at: string, updated_at: string }> } | null };
+export type CreateFormStepsMutation = { __typename?: 'mutation_root', insert_form_steps?: { __typename?: 'form_steps_mutation_response', returning: Array<{ __typename?: 'form_steps', id: string, form_id: string, step_type: string, step_order: number, question_id?: string | null, content: any, tips?: Array<string> | null, flow_membership: string, is_active: boolean, created_at: string, updated_at: string }> } | null };
 
 export type GetFormStepsQueryVariables = Exact<{
   formId: Scalars['String']['input'];
 }>;
 
 
-export type GetFormStepsQuery = { __typename?: 'query_root', form_steps: Array<{ __typename?: 'form_steps', id: string, form_id: string, step_type: string, step_order: number, question_id?: string | null, content: any, tips?: Array<string> | null, is_active: boolean, created_at: string, updated_at: string, question?: { __typename?: 'form_questions', scale_min_label?: string | null, scale_max_label?: string | null, id: string, form_id: string, organization_id: string, question_type_id: string, question_key: string, question_text: string, placeholder?: string | null, help_text?: string | null, display_order: number, is_required: boolean, min_length?: number | null, max_length?: number | null, min_value?: number | null, max_value?: number | null, validation_pattern?: string | null, allowed_file_types?: Array<string> | null, max_file_size_kb?: number | null, is_active: boolean, created_at: string, updated_at: string, options: Array<{ __typename?: 'question_options', id: string, question_id: string, option_value: string, option_label: string, display_order: number, is_default: boolean, is_active: boolean }>, question_type: { __typename?: 'question_types', id: string, unique_name: string, name: string, category: string, input_component: string } } | null }> };
+export type GetFormStepsQuery = { __typename?: 'query_root', form_steps: Array<{ __typename?: 'form_steps', id: string, form_id: string, step_type: string, step_order: number, question_id?: string | null, content: any, tips?: Array<string> | null, flow_membership: string, is_active: boolean, created_at: string, updated_at: string, question?: { __typename?: 'form_questions', id: string, question_text: string, question_type: { __typename?: 'question_types', id: string, unique_name: string, category: string } } | null }> };
 
 export type OrganizationBasicFragment = { __typename?: 'organizations', id: string, name: string, slug: string, logo_url?: string | null, setup_status: 'pending_setup' | 'completed', is_active: boolean, settings: any, created_at: string, updated_at: string, plans: Array<{ __typename?: 'organization_plans', id: string, plan_id: string, status: string, plan: { __typename?: 'plans', id: string, unique_name: string, name: string, question_types: Array<{ __typename?: 'plan_question_types', question_type: { __typename?: 'question_types', id: string, unique_name: string, name: string, category: string, description?: string | null, icon?: string | null, input_component: string, answer_data_type: string, display_order: number, supports_options: boolean } }> } }> };
 
@@ -14937,6 +14985,7 @@ export const FormBasicFragmentDoc = gql`
   product_name
   product_description
   settings
+  branching_config
   status
   is_active
   organization_id
@@ -14976,28 +15025,6 @@ export const FormQuestionBasicFragmentDoc = gql`
   }
 }
     `;
-export const QuestionOptionBasicFragmentDoc = gql`
-    fragment QuestionOptionBasic on question_options {
-  id
-  question_id
-  option_value
-  option_label
-  display_order
-  is_default
-  is_active
-}
-    `;
-export const FormQuestionWithOptionsFragmentDoc = gql`
-    fragment FormQuestionWithOptions on form_questions {
-  ...FormQuestionBasic
-  scale_min_label
-  scale_max_label
-  options(order_by: {display_order: asc}, where: {is_active: {_eq: true}}) {
-    ...QuestionOptionBasic
-  }
-}
-    ${FormQuestionBasicFragmentDoc}
-${QuestionOptionBasicFragmentDoc}`;
 export const FormStepBasicFragmentDoc = gql`
     fragment FormStepBasic on form_steps {
   id
@@ -15007,6 +15034,7 @@ export const FormStepBasicFragmentDoc = gql`
   question_id
   content
   tips
+  flow_membership
   is_active
   created_at
   updated_at
@@ -15625,12 +15653,17 @@ export const GetFormStepsDocument = gql`
   form_steps(where: {form_id: {_eq: $formId}}, order_by: {step_order: asc}) {
     ...FormStepBasic
     question {
-      ...FormQuestionWithOptions
+      id
+      question_text
+      question_type {
+        id
+        unique_name
+        category
+      }
     }
   }
 }
-    ${FormStepBasicFragmentDoc}
-${FormQuestionWithOptionsFragmentDoc}`;
+    ${FormStepBasicFragmentDoc}`;
 
 /**
  * __useGetFormStepsQuery__

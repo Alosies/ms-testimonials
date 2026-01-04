@@ -56,6 +56,7 @@ const steps = computed((): FormStep[] => {
     questionId: step.question_id ?? null,
     content: (step.content as FormStep['content']) ?? {},
     tips: (step.tips as string[]) ?? [],
+    flowMembership: (step.flow_membership as FormStep['flowMembership']) ?? 'shared',
     isActive: step.is_active,
   }));
 });

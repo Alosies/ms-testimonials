@@ -47,6 +47,7 @@ select_permissions:
         - question_id
         - content
         - tips
+        - flow_membership
       filter:
         _and:
           - is_active:

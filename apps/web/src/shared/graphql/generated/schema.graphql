@@ -3341,6 +3341,10 @@ type form_steps {
   created_by: String
   """An object relationship"""
   creator: users
+  """
+  Which flow this step belongs to: shared (all paths), testimonial (positive rating), or improvement (negative rating)
+  """
+  flow_membership: String!
   """An object relationship"""
   form: forms!
   """
@@ -3506,6 +3510,7 @@ input form_steps_bool_exp {
   created_at: timestamptz_comparison_exp
   created_by: String_comparison_exp
   creator: users_bool_exp
+  flow_membership: String_comparison_exp
   form: forms_bool_exp
   form_id: String_comparison_exp
   id: String_comparison_exp
@@ -3593,6 +3598,10 @@ input form_steps_insert_input {
   """
   created_by: String
   creator: users_obj_rel_insert_input
+  """
+  Which flow this step belongs to: shared (all paths), testimonial (positive rating), or improvement (negative rating)
+  """
+  flow_membership: String
   form: forms_obj_rel_insert_input
   """
   Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed.
@@ -3650,6 +3659,10 @@ type form_steps_max_fields {
   """
   created_by: String
   """
+  Which flow this step belongs to: shared (all paths), testimonial (positive rating), or improvement (negative rating)
+  """
+  flow_membership: String
+  """
   Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed.
   """
   form_id: String
@@ -3700,6 +3713,10 @@ input form_steps_max_order_by {
   """
   created_by: order_by
   """
+  Which flow this step belongs to: shared (all paths), testimonial (positive rating), or improvement (negative rating)
+  """
+  flow_membership: order_by
+  """
   Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed.
   """
   form_id: order_by
@@ -3747,6 +3764,10 @@ type form_steps_min_fields {
   Foreign key to users table. Records which user originally created this step for audit purposes.
   """
   created_by: String
+  """
+  Which flow this step belongs to: shared (all paths), testimonial (positive rating), or improvement (negative rating)
+  """
+  flow_membership: String
   """
   Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed.
   """
@@ -3797,6 +3818,10 @@ input form_steps_min_order_by {
   Foreign key to users table. Records which user originally created this step for audit purposes.
   """
   created_by: order_by
+  """
+  Which flow this step belongs to: shared (all paths), testimonial (positive rating), or improvement (negative rating)
+  """
+  flow_membership: order_by
   """
   Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed.
   """
@@ -3860,6 +3885,7 @@ input form_steps_order_by {
   created_at: order_by
   created_by: order_by
   creator: users_order_by
+  flow_membership: order_by
   form: forms_order_by
   form_id: order_by
   id: order_by
@@ -3902,6 +3928,8 @@ enum form_steps_select_column {
   created_at
   """column name"""
   created_by
+  """column name"""
+  flow_membership
   """column name"""
   form_id
   """column name"""
@@ -3956,6 +3984,10 @@ input form_steps_set_input {
   Foreign key to users table. Records which user originally created this step for audit purposes.
   """
   created_by: String
+  """
+  Which flow this step belongs to: shared (all paths), testimonial (positive rating), or improvement (negative rating)
+  """
+  flow_membership: String
   """
   Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed.
   """
@@ -4077,6 +4109,10 @@ input form_steps_stream_cursor_value_input {
   """
   created_by: String
   """
+  Which flow this step belongs to: shared (all paths), testimonial (positive rating), or improvement (negative rating)
+  """
+  flow_membership: String
+  """
   Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed.
   """
   form_id: String
@@ -4146,6 +4182,8 @@ enum form_steps_update_column {
   created_at
   """column name"""
   created_by
+  """column name"""
+  flow_membership
   """column name"""
   form_id
   """column name"""
@@ -4697,6 +4735,13 @@ input form_submissions_updates {
 Testimonial collection forms - questions normalized to form_questions table
 """
 type forms {
+  """
+  Branching configuration: { enabled: boolean, threshold: number (rating cutoff), ratingStepId: string | null (step that triggers branching) }
+  """
+  branching_config(
+    """JSON select path"""
+    path: String
+  ): jsonb!
   """An array relationship"""
   contacts(
     """distinct select on columns"""
@@ -4900,6 +4945,10 @@ input forms_aggregate_order_by {
 """append existing jsonb value of filtered columns with new jsonb value"""
 input forms_append_input {
   """
+  Branching configuration: { enabled: boolean, threshold: number (rating cutoff), ratingStepId: string | null (step that triggers branching) }
+  """
+  branching_config: jsonb
+  """
   UI preferences only (theme colors, branding) - NOT business logic. JSONB appropriate here
   """
   settings: jsonb
@@ -4921,6 +4970,7 @@ input forms_bool_exp {
   _and: [forms_bool_exp!]
   _not: forms_bool_exp
   _or: [forms_bool_exp!]
+  branching_config: jsonb_comparison_exp
   contacts: contacts_bool_exp
   contacts_aggregate: contacts_aggregate_bool_exp
   created_at: timestamptz_comparison_exp
@@ -4961,6 +5011,10 @@ delete the field or element with specified path (for JSON arrays, negative integ
 """
 input forms_delete_at_path_input {
   """
+  Branching configuration: { enabled: boolean, threshold: number (rating cutoff), ratingStepId: string | null (step that triggers branching) }
+  """
+  branching_config: [String!]
+  """
   UI preferences only (theme colors, branding) - NOT business logic. JSONB appropriate here
   """
   settings: [String!]
@@ -4970,6 +5024,10 @@ input forms_delete_at_path_input {
 delete the array element with specified index (negative integers count from the end). throws an error if top level container is not an array
 """
 input forms_delete_elem_input {
+  """
+  Branching configuration: { enabled: boolean, threshold: number (rating cutoff), ratingStepId: string | null (step that triggers branching) }
+  """
+  branching_config: Int
   """
   UI preferences only (theme colors, branding) - NOT business logic. JSONB appropriate here
   """
@@ -4981,6 +5039,10 @@ delete key/value pair or string element. key/value pairs are matched based on th
 """
 input forms_delete_key_input {
   """
+  Branching configuration: { enabled: boolean, threshold: number (rating cutoff), ratingStepId: string | null (step that triggers branching) }
+  """
+  branching_config: String
+  """
   UI preferences only (theme colors, branding) - NOT business logic. JSONB appropriate here
   """
   settings: String
@@ -4990,6 +5052,10 @@ input forms_delete_key_input {
 input type for inserting data into table "forms"
 """
 input forms_insert_input {
+  """
+  Branching configuration: { enabled: boolean, threshold: number (rating cutoff), ratingStepId: string | null (step that triggers branching) }
+  """
+  branching_config: jsonb
   contacts: contacts_arr_rel_insert_input
   """Timestamp when form was created. Immutable after insert"""
   created_at: timestamptz
@@ -5185,6 +5251,7 @@ input forms_on_conflict {
 
 """Ordering options when selecting data from "forms"."""
 input forms_order_by {
+  branching_config: order_by
   contacts_aggregate: contacts_aggregate_order_by
   created_at: order_by
   created_by: order_by
@@ -5215,6 +5282,10 @@ input forms_pk_columns_input {
 """prepend existing jsonb value of filtered columns with new jsonb value"""
 input forms_prepend_input {
   """
+  Branching configuration: { enabled: boolean, threshold: number (rating cutoff), ratingStepId: string | null (step that triggers branching) }
+  """
+  branching_config: jsonb
+  """
   UI preferences only (theme colors, branding) - NOT business logic. JSONB appropriate here
   """
   settings: jsonb
@@ -5224,6 +5295,8 @@ input forms_prepend_input {
 select columns of table "forms"
 """
 enum forms_select_column {
+  """column name"""
+  branching_config
   """column name"""
   created_at
   """column name"""
@@ -5270,6 +5343,10 @@ enum forms_select_column_forms_aggregate_bool_exp_bool_or_arguments_columns {
 input type for updating data in table "forms"
 """
 input forms_set_input {
+  """
+  Branching configuration: { enabled: boolean, threshold: number (rating cutoff), ratingStepId: string | null (step that triggers branching) }
+  """
+  branching_config: jsonb
   """Timestamp when form was created. Immutable after insert"""
   created_at: timestamptz
   """FK to users - user who created this form"""
@@ -5316,6 +5393,10 @@ input forms_stream_cursor_input {
 
 """Initial value of the column from where the streaming should start"""
 input forms_stream_cursor_value_input {
+  """
+  Branching configuration: { enabled: boolean, threshold: number (rating cutoff), ratingStepId: string | null (step that triggers branching) }
+  """
+  branching_config: jsonb
   """Timestamp when form was created. Immutable after insert"""
   created_at: timestamptz
   """FK to users - user who created this form"""
@@ -5354,6 +5435,8 @@ input forms_stream_cursor_value_input {
 update columns of table "forms"
 """
 enum forms_update_column {
+  """column name"""
+  branching_config
   """column name"""
   created_at
   """column name"""

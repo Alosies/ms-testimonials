@@ -111,6 +111,7 @@ watch(formSteps, (steps) => {
       } : null,
       content: (step.content as StepContent) ?? {},
       tips: (step.tips as string[]) ?? [],
+      flowMembership: (step.flow_membership as FormStep['flowMembership']) ?? 'shared',
       isActive: step.is_active,
       isNew: false,
       isModified: false,

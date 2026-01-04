@@ -150,6 +150,7 @@ export const useTimelineEditor = createSharedComposable(() => {
       questionId: null,
       content: {},
       tips: [],
+      flowMembership: 'shared',
       isActive: true,
       isNew: true,
       isModified: false,

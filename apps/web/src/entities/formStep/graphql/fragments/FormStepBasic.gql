@@ -6,6 +6,7 @@ fragment FormStepBasic on form_steps {
   question_id
   content
   tips
+  flow_membership
   is_active
   created_at
   updated_at

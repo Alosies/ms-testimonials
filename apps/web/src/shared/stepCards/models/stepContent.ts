@@ -25,6 +25,14 @@ export type StepType =
   | 'thank_you';
 
 /**
+ * Flow membership for conditional branching
+ * - 'shared': Step appears in all flows (before branch point)
+ * - 'testimonial': Step appears only in positive rating flow
+ * - 'improvement': Step appears only in negative rating flow
+ */
+export type FlowMembership = 'shared' | 'testimonial' | 'improvement';
+
+/**
  * Contact field options
  */
 export type ContactField =
@@ -148,6 +156,8 @@ export interface FormStep {
   content: StepContent;
   tips: string[];
   isActive: boolean;
+  // Flow membership for conditional branching
+  flowMembership: FlowMembership;
   // Local UI state
   isNew?: boolean;
   isModified?: boolean;

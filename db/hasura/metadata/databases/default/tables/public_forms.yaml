@@ -69,6 +69,7 @@ select_permissions:
         - product_description
         - settings
         - status
+        - branching_config
       filter:
         _and:
           - is_active:

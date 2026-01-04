@@ -4,6 +4,7 @@ fragment FormBasic on forms {
   product_name
   product_description
   settings
+  branching_config
   status
   is_active
   organization_id

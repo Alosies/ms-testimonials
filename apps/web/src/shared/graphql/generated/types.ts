@@ -2553,6 +2553,8 @@ export interface Form_Steps {
   created_by?: Maybe<Scalars['String']['output']>;
   /** An object relationship */
   creator?: Maybe<Users>;
+  /** Which flow this step belongs to: shared (all paths), testimonial (positive rating), or improvement (negative rating) */
+  flow_membership: Scalars['String']['output'];
   /** An object relationship */
   form: Forms;
   /** Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed. */
@@ -2696,6 +2698,7 @@ export interface Form_Steps_Bool_Exp {
   created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
   created_by?: InputMaybe<String_Comparison_Exp>;
   creator?: InputMaybe<Users_Bool_Exp>;
+  flow_membership?: InputMaybe<String_Comparison_Exp>;
   form?: InputMaybe<Forms_Bool_Exp>;
   form_id?: InputMaybe<String_Comparison_Exp>;
   id?: InputMaybe<String_Comparison_Exp>;
@@ -2754,6 +2757,8 @@ export interface Form_Steps_Insert_Input {
   /** Foreign key to users table. Records which user originally created this step for audit purposes. */
   created_by?: InputMaybe<Scalars['String']['input']>;
   creator?: InputMaybe<Users_Obj_Rel_Insert_Input>;
+  /** Which flow this step belongs to: shared (all paths), testimonial (positive rating), or improvement (negative rating) */
+  flow_membership?: InputMaybe<Scalars['String']['input']>;
   form?: InputMaybe<Forms_Obj_Rel_Insert_Input>;
   /** Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed. */
   form_id?: InputMaybe<Scalars['String']['input']>;
@@ -2787,6 +2792,8 @@ export interface Form_Steps_Max_Fields {
   created_at?: Maybe<Scalars['timestamptz']['output']>;
   /** Foreign key to users table. Records which user originally created this step for audit purposes. */
   created_by?: Maybe<Scalars['String']['output']>;
+  /** Which flow this step belongs to: shared (all paths), testimonial (positive rating), or improvement (negative rating) */
+  flow_membership?: Maybe<Scalars['String']['output']>;
   /** Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed. */
   form_id?: Maybe<Scalars['String']['output']>;
   /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
@@ -2813,6 +2820,8 @@ export interface Form_Steps_Max_Order_By {
   created_at?: InputMaybe<Order_By>;
   /** Foreign key to users table. Records which user originally created this step for audit purposes. */
   created_by?: InputMaybe<Order_By>;
+  /** Which flow this step belongs to: shared (all paths), testimonial (positive rating), or improvement (negative rating) */
+  flow_membership?: InputMaybe<Order_By>;
   /** Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed. */
   form_id?: InputMaybe<Order_By>;
   /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
@@ -2840,6 +2849,8 @@ export interface Form_Steps_Min_Fields {
   created_at?: Maybe<Scalars['timestamptz']['output']>;
   /** Foreign key to users table. Records which user originally created this step for audit purposes. */
   created_by?: Maybe<Scalars['String']['output']>;
+  /** Which flow this step belongs to: shared (all paths), testimonial (positive rating), or improvement (negative rating) */
+  flow_membership?: Maybe<Scalars['String']['output']>;
   /** Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed. */
   form_id?: Maybe<Scalars['String']['output']>;
   /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
@@ -2866,6 +2877,8 @@ export interface Form_Steps_Min_Order_By {
   created_at?: InputMaybe<Order_By>;
   /** Foreign key to users table. Records which user originally created this step for audit purposes. */
   created_by?: InputMaybe<Order_By>;
+  /** Which flow this step belongs to: shared (all paths), testimonial (positive rating), or improvement (negative rating) */
+  flow_membership?: InputMaybe<Order_By>;
   /** Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed. */
   form_id?: InputMaybe<Order_By>;
   /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
@@ -2908,6 +2921,7 @@ export interface Form_Steps_Order_By {
   created_at?: InputMaybe<Order_By>;
   created_by?: InputMaybe<Order_By>;
   creator?: InputMaybe<Users_Order_By>;
+  flow_membership?: InputMaybe<Order_By>;
   form?: InputMaybe<Forms_Order_By>;
   form_id?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
@@ -2944,6 +2958,8 @@ export const Form_Steps_Select_Column = {
   CreatedAt: 'created_at',
   /** column name */
   CreatedBy: 'created_by',
+  /** column name */
+  FlowMembership: 'flow_membership',
   /** column name */
   FormId: 'form_id',
   /** column name */
@@ -2989,6 +3005,8 @@ export interface Form_Steps_Set_Input {
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
   /** Foreign key to users table. Records which user originally created this step for audit purposes. */
   created_by?: InputMaybe<Scalars['String']['input']>;
+  /** Which flow this step belongs to: shared (all paths), testimonial (positive rating), or improvement (negative rating) */
+  flow_membership?: InputMaybe<Scalars['String']['input']>;
   /** Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed. */
   form_id?: InputMaybe<Scalars['String']['input']>;
   /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
@@ -3066,6 +3084,8 @@ export interface Form_Steps_Stream_Cursor_Value_Input {
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
   /** Foreign key to users table. Records which user originally created this step for audit purposes. */
   created_by?: InputMaybe<Scalars['String']['input']>;
+  /** Which flow this step belongs to: shared (all paths), testimonial (positive rating), or improvement (negative rating) */
+  flow_membership?: InputMaybe<Scalars['String']['input']>;
   /** Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed. */
   form_id?: InputMaybe<Scalars['String']['input']>;
   /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
@@ -3109,6 +3129,8 @@ export const Form_Steps_Update_Column = {
   CreatedAt: 'created_at',
   /** column name */
   CreatedBy: 'created_by',
+  /** column name */
+  FlowMembership: 'flow_membership',
   /** column name */
   FormId: 'form_id',
   /** column name */
@@ -3599,6 +3621,8 @@ export interface Form_Submissions_Updates {
 /** Testimonial collection forms - questions normalized to form_questions table */
 export interface Forms {
   __typename?: 'forms';
+  /** Branching configuration: { enabled: boolean, threshold: number (rating cutoff), ratingStepId: string | null (step that triggers branching) } */
+  branching_config: Scalars['jsonb']['output'];
   /** An array relationship */
   contacts: Array<Contacts>;
   /** An aggregate relationship */
@@ -3645,6 +3669,12 @@ export interface Forms {
   updated_by?: Maybe<Scalars['String']['output']>;
   /** An object relationship */
   updater?: Maybe<Users>;
+}
+
+
+/** Testimonial collection forms - questions normalized to form_questions table */
+export interface Forms_Branching_ConfigArgs {
+  path?: InputMaybe<Scalars['String']['input']>;
 }
 
 
@@ -3791,6 +3821,8 @@ export interface Forms_Aggregate_Order_By {
 
 /** append existing jsonb value of filtered columns with new jsonb value */
 export interface Forms_Append_Input {
+  /** Branching configuration: { enabled: boolean, threshold: number (rating cutoff), ratingStepId: string | null (step that triggers branching) } */
+  branching_config?: InputMaybe<Scalars['jsonb']['input']>;
   /** UI preferences only (theme colors, branding) - NOT business logic. JSONB appropriate here */
   settings?: InputMaybe<Scalars['jsonb']['input']>;
 }
@@ -3807,6 +3839,7 @@ export interface Forms_Bool_Exp {
   _and?: InputMaybe<Array<Forms_Bool_Exp>>;
   _not?: InputMaybe<Forms_Bool_Exp>;
   _or?: InputMaybe<Array<Forms_Bool_Exp>>;
+  branching_config?: InputMaybe<Jsonb_Comparison_Exp>;
   contacts?: InputMaybe<Contacts_Bool_Exp>;
   contacts_aggregate?: InputMaybe<Contacts_Aggregate_Bool_Exp>;
   created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
@@ -3841,24 +3874,32 @@ export const Forms_Constraint = {
 export type Forms_Constraint = typeof Forms_Constraint[keyof typeof Forms_Constraint];
 /** delete the field or element with specified path (for JSON arrays, negative integers count from the end) */
 export interface Forms_Delete_At_Path_Input {
+  /** Branching configuration: { enabled: boolean, threshold: number (rating cutoff), ratingStepId: string | null (step that triggers branching) } */
+  branching_config?: InputMaybe<Array<Scalars['String']['input']>>;
   /** UI preferences only (theme colors, branding) - NOT business logic. JSONB appropriate here */
   settings?: InputMaybe<Array<Scalars['String']['input']>>;
 }
 
 /** delete the array element with specified index (negative integers count from the end). throws an error if top level container is not an array */
 export interface Forms_Delete_Elem_Input {
+  /** Branching configuration: { enabled: boolean, threshold: number (rating cutoff), ratingStepId: string | null (step that triggers branching) } */
+  branching_config?: InputMaybe<Scalars['Int']['input']>;
   /** UI preferences only (theme colors, branding) - NOT business logic. JSONB appropriate here */
   settings?: InputMaybe<Scalars['Int']['input']>;
 }
 
 /** delete key/value pair or string element. key/value pairs are matched based on their key value */
 export interface Forms_Delete_Key_Input {
+  /** Branching configuration: { enabled: boolean, threshold: number (rating cutoff), ratingStepId: string | null (step that triggers branching) } */
+  branching_config?: InputMaybe<Scalars['String']['input']>;
   /** UI preferences only (theme colors, branding) - NOT business logic. JSONB appropriate here */
   settings?: InputMaybe<Scalars['String']['input']>;
 }
 
 /** input type for inserting data into table "forms" */
 export interface Forms_Insert_Input {
+  /** Branching configuration: { enabled: boolean, threshold: number (rating cutoff), ratingStepId: string | null (step that triggers branching) } */
+  branching_config?: InputMaybe<Scalars['jsonb']['input']>;
   contacts?: InputMaybe<Contacts_Arr_Rel_Insert_Input>;
   /** Timestamp when form was created. Immutable after insert */
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
@@ -4015,6 +4056,7 @@ export interface Forms_On_Conflict {
 
 /** Ordering options when selecting data from "forms". */
 export interface Forms_Order_By {
+  branching_config?: InputMaybe<Order_By>;
   contacts_aggregate?: InputMaybe<Contacts_Aggregate_Order_By>;
   created_at?: InputMaybe<Order_By>;
   created_by?: InputMaybe<Order_By>;
@@ -4044,12 +4086,16 @@ export interface Forms_Pk_Columns_Input {
 
 /** prepend existing jsonb value of filtered columns with new jsonb value */
 export interface Forms_Prepend_Input {
+  /** Branching configuration: { enabled: boolean, threshold: number (rating cutoff), ratingStepId: string | null (step that triggers branching) } */
+  branching_config?: InputMaybe<Scalars['jsonb']['input']>;
   /** UI preferences only (theme colors, branding) - NOT business logic. JSONB appropriate here */
   settings?: InputMaybe<Scalars['jsonb']['input']>;
 }
 
 /** select columns of table "forms" */
 export const Forms_Select_Column = {
+  /** column name */
+  BranchingConfig: 'branching_config',
   /** column name */
   CreatedAt: 'created_at',
   /** column name */
@@ -4093,6 +4139,8 @@ export const Forms_Select_Column_Forms_Aggregate_Bool_Exp_Bool_Or_Arguments_Colu
 export type Forms_Select_Column_Forms_Aggregate_Bool_Exp_Bool_Or_Arguments_Columns = typeof Forms_Select_Column_Forms_Aggregate_Bool_Exp_Bool_Or_Arguments_Columns[keyof typeof Forms_Select_Column_Forms_Aggregate_Bool_Exp_Bool_Or_Arguments_Columns];
 /** input type for updating data in table "forms" */
 export interface Forms_Set_Input {
+  /** Branching configuration: { enabled: boolean, threshold: number (rating cutoff), ratingStepId: string | null (step that triggers branching) } */
+  branching_config?: InputMaybe<Scalars['jsonb']['input']>;
   /** Timestamp when form was created. Immutable after insert */
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
   /** FK to users - user who created this form */
@@ -4129,6 +4177,8 @@ export interface Forms_Stream_Cursor_Input {
 
 /** Initial value of the column from where the streaming should start */
 export interface Forms_Stream_Cursor_Value_Input {
+  /** Branching configuration: { enabled: boolean, threshold: number (rating cutoff), ratingStepId: string | null (step that triggers branching) } */
+  branching_config?: InputMaybe<Scalars['jsonb']['input']>;
   /** Timestamp when form was created. Immutable after insert */
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
   /** FK to users - user who created this form */
@@ -4157,6 +4207,8 @@ export interface Forms_Stream_Cursor_Value_Input {
 
 /** update columns of table "forms" */
 export const Forms_Update_Column = {
+  /** column name */
+  BranchingConfig: 'branching_config',
   /** column name */
   CreatedAt: 'created_at',
   /** column name */
