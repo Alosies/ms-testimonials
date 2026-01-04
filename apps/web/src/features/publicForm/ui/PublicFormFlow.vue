@@ -98,7 +98,7 @@ function handleWelcomeStart() {
       />
     </div>
 
-    <div class="w-full max-w-xl">
+    <div class="w-full max-w-4xl px-4">
       <!-- Step card -->
       <StepCardContainer
         v-if="flow.currentStep.value"

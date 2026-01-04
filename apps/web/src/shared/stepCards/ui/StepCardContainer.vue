@@ -36,8 +36,8 @@ const isPreviewMode = computed(() => props.mode === 'preview');
   <div
     class="relative mx-auto rounded-xl border bg-background shadow-sm transition-all duration-200"
     :class="{
-      // Preview mode: larger card matching Form Studio dimensions
-      'max-w-2xl aspect-[16/10]': isPreviewMode,
+      // Preview mode: full width with 16/10 aspect ratio (matches Form Studio)
+      'w-full aspect-[16/10]': isPreviewMode,
       // Edit mode: smaller card
       'max-w-lg': isEditMode,
       'group': isEditMode,
@@ -106,7 +106,7 @@ const isPreviewMode = computed(() => props.mode === 'preview');
     <!-- Card content -->
     <div
       class="h-full flex flex-col items-center justify-center"
-      :class="isPreviewMode ? 'p-8 md:p-12' : 'p-6'"
+      :class="isPreviewMode ? 'py-12 px-10' : 'p-6'"
     >
       <slot />
     </div>
