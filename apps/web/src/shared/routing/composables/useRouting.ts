@@ -77,9 +77,9 @@ function useRoutingCore(): RoutingUtilities {
     return withOrgPrefix(`/forms/${urlSlug}`)
   }
 
-  const getFormEditPath = (form: FormRef) => {
+  const getFormStudioPath = (form: FormRef) => {
     const urlSlug = createEntityUrlSlug(form.name, form.id)
-    return withOrgPrefix(`/forms/${urlSlug}/edit`)
+    return withOrgPrefix(`/forms/${urlSlug}/studio`)
   }
 
   const getFormResponsesPath = (form: FormRef) => {
@@ -128,8 +128,8 @@ function useRoutingCore(): RoutingUtilities {
     navigate(getFormPath(form), options)
   const goToFormResponses = (form: FormRef, options?: NavigationOptions) =>
     navigate(getFormResponsesPath(form), options)
-  const goToFormEdit = (form: FormRef, options?: NavigationOptions) =>
-    navigate(getFormEditPath(form), options)
+  const goToFormStudio = (form: FormRef, options?: NavigationOptions) =>
+    navigate(getFormStudioPath(form), options)
   const goToFormSettings = (form: FormRef, options?: NavigationOptions) =>
     navigate(getFormSettingsPath(form), options)
 
@@ -167,7 +167,7 @@ function useRoutingCore(): RoutingUtilities {
 
     // Dynamic path getters
     getFormPath,
-    getFormEditPath,
+    getFormStudioPath,
     getFormResponsesPath,
     getFormSettingsPath,
     getTestimonialPath,
@@ -178,7 +178,7 @@ function useRoutingCore(): RoutingUtilities {
     goToForms,
     goToNewForm,
     goToForm,
-    goToFormEdit,
+    goToFormStudio,
     goToFormResponses,
     goToFormSettings,
     goToTestimonials,

@@ -54,7 +54,7 @@ export interface RoutingUtilities {
 
   // Dynamic path getters (using slug_id pattern)
   getFormPath: (form: FormRef) => string
-  getFormEditPath: (form: FormRef) => string
+  getFormStudioPath: (form: FormRef) => string
   getFormResponsesPath: (form: FormRef) => string
   getFormSettingsPath: (form: FormRef) => string
   getTestimonialPath: (testimonial: TestimonialRef) => string
@@ -65,7 +65,7 @@ export interface RoutingUtilities {
   goToForms: () => void
   goToNewForm: () => void
   goToForm: (form: FormRef, options?: NavigationOptions) => void
-  goToFormEdit: (form: FormRef, options?: NavigationOptions) => void
+  goToFormStudio: (form: FormRef, options?: NavigationOptions) => void
   goToFormResponses: (form: FormRef, options?: NavigationOptions) => void
   goToFormSettings: (form: FormRef, options?: NavigationOptions) => void
   goToTestimonials: () => void
