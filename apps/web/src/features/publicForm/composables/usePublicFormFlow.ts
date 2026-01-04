@@ -1,21 +1,23 @@
-import { ref, computed } from 'vue';
+import { ref, computed, type Ref } from 'vue';
 import type { FormStep } from '@/shared/stepCards';
 
 /**
  * Composable for managing the public form flow state
  * Handles step navigation and response collection
+ *
+ * @param steps - Reactive ref of form steps (reacts to changes)
  */
-export function usePublicFormFlow(steps: FormStep[]) {
+export function usePublicFormFlow(steps: Ref<FormStep[]>) {
   const currentStepIndex = ref(0);
   const responses = ref<Record<string, unknown>>({});
 
-  const currentStep = computed(() => steps[currentStepIndex.value] ?? null);
+  const currentStep = computed(() => steps.value[currentStepIndex.value] ?? null);
   const isFirstStep = computed(() => currentStepIndex.value === 0);
-  const isLastStep = computed(() => currentStepIndex.value === steps.length - 1);
-  const progress = computed(() => ((currentStepIndex.value + 1) / steps.length) * 100);
+  const isLastStep = computed(() => currentStepIndex.value === steps.value.length - 1);
+  const progress = computed(() => ((currentStepIndex.value + 1) / steps.value.length) * 100);
 
   function goToNext() {
-    if (currentStepIndex.value < steps.length - 1) {
+    if (currentStepIndex.value < steps.value.length - 1) {
       currentStepIndex.value++;
     }
   }
@@ -27,7 +29,7 @@ export function usePublicFormFlow(steps: FormStep[]) {
   }
 
   function goToStep(index: number) {
-    if (index >= 0 && index < steps.length) {
+    if (index >= 0 && index < steps.value.length) {
       currentStepIndex.value = index;
     }
   }

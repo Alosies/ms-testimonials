@@ -5,10 +5,10 @@
  * Renders form steps in preview mode for testimonial collection.
  * Uses shared step card components with mode="preview".
  */
-import { computed, toRef } from 'vue';
+import { computed, toRef, type Component } from 'vue';
 import { Button } from '@testimonials/ui';
 import { Icon } from '@testimonials/icons';
-import type { FormStep } from '@/shared/stepCards';
+import type { FormStep, StepType } from '@/shared/stepCards';
 import {
   StepCardContainer,
   WelcomeStepCard,
@@ -29,9 +29,9 @@ interface Props {
 const props = defineProps<Props>();
 
 const stepsRef = toRef(props, 'steps');
-const flow = usePublicFormFlow(stepsRef.value);
+const flow = usePublicFormFlow(stepsRef);
 
-const stepCardComponents: Record<string, unknown> = {
+const stepCardComponents: Record<StepType, Component> = {
   welcome: WelcomeStepCard,
   question: QuestionStepCard,
   rating: RatingStepCard,
