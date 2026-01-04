@@ -1,17 +1,19 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
-import StepCard from './StepCard.vue';
 import TimelineConnector from './TimelineConnector.vue';
-import WelcomeStepCard from './stepCards/WelcomeStepCard.vue';
-import QuestionStepCard from './stepCards/QuestionStepCard.vue';
-import RatingStepCard from './stepCards/RatingStepCard.vue';
-import ConsentStepCard from './stepCards/ConsentStepCard.vue';
-import ContactInfoStepCard from './stepCards/ContactInfoStepCard.vue';
-import RewardStepCard from './stepCards/RewardStepCard.vue';
-import ThankYouStepCard from './stepCards/ThankYouStepCard.vue';
 import StepTypePicker from '../stepsSidebar/StepTypePicker.vue';
 import { useTimelineEditor } from '../../composables/timeline';
-import type { StepType, FormStep } from '../../models/stepContent';
+import type { StepType, FormStep } from '@/shared/stepCards';
+import {
+  StepCardContainer,
+  WelcomeStepCard,
+  QuestionStepCard,
+  RatingStepCard,
+  ConsentStepCard,
+  ContactInfoStepCard,
+  RewardStepCard,
+  ThankYouStepCard,
+} from '@/shared/stepCards';
 
 // Direct import - fully typed, no inject needed
 const editor = useTimelineEditor();
@@ -60,9 +62,9 @@ const stepCardComponents: Record<string, unknown> = {
       <template v-for="(step, index) in editor.steps.value" :key="step.id">
         <!-- Step Card -->
         <div :data-step-index="index">
-          <StepCard
+          <StepCardContainer
+            mode="edit"
             :is-selected="index === editor.selectedIndex.value"
-            :step-number="index + 1"
             :step-type="step.stepType"
             @select="editor.selectStep(index)"
             @edit="editor.handleEditStep(index)"
@@ -72,8 +74,9 @@ const stepCardComponents: Record<string, unknown> = {
             <component
               :is="stepCardComponents[step.stepType]"
               :step="step as FormStep"
+              mode="edit"
             />
-          </StepCard>
+          </StepCardContainer>
         </div>
 
         <!-- Connector between steps -->

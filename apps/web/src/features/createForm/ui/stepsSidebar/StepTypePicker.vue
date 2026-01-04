@@ -6,7 +6,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@testimonials/ui';
-import type { StepType } from '../../models/stepContent';
+import type { StepType } from '@/shared/stepCards';
 import { STEP_TYPE_OPTIONS } from '../../constants';
 
 interface Props {

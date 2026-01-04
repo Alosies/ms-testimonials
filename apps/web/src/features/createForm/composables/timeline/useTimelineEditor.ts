@@ -1,6 +1,6 @@
 import { ref, readonly, computed, nextTick } from 'vue';
 import { createSharedComposable } from '@vueuse/core';
-import type { FormStep, StepType, StepContent, FormContext } from '../../models/stepContent';
+import type { FormStep, StepType, StepContent, FormContext } from '@/shared/stepCards';
 import {
   createDefaultWelcomeContent,
   createDefaultThankYouContent,

@@ -7,7 +7,7 @@
  */
 import { useTimelineEditor } from '../../composables/timeline';
 import type { FormStep } from '../../models';
-import type { StepType } from '../../models/stepContent';
+import type { StepType } from '@/shared/stepCards';
 import TimelineStepCard from './TimelineStepCard.vue';
 import TimelineEmptyState from './TimelineEmptyState.vue';
 

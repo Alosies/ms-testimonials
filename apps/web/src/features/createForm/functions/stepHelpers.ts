@@ -1,4 +1,4 @@
-import type { FormStep, StepType } from '../models/stepContent';
+import type { FormStep, StepType } from '@/shared/stepCards';
 import { STEP_TYPE_CONFIGS } from '../constants';
 
 /**

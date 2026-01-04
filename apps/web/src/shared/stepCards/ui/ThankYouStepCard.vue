@@ -1,14 +1,17 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { Icon } from '@testimonials/icons';
-import type { FormStep, ThankYouContent } from '../../../models/stepContent';
-import { isThankYouStep } from '../../../functions';
+import type { FormStep, ThankYouContent, StepCardMode } from '../models';
+import { isThankYouStep } from '../functions';
 
 interface Props {
   step: FormStep;
+  mode?: StepCardMode;
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  mode: 'preview',
+});
 
 const content = computed((): ThankYouContent | null => {
   if (isThankYouStep(props.step)) {
@@ -20,7 +23,9 @@ const content = computed((): ThankYouContent | null => {
 
 <template>
   <div v-if="content" class="text-center">
-    <div class="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-3">
+    <div
+      class="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-3"
+    >
       <Icon icon="heroicons:check" class="w-6 h-6 text-emerald-600" />
     </div>
     <h3 class="font-medium mb-1">{{ content.title }}</h3>

@@ -1,5 +1,5 @@
 import { ref, watch, onMounted, onUnmounted, type Ref } from 'vue';
-import type { FormStep, StepContent } from '../../models/stepContent';
+import type { FormStep, StepContent } from '@/shared/stepCards';
 
 export interface UseStepEditorPanelOptions {
   selectedStep: Ref<FormStep | null>;

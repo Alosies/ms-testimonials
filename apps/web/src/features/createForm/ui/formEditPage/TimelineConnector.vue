@@ -7,7 +7,7 @@
  */
 import { ref } from 'vue';
 import { Icon } from '@testimonials/icons';
-import type { StepType } from '../../models/stepContent';
+import type { StepType } from '@/shared/stepCards';
 import StepTypePicker from '../stepsSidebar/StepTypePicker.vue';
 
 const emit = defineEmits<{

@@ -1,14 +1,22 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import { Icon } from '@testimonials/icons';
 import { Kbd } from '@testimonials/ui';
+import type { StepCardMode } from '../models';
 
 interface Props {
-  isSelected: boolean;
-  stepNumber: number;
+  /** Display mode - 'edit' shows action buttons, 'preview' is read-only */
+  mode: StepCardMode;
+  /** Whether this step is currently selected (edit mode only) */
+  isSelected?: boolean;
+  /** Step type identifier */
   stepType: string;
 }
 
-defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  mode: 'preview',
+  isSelected: false,
+});
 
 const emit = defineEmits<{
   (e: 'select'): void;
@@ -16,19 +24,23 @@ const emit = defineEmits<{
   (e: 'delete'): void;
   (e: 'reorder', direction: 'up' | 'down'): void;
 }>();
+
+const isEditMode = computed(() => props.mode === 'edit');
 </script>
 
 <template>
   <div
-    class="group relative max-w-lg mx-auto rounded-xl border bg-background shadow-sm transition-all duration-200"
+    class="relative max-w-lg mx-auto rounded-xl border bg-background shadow-sm transition-all duration-200"
     :class="{
-      'ring-2 ring-primary border-primary': isSelected,
-      'hover:border-primary/50 hover:shadow-md': !isSelected,
+      'group': isEditMode,
+      'ring-2 ring-primary border-primary': isEditMode && isSelected,
+      'hover:border-primary/50 hover:shadow-md cursor-pointer': isEditMode && !isSelected,
     }"
-    @click="emit('select')"
+    @click="isEditMode && emit('select')"
   >
-    <!-- Top-right action icons - always visible but faded, full opacity on hover -->
+    <!-- Edit mode: Top-right action icons -->
     <div
+      v-if="isEditMode"
       class="absolute top-3 right-3 z-10 flex items-center gap-2 rounded-lg bg-background/90 backdrop-blur-sm px-2 py-1.5 shadow-sm border border-border/50 opacity-40 group-hover:opacity-100 transition-opacity duration-200"
     >
       <button
@@ -45,12 +57,13 @@ const emit = defineEmits<{
         @click.stop="emit('delete')"
       >
         <Icon icon="heroicons:trash" class="h-4 w-4 text-muted-foreground hover:text-destructive" />
-        <Kbd size="sm">⌫</Kbd>
+        <Kbd size="sm">Del</Kbd>
       </button>
     </div>
 
-    <!-- Reorder buttons - left side, faded until hover -->
+    <!-- Edit mode: Reorder buttons on left side -->
     <div
+      v-if="isEditMode"
       class="absolute top-1/2 -translate-y-1/2 -left-10 flex flex-col gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
     >
       <button
@@ -69,7 +82,7 @@ const emit = defineEmits<{
       </button>
     </div>
 
-    <!-- Card content (slot for variants) -->
+    <!-- Card content -->
     <div class="p-6">
       <slot />
     </div>

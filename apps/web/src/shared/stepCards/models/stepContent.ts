@@ -1,6 +1,7 @@
-// Re-export generated types (will exist after DB migration)
-// For now, define placeholders that match expected schema
-// export type { Form_Steps, Contacts } from '@/shared/graphql/generated/operations';
+/**
+ * Step Content Types
+ * Defines the structure for each step type's content in a form
+ */
 
 /**
  * Context for creating dynamic step content
@@ -11,7 +12,9 @@ export interface FormContext {
   productDescription?: string;
 }
 
-// Step type literal union
+/**
+ * Step type literal union
+ */
 export type StepType =
   | 'welcome'
   | 'question'
@@ -21,7 +24,9 @@ export type StepType =
   | 'reward'
   | 'thank_you';
 
-// Contact field options
+/**
+ * Contact field options
+ */
 export type ContactField =
   | 'name'
   | 'email'
@@ -33,7 +38,7 @@ export type ContactField =
   | 'twitter';
 
 // =================================================================
-// JSONB Content Interfaces (can't be generated)
+// JSONB Content Interfaces
 // =================================================================
 
 export interface WelcomeContent {
@@ -82,7 +87,9 @@ export interface ThankYouContent {
   redirectDelay?: number;
 }
 
-// Union type
+/**
+ * Union type for all step content types
+ */
 export type StepContent =
   | WelcomeContent
   | ConsentContent
@@ -92,17 +99,17 @@ export type StepContent =
   | Record<string, never>; // Empty for question/rating (data in form_questions)
 
 // =================================================================
-// Question data for question/rating steps
+// Question Type for linked questions
 // =================================================================
 
-export interface StepQuestion {
+export interface LinkedQuestionType {
+  uniqueName: string;
+}
+
+export interface LinkedQuestion {
   id: string;
   questionText: string;
-  questionType?: {
-    id: string;
-    uniqueName: string;
-    category: string;
-  };
+  questionType?: LinkedQuestionType | null;
 }
 
 // =================================================================
@@ -115,7 +122,7 @@ export interface FormStep {
   stepType: StepType;
   stepOrder: number;
   questionId?: string | null;
-  question?: StepQuestion | null;
+  question?: LinkedQuestion | null;
   content: StepContent;
   tips: string[];
   isActive: boolean;

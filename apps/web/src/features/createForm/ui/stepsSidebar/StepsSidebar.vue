@@ -5,7 +5,7 @@ import StepThumbnail from './StepThumbnail.vue';
 import InsertStepButton from './InsertStepButton.vue';
 import StepTypePicker from './StepTypePicker.vue';
 import { useTimelineEditor } from '../../composables/timeline';
-import type { StepType, FormStep } from '../../models/stepContent';
+import type { StepType, FormStep } from '@/shared/stepCards';
 
 // Direct import - fully typed, no inject needed
 const editor = useTimelineEditor();

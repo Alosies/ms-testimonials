@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { Input, Textarea, Label, Switch } from '@testimonials/ui';
-import type { FormStep, ThankYouContent } from '../../../models/stepContent';
+import type { FormStep, ThankYouContent } from '@/shared/stepCards';
 import { isThankYouStep } from '../../../functions';
 
 interface Props {

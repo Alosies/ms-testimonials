@@ -5,7 +5,7 @@ import type {
   ConsentContent,
   RewardContent,
   FormContext,
-} from '../models/stepContent';
+} from '@/shared/stepCards';
 
 /**
  * Factory functions for creating default step content

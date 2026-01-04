@@ -10,7 +10,7 @@ import { Icon } from '@testimonials/icons';
 import { Kbd } from '@testimonials/ui';
 import { QuestionInput } from '@/shared/formInputs';
 import type { FormStep } from '../../models';
-import type { StepType } from '../../models/stepContent';
+import type { StepType } from '@/shared/stepCards';
 import TimelineConnector from './TimelineConnector.vue';
 
 const props = defineProps<{

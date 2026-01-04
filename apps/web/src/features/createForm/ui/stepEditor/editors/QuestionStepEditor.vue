@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Textarea, Label, Switch } from '@testimonials/ui';
-import type { FormStep } from '../../../models/stepContent';
+import type { FormStep } from '@/shared/stepCards';
 
 interface Props {
   step: FormStep;

@@ -1,22 +1,24 @@
 <script setup lang="ts">
-import { computed } from 'vue';
 import { Icon } from '@testimonials/icons';
-import type { FormStep } from '../../../models/stepContent';
+import type { FormStep, StepCardMode } from '../models';
 
 interface Props {
   step: FormStep;
+  mode?: StepCardMode;
+  questionText?: string;
   minValue?: number;
   maxValue?: number;
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  mode: 'preview',
   minValue: 1,
   maxValue: 5,
 });
 
-const displayText = computed(() =>
-  props.step.question?.questionText || 'How would you rate your experience?'
-);
+const displayText =
+  props.questionText ||
+  (props.mode === 'edit' ? 'How would you rate your experience?' : '');
 </script>
 
 <template>
@@ -26,7 +28,7 @@ const displayText = computed(() =>
     </p>
     <div class="flex justify-center gap-2">
       <div
-        v-for="n in (props.maxValue - props.minValue + 1)"
+        v-for="n in props.maxValue - props.minValue + 1"
         :key="n"
         class="w-10 h-10 rounded-lg border flex items-center justify-center hover:bg-muted cursor-pointer"
       >

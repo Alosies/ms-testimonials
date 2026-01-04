@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { Icon } from '@testimonials/icons';
-import type { FormStep } from '../../models/stepContent';
+import type { FormStep } from '@/shared/stepCards';
 import { getStepLabel, getStepIcon } from '../../functions';
 
 interface Props {

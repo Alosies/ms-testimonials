@@ -1,4 +1,4 @@
-// Type guards for step type narrowing
+// Type guards for step type narrowing - re-export from shared
 export {
   isWelcomeStep,
   isQuestionStep,
@@ -7,7 +7,7 @@ export {
   isContactInfoStep,
   isRewardStep,
   isThankYouStep,
-} from './typeGuards';
+} from '@/shared/stepCards/functions/typeGuards';
 
 // Default content factories for new steps
 export {
@@ -18,8 +18,8 @@ export {
   createDefaultRewardContent,
 } from './contentFactories';
 
-// Re-export FormContext type (defined in models, used by factories)
-export type { FormContext } from '../models/stepContent';
+// Re-export FormContext type from shared
+export type { FormContext } from '@/shared/stepCards/models/stepContent';
 
 // Step display helpers (labels, icons)
 export {

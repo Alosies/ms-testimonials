@@ -18,7 +18,7 @@ import {
 } from '../../composables/timeline';
 import { useGetForm } from '@/entities/form';
 import { useGetFormSteps } from '@/entities/formStep';
-import type { FormStep, StepType, StepContent } from '../../models/stepContent';
+import type { FormStep, StepType, StepContent } from '@/shared/stepCards';
 import TimelineSidebar from './TimelineSidebar.vue';
 import TimelineCanvas from './TimelineCanvas.vue';
 

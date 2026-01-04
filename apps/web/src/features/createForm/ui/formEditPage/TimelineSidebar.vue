@@ -11,7 +11,7 @@ import { Kbd } from '@testimonials/ui';
 import { useTimelineEditor } from '../../composables/timeline';
 import { STEP_TYPE_CONFIGS } from '../../constants';
 import StepTypePicker from '../stepsSidebar/StepTypePicker.vue';
-import type { StepType } from '../../models/stepContent';
+import type { StepType } from '@/shared/stepCards';
 
 const editor = useTimelineEditor();
 

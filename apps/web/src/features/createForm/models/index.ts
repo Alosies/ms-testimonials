@@ -1,7 +1,7 @@
 import type { AIQuestion, AIContext } from '@/shared/api';
 
-// Step types
-export * from './stepContent';
+// Step types - re-export from shared
+export * from '@/shared/stepCards/models/stepContent';
 
 // Help content for properties panel
 export interface HelpContent {

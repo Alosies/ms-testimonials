@@ -22,7 +22,7 @@ import ContactInfoStepEditor from './editors/ContactInfoStepEditor.vue';
 import RewardStepEditor from './editors/RewardStepEditor.vue';
 import ThankYouStepEditor from './editors/ThankYouStepEditor.vue';
 import { useTimelineEditor } from '../../composables/timeline';
-import type { StepContent, StepType } from '../../models/stepContent';
+import type { StepContent, StepType } from '@/shared/stepCards';
 import { getStepLabel } from '../../functions';
 import { STEP_TYPE_OPTIONS, STEP_TYPE_CONFIGS } from '../../constants';
 

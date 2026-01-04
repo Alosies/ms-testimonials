@@ -1,13 +1,16 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { FormStep, ContactInfoContent } from '../../../models/stepContent';
-import { isContactInfoStep } from '../../../functions';
+import type { FormStep, ContactInfoContent, StepCardMode } from '../models';
+import { isContactInfoStep } from '../functions';
 
 interface Props {
   step: FormStep;
+  mode?: StepCardMode;
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  mode: 'preview',
+});
 
 const content = computed((): ContactInfoContent | null => {
   if (isContactInfoStep(props.step)) {
@@ -43,7 +46,11 @@ const fieldLabels: Record<string, string> = {
         <div class="w-2 h-2 rounded-full bg-muted-foreground/30" />
         <span class="text-sm">
           {{ fieldLabels[field] }}
-          <span v-if="content.requiredFields.includes(field)" class="text-destructive">*</span>
+          <span
+            v-if="content.requiredFields.includes(field)"
+            class="text-destructive"
+            >*</span
+          >
         </span>
       </div>
     </div>

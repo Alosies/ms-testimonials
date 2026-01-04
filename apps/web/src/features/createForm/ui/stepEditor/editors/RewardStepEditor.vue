@@ -8,7 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@testimonials/ui';
-import type { FormStep, RewardContent } from '../../../models/stepContent';
+import type { FormStep, RewardContent } from '@/shared/stepCards';
 import { isRewardStep } from '../../../functions';
 
 interface Props {
