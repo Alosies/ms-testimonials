@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, type CSSProperties } from 'vue';
 import { Icon } from '@testimonials/icons';
 import { Kbd } from '@testimonials/ui';
 import type { StepCardMode } from '../models';
@@ -13,12 +13,15 @@ interface Props {
   stepType: string;
   /** Whether this step has unsaved changes */
   hasUnsavedChanges?: boolean;
+  /** Custom CSS styles for card content (e.g., custom --primary color) */
+  contentStyles?: CSSProperties;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   mode: 'preview',
   isSelected: false,
   hasUnsavedChanges: false,
+  contentStyles: () => ({}),
 });
 
 const emit = defineEmits<{
@@ -103,10 +106,11 @@ const isPreviewMode = computed(() => props.mode === 'preview');
       </button>
     </div>
 
-    <!-- Card content -->
+    <!-- Card content (custom styles applied here for branding) -->
     <div
       class="h-full flex flex-col items-center justify-center"
       :class="isPreviewMode ? 'py-12 px-10' : 'p-6'"
+      :style="contentStyles"
     >
       <slot />
     </div>
