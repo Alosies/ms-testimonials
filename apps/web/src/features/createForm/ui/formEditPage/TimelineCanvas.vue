@@ -6,7 +6,9 @@
  * Conditionally renders branched view when branching is enabled.
  * Uses shared timeline editor composable for state.
  */
+import { computed } from 'vue';
 import { useTimelineEditor } from '../../composables/timeline';
+import { hexToHslCssVar } from '@/entities/form';
 import type { FormStep } from '../../models';
 import type { StepType } from '@/shared/stepCards';
 import TimelineStepCard from './TimelineStepCard.vue';
@@ -14,6 +16,15 @@ import TimelineEmptyState from './TimelineEmptyState.vue';
 import BranchedTimelineCanvas from './BranchedTimelineCanvas.vue';
 
 const editor = useTimelineEditor();
+
+// Custom content styles for step cards (applies custom primary color)
+const cardContentStyles = computed(() => {
+  const primaryColor = editor.primaryColor.value;
+  if (!primaryColor) return {};
+  return {
+    '--primary': hexToHslCssVar(primaryColor),
+  };
+});
 
 function handleInsert(afterIndex: number, type: StepType) {
   editor.handleAddStep(type, afterIndex);
@@ -35,6 +46,7 @@ function handleInsert(afterIndex: number, type: StepType) {
       :index="index"
       :is-active="index === editor.selectedIndex.value"
       :is-last="index === editor.steps.value.length - 1"
+      :content-styles="cardContentStyles"
       @select="editor.selectStep"
       @edit="editor.handleEditStep"
       @remove="editor.handleRemoveStep"

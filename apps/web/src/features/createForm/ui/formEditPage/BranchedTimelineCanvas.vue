@@ -11,7 +11,7 @@
 import { computed } from 'vue';
 import { Icon } from '@testimonials/icons';
 import { Kbd, Button } from '@testimonials/ui';
-import { FLOW_METADATA } from '@/entities/form';
+import { FLOW_METADATA, hexToHslCssVar } from '@/entities/form';
 import type { FlowMembership } from '@/shared/stepCards';
 import { useTimelineEditor } from '../../composables/timeline';
 import type { FormStep } from '../../models';
@@ -20,6 +20,15 @@ import TimelineStepCard from './TimelineStepCard.vue';
 import FlowColumn from './FlowColumn.vue';
 
 const editor = useTimelineEditor();
+
+// Custom content styles for step cards (applies custom primary color)
+const cardContentStyles = computed(() => {
+  const primaryColor = editor.primaryColor.value;
+  if (!primaryColor) return {};
+  return {
+    '--primary': hexToHslCssVar(primaryColor),
+  };
+});
 
 const threshold = computed(() => editor.branchingConfig.value.threshold);
 
@@ -128,6 +137,7 @@ defineExpose({
           :index="index"
           :is-active="index === editor.selectedIndex.value"
           :is-last="false"
+          :content-styles="cardContentStyles"
           @select="editor.selectStep"
           @edit="editor.handleEditStep"
           @remove="editor.handleRemoveStep"
@@ -231,6 +241,7 @@ defineExpose({
             :index="getFlowStepIndex(step)"
             :is-active="isExpandedStepActive(step)"
             :is-last="index === expandedFlowSteps.length - 1"
+            :content-styles="cardContentStyles"
             @select="handleExpandedStepSelect(step)"
             @edit="handleExpandedStepEdit(step)"
             @remove="handleExpandedStepRemove(step)"

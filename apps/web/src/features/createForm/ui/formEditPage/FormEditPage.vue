@@ -51,14 +51,21 @@ const navigation = useScrollSnapNavigation({
   enableScrollDetection: true,
 });
 
+// Track if design config has been loaded for current form
+const designConfigLoaded = ref(false);
+
 // Initialize editor with formId (resets state if formId changes)
-watch(() => props.formId, (id) => editor.setFormId(id), { immediate: true });
+watch(() => props.formId, (id) => {
+  editor.setFormId(id);
+  designConfigLoaded.value = false; // Reset flag when form changes
+}, { immediate: true });
 
 // Fetch form data for context
 const formQueryVars = computed(() => ({ formId: props.formId }));
 const { form } = useGetForm(formQueryVars);
 
-// Update form context when form data loads (for dynamic step defaults)
+// Update form context when form data loads
+// Design config is loaded only ONCE per form to avoid overwriting local changes
 watch(form, (loadedForm) => {
   if (loadedForm) {
     editor.setFormContext({
@@ -67,6 +74,16 @@ watch(form, (loadedForm) => {
     });
     // Update form name from database
     formName.value = loadedForm.name;
+
+    // Load design config only on initial load (not on subsequent updates)
+    // This prevents mutation cache updates from overwriting local changes
+    if (!designConfigLoaded.value) {
+      editor.setDesignConfig(
+        loadedForm.settings,
+        loadedForm.organization?.logo_url ?? null
+      );
+      designConfigLoaded.value = true;
+    }
   }
 }, { immediate: true });
 
