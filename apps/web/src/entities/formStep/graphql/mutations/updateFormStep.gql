@@ -1,0 +1,14 @@
+#import "../fragments/FormStepBasic.gql"
+
+# Update a single form step by ID
+# Uses minimal response pattern (ADR-003) to avoid cache conflicts
+mutation UpdateFormStep($id: String!, $changes: form_steps_set_input!) {
+  update_form_steps_by_pk(pk_columns: { id: $id }, _set: $changes) {
+    id
+    flow_membership
+    step_order
+    content
+    tips
+    updated_at
+  }
+}

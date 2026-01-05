@@ -1,0 +1,10 @@
+# Delete form steps by IDs
+# Used when disabling branching to remove improvement flow steps
+mutation DeleteFormSteps($ids: [String!]!) {
+  delete_form_steps(where: { id: { _in: $ids } }) {
+    affected_rows
+    returning {
+      id
+    }
+  }
+}

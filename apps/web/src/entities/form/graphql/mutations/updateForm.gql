@@ -5,6 +5,7 @@ mutation UpdateForm($id: String!, $changes: forms_set_input!) {
     product_name
     product_description
     settings
+    branching_config
     is_active
     updated_at
   }
