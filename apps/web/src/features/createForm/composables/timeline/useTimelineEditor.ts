@@ -10,6 +10,7 @@ import {
   changeStepTypeAt,
 } from './useStepOperations';
 import { useTimelineBranching } from './useTimelineBranching';
+import { useTimelineDesignConfig } from './useTimelineDesignConfig';
 
 /**
  * Timeline Editor - Shared Composable
@@ -78,7 +79,8 @@ export const useTimelineEditor = createSharedComposable(() => {
     editorMode.value = 'edit';
   }
 
-  function resetState() {
+  // Core reset (design reset added via wrapper after design is created)
+  function _resetCoreState() {
     currentFormId.value = null;
     steps.value = [];
     originalSteps.value = [];
@@ -230,6 +232,19 @@ export const useTimelineEditor = createSharedComposable(() => {
     selectStepById,
   });
 
+  // ============================================
+  // Design Config (composed from useTimelineDesignConfig)
+  // ============================================
+  const design = useTimelineDesignConfig({
+    formId: currentFormId,
+  });
+
+  // Full reset including design config
+  function resetState() {
+    _resetCoreState();
+    design.resetDesignConfig();
+  }
+
   return {
     // Form ID
     currentFormId: readonly(currentFormId),
@@ -294,6 +309,27 @@ export const useTimelineEditor = createSharedComposable(() => {
     expandCurrentFlow: branching.expandCurrentFlow,
     collapseFlow: branching.collapseFlow,
     setExpandedFlow: branching.setExpandedFlow,
+
+    // Design Config State
+    designConfig: readonly(design.designConfig),
+    primaryColor: design.primaryColor,
+    effectivePrimaryColor: design.effectivePrimaryColor,
+    logoUrl: design.logoUrl,
+    effectiveLogo: design.effectiveLogo,
+    orgLogoUrl: design.orgLogoUrl,
+    isUsingOrgLogo: design.isUsingOrgLogo,
+    hasCustomColor: design.hasCustomColor,
+    hasCustomLogo: design.hasCustomLogo,
+    designSaving: design.isSaving,
+    designSaveError: design.saveError,
+
+    // Design Config Operations
+    setDesignConfig: design.setDesignConfig,
+    updatePrimaryColor: design.updatePrimaryColor,
+    updateLogoUrl: design.updateLogoUrl,
+    resetPrimaryColor: design.resetPrimaryColor,
+    resetLogoUrl: design.resetLogoUrl,
+    resetDesignConfig: design.resetDesignConfig,
 
     // Coordinated Actions
     handleAddStep,
