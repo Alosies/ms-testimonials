@@ -3,15 +3,24 @@
  * Timeline Step Card - Individual step card in the timeline
  *
  * Displays a step with header, content preview, and action buttons.
+ * Uses the SAME shared step card components as the public form for consistency.
  * Uses TimelineConnector for the interactive insert functionality.
  */
-import { computed } from 'vue';
+import { type CSSProperties, type Component } from 'vue';
 import { Icon } from '@testimonials/icons';
 import { Kbd } from '@testimonials/ui';
-import { QuestionInput } from '@/shared/formInputs';
 import { useStepSave } from '../../composables/timeline';
 import type { FormStep } from '../../models';
-import type { StepType } from '@/shared/stepCards';
+import {
+  type StepType,
+  WelcomeStepCard,
+  QuestionStepCard,
+  RatingStepCard,
+  ConsentStepCard,
+  ContactInfoStepCard,
+  RewardStepCard,
+  ThankYouStepCard,
+} from '@/shared/stepCards';
 import TimelineConnector from './TimelineConnector.vue';
 
 const props = defineProps<{
@@ -19,6 +28,8 @@ const props = defineProps<{
   index: number;
   isActive: boolean;
   isLast: boolean;
+  /** Custom CSS styles for card content (e.g., custom --primary color) */
+  contentStyles?: CSSProperties;
 }>();
 
 const emit = defineEmits<{
@@ -30,49 +41,24 @@ const emit = defineEmits<{
 
 const stepSave = useStepSave();
 
+// Map step types to their shared card components
+const stepCardComponents: Record<StepType, Component> = {
+  welcome: WelcomeStepCard,
+  question: QuestionStepCard,
+  rating: RatingStepCard,
+  consent: ConsentStepCard,
+  contact_info: ContactInfoStepCard,
+  reward: RewardStepCard,
+  thank_you: ThankYouStepCard,
+};
+
 // Handle save when clicking the unsaved chip
 async function handleSaveClick() {
   await stepSave.saveStepQuestion(props.index);
 }
 
-// Check if step is a question/rating type that needs input preview
-const isQuestionStep = computed(() =>
-  (props.step.stepType === 'question' || props.step.stepType === 'rating') && props.step.question
-);
-
-// Get question type ID for QuestionInput component
-const questionTypeId = computed(() =>
-  props.step.question?.questionType?.uniqueName || 'text_long'
-);
-
 function handleInsert(type: StepType) {
   emit('insert', props.index, type);
-}
-
-function getStepTitle(): string {
-  // For question/rating steps, get title from the linked question
-  if ((props.step.stepType === 'question' || props.step.stepType === 'rating') && props.step.question) {
-    return props.step.question.questionText || 'Untitled Question';
-  }
-
-  // For other steps, get from content
-  const content = props.step.content as Record<string, unknown>;
-  return (content.title as string) || 'Untitled Step';
-}
-
-function getStepDescription(): string {
-  // For question/rating steps, show the question type
-  if ((props.step.stepType === 'question' || props.step.stepType === 'rating') && props.step.question) {
-    const typeName = props.step.question.questionType?.uniqueName || 'text';
-    return `${typeName} response`;
-  }
-
-  // For other steps, get from content
-  const content = props.step.content as Record<string, unknown>;
-  return (content.subtitle as string)
-    || (content.message as string)
-    || (content.description as string)
-    || 'Click to edit this step';
 }
 </script>
 
@@ -146,25 +132,13 @@ function getStepDescription(): string {
         </button>
       </div>
 
-      <div class="step-card-content">
-        <h3 class="text-3xl font-bold mb-4">
-          {{ getStepTitle() }}
-        </h3>
-
-        <!-- Question/Rating steps: show input preview -->
-        <div v-if="isQuestionStep" class="w-full max-w-md mt-2" @click.stop>
-          <QuestionInput
-            :question-id="step.question!.id"
-            :question_type_id="questionTypeId"
-            :placeholder="'Your answer...'"
-            :disabled="true"
-          />
-        </div>
-
-        <!-- Other steps: show description -->
-        <p v-else class="text-xl text-muted-foreground max-w-lg leading-relaxed">
-          {{ getStepDescription() }}
-        </p>
+      <!-- Card content using shared step card components (same as public form) -->
+      <div class="step-card-content" :style="contentStyles" @click.stop>
+        <component
+          :is="stepCardComponents[step.stepType]"
+          :step="step"
+          mode="preview"
+        />
       </div>
     </div>
 
