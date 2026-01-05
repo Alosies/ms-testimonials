@@ -14740,7 +14740,7 @@ export type Widgets_Variance_Order_By = {
   max_display?: InputMaybe<Order_By>;
 };
 
-export type FormBasicFragment = { __typename?: 'forms', id: string, name: string, product_name: string, product_description?: string | null, settings: any, branching_config: any, status: string, is_active: boolean, organization_id: string, created_by: string, created_at: string, updated_at: string };
+export type FormBasicFragment = { __typename?: 'forms', id: string, name: string, product_name: string, product_description?: string | null, settings: any, branching_config: any, status: string, is_active: boolean, organization_id: string, created_by: string, created_at: string, updated_at: string, organization: { __typename?: 'organizations', id: string, logo_url?: string | null } };
 
 export type CreateFormMutationVariables = Exact<{
   form: Forms_Insert_Input;
@@ -14784,14 +14784,14 @@ export type GetFormQueryVariables = Exact<{
 }>;
 
 
-export type GetFormQuery = { __typename?: 'query_root', forms_by_pk?: { __typename?: 'forms', id: string, name: string, product_name: string, product_description?: string | null, settings: any, branching_config: any, status: string, is_active: boolean, organization_id: string, created_by: string, created_at: string, updated_at: string } | null };
+export type GetFormQuery = { __typename?: 'query_root', forms_by_pk?: { __typename?: 'forms', id: string, name: string, product_name: string, product_description?: string | null, settings: any, branching_config: any, status: string, is_active: boolean, organization_id: string, created_by: string, created_at: string, updated_at: string, organization: { __typename?: 'organizations', id: string, logo_url?: string | null } } | null };
 
 export type GetFormsQueryVariables = Exact<{
   organizationId: Scalars['String']['input'];
 }>;
 
 
-export type GetFormsQuery = { __typename?: 'query_root', forms: Array<{ __typename?: 'forms', id: string, name: string, product_name: string, product_description?: string | null, settings: any, branching_config: any, status: string, is_active: boolean, organization_id: string, created_by: string, created_at: string, updated_at: string }> };
+export type GetFormsQuery = { __typename?: 'query_root', forms: Array<{ __typename?: 'forms', id: string, name: string, product_name: string, product_description?: string | null, settings: any, branching_config: any, status: string, is_active: boolean, organization_id: string, created_by: string, created_at: string, updated_at: string, organization: { __typename?: 'organizations', id: string, logo_url?: string | null } }> };
 
 export type FormQuestionBasicFragment = { __typename?: 'form_questions', id: string, form_id: string, organization_id: string, question_type_id: string, question_key: string, question_text: string, placeholder?: string | null, help_text?: string | null, display_order: number, is_required: boolean, min_length?: number | null, max_length?: number | null, min_value?: number | null, max_value?: number | null, validation_pattern?: string | null, allowed_file_types?: Array<string> | null, max_file_size_kb?: number | null, is_active: boolean, created_at: string, updated_at: string, question_type: { __typename?: 'question_types', id: string, unique_name: string, name: string, category: string, input_component: string } };
 
@@ -14996,6 +14996,10 @@ export const FormBasicFragmentDoc = gql`
   created_by
   created_at
   updated_at
+  organization {
+    id
+    logo_url
+  }
 }
     `;
 export const FormQuestionBasicFragmentDoc = gql`

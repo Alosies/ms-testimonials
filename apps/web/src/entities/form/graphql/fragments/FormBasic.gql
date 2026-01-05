@@ -11,4 +11,8 @@ fragment FormBasic on forms {
   created_by
   created_at
   updated_at
+  organization {
+    id
+    logo_url
+  }
 }
