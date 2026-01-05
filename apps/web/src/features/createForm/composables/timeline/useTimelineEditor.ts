@@ -106,6 +106,33 @@ export const useTimelineEditor = createSharedComposable(() => {
     originalSteps.value = JSON.parse(JSON.stringify(steps.value));
   }
 
+  /**
+   * Mark a step as saved (update ID if needed, clear isNew/isModified flags)
+   * Used by save composable after successful persistence
+   */
+  function markStepSaved(stepId: string, newId?: string) {
+    const step = steps.value.find(s => s.id === stepId || (s.isNew && s.stepOrder.toString() === newId));
+    if (step) {
+      if (newId && step.id !== newId) {
+        step.id = newId;
+      }
+      step.isNew = false;
+      step.isModified = false;
+    }
+  }
+
+  /**
+   * Mark a step as saved by step order (for newly created steps)
+   */
+  function markStepSavedByOrder(stepOrder: number, newId: string) {
+    const step = steps.value.find(s => s.isNew && s.stepOrder === stepOrder);
+    if (step) {
+      step.id = newId;
+      step.isNew = false;
+      step.isModified = false;
+    }
+  }
+
   function getStepById(id: string): FormStep | undefined {
     return steps.value.find(s => s.id === id);
   }
@@ -258,6 +285,7 @@ export const useTimelineEditor = createSharedComposable(() => {
 
     // State
     steps: readonly(steps),
+    originalSteps: readonly(originalSteps),
     selectedIndex,
     selectedStep,
     isDirty,
@@ -286,6 +314,8 @@ export const useTimelineEditor = createSharedComposable(() => {
     // Step State
     setSteps,
     markClean,
+    markStepSaved,
+    markStepSavedByOrder,
     getStepById,
 
     // Operations
