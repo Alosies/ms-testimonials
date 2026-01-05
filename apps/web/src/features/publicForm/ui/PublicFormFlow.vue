@@ -160,10 +160,11 @@ function handleWelcomeStart() {
         v-if="showNavigation"
         class="mt-8 flex justify-between items-center"
       >
-        <!-- Back button -->
+        <!-- Back button (neutral color, not affected by custom primary) -->
         <Button
           v-if="showBackButton"
-          variant="ghost"
+          variant="outline"
+          class="border-gray-300 text-gray-600 hover:bg-gray-100 hover:text-gray-700"
           @click="flow.goToPrevious"
         >
           <Icon icon="heroicons:arrow-left" class="w-4 h-4 mr-2" />
