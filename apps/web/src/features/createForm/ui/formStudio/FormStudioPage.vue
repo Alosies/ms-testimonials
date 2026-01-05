@@ -11,16 +11,17 @@
  *
  * @see useScrollSnapNavigation - Centralized scroll-snap navigation
  */
-import { ref, watch, computed } from 'vue';
+import { ref, watch, computed, toRefs } from 'vue';
 import { Kbd } from '@testimonials/ui';
 import FormEditorLayout from '@/layouts/FormEditorLayout.vue';
 import FormEditorHeader from '../FormEditorHeader.vue';
 import { PropertiesPanel } from '../propertiesPanel';
 import StepEditorSlideIn from '../stepEditor/StepEditorSlideIn.vue';
-import { useTimelineEditor } from '../../composables/timeline';
+import { useTimelineEditor, useSaveFormSteps } from '../../composables/timeline';
 import { useScrollSnapNavigation } from '@/shared/composables';
-import { useGetForm } from '@/entities/form';
+import { useGetForm, parseBranchingConfig } from '@/entities/form';
 import { useGetFormSteps } from '@/entities/formStep';
+import { useCurrentContextStore } from '@/shared/currentContext';
 import type { FormStep, StepType, StepContent } from '@/shared/stepCards';
 import TimelineSidebar from './TimelineSidebar.vue';
 import TimelineCanvas from './TimelineCanvas.vue';
@@ -38,6 +39,13 @@ const emit = defineEmits<{
 
 // Initialize editor (state management)
 const editor = useTimelineEditor();
+
+// Get current context for save operations
+const contextStore = useCurrentContextStore();
+const { currentOrganizationId, currentUserId } = toRefs(contextStore);
+
+// Initialize save composable
+const saveComposable = useSaveFormSteps();
 
 // Initialize scroll-snap navigation (keyboard + scroll detection)
 // This is set up at component level to properly bind to DOM lifecycle
@@ -83,6 +91,12 @@ watch(form, (loadedForm) => {
         loadedForm.organization?.logo_url ?? null
       );
       designConfigLoaded.value = true;
+    }
+
+    // Load branching config from database
+    if (loadedForm.branching_config) {
+      const branchingConfig = parseBranchingConfig(loadedForm.branching_config);
+      editor.setBranchingConfig(branchingConfig);
     }
   }
 }, { immediate: true });
@@ -140,12 +154,38 @@ watch(formSteps, (steps) => {
 
 // Header state
 const formName = ref('Loading...');
-const saveStatus = ref<'saved' | 'saving' | 'unsaved' | 'error'>('saved');
+
+// Computed save status based on actual state
+const saveStatus = computed<'saved' | 'saving' | 'unsaved' | 'error'>(() => {
+  if (saveComposable.saveError.value) return 'error';
+  if (saveComposable.isSaving.value) return 'saving';
+  if (saveComposable.hasChangesToSave.value) return 'unsaved';
+  return 'saved';
+});
 
 // Header handlers
 function handleFormNameUpdate(name: string) {
   formName.value = name;
-  saveStatus.value = 'unsaved';
+  // TODO: Also mark form name as dirty for saving
+}
+
+/**
+ * Handle save request from header
+ */
+async function handleSave() {
+  if (!currentOrganizationId.value) {
+    console.error('No organization ID available for save');
+    return;
+  }
+
+  const success = await saveComposable.saveAll(
+    currentOrganizationId.value,
+    currentUserId.value ?? undefined,
+  );
+
+  if (!success && saveComposable.saveError.value) {
+    console.error('Save failed:', saveComposable.saveError.value);
+  }
 }
 
 /**
@@ -167,6 +207,7 @@ function handleNavigate(index: number) {
         @back="emit('back')"
         @preview="emit('preview')"
         @publish="emit('publish')"
+        @save="handleSave"
         @update:form-name="handleFormNameUpdate"
       />
     </template>
