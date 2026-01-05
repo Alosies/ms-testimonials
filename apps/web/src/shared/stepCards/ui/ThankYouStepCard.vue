@@ -24,9 +24,9 @@ const content = computed((): ThankYouContent | null => {
 <template>
   <div v-if="content" class="text-center">
     <div
-      class="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-3"
+      class="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-6"
     >
-      <Icon icon="heroicons:check" class="w-6 h-6 text-emerald-600" />
+      <Icon icon="heroicons:check" class="w-8 h-8 text-primary" />
     </div>
     <h3 class="font-medium mb-1">{{ content.title }}</h3>
     <p class="text-sm text-muted-foreground">{{ content.message }}</p>
