@@ -27,10 +27,24 @@ interface Props {
   steps: FormStep[];
   formName?: string;
   branchingConfig?: BranchingConfig | null;
+  logoUrl?: string | null;
+  /** Custom primary color in HSL CSS variable format (e.g., "175 84% 32%") */
+  primaryColorHsl?: string | null;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   branchingConfig: null,
+  logoUrl: null,
+  primaryColorHsl: null,
+});
+
+// Custom styles for the entire public form (applies custom primary color)
+// Applied at root level so all elements (buttons, dots, progress bar) inherit the brand color
+const customPrimaryStyles = computed(() => {
+  if (!props.primaryColorHsl) return {};
+  return {
+    '--primary': props.primaryColorHsl,
+  };
 });
 
 const stepsRef = toRef(props, 'steps');
@@ -89,7 +103,20 @@ function handleWelcomeStart() {
 </script>
 
 <template>
-  <div class="min-h-screen flex flex-col items-center justify-center p-4 bg-gray-50">
+  <!-- Root container with custom primary color applied at top level -->
+  <div
+    class="min-h-screen flex flex-col items-center justify-center p-4 bg-gray-50"
+    :style="customPrimaryStyles"
+  >
+    <!-- Logo (fixed position, top-left) -->
+    <div v-if="logoUrl" class="fixed top-4 left-4 z-10">
+      <img
+        :src="logoUrl"
+        alt="Logo"
+        class="h-8 object-contain max-w-[120px]"
+      />
+    </div>
+
     <!-- Progress bar -->
     <div class="fixed top-0 left-0 right-0 h-1 bg-gray-200">
       <div

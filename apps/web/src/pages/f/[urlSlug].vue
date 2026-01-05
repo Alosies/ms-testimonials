@@ -11,7 +11,12 @@ import { definePage } from 'unplugin-vue-router/runtime';
 import { useRoute, useRouter } from 'vue-router';
 import { computed, watchEffect } from 'vue';
 import { extractEntityIdFromSlug } from '@/shared/urls';
-import { useGetForm, parseBranchingConfig } from '@/entities/form';
+import {
+  useGetForm,
+  parseBranchingConfig,
+  parseDesignConfig,
+  hexToHslCssVar,
+} from '@/entities/form';
 import { useGetFormSteps } from '@/entities/formStep';
 import { PublicFormFlow } from '@/features/publicForm';
 import type { FormStep } from '@/shared/stepCards';
@@ -99,6 +104,26 @@ const branchingConfig = computed(() => {
   if (!form.value?.branching_config) return null;
   return parseBranchingConfig(form.value.branching_config);
 });
+
+// Parse design config from form data
+const designConfig = computed(() => {
+  if (!form.value?.settings) return null;
+  return parseDesignConfig(form.value.settings);
+});
+
+// Get organization logo for fallback
+const orgLogoUrl = computed(() => form.value?.organization?.logo_url ?? null);
+
+// Effective logo with fallback to org logo
+const effectiveLogo = computed(
+  () => designConfig.value?.logoUrl ?? orgLogoUrl.value
+);
+
+// Primary color in HSL format for card content
+const primaryColorHsl = computed(() => {
+  if (!designConfig.value?.primaryColor) return null;
+  return hexToHslCssVar(designConfig.value.primaryColor);
+});
 </script>
 
 <template>
@@ -150,6 +175,8 @@ const branchingConfig = computed(() => {
       :steps="steps"
       :form-name="form.name"
       :branching-config="branchingConfig"
+      :logo-url="effectiveLogo"
+      :primary-color-hsl="primaryColorHsl"
     />
   </div>
 </template>
