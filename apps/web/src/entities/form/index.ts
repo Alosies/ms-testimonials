@@ -1,6 +1,9 @@
 // Composables
 export * from './composables';
 
+// Functions
+export * from './functions';
+
 // Models - types
 export type * from './models';
 
@@ -10,4 +13,8 @@ export {
   FLOW_METADATA,
   parseBranchingConfig,
   serializeBranchingConfig,
+  DEFAULT_DESIGN_CONFIG,
+  DEFAULT_PRIMARY_COLOR_HEX,
+  parseDesignConfig,
+  serializeDesignConfig,
 } from './models';
