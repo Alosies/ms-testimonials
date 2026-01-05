@@ -14769,7 +14769,7 @@ export type UpdateFormMutationVariables = Exact<{
 }>;
 
 
-export type UpdateFormMutation = { __typename?: 'mutation_root', update_forms_by_pk?: { __typename?: 'forms', id: string, name: string, product_name: string, product_description?: string | null, settings: any, is_active: boolean, updated_at: string } | null };
+export type UpdateFormMutation = { __typename?: 'mutation_root', update_forms_by_pk?: { __typename?: 'forms', id: string, name: string, product_name: string, product_description?: string | null, settings: any, branching_config: any, is_active: boolean, updated_at: string } | null };
 
 export type UpdateFormAutoSaveMutationVariables = Exact<{
   id: Scalars['String']['input'];
@@ -14857,6 +14857,28 @@ export type CreateFormStepsMutationVariables = Exact<{
 
 
 export type CreateFormStepsMutation = { __typename?: 'mutation_root', insert_form_steps?: { __typename?: 'form_steps_mutation_response', returning: Array<{ __typename?: 'form_steps', id: string, form_id: string, step_type: string, step_order: number, question_id?: string | null, content: any, tips?: Array<string> | null, flow_membership: string, is_active: boolean, created_at: string, updated_at: string }> } | null };
+
+export type DeleteFormStepsMutationVariables = Exact<{
+  ids: Array<Scalars['String']['input']> | Scalars['String']['input'];
+}>;
+
+
+export type DeleteFormStepsMutation = { __typename?: 'mutation_root', delete_form_steps?: { __typename?: 'form_steps_mutation_response', affected_rows: number, returning: Array<{ __typename?: 'form_steps', id: string }> } | null };
+
+export type UpdateFormStepMutationVariables = Exact<{
+  id: Scalars['String']['input'];
+  changes: Form_Steps_Set_Input;
+}>;
+
+
+export type UpdateFormStepMutation = { __typename?: 'mutation_root', update_form_steps_by_pk?: { __typename?: 'form_steps', id: string, flow_membership: string, step_order: number, content: any, tips?: Array<string> | null, updated_at: string } | null };
+
+export type UpsertFormStepsMutationVariables = Exact<{
+  inputs: Array<Form_Steps_Insert_Input> | Form_Steps_Insert_Input;
+}>;
+
+
+export type UpsertFormStepsMutation = { __typename?: 'mutation_root', insert_form_steps?: { __typename?: 'form_steps_mutation_response', returning: Array<{ __typename?: 'form_steps', id: string, form_id: string, step_type: string, step_order: number, question_id?: string | null, content: any, tips?: Array<string> | null, flow_membership: string, is_active: boolean, created_at: string, updated_at: string }> } | null };
 
 export type GetFormStepsQueryVariables = Exact<{
   formId: Scalars['String']['input'];
@@ -15307,6 +15329,7 @@ export const UpdateFormDocument = gql`
     product_name
     product_description
     settings
+    branching_config
     is_active
     updated_at
   }
@@ -15678,6 +15701,107 @@ export function useCreateFormStepsMutation(options: VueApolloComposable.UseMutat
   return VueApolloComposable.useMutation<CreateFormStepsMutation, CreateFormStepsMutationVariables>(CreateFormStepsDocument, options);
 }
 export type CreateFormStepsMutationCompositionFunctionResult = VueApolloComposable.UseMutationReturn<CreateFormStepsMutation, CreateFormStepsMutationVariables>;
+export const DeleteFormStepsDocument = gql`
+    mutation DeleteFormSteps($ids: [String!]!) {
+  delete_form_steps(where: {id: {_in: $ids}}) {
+    affected_rows
+    returning {
+      id
+    }
+  }
+}
+    `;
+
+/**
+ * __useDeleteFormStepsMutation__
+ *
+ * To run a mutation, you first call `useDeleteFormStepsMutation` within a Vue component and pass it any options that fit your needs.
+ * When your component renders, `useDeleteFormStepsMutation` returns an object that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - Several other properties: https://v4.apollo.vuejs.org/api/use-mutation.html#return
+ *
+ * @param options that will be passed into the mutation, supported options are listed on: https://v4.apollo.vuejs.org/guide-composable/mutation.html#options;
+ *
+ * @example
+ * const { mutate, loading, error, onDone } = useDeleteFormStepsMutation({
+ *   variables: {
+ *     ids: // value for 'ids'
+ *   },
+ * });
+ */
+export function useDeleteFormStepsMutation(options: VueApolloComposable.UseMutationOptions<DeleteFormStepsMutation, DeleteFormStepsMutationVariables> | ReactiveFunction<VueApolloComposable.UseMutationOptions<DeleteFormStepsMutation, DeleteFormStepsMutationVariables>> = {}) {
+  return VueApolloComposable.useMutation<DeleteFormStepsMutation, DeleteFormStepsMutationVariables>(DeleteFormStepsDocument, options);
+}
+export type DeleteFormStepsMutationCompositionFunctionResult = VueApolloComposable.UseMutationReturn<DeleteFormStepsMutation, DeleteFormStepsMutationVariables>;
+export const UpdateFormStepDocument = gql`
+    mutation UpdateFormStep($id: String!, $changes: form_steps_set_input!) {
+  update_form_steps_by_pk(pk_columns: {id: $id}, _set: $changes) {
+    id
+    flow_membership
+    step_order
+    content
+    tips
+    updated_at
+  }
+}
+    `;
+
+/**
+ * __useUpdateFormStepMutation__
+ *
+ * To run a mutation, you first call `useUpdateFormStepMutation` within a Vue component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateFormStepMutation` returns an object that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - Several other properties: https://v4.apollo.vuejs.org/api/use-mutation.html#return
+ *
+ * @param options that will be passed into the mutation, supported options are listed on: https://v4.apollo.vuejs.org/guide-composable/mutation.html#options;
+ *
+ * @example
+ * const { mutate, loading, error, onDone } = useUpdateFormStepMutation({
+ *   variables: {
+ *     id: // value for 'id'
+ *     changes: // value for 'changes'
+ *   },
+ * });
+ */
+export function useUpdateFormStepMutation(options: VueApolloComposable.UseMutationOptions<UpdateFormStepMutation, UpdateFormStepMutationVariables> | ReactiveFunction<VueApolloComposable.UseMutationOptions<UpdateFormStepMutation, UpdateFormStepMutationVariables>> = {}) {
+  return VueApolloComposable.useMutation<UpdateFormStepMutation, UpdateFormStepMutationVariables>(UpdateFormStepDocument, options);
+}
+export type UpdateFormStepMutationCompositionFunctionResult = VueApolloComposable.UseMutationReturn<UpdateFormStepMutation, UpdateFormStepMutationVariables>;
+export const UpsertFormStepsDocument = gql`
+    mutation UpsertFormSteps($inputs: [form_steps_insert_input!]!) {
+  insert_form_steps(
+    objects: $inputs
+    on_conflict: {constraint: form_steps_pkey, update_columns: [step_order, content, tips, flow_membership, is_active, updated_by]}
+  ) {
+    returning {
+      ...FormStepBasic
+    }
+  }
+}
+    ${FormStepBasicFragmentDoc}`;
+
+/**
+ * __useUpsertFormStepsMutation__
+ *
+ * To run a mutation, you first call `useUpsertFormStepsMutation` within a Vue component and pass it any options that fit your needs.
+ * When your component renders, `useUpsertFormStepsMutation` returns an object that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - Several other properties: https://v4.apollo.vuejs.org/api/use-mutation.html#return
+ *
+ * @param options that will be passed into the mutation, supported options are listed on: https://v4.apollo.vuejs.org/guide-composable/mutation.html#options;
+ *
+ * @example
+ * const { mutate, loading, error, onDone } = useUpsertFormStepsMutation({
+ *   variables: {
+ *     inputs: // value for 'inputs'
+ *   },
+ * });
+ */
+export function useUpsertFormStepsMutation(options: VueApolloComposable.UseMutationOptions<UpsertFormStepsMutation, UpsertFormStepsMutationVariables> | ReactiveFunction<VueApolloComposable.UseMutationOptions<UpsertFormStepsMutation, UpsertFormStepsMutationVariables>> = {}) {
+  return VueApolloComposable.useMutation<UpsertFormStepsMutation, UpsertFormStepsMutationVariables>(UpsertFormStepsDocument, options);
+}
+export type UpsertFormStepsMutationCompositionFunctionResult = VueApolloComposable.UseMutationReturn<UpsertFormStepsMutation, UpsertFormStepsMutationVariables>;
 export const GetFormStepsDocument = gql`
     query GetFormSteps($formId: String!) {
   form_steps(where: {form_id: {_eq: $formId}}, order_by: {step_order: asc}) {
