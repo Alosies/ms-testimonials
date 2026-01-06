@@ -23,6 +23,14 @@ export const AIQuestionOptionSchema = z.object({
 }).openapi('AIQuestionOption');
 
 /**
+ * Flow membership for conditional branching
+ */
+export const FlowMembershipSchema = z.enum(['shared', 'testimonial', 'improvement']).openapi({
+  example: 'shared',
+  description: 'Which flow this question belongs to: shared (before rating), testimonial (positive path), or improvement (negative path)',
+});
+
+/**
  * AI-suggested question structure
  */
 export const AIQuestionSchema = z.object({
@@ -56,6 +64,14 @@ export const AIQuestionSchema = z.object({
   }),
   options: z.array(AIQuestionOptionSchema).nullable().openapi({
     description: 'Options for choice_single/choice_multiple questions. Null for other types.',
+  }),
+  flow_membership: FlowMembershipSchema.openapi({
+    example: 'shared',
+    description: 'Which flow this question belongs to',
+  }),
+  is_branch_point: z.boolean().openapi({
+    example: false,
+    description: 'True only for the rating question that determines the flow branch',
   }),
 }).openapi('AIQuestion');
 
@@ -100,11 +116,83 @@ export const SuggestQuestionsRequestSchema = z.object({
 }).openapi('SuggestQuestionsRequest');
 
 /**
+ * Form structure recommendations
+ */
+export const FormStructureSchema = z.object({
+  branching_recommended: z.boolean().openapi({
+    example: true,
+    description: 'Whether rating-based branching is recommended for this form',
+  }),
+  rating_question_index: z.number().int().openapi({
+    example: 3,
+    description: '0-indexed position of the rating question that serves as the branch point',
+  }),
+}).openapi('FormStructure');
+
+/**
+ * Consent step content for testimonial flow
+ */
+export const ConsentContentSchema = z.object({
+  title: z.string().openapi({
+    example: 'One last thing...',
+    description: 'Title for the consent step',
+  }),
+  description: z.string().openapi({
+    example: 'Would you like us to share your testimonial publicly?',
+    description: 'Description explaining what consent means',
+  }),
+  public_label: z.string().openapi({
+    example: 'Share publicly',
+    description: 'Label for public sharing option',
+  }),
+  public_description: z.string().openapi({
+    example: 'Your testimonial may be featured on our website and marketing materials',
+    description: 'Description of what public means',
+  }),
+  private_label: z.string().openapi({
+    example: 'Keep private',
+    description: 'Label for private/anonymous option',
+  }),
+  private_description: z.string().openapi({
+    example: 'Your feedback stays internal - we will only use it to improve our service',
+    description: 'Description of what private means',
+  }),
+}).openapi('ConsentContent');
+
+/**
+ * Improvement flow thank you content
+ */
+export const ImprovementThankYouSchema = z.object({
+  title: z.string().openapi({
+    example: 'Thank you for your honest feedback',
+    description: 'Thank you title for improvement flow',
+  }),
+  message: z.string().openapi({
+    example: 'We take your feedback seriously and will work to improve.',
+    description: 'Thank you message acknowledging their concerns',
+  }),
+}).openapi('ImprovementThankYou');
+
+/**
+ * Step content suggestions for system-generated steps
+ */
+export const StepContentSchema = z.object({
+  consent: ConsentContentSchema.openapi({
+    description: 'Content for the consent step in testimonial flow',
+  }),
+  improvement_thank_you: ImprovementThankYouSchema.openapi({
+    description: 'Content for thank you step in improvement flow',
+  }),
+}).openapi('StepContent');
+
+/**
  * Response schema for /ai/suggest-questions
  */
 export const SuggestQuestionsResponseSchema = z.object({
   inferred_context: AIContextSchema,
+  form_structure: FormStructureSchema,
   questions: z.array(AIQuestionSchema),
+  step_content: StepContentSchema,
 }).openapi('SuggestQuestionsResponse');
 
 /**
@@ -140,9 +228,14 @@ export const AssembleTestimonialResponseSchema = z.object({
 }).openapi('AssembleTestimonialResponse');
 
 // Type exports
+export type FlowMembership = z.infer<typeof FlowMembershipSchema>;
 export type AIQuestionOption = z.infer<typeof AIQuestionOptionSchema>;
 export type AIQuestion = z.infer<typeof AIQuestionSchema>;
 export type AIContext = z.infer<typeof AIContextSchema>;
+export type FormStructure = z.infer<typeof FormStructureSchema>;
+export type ConsentContent = z.infer<typeof ConsentContentSchema>;
+export type ImprovementThankYou = z.infer<typeof ImprovementThankYouSchema>;
+export type StepContent = z.infer<typeof StepContentSchema>;
 export type SuggestQuestionsRequest = z.infer<typeof SuggestQuestionsRequestSchema>;
 export type SuggestQuestionsResponse = z.infer<typeof SuggestQuestionsResponseSchema>;
 export type AssembleTestimonialRequest = z.infer<typeof AssembleTestimonialRequestSchema>;

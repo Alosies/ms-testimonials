@@ -265,6 +265,10 @@ export async function suggestQuestions(c: Context) {
         tone: sanitizeAIOutput(result.object.inferred_context.tone),
         value_props: result.object.inferred_context.value_props.map(sanitizeAIOutput),
       },
+      form_structure: {
+        branching_recommended: result.object.form_structure.branching_recommended,
+        rating_question_index: result.object.form_structure.rating_question_index,
+      },
       questions: result.object.questions.map((q, index) => ({
         question_text: sanitizeAIOutput(q.question_text),
         question_key: q.question_key, // Already validated by schema (snake_case)
@@ -281,7 +285,23 @@ export async function suggestQuestions(c: Context) {
               display_order: opt.display_order,
             }))
           : null,
+        flow_membership: q.flow_membership, // Enum, safe
+        is_branch_point: q.is_branch_point,
       })),
+      step_content: {
+        consent: {
+          title: sanitizeAIOutput(result.object.step_content.consent.title),
+          description: sanitizeAIOutput(result.object.step_content.consent.description),
+          public_label: sanitizeAIOutput(result.object.step_content.consent.public_label),
+          public_description: sanitizeAIOutput(result.object.step_content.consent.public_description),
+          private_label: sanitizeAIOutput(result.object.step_content.consent.private_label),
+          private_description: sanitizeAIOutput(result.object.step_content.consent.private_description),
+        },
+        improvement_thank_you: {
+          title: sanitizeAIOutput(result.object.step_content.improvement_thank_you.title),
+          message: sanitizeAIOutput(result.object.step_content.improvement_thank_you.message),
+        },
+      },
     };
 
     // Return response with usage metadata in headers
