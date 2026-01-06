@@ -1205,6 +1205,789 @@ enum cursor_ordering {
 }
 
 """
+Defines branching paths for forms. Each form has flows (shared, testimonial, improvement) that determine step visibility based on user responses like rating. See ADR-009 for architecture details.
+"""
+type flows {
+  """
+  JSONB branching condition: {field, op, value}. Examples: rating>=4 for testimonial, rating<4 for improvement. NULL for shared flow.
+  """
+  branch_condition(
+    """JSON select path"""
+    path: String
+  ): jsonb
+  """
+  Timestamp when this flow was first created. Set automatically, never modified.
+  """
+  created_at: timestamptz!
+  """
+  Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...).
+  """
+  display_order: smallint!
+  """
+  Flow behavior type: shared (always shown, before branch) or branch (conditional, after branch point).
+  """
+  flow_type: String!
+  """An object relationship"""
+  form: forms!
+  """
+  Foreign key to forms table. Identifies which form this flow belongs to. Cascade deletes when parent form is removed.
+  """
+  form_id: String!
+  """
+  Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification.
+  """
+  id: String!
+  """
+  Human-readable flow name displayed in form editor (e.g., "Shared Steps", "Testimonial Flow", "Improvement Flow").
+  """
+  name: String!
+  """An object relationship"""
+  organization: organizations!
+  """
+  Foreign key to organizations for row-level security. Denormalized from form for efficient permission queries.
+  """
+  organization_id: String!
+  """An array relationship"""
+  steps(
+    """distinct select on columns"""
+    distinct_on: [form_steps_select_column!]
+    """limit the number of rows returned"""
+    limit: Int
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+    """sort the rows by one or more columns"""
+    order_by: [form_steps_order_by!]
+    """filter the rows returned"""
+    where: form_steps_bool_exp
+  ): [form_steps!]!
+  """An aggregate relationship"""
+  steps_aggregate(
+    """distinct select on columns"""
+    distinct_on: [form_steps_select_column!]
+    """limit the number of rows returned"""
+    limit: Int
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+    """sort the rows by one or more columns"""
+    order_by: [form_steps_order_by!]
+    """filter the rows returned"""
+    where: form_steps_bool_exp
+  ): form_steps_aggregate!
+  """
+  Timestamp of last modification. Automatically updated by database trigger on any column change.
+  """
+  updated_at: timestamptz!
+}
+
+"""
+aggregated selection of "flows"
+"""
+type flows_aggregate {
+  aggregate: flows_aggregate_fields
+  nodes: [flows!]!
+}
+
+input flows_aggregate_bool_exp {
+  count: flows_aggregate_bool_exp_count
+}
+
+input flows_aggregate_bool_exp_count {
+  arguments: [flows_select_column!]
+  distinct: Boolean
+  filter: flows_bool_exp
+  predicate: Int_comparison_exp!
+}
+
+"""
+aggregate fields of "flows"
+"""
+type flows_aggregate_fields {
+  avg: flows_avg_fields
+  count(columns: [flows_select_column!], distinct: Boolean): Int!
+  max: flows_max_fields
+  min: flows_min_fields
+  stddev: flows_stddev_fields
+  stddev_pop: flows_stddev_pop_fields
+  stddev_samp: flows_stddev_samp_fields
+  sum: flows_sum_fields
+  var_pop: flows_var_pop_fields
+  var_samp: flows_var_samp_fields
+  variance: flows_variance_fields
+}
+
+"""
+order by aggregate values of table "flows"
+"""
+input flows_aggregate_order_by {
+  avg: flows_avg_order_by
+  count: order_by
+  max: flows_max_order_by
+  min: flows_min_order_by
+  stddev: flows_stddev_order_by
+  stddev_pop: flows_stddev_pop_order_by
+  stddev_samp: flows_stddev_samp_order_by
+  sum: flows_sum_order_by
+  var_pop: flows_var_pop_order_by
+  var_samp: flows_var_samp_order_by
+  variance: flows_variance_order_by
+}
+
+"""append existing jsonb value of filtered columns with new jsonb value"""
+input flows_append_input {
+  """
+  JSONB branching condition: {field, op, value}. Examples: rating>=4 for testimonial, rating<4 for improvement. NULL for shared flow.
+  """
+  branch_condition: jsonb
+}
+
+"""
+input type for inserting array relation for remote table "flows"
+"""
+input flows_arr_rel_insert_input {
+  data: [flows_insert_input!]!
+  """upsert condition"""
+  on_conflict: flows_on_conflict
+}
+
+"""aggregate avg on columns"""
+type flows_avg_fields {
+  """
+  Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...).
+  """
+  display_order: Float
+}
+
+"""
+order by avg() on columns of table "flows"
+"""
+input flows_avg_order_by {
+  """
+  Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...).
+  """
+  display_order: order_by
+}
+
+"""
+Boolean expression to filter rows from the table "flows". All fields are combined with a logical 'AND'.
+"""
+input flows_bool_exp {
+  _and: [flows_bool_exp!]
+  _not: flows_bool_exp
+  _or: [flows_bool_exp!]
+  branch_condition: jsonb_comparison_exp
+  created_at: timestamptz_comparison_exp
+  display_order: smallint_comparison_exp
+  flow_type: String_comparison_exp
+  form: forms_bool_exp
+  form_id: String_comparison_exp
+  id: String_comparison_exp
+  name: String_comparison_exp
+  organization: organizations_bool_exp
+  organization_id: String_comparison_exp
+  steps: form_steps_bool_exp
+  steps_aggregate: form_steps_aggregate_bool_exp
+  updated_at: timestamptz_comparison_exp
+}
+
+"""
+unique or primary key constraints on table "flows"
+"""
+enum flows_constraint {
+  """
+  unique or primary key constraint on columns "form_id", "name"
+  """
+  flows_form_name_unique
+  """
+  unique or primary key constraint on columns "id"
+  """
+  flows_pkey
+}
+
+"""
+delete the field or element with specified path (for JSON arrays, negative integers count from the end)
+"""
+input flows_delete_at_path_input {
+  """
+  JSONB branching condition: {field, op, value}. Examples: rating>=4 for testimonial, rating<4 for improvement. NULL for shared flow.
+  """
+  branch_condition: [String!]
+}
+
+"""
+delete the array element with specified index (negative integers count from the end). throws an error if top level container is not an array
+"""
+input flows_delete_elem_input {
+  """
+  JSONB branching condition: {field, op, value}. Examples: rating>=4 for testimonial, rating<4 for improvement. NULL for shared flow.
+  """
+  branch_condition: Int
+}
+
+"""
+delete key/value pair or string element. key/value pairs are matched based on their key value
+"""
+input flows_delete_key_input {
+  """
+  JSONB branching condition: {field, op, value}. Examples: rating>=4 for testimonial, rating<4 for improvement. NULL for shared flow.
+  """
+  branch_condition: String
+}
+
+"""
+input type for incrementing numeric columns in table "flows"
+"""
+input flows_inc_input {
+  """
+  Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...).
+  """
+  display_order: smallint
+}
+
+"""
+input type for inserting data into table "flows"
+"""
+input flows_insert_input {
+  """
+  JSONB branching condition: {field, op, value}. Examples: rating>=4 for testimonial, rating<4 for improvement. NULL for shared flow.
+  """
+  branch_condition: jsonb
+  """
+  Timestamp when this flow was first created. Set automatically, never modified.
+  """
+  created_at: timestamptz
+  """
+  Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...).
+  """
+  display_order: smallint
+  """
+  Flow behavior type: shared (always shown, before branch) or branch (conditional, after branch point).
+  """
+  flow_type: String
+  form: forms_obj_rel_insert_input
+  """
+  Foreign key to forms table. Identifies which form this flow belongs to. Cascade deletes when parent form is removed.
+  """
+  form_id: String
+  """
+  Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification.
+  """
+  id: String
+  """
+  Human-readable flow name displayed in form editor (e.g., "Shared Steps", "Testimonial Flow", "Improvement Flow").
+  """
+  name: String
+  organization: organizations_obj_rel_insert_input
+  """
+  Foreign key to organizations for row-level security. Denormalized from form for efficient permission queries.
+  """
+  organization_id: String
+  steps: form_steps_arr_rel_insert_input
+  """
+  Timestamp of last modification. Automatically updated by database trigger on any column change.
+  """
+  updated_at: timestamptz
+}
+
+"""aggregate max on columns"""
+type flows_max_fields {
+  """
+  Timestamp when this flow was first created. Set automatically, never modified.
+  """
+  created_at: timestamptz
+  """
+  Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...).
+  """
+  display_order: smallint
+  """
+  Flow behavior type: shared (always shown, before branch) or branch (conditional, after branch point).
+  """
+  flow_type: String
+  """
+  Foreign key to forms table. Identifies which form this flow belongs to. Cascade deletes when parent form is removed.
+  """
+  form_id: String
+  """
+  Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification.
+  """
+  id: String
+  """
+  Human-readable flow name displayed in form editor (e.g., "Shared Steps", "Testimonial Flow", "Improvement Flow").
+  """
+  name: String
+  """
+  Foreign key to organizations for row-level security. Denormalized from form for efficient permission queries.
+  """
+  organization_id: String
+  """
+  Timestamp of last modification. Automatically updated by database trigger on any column change.
+  """
+  updated_at: timestamptz
+}
+
+"""
+order by max() on columns of table "flows"
+"""
+input flows_max_order_by {
+  """
+  Timestamp when this flow was first created. Set automatically, never modified.
+  """
+  created_at: order_by
+  """
+  Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...).
+  """
+  display_order: order_by
+  """
+  Flow behavior type: shared (always shown, before branch) or branch (conditional, after branch point).
+  """
+  flow_type: order_by
+  """
+  Foreign key to forms table. Identifies which form this flow belongs to. Cascade deletes when parent form is removed.
+  """
+  form_id: order_by
+  """
+  Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification.
+  """
+  id: order_by
+  """
+  Human-readable flow name displayed in form editor (e.g., "Shared Steps", "Testimonial Flow", "Improvement Flow").
+  """
+  name: order_by
+  """
+  Foreign key to organizations for row-level security. Denormalized from form for efficient permission queries.
+  """
+  organization_id: order_by
+  """
+  Timestamp of last modification. Automatically updated by database trigger on any column change.
+  """
+  updated_at: order_by
+}
+
+"""aggregate min on columns"""
+type flows_min_fields {
+  """
+  Timestamp when this flow was first created. Set automatically, never modified.
+  """
+  created_at: timestamptz
+  """
+  Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...).
+  """
+  display_order: smallint
+  """
+  Flow behavior type: shared (always shown, before branch) or branch (conditional, after branch point).
+  """
+  flow_type: String
+  """
+  Foreign key to forms table. Identifies which form this flow belongs to. Cascade deletes when parent form is removed.
+  """
+  form_id: String
+  """
+  Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification.
+  """
+  id: String
+  """
+  Human-readable flow name displayed in form editor (e.g., "Shared Steps", "Testimonial Flow", "Improvement Flow").
+  """
+  name: String
+  """
+  Foreign key to organizations for row-level security. Denormalized from form for efficient permission queries.
+  """
+  organization_id: String
+  """
+  Timestamp of last modification. Automatically updated by database trigger on any column change.
+  """
+  updated_at: timestamptz
+}
+
+"""
+order by min() on columns of table "flows"
+"""
+input flows_min_order_by {
+  """
+  Timestamp when this flow was first created. Set automatically, never modified.
+  """
+  created_at: order_by
+  """
+  Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...).
+  """
+  display_order: order_by
+  """
+  Flow behavior type: shared (always shown, before branch) or branch (conditional, after branch point).
+  """
+  flow_type: order_by
+  """
+  Foreign key to forms table. Identifies which form this flow belongs to. Cascade deletes when parent form is removed.
+  """
+  form_id: order_by
+  """
+  Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification.
+  """
+  id: order_by
+  """
+  Human-readable flow name displayed in form editor (e.g., "Shared Steps", "Testimonial Flow", "Improvement Flow").
+  """
+  name: order_by
+  """
+  Foreign key to organizations for row-level security. Denormalized from form for efficient permission queries.
+  """
+  organization_id: order_by
+  """
+  Timestamp of last modification. Automatically updated by database trigger on any column change.
+  """
+  updated_at: order_by
+}
+
+"""
+response of any mutation on the table "flows"
+"""
+type flows_mutation_response {
+  """number of rows affected by the mutation"""
+  affected_rows: Int!
+  """data from the rows affected by the mutation"""
+  returning: [flows!]!
+}
+
+"""
+input type for inserting object relation for remote table "flows"
+"""
+input flows_obj_rel_insert_input {
+  data: flows_insert_input!
+  """upsert condition"""
+  on_conflict: flows_on_conflict
+}
+
+"""
+on_conflict condition type for table "flows"
+"""
+input flows_on_conflict {
+  constraint: flows_constraint!
+  update_columns: [flows_update_column!]! = []
+  where: flows_bool_exp
+}
+
+"""Ordering options when selecting data from "flows"."""
+input flows_order_by {
+  branch_condition: order_by
+  created_at: order_by
+  display_order: order_by
+  flow_type: order_by
+  form: forms_order_by
+  form_id: order_by
+  id: order_by
+  name: order_by
+  organization: organizations_order_by
+  organization_id: order_by
+  steps_aggregate: form_steps_aggregate_order_by
+  updated_at: order_by
+}
+
+"""primary key columns input for table: flows"""
+input flows_pk_columns_input {
+  """
+  Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification.
+  """
+  id: String!
+}
+
+"""prepend existing jsonb value of filtered columns with new jsonb value"""
+input flows_prepend_input {
+  """
+  JSONB branching condition: {field, op, value}. Examples: rating>=4 for testimonial, rating<4 for improvement. NULL for shared flow.
+  """
+  branch_condition: jsonb
+}
+
+"""
+select columns of table "flows"
+"""
+enum flows_select_column {
+  """column name"""
+  branch_condition
+  """column name"""
+  created_at
+  """column name"""
+  display_order
+  """column name"""
+  flow_type
+  """column name"""
+  form_id
+  """column name"""
+  id
+  """column name"""
+  name
+  """column name"""
+  organization_id
+  """column name"""
+  updated_at
+}
+
+"""
+input type for updating data in table "flows"
+"""
+input flows_set_input {
+  """
+  JSONB branching condition: {field, op, value}. Examples: rating>=4 for testimonial, rating<4 for improvement. NULL for shared flow.
+  """
+  branch_condition: jsonb
+  """
+  Timestamp when this flow was first created. Set automatically, never modified.
+  """
+  created_at: timestamptz
+  """
+  Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...).
+  """
+  display_order: smallint
+  """
+  Flow behavior type: shared (always shown, before branch) or branch (conditional, after branch point).
+  """
+  flow_type: String
+  """
+  Foreign key to forms table. Identifies which form this flow belongs to. Cascade deletes when parent form is removed.
+  """
+  form_id: String
+  """
+  Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification.
+  """
+  id: String
+  """
+  Human-readable flow name displayed in form editor (e.g., "Shared Steps", "Testimonial Flow", "Improvement Flow").
+  """
+  name: String
+  """
+  Foreign key to organizations for row-level security. Denormalized from form for efficient permission queries.
+  """
+  organization_id: String
+  """
+  Timestamp of last modification. Automatically updated by database trigger on any column change.
+  """
+  updated_at: timestamptz
+}
+
+"""aggregate stddev on columns"""
+type flows_stddev_fields {
+  """
+  Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...).
+  """
+  display_order: Float
+}
+
+"""
+order by stddev() on columns of table "flows"
+"""
+input flows_stddev_order_by {
+  """
+  Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...).
+  """
+  display_order: order_by
+}
+
+"""aggregate stddev_pop on columns"""
+type flows_stddev_pop_fields {
+  """
+  Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...).
+  """
+  display_order: Float
+}
+
+"""
+order by stddev_pop() on columns of table "flows"
+"""
+input flows_stddev_pop_order_by {
+  """
+  Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...).
+  """
+  display_order: order_by
+}
+
+"""aggregate stddev_samp on columns"""
+type flows_stddev_samp_fields {
+  """
+  Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...).
+  """
+  display_order: Float
+}
+
+"""
+order by stddev_samp() on columns of table "flows"
+"""
+input flows_stddev_samp_order_by {
+  """
+  Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...).
+  """
+  display_order: order_by
+}
+
+"""
+Streaming cursor of the table "flows"
+"""
+input flows_stream_cursor_input {
+  """Stream column input with initial value"""
+  initial_value: flows_stream_cursor_value_input!
+  """cursor ordering"""
+  ordering: cursor_ordering
+}
+
+"""Initial value of the column from where the streaming should start"""
+input flows_stream_cursor_value_input {
+  """
+  JSONB branching condition: {field, op, value}. Examples: rating>=4 for testimonial, rating<4 for improvement. NULL for shared flow.
+  """
+  branch_condition: jsonb
+  """
+  Timestamp when this flow was first created. Set automatically, never modified.
+  """
+  created_at: timestamptz
+  """
+  Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...).
+  """
+  display_order: smallint
+  """
+  Flow behavior type: shared (always shown, before branch) or branch (conditional, after branch point).
+  """
+  flow_type: String
+  """
+  Foreign key to forms table. Identifies which form this flow belongs to. Cascade deletes when parent form is removed.
+  """
+  form_id: String
+  """
+  Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification.
+  """
+  id: String
+  """
+  Human-readable flow name displayed in form editor (e.g., "Shared Steps", "Testimonial Flow", "Improvement Flow").
+  """
+  name: String
+  """
+  Foreign key to organizations for row-level security. Denormalized from form for efficient permission queries.
+  """
+  organization_id: String
+  """
+  Timestamp of last modification. Automatically updated by database trigger on any column change.
+  """
+  updated_at: timestamptz
+}
+
+"""aggregate sum on columns"""
+type flows_sum_fields {
+  """
+  Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...).
+  """
+  display_order: smallint
+}
+
+"""
+order by sum() on columns of table "flows"
+"""
+input flows_sum_order_by {
+  """
+  Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...).
+  """
+  display_order: order_by
+}
+
+"""
+update columns of table "flows"
+"""
+enum flows_update_column {
+  """column name"""
+  branch_condition
+  """column name"""
+  created_at
+  """column name"""
+  display_order
+  """column name"""
+  flow_type
+  """column name"""
+  form_id
+  """column name"""
+  id
+  """column name"""
+  name
+  """column name"""
+  organization_id
+  """column name"""
+  updated_at
+}
+
+input flows_updates {
+  """append existing jsonb value of filtered columns with new jsonb value"""
+  _append: flows_append_input
+  """
+  delete the field or element with specified path (for JSON arrays, negative integers count from the end)
+  """
+  _delete_at_path: flows_delete_at_path_input
+  """
+  delete the array element with specified index (negative integers count from the end). throws an error if top level container is not an array
+  """
+  _delete_elem: flows_delete_elem_input
+  """
+  delete key/value pair or string element. key/value pairs are matched based on their key value
+  """
+  _delete_key: flows_delete_key_input
+  """increments the numeric columns with given value of the filtered values"""
+  _inc: flows_inc_input
+  """prepend existing jsonb value of filtered columns with new jsonb value"""
+  _prepend: flows_prepend_input
+  """sets the columns of the filtered rows to the given values"""
+  _set: flows_set_input
+  """filter the rows which have to be updated"""
+  where: flows_bool_exp!
+}
+
+"""aggregate var_pop on columns"""
+type flows_var_pop_fields {
+  """
+  Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...).
+  """
+  display_order: Float
+}
+
+"""
+order by var_pop() on columns of table "flows"
+"""
+input flows_var_pop_order_by {
+  """
+  Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...).
+  """
+  display_order: order_by
+}
+
+"""aggregate var_samp on columns"""
+type flows_var_samp_fields {
+  """
+  Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...).
+  """
+  display_order: Float
+}
+
+"""
+order by var_samp() on columns of table "flows"
+"""
+input flows_var_samp_order_by {
+  """
+  Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...).
+  """
+  display_order: order_by
+}
+
+"""aggregate variance on columns"""
+type flows_variance_fields {
+  """
+  Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...).
+  """
+  display_order: Float
+}
+
+"""
+order by variance() on columns of table "flows"
+"""
+input flows_variance_order_by {
+  """
+  Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...).
+  """
+  display_order: order_by
+}
+
+"""
 Raw form submission responses - internal data for AI assembly, not displayed on widgets
 """
 type form_question_responses {
@@ -3341,6 +4124,12 @@ type form_steps {
   created_by: String
   """An object relationship"""
   creator: users
+  """An object relationship"""
+  flow: flows!
+  """
+  Foreign key to flows table. Links step to its parent flow (shared, testimonial, or improvement). Will be NOT NULL after backfill migration.
+  """
+  flow_id: String!
   """
   Which flow this step belongs to: shared (all paths), testimonial (positive rating), or improvement (negative rating)
   """
@@ -3510,6 +4299,8 @@ input form_steps_bool_exp {
   created_at: timestamptz_comparison_exp
   created_by: String_comparison_exp
   creator: users_bool_exp
+  flow: flows_bool_exp
+  flow_id: String_comparison_exp
   flow_membership: String_comparison_exp
   form: forms_bool_exp
   form_id: String_comparison_exp
@@ -3532,9 +4323,9 @@ unique or primary key constraints on table "form_steps"
 """
 enum form_steps_constraint {
   """
-  unique or primary key constraint on columns "step_order", "form_id"
+  unique or primary key constraint on columns "flow_id", "step_order", "form_id"
   """
-  form_steps_form_order_unique
+  form_steps_flow_order_unique
   """
   unique or primary key constraint on columns "id"
   """
@@ -3598,6 +4389,11 @@ input form_steps_insert_input {
   """
   created_by: String
   creator: users_obj_rel_insert_input
+  flow: flows_obj_rel_insert_input
+  """
+  Foreign key to flows table. Links step to its parent flow (shared, testimonial, or improvement). Will be NOT NULL after backfill migration.
+  """
+  flow_id: String
   """
   Which flow this step belongs to: shared (all paths), testimonial (positive rating), or improvement (negative rating)
   """
@@ -3659,6 +4455,10 @@ type form_steps_max_fields {
   """
   created_by: String
   """
+  Foreign key to flows table. Links step to its parent flow (shared, testimonial, or improvement). Will be NOT NULL after backfill migration.
+  """
+  flow_id: String
+  """
   Which flow this step belongs to: shared (all paths), testimonial (positive rating), or improvement (negative rating)
   """
   flow_membership: String
@@ -3713,6 +4513,10 @@ input form_steps_max_order_by {
   """
   created_by: order_by
   """
+  Foreign key to flows table. Links step to its parent flow (shared, testimonial, or improvement). Will be NOT NULL after backfill migration.
+  """
+  flow_id: order_by
+  """
   Which flow this step belongs to: shared (all paths), testimonial (positive rating), or improvement (negative rating)
   """
   flow_membership: order_by
@@ -3764,6 +4568,10 @@ type form_steps_min_fields {
   Foreign key to users table. Records which user originally created this step for audit purposes.
   """
   created_by: String
+  """
+  Foreign key to flows table. Links step to its parent flow (shared, testimonial, or improvement). Will be NOT NULL after backfill migration.
+  """
+  flow_id: String
   """
   Which flow this step belongs to: shared (all paths), testimonial (positive rating), or improvement (negative rating)
   """
@@ -3818,6 +4626,10 @@ input form_steps_min_order_by {
   Foreign key to users table. Records which user originally created this step for audit purposes.
   """
   created_by: order_by
+  """
+  Foreign key to flows table. Links step to its parent flow (shared, testimonial, or improvement). Will be NOT NULL after backfill migration.
+  """
+  flow_id: order_by
   """
   Which flow this step belongs to: shared (all paths), testimonial (positive rating), or improvement (negative rating)
   """
@@ -3885,6 +4697,8 @@ input form_steps_order_by {
   created_at: order_by
   created_by: order_by
   creator: users_order_by
+  flow: flows_order_by
+  flow_id: order_by
   flow_membership: order_by
   form: forms_order_by
   form_id: order_by
@@ -3928,6 +4742,8 @@ enum form_steps_select_column {
   created_at
   """column name"""
   created_by
+  """column name"""
+  flow_id
   """column name"""
   flow_membership
   """column name"""
@@ -3984,6 +4800,10 @@ input form_steps_set_input {
   Foreign key to users table. Records which user originally created this step for audit purposes.
   """
   created_by: String
+  """
+  Foreign key to flows table. Links step to its parent flow (shared, testimonial, or improvement). Will be NOT NULL after backfill migration.
+  """
+  flow_id: String
   """
   Which flow this step belongs to: shared (all paths), testimonial (positive rating), or improvement (negative rating)
   """
@@ -4109,6 +4929,10 @@ input form_steps_stream_cursor_value_input {
   """
   created_by: String
   """
+  Foreign key to flows table. Links step to its parent flow (shared, testimonial, or improvement). Will be NOT NULL after backfill migration.
+  """
+  flow_id: String
+  """
   Which flow this step belongs to: shared (all paths), testimonial (positive rating), or improvement (negative rating)
   """
   flow_membership: String
@@ -4182,6 +5006,8 @@ enum form_steps_update_column {
   created_at
   """column name"""
   created_by
+  """column name"""
+  flow_id
   """column name"""
   flow_membership
   """column name"""
@@ -4774,6 +5600,32 @@ type forms {
   created_by: String!
   """An object relationship"""
   creator: users!
+  """An array relationship"""
+  flows(
+    """distinct select on columns"""
+    distinct_on: [flows_select_column!]
+    """limit the number of rows returned"""
+    limit: Int
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+    """sort the rows by one or more columns"""
+    order_by: [flows_order_by!]
+    """filter the rows returned"""
+    where: flows_bool_exp
+  ): [flows!]!
+  """An aggregate relationship"""
+  flows_aggregate(
+    """distinct select on columns"""
+    distinct_on: [flows_select_column!]
+    """limit the number of rows returned"""
+    limit: Int
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+    """sort the rows by one or more columns"""
+    order_by: [flows_order_by!]
+    """filter the rows returned"""
+    where: flows_bool_exp
+  ): flows_aggregate!
   """Primary key - NanoID 12-char unique identifier"""
   id: String!
   """Soft delete flag. False = form disabled, public link returns 404"""
@@ -4976,6 +5828,8 @@ input forms_bool_exp {
   created_at: timestamptz_comparison_exp
   created_by: String_comparison_exp
   creator: users_bool_exp
+  flows: flows_bool_exp
+  flows_aggregate: flows_aggregate_bool_exp
   id: String_comparison_exp
   is_active: Boolean_comparison_exp
   name: String_comparison_exp
@@ -5062,6 +5916,7 @@ input forms_insert_input {
   """FK to users - user who created this form"""
   created_by: String
   creator: users_obj_rel_insert_input
+  flows: flows_arr_rel_insert_input
   """Primary key - NanoID 12-char unique identifier"""
   id: String
   """Soft delete flag. False = form disabled, public link returns 404"""
@@ -5256,6 +6111,7 @@ input forms_order_by {
   created_at: order_by
   created_by: order_by
   creator: users_order_by
+  flows_aggregate: flows_aggregate_order_by
   id: order_by
   is_active: order_by
   name: order_by
@@ -5536,6 +6392,22 @@ type mutation_root {
     """
     id: String!
   ): contacts
+  """
+  delete data from the table: "flows"
+  """
+  delete_flows(
+    """filter the rows which have to be deleted"""
+    where: flows_bool_exp!
+  ): flows_mutation_response
+  """
+  delete single row from the table: "flows"
+  """
+  delete_flows_by_pk(
+    """
+    Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification.
+    """
+    id: String!
+  ): flows
   """
   delete data from the table: "form_question_responses"
   """
@@ -5822,6 +6694,24 @@ type mutation_root {
     """upsert condition"""
     on_conflict: contacts_on_conflict
   ): contacts
+  """
+  insert data into the table: "flows"
+  """
+  insert_flows(
+    """the rows to be inserted"""
+    objects: [flows_insert_input!]!
+    """upsert condition"""
+    on_conflict: flows_on_conflict
+  ): flows_mutation_response
+  """
+  insert a single row into the table: "flows"
+  """
+  insert_flows_one(
+    """the row to be inserted"""
+    object: flows_insert_input!
+    """upsert condition"""
+    on_conflict: flows_on_conflict
+  ): flows
   """
   insert data into the table: "form_question_responses"
   """
@@ -6192,6 +7082,66 @@ type mutation_root {
     """updates to execute, in order"""
     updates: [contacts_updates!]!
   ): [contacts_mutation_response]
+  """
+  update data of the table: "flows"
+  """
+  update_flows(
+    """append existing jsonb value of filtered columns with new jsonb value"""
+    _append: flows_append_input
+    """
+    delete the field or element with specified path (for JSON arrays, negative integers count from the end)
+    """
+    _delete_at_path: flows_delete_at_path_input
+    """
+    delete the array element with specified index (negative integers count from the end). throws an error if top level container is not an array
+    """
+    _delete_elem: flows_delete_elem_input
+    """
+    delete key/value pair or string element. key/value pairs are matched based on their key value
+    """
+    _delete_key: flows_delete_key_input
+    """increments the numeric columns with given value of the filtered values"""
+    _inc: flows_inc_input
+    """prepend existing jsonb value of filtered columns with new jsonb value"""
+    _prepend: flows_prepend_input
+    """sets the columns of the filtered rows to the given values"""
+    _set: flows_set_input
+    """filter the rows which have to be updated"""
+    where: flows_bool_exp!
+  ): flows_mutation_response
+  """
+  update single row of the table: "flows"
+  """
+  update_flows_by_pk(
+    """append existing jsonb value of filtered columns with new jsonb value"""
+    _append: flows_append_input
+    """
+    delete the field or element with specified path (for JSON arrays, negative integers count from the end)
+    """
+    _delete_at_path: flows_delete_at_path_input
+    """
+    delete the array element with specified index (negative integers count from the end). throws an error if top level container is not an array
+    """
+    _delete_elem: flows_delete_elem_input
+    """
+    delete key/value pair or string element. key/value pairs are matched based on their key value
+    """
+    _delete_key: flows_delete_key_input
+    """increments the numeric columns with given value of the filtered values"""
+    _inc: flows_inc_input
+    """prepend existing jsonb value of filtered columns with new jsonb value"""
+    _prepend: flows_prepend_input
+    """sets the columns of the filtered rows to the given values"""
+    _set: flows_set_input
+    pk_columns: flows_pk_columns_input!
+  ): flows
+  """
+  update multiples rows of table: "flows"
+  """
+  update_flows_many(
+    """updates to execute, in order"""
+    updates: [flows_updates!]!
+  ): [flows_mutation_response]
   """
   update data of the table: "form_question_responses"
   """
@@ -10536,6 +11486,39 @@ type query_root {
     """
     id: String!
   ): contacts
+  """An array relationship"""
+  flows(
+    """distinct select on columns"""
+    distinct_on: [flows_select_column!]
+    """limit the number of rows returned"""
+    limit: Int
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+    """sort the rows by one or more columns"""
+    order_by: [flows_order_by!]
+    """filter the rows returned"""
+    where: flows_bool_exp
+  ): [flows!]!
+  """An aggregate relationship"""
+  flows_aggregate(
+    """distinct select on columns"""
+    distinct_on: [flows_select_column!]
+    """limit the number of rows returned"""
+    limit: Int
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+    """sort the rows by one or more columns"""
+    order_by: [flows_order_by!]
+    """filter the rows returned"""
+    where: flows_bool_exp
+  ): flows_aggregate!
+  """fetch data from the table: "flows" using primary key columns"""
+  flows_by_pk(
+    """
+    Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification.
+    """
+    id: String!
+  ): flows
   """
   fetch data from the table: "form_question_responses"
   """
@@ -12973,6 +13956,50 @@ type subscription_root {
     """filter the rows returned"""
     where: contacts_bool_exp
   ): [contacts!]!
+  """An array relationship"""
+  flows(
+    """distinct select on columns"""
+    distinct_on: [flows_select_column!]
+    """limit the number of rows returned"""
+    limit: Int
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+    """sort the rows by one or more columns"""
+    order_by: [flows_order_by!]
+    """filter the rows returned"""
+    where: flows_bool_exp
+  ): [flows!]!
+  """An aggregate relationship"""
+  flows_aggregate(
+    """distinct select on columns"""
+    distinct_on: [flows_select_column!]
+    """limit the number of rows returned"""
+    limit: Int
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+    """sort the rows by one or more columns"""
+    order_by: [flows_order_by!]
+    """filter the rows returned"""
+    where: flows_bool_exp
+  ): flows_aggregate!
+  """fetch data from the table: "flows" using primary key columns"""
+  flows_by_pk(
+    """
+    Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification.
+    """
+    id: String!
+  ): flows
+  """
+  fetch data from the table in a streaming manner: "flows"
+  """
+  flows_stream(
+    """maximum number of rows returned in a single batch"""
+    batch_size: Int!
+    """cursor to stream the results returned by the query"""
+    cursor: [flows_stream_cursor_input]!
+    """filter the rows returned"""
+    where: flows_bool_exp
+  ): [flows!]!
   """
   fetch data from the table: "form_question_responses"
   """

@@ -843,6 +843,564 @@ export const Cursor_Ordering = {
 } as const;
 
 export type Cursor_Ordering = typeof Cursor_Ordering[keyof typeof Cursor_Ordering];
+/** Defines branching paths for forms. Each form has flows (shared, testimonial, improvement) that determine step visibility based on user responses like rating. See ADR-009 for architecture details. */
+export interface Flows {
+  __typename?: 'flows';
+  /** JSONB branching condition: {field, op, value}. Examples: rating>=4 for testimonial, rating<4 for improvement. NULL for shared flow. */
+  branch_condition?: Maybe<Scalars['jsonb']['output']>;
+  /** Timestamp when this flow was first created. Set automatically, never modified. */
+  created_at: Scalars['timestamptz']['output'];
+  /** Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...). */
+  display_order: Scalars['smallint']['output'];
+  /** Flow behavior type: shared (always shown, before branch) or branch (conditional, after branch point). */
+  flow_type: Scalars['String']['output'];
+  /** An object relationship */
+  form: Forms;
+  /** Foreign key to forms table. Identifies which form this flow belongs to. Cascade deletes when parent form is removed. */
+  form_id: Scalars['String']['output'];
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
+  id: Scalars['String']['output'];
+  /** Human-readable flow name displayed in form editor (e.g., "Shared Steps", "Testimonial Flow", "Improvement Flow"). */
+  name: Scalars['String']['output'];
+  /** An object relationship */
+  organization: Organizations;
+  /** Foreign key to organizations for row-level security. Denormalized from form for efficient permission queries. */
+  organization_id: Scalars['String']['output'];
+  /** An array relationship */
+  steps: Array<Form_Steps>;
+  /** An aggregate relationship */
+  steps_aggregate: Form_Steps_Aggregate;
+  /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
+  updated_at: Scalars['timestamptz']['output'];
+}
+
+
+/** Defines branching paths for forms. Each form has flows (shared, testimonial, improvement) that determine step visibility based on user responses like rating. See ADR-009 for architecture details. */
+export interface Flows_Branch_ConditionArgs {
+  path?: InputMaybe<Scalars['String']['input']>;
+}
+
+
+/** Defines branching paths for forms. Each form has flows (shared, testimonial, improvement) that determine step visibility based on user responses like rating. See ADR-009 for architecture details. */
+export interface Flows_StepsArgs {
+  distinct_on?: InputMaybe<Array<Form_Steps_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Form_Steps_Order_By>>;
+  where?: InputMaybe<Form_Steps_Bool_Exp>;
+}
+
+
+/** Defines branching paths for forms. Each form has flows (shared, testimonial, improvement) that determine step visibility based on user responses like rating. See ADR-009 for architecture details. */
+export interface Flows_Steps_AggregateArgs {
+  distinct_on?: InputMaybe<Array<Form_Steps_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Form_Steps_Order_By>>;
+  where?: InputMaybe<Form_Steps_Bool_Exp>;
+}
+
+/** aggregated selection of "flows" */
+export interface Flows_Aggregate {
+  __typename?: 'flows_aggregate';
+  aggregate?: Maybe<Flows_Aggregate_Fields>;
+  nodes: Array<Flows>;
+}
+
+export interface Flows_Aggregate_Bool_Exp {
+  count?: InputMaybe<Flows_Aggregate_Bool_Exp_Count>;
+}
+
+export interface Flows_Aggregate_Bool_Exp_Count {
+  arguments?: InputMaybe<Array<Flows_Select_Column>>;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+  filter?: InputMaybe<Flows_Bool_Exp>;
+  predicate: Int_Comparison_Exp;
+}
+
+/** aggregate fields of "flows" */
+export interface Flows_Aggregate_Fields {
+  __typename?: 'flows_aggregate_fields';
+  avg?: Maybe<Flows_Avg_Fields>;
+  count: Scalars['Int']['output'];
+  max?: Maybe<Flows_Max_Fields>;
+  min?: Maybe<Flows_Min_Fields>;
+  stddev?: Maybe<Flows_Stddev_Fields>;
+  stddev_pop?: Maybe<Flows_Stddev_Pop_Fields>;
+  stddev_samp?: Maybe<Flows_Stddev_Samp_Fields>;
+  sum?: Maybe<Flows_Sum_Fields>;
+  var_pop?: Maybe<Flows_Var_Pop_Fields>;
+  var_samp?: Maybe<Flows_Var_Samp_Fields>;
+  variance?: Maybe<Flows_Variance_Fields>;
+}
+
+
+/** aggregate fields of "flows" */
+export interface Flows_Aggregate_Fields_CountArgs {
+  columns?: InputMaybe<Array<Flows_Select_Column>>;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+}
+
+/** order by aggregate values of table "flows" */
+export interface Flows_Aggregate_Order_By {
+  avg?: InputMaybe<Flows_Avg_Order_By>;
+  count?: InputMaybe<Order_By>;
+  max?: InputMaybe<Flows_Max_Order_By>;
+  min?: InputMaybe<Flows_Min_Order_By>;
+  stddev?: InputMaybe<Flows_Stddev_Order_By>;
+  stddev_pop?: InputMaybe<Flows_Stddev_Pop_Order_By>;
+  stddev_samp?: InputMaybe<Flows_Stddev_Samp_Order_By>;
+  sum?: InputMaybe<Flows_Sum_Order_By>;
+  var_pop?: InputMaybe<Flows_Var_Pop_Order_By>;
+  var_samp?: InputMaybe<Flows_Var_Samp_Order_By>;
+  variance?: InputMaybe<Flows_Variance_Order_By>;
+}
+
+/** append existing jsonb value of filtered columns with new jsonb value */
+export interface Flows_Append_Input {
+  /** JSONB branching condition: {field, op, value}. Examples: rating>=4 for testimonial, rating<4 for improvement. NULL for shared flow. */
+  branch_condition?: InputMaybe<Scalars['jsonb']['input']>;
+}
+
+/** input type for inserting array relation for remote table "flows" */
+export interface Flows_Arr_Rel_Insert_Input {
+  data: Array<Flows_Insert_Input>;
+  /** upsert condition */
+  on_conflict?: InputMaybe<Flows_On_Conflict>;
+}
+
+/** aggregate avg on columns */
+export interface Flows_Avg_Fields {
+  __typename?: 'flows_avg_fields';
+  /** Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...). */
+  display_order?: Maybe<Scalars['Float']['output']>;
+}
+
+/** order by avg() on columns of table "flows" */
+export interface Flows_Avg_Order_By {
+  /** Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...). */
+  display_order?: InputMaybe<Order_By>;
+}
+
+/** Boolean expression to filter rows from the table "flows". All fields are combined with a logical 'AND'. */
+export interface Flows_Bool_Exp {
+  _and?: InputMaybe<Array<Flows_Bool_Exp>>;
+  _not?: InputMaybe<Flows_Bool_Exp>;
+  _or?: InputMaybe<Array<Flows_Bool_Exp>>;
+  branch_condition?: InputMaybe<Jsonb_Comparison_Exp>;
+  created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  display_order?: InputMaybe<Smallint_Comparison_Exp>;
+  flow_type?: InputMaybe<String_Comparison_Exp>;
+  form?: InputMaybe<Forms_Bool_Exp>;
+  form_id?: InputMaybe<String_Comparison_Exp>;
+  id?: InputMaybe<String_Comparison_Exp>;
+  name?: InputMaybe<String_Comparison_Exp>;
+  organization?: InputMaybe<Organizations_Bool_Exp>;
+  organization_id?: InputMaybe<String_Comparison_Exp>;
+  steps?: InputMaybe<Form_Steps_Bool_Exp>;
+  steps_aggregate?: InputMaybe<Form_Steps_Aggregate_Bool_Exp>;
+  updated_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+}
+
+/** unique or primary key constraints on table "flows" */
+export const Flows_Constraint = {
+  /** unique or primary key constraint on columns "form_id", "name" */
+  FlowsFormNameUnique: 'flows_form_name_unique',
+  /** unique or primary key constraint on columns "id" */
+  FlowsPkey: 'flows_pkey'
+} as const;
+
+export type Flows_Constraint = typeof Flows_Constraint[keyof typeof Flows_Constraint];
+/** delete the field or element with specified path (for JSON arrays, negative integers count from the end) */
+export interface Flows_Delete_At_Path_Input {
+  /** JSONB branching condition: {field, op, value}. Examples: rating>=4 for testimonial, rating<4 for improvement. NULL for shared flow. */
+  branch_condition?: InputMaybe<Array<Scalars['String']['input']>>;
+}
+
+/** delete the array element with specified index (negative integers count from the end). throws an error if top level container is not an array */
+export interface Flows_Delete_Elem_Input {
+  /** JSONB branching condition: {field, op, value}. Examples: rating>=4 for testimonial, rating<4 for improvement. NULL for shared flow. */
+  branch_condition?: InputMaybe<Scalars['Int']['input']>;
+}
+
+/** delete key/value pair or string element. key/value pairs are matched based on their key value */
+export interface Flows_Delete_Key_Input {
+  /** JSONB branching condition: {field, op, value}. Examples: rating>=4 for testimonial, rating<4 for improvement. NULL for shared flow. */
+  branch_condition?: InputMaybe<Scalars['String']['input']>;
+}
+
+/** input type for incrementing numeric columns in table "flows" */
+export interface Flows_Inc_Input {
+  /** Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...). */
+  display_order?: InputMaybe<Scalars['smallint']['input']>;
+}
+
+/** input type for inserting data into table "flows" */
+export interface Flows_Insert_Input {
+  /** JSONB branching condition: {field, op, value}. Examples: rating>=4 for testimonial, rating<4 for improvement. NULL for shared flow. */
+  branch_condition?: InputMaybe<Scalars['jsonb']['input']>;
+  /** Timestamp when this flow was first created. Set automatically, never modified. */
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...). */
+  display_order?: InputMaybe<Scalars['smallint']['input']>;
+  /** Flow behavior type: shared (always shown, before branch) or branch (conditional, after branch point). */
+  flow_type?: InputMaybe<Scalars['String']['input']>;
+  form?: InputMaybe<Forms_Obj_Rel_Insert_Input>;
+  /** Foreign key to forms table. Identifies which form this flow belongs to. Cascade deletes when parent form is removed. */
+  form_id?: InputMaybe<Scalars['String']['input']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
+  id?: InputMaybe<Scalars['String']['input']>;
+  /** Human-readable flow name displayed in form editor (e.g., "Shared Steps", "Testimonial Flow", "Improvement Flow"). */
+  name?: InputMaybe<Scalars['String']['input']>;
+  organization?: InputMaybe<Organizations_Obj_Rel_Insert_Input>;
+  /** Foreign key to organizations for row-level security. Denormalized from form for efficient permission queries. */
+  organization_id?: InputMaybe<Scalars['String']['input']>;
+  steps?: InputMaybe<Form_Steps_Arr_Rel_Insert_Input>;
+  /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+}
+
+/** aggregate max on columns */
+export interface Flows_Max_Fields {
+  __typename?: 'flows_max_fields';
+  /** Timestamp when this flow was first created. Set automatically, never modified. */
+  created_at?: Maybe<Scalars['timestamptz']['output']>;
+  /** Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...). */
+  display_order?: Maybe<Scalars['smallint']['output']>;
+  /** Flow behavior type: shared (always shown, before branch) or branch (conditional, after branch point). */
+  flow_type?: Maybe<Scalars['String']['output']>;
+  /** Foreign key to forms table. Identifies which form this flow belongs to. Cascade deletes when parent form is removed. */
+  form_id?: Maybe<Scalars['String']['output']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
+  id?: Maybe<Scalars['String']['output']>;
+  /** Human-readable flow name displayed in form editor (e.g., "Shared Steps", "Testimonial Flow", "Improvement Flow"). */
+  name?: Maybe<Scalars['String']['output']>;
+  /** Foreign key to organizations for row-level security. Denormalized from form for efficient permission queries. */
+  organization_id?: Maybe<Scalars['String']['output']>;
+  /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
+  updated_at?: Maybe<Scalars['timestamptz']['output']>;
+}
+
+/** order by max() on columns of table "flows" */
+export interface Flows_Max_Order_By {
+  /** Timestamp when this flow was first created. Set automatically, never modified. */
+  created_at?: InputMaybe<Order_By>;
+  /** Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...). */
+  display_order?: InputMaybe<Order_By>;
+  /** Flow behavior type: shared (always shown, before branch) or branch (conditional, after branch point). */
+  flow_type?: InputMaybe<Order_By>;
+  /** Foreign key to forms table. Identifies which form this flow belongs to. Cascade deletes when parent form is removed. */
+  form_id?: InputMaybe<Order_By>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
+  id?: InputMaybe<Order_By>;
+  /** Human-readable flow name displayed in form editor (e.g., "Shared Steps", "Testimonial Flow", "Improvement Flow"). */
+  name?: InputMaybe<Order_By>;
+  /** Foreign key to organizations for row-level security. Denormalized from form for efficient permission queries. */
+  organization_id?: InputMaybe<Order_By>;
+  /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
+  updated_at?: InputMaybe<Order_By>;
+}
+
+/** aggregate min on columns */
+export interface Flows_Min_Fields {
+  __typename?: 'flows_min_fields';
+  /** Timestamp when this flow was first created. Set automatically, never modified. */
+  created_at?: Maybe<Scalars['timestamptz']['output']>;
+  /** Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...). */
+  display_order?: Maybe<Scalars['smallint']['output']>;
+  /** Flow behavior type: shared (always shown, before branch) or branch (conditional, after branch point). */
+  flow_type?: Maybe<Scalars['String']['output']>;
+  /** Foreign key to forms table. Identifies which form this flow belongs to. Cascade deletes when parent form is removed. */
+  form_id?: Maybe<Scalars['String']['output']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
+  id?: Maybe<Scalars['String']['output']>;
+  /** Human-readable flow name displayed in form editor (e.g., "Shared Steps", "Testimonial Flow", "Improvement Flow"). */
+  name?: Maybe<Scalars['String']['output']>;
+  /** Foreign key to organizations for row-level security. Denormalized from form for efficient permission queries. */
+  organization_id?: Maybe<Scalars['String']['output']>;
+  /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
+  updated_at?: Maybe<Scalars['timestamptz']['output']>;
+}
+
+/** order by min() on columns of table "flows" */
+export interface Flows_Min_Order_By {
+  /** Timestamp when this flow was first created. Set automatically, never modified. */
+  created_at?: InputMaybe<Order_By>;
+  /** Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...). */
+  display_order?: InputMaybe<Order_By>;
+  /** Flow behavior type: shared (always shown, before branch) or branch (conditional, after branch point). */
+  flow_type?: InputMaybe<Order_By>;
+  /** Foreign key to forms table. Identifies which form this flow belongs to. Cascade deletes when parent form is removed. */
+  form_id?: InputMaybe<Order_By>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
+  id?: InputMaybe<Order_By>;
+  /** Human-readable flow name displayed in form editor (e.g., "Shared Steps", "Testimonial Flow", "Improvement Flow"). */
+  name?: InputMaybe<Order_By>;
+  /** Foreign key to organizations for row-level security. Denormalized from form for efficient permission queries. */
+  organization_id?: InputMaybe<Order_By>;
+  /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
+  updated_at?: InputMaybe<Order_By>;
+}
+
+/** response of any mutation on the table "flows" */
+export interface Flows_Mutation_Response {
+  __typename?: 'flows_mutation_response';
+  /** number of rows affected by the mutation */
+  affected_rows: Scalars['Int']['output'];
+  /** data from the rows affected by the mutation */
+  returning: Array<Flows>;
+}
+
+/** input type for inserting object relation for remote table "flows" */
+export interface Flows_Obj_Rel_Insert_Input {
+  data: Flows_Insert_Input;
+  /** upsert condition */
+  on_conflict?: InputMaybe<Flows_On_Conflict>;
+}
+
+/** on_conflict condition type for table "flows" */
+export interface Flows_On_Conflict {
+  constraint: Flows_Constraint;
+  update_columns?: Array<Flows_Update_Column>;
+  where?: InputMaybe<Flows_Bool_Exp>;
+}
+
+/** Ordering options when selecting data from "flows". */
+export interface Flows_Order_By {
+  branch_condition?: InputMaybe<Order_By>;
+  created_at?: InputMaybe<Order_By>;
+  display_order?: InputMaybe<Order_By>;
+  flow_type?: InputMaybe<Order_By>;
+  form?: InputMaybe<Forms_Order_By>;
+  form_id?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
+  name?: InputMaybe<Order_By>;
+  organization?: InputMaybe<Organizations_Order_By>;
+  organization_id?: InputMaybe<Order_By>;
+  steps_aggregate?: InputMaybe<Form_Steps_Aggregate_Order_By>;
+  updated_at?: InputMaybe<Order_By>;
+}
+
+/** primary key columns input for table: flows */
+export interface Flows_Pk_Columns_Input {
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
+  id: Scalars['String']['input'];
+}
+
+/** prepend existing jsonb value of filtered columns with new jsonb value */
+export interface Flows_Prepend_Input {
+  /** JSONB branching condition: {field, op, value}. Examples: rating>=4 for testimonial, rating<4 for improvement. NULL for shared flow. */
+  branch_condition?: InputMaybe<Scalars['jsonb']['input']>;
+}
+
+/** select columns of table "flows" */
+export const Flows_Select_Column = {
+  /** column name */
+  BranchCondition: 'branch_condition',
+  /** column name */
+  CreatedAt: 'created_at',
+  /** column name */
+  DisplayOrder: 'display_order',
+  /** column name */
+  FlowType: 'flow_type',
+  /** column name */
+  FormId: 'form_id',
+  /** column name */
+  Id: 'id',
+  /** column name */
+  Name: 'name',
+  /** column name */
+  OrganizationId: 'organization_id',
+  /** column name */
+  UpdatedAt: 'updated_at'
+} as const;
+
+export type Flows_Select_Column = typeof Flows_Select_Column[keyof typeof Flows_Select_Column];
+/** input type for updating data in table "flows" */
+export interface Flows_Set_Input {
+  /** JSONB branching condition: {field, op, value}. Examples: rating>=4 for testimonial, rating<4 for improvement. NULL for shared flow. */
+  branch_condition?: InputMaybe<Scalars['jsonb']['input']>;
+  /** Timestamp when this flow was first created. Set automatically, never modified. */
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...). */
+  display_order?: InputMaybe<Scalars['smallint']['input']>;
+  /** Flow behavior type: shared (always shown, before branch) or branch (conditional, after branch point). */
+  flow_type?: InputMaybe<Scalars['String']['input']>;
+  /** Foreign key to forms table. Identifies which form this flow belongs to. Cascade deletes when parent form is removed. */
+  form_id?: InputMaybe<Scalars['String']['input']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
+  id?: InputMaybe<Scalars['String']['input']>;
+  /** Human-readable flow name displayed in form editor (e.g., "Shared Steps", "Testimonial Flow", "Improvement Flow"). */
+  name?: InputMaybe<Scalars['String']['input']>;
+  /** Foreign key to organizations for row-level security. Denormalized from form for efficient permission queries. */
+  organization_id?: InputMaybe<Scalars['String']['input']>;
+  /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+}
+
+/** aggregate stddev on columns */
+export interface Flows_Stddev_Fields {
+  __typename?: 'flows_stddev_fields';
+  /** Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...). */
+  display_order?: Maybe<Scalars['Float']['output']>;
+}
+
+/** order by stddev() on columns of table "flows" */
+export interface Flows_Stddev_Order_By {
+  /** Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...). */
+  display_order?: InputMaybe<Order_By>;
+}
+
+/** aggregate stddev_pop on columns */
+export interface Flows_Stddev_Pop_Fields {
+  __typename?: 'flows_stddev_pop_fields';
+  /** Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...). */
+  display_order?: Maybe<Scalars['Float']['output']>;
+}
+
+/** order by stddev_pop() on columns of table "flows" */
+export interface Flows_Stddev_Pop_Order_By {
+  /** Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...). */
+  display_order?: InputMaybe<Order_By>;
+}
+
+/** aggregate stddev_samp on columns */
+export interface Flows_Stddev_Samp_Fields {
+  __typename?: 'flows_stddev_samp_fields';
+  /** Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...). */
+  display_order?: Maybe<Scalars['Float']['output']>;
+}
+
+/** order by stddev_samp() on columns of table "flows" */
+export interface Flows_Stddev_Samp_Order_By {
+  /** Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...). */
+  display_order?: InputMaybe<Order_By>;
+}
+
+/** Streaming cursor of the table "flows" */
+export interface Flows_Stream_Cursor_Input {
+  /** Stream column input with initial value */
+  initial_value: Flows_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+}
+
+/** Initial value of the column from where the streaming should start */
+export interface Flows_Stream_Cursor_Value_Input {
+  /** JSONB branching condition: {field, op, value}. Examples: rating>=4 for testimonial, rating<4 for improvement. NULL for shared flow. */
+  branch_condition?: InputMaybe<Scalars['jsonb']['input']>;
+  /** Timestamp when this flow was first created. Set automatically, never modified. */
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...). */
+  display_order?: InputMaybe<Scalars['smallint']['input']>;
+  /** Flow behavior type: shared (always shown, before branch) or branch (conditional, after branch point). */
+  flow_type?: InputMaybe<Scalars['String']['input']>;
+  /** Foreign key to forms table. Identifies which form this flow belongs to. Cascade deletes when parent form is removed. */
+  form_id?: InputMaybe<Scalars['String']['input']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
+  id?: InputMaybe<Scalars['String']['input']>;
+  /** Human-readable flow name displayed in form editor (e.g., "Shared Steps", "Testimonial Flow", "Improvement Flow"). */
+  name?: InputMaybe<Scalars['String']['input']>;
+  /** Foreign key to organizations for row-level security. Denormalized from form for efficient permission queries. */
+  organization_id?: InputMaybe<Scalars['String']['input']>;
+  /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+}
+
+/** aggregate sum on columns */
+export interface Flows_Sum_Fields {
+  __typename?: 'flows_sum_fields';
+  /** Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...). */
+  display_order?: Maybe<Scalars['smallint']['output']>;
+}
+
+/** order by sum() on columns of table "flows" */
+export interface Flows_Sum_Order_By {
+  /** Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...). */
+  display_order?: InputMaybe<Order_By>;
+}
+
+/** update columns of table "flows" */
+export const Flows_Update_Column = {
+  /** column name */
+  BranchCondition: 'branch_condition',
+  /** column name */
+  CreatedAt: 'created_at',
+  /** column name */
+  DisplayOrder: 'display_order',
+  /** column name */
+  FlowType: 'flow_type',
+  /** column name */
+  FormId: 'form_id',
+  /** column name */
+  Id: 'id',
+  /** column name */
+  Name: 'name',
+  /** column name */
+  OrganizationId: 'organization_id',
+  /** column name */
+  UpdatedAt: 'updated_at'
+} as const;
+
+export type Flows_Update_Column = typeof Flows_Update_Column[keyof typeof Flows_Update_Column];
+export interface Flows_Updates {
+  /** append existing jsonb value of filtered columns with new jsonb value */
+  _append?: InputMaybe<Flows_Append_Input>;
+  /** delete the field or element with specified path (for JSON arrays, negative integers count from the end) */
+  _delete_at_path?: InputMaybe<Flows_Delete_At_Path_Input>;
+  /** delete the array element with specified index (negative integers count from the end). throws an error if top level container is not an array */
+  _delete_elem?: InputMaybe<Flows_Delete_Elem_Input>;
+  /** delete key/value pair or string element. key/value pairs are matched based on their key value */
+  _delete_key?: InputMaybe<Flows_Delete_Key_Input>;
+  /** increments the numeric columns with given value of the filtered values */
+  _inc?: InputMaybe<Flows_Inc_Input>;
+  /** prepend existing jsonb value of filtered columns with new jsonb value */
+  _prepend?: InputMaybe<Flows_Prepend_Input>;
+  /** sets the columns of the filtered rows to the given values */
+  _set?: InputMaybe<Flows_Set_Input>;
+  /** filter the rows which have to be updated */
+  where: Flows_Bool_Exp;
+}
+
+/** aggregate var_pop on columns */
+export interface Flows_Var_Pop_Fields {
+  __typename?: 'flows_var_pop_fields';
+  /** Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...). */
+  display_order?: Maybe<Scalars['Float']['output']>;
+}
+
+/** order by var_pop() on columns of table "flows" */
+export interface Flows_Var_Pop_Order_By {
+  /** Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...). */
+  display_order?: InputMaybe<Order_By>;
+}
+
+/** aggregate var_samp on columns */
+export interface Flows_Var_Samp_Fields {
+  __typename?: 'flows_var_samp_fields';
+  /** Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...). */
+  display_order?: Maybe<Scalars['Float']['output']>;
+}
+
+/** order by var_samp() on columns of table "flows" */
+export interface Flows_Var_Samp_Order_By {
+  /** Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...). */
+  display_order?: InputMaybe<Order_By>;
+}
+
+/** aggregate variance on columns */
+export interface Flows_Variance_Fields {
+  __typename?: 'flows_variance_fields';
+  /** Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...). */
+  display_order?: Maybe<Scalars['Float']['output']>;
+}
+
+/** order by variance() on columns of table "flows" */
+export interface Flows_Variance_Order_By {
+  /** Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...). */
+  display_order?: InputMaybe<Order_By>;
+}
+
 /** Raw form submission responses - internal data for AI assembly, not displayed on widgets */
 export interface Form_Question_Responses {
   __typename?: 'form_question_responses';
@@ -2553,6 +3111,10 @@ export interface Form_Steps {
   created_by?: Maybe<Scalars['String']['output']>;
   /** An object relationship */
   creator?: Maybe<Users>;
+  /** An object relationship */
+  flow: Flows;
+  /** Foreign key to flows table. Links step to its parent flow (shared, testimonial, or improvement). Will be NOT NULL after backfill migration. */
+  flow_id: Scalars['String']['output'];
   /** Which flow this step belongs to: shared (all paths), testimonial (positive rating), or improvement (negative rating) */
   flow_membership: Scalars['String']['output'];
   /** An object relationship */
@@ -2698,6 +3260,8 @@ export interface Form_Steps_Bool_Exp {
   created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
   created_by?: InputMaybe<String_Comparison_Exp>;
   creator?: InputMaybe<Users_Bool_Exp>;
+  flow?: InputMaybe<Flows_Bool_Exp>;
+  flow_id?: InputMaybe<String_Comparison_Exp>;
   flow_membership?: InputMaybe<String_Comparison_Exp>;
   form?: InputMaybe<Forms_Bool_Exp>;
   form_id?: InputMaybe<String_Comparison_Exp>;
@@ -2717,8 +3281,8 @@ export interface Form_Steps_Bool_Exp {
 
 /** unique or primary key constraints on table "form_steps" */
 export const Form_Steps_Constraint = {
-  /** unique or primary key constraint on columns "step_order", "form_id" */
-  FormStepsFormOrderUnique: 'form_steps_form_order_unique',
+  /** unique or primary key constraint on columns "flow_id", "step_order", "form_id" */
+  FormStepsFlowOrderUnique: 'form_steps_flow_order_unique',
   /** unique or primary key constraint on columns "id" */
   FormStepsPkey: 'form_steps_pkey'
 } as const;
@@ -2757,6 +3321,9 @@ export interface Form_Steps_Insert_Input {
   /** Foreign key to users table. Records which user originally created this step for audit purposes. */
   created_by?: InputMaybe<Scalars['String']['input']>;
   creator?: InputMaybe<Users_Obj_Rel_Insert_Input>;
+  flow?: InputMaybe<Flows_Obj_Rel_Insert_Input>;
+  /** Foreign key to flows table. Links step to its parent flow (shared, testimonial, or improvement). Will be NOT NULL after backfill migration. */
+  flow_id?: InputMaybe<Scalars['String']['input']>;
   /** Which flow this step belongs to: shared (all paths), testimonial (positive rating), or improvement (negative rating) */
   flow_membership?: InputMaybe<Scalars['String']['input']>;
   form?: InputMaybe<Forms_Obj_Rel_Insert_Input>;
@@ -2792,6 +3359,8 @@ export interface Form_Steps_Max_Fields {
   created_at?: Maybe<Scalars['timestamptz']['output']>;
   /** Foreign key to users table. Records which user originally created this step for audit purposes. */
   created_by?: Maybe<Scalars['String']['output']>;
+  /** Foreign key to flows table. Links step to its parent flow (shared, testimonial, or improvement). Will be NOT NULL after backfill migration. */
+  flow_id?: Maybe<Scalars['String']['output']>;
   /** Which flow this step belongs to: shared (all paths), testimonial (positive rating), or improvement (negative rating) */
   flow_membership?: Maybe<Scalars['String']['output']>;
   /** Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed. */
@@ -2820,6 +3389,8 @@ export interface Form_Steps_Max_Order_By {
   created_at?: InputMaybe<Order_By>;
   /** Foreign key to users table. Records which user originally created this step for audit purposes. */
   created_by?: InputMaybe<Order_By>;
+  /** Foreign key to flows table. Links step to its parent flow (shared, testimonial, or improvement). Will be NOT NULL after backfill migration. */
+  flow_id?: InputMaybe<Order_By>;
   /** Which flow this step belongs to: shared (all paths), testimonial (positive rating), or improvement (negative rating) */
   flow_membership?: InputMaybe<Order_By>;
   /** Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed. */
@@ -2849,6 +3420,8 @@ export interface Form_Steps_Min_Fields {
   created_at?: Maybe<Scalars['timestamptz']['output']>;
   /** Foreign key to users table. Records which user originally created this step for audit purposes. */
   created_by?: Maybe<Scalars['String']['output']>;
+  /** Foreign key to flows table. Links step to its parent flow (shared, testimonial, or improvement). Will be NOT NULL after backfill migration. */
+  flow_id?: Maybe<Scalars['String']['output']>;
   /** Which flow this step belongs to: shared (all paths), testimonial (positive rating), or improvement (negative rating) */
   flow_membership?: Maybe<Scalars['String']['output']>;
   /** Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed. */
@@ -2877,6 +3450,8 @@ export interface Form_Steps_Min_Order_By {
   created_at?: InputMaybe<Order_By>;
   /** Foreign key to users table. Records which user originally created this step for audit purposes. */
   created_by?: InputMaybe<Order_By>;
+  /** Foreign key to flows table. Links step to its parent flow (shared, testimonial, or improvement). Will be NOT NULL after backfill migration. */
+  flow_id?: InputMaybe<Order_By>;
   /** Which flow this step belongs to: shared (all paths), testimonial (positive rating), or improvement (negative rating) */
   flow_membership?: InputMaybe<Order_By>;
   /** Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed. */
@@ -2921,6 +3496,8 @@ export interface Form_Steps_Order_By {
   created_at?: InputMaybe<Order_By>;
   created_by?: InputMaybe<Order_By>;
   creator?: InputMaybe<Users_Order_By>;
+  flow?: InputMaybe<Flows_Order_By>;
+  flow_id?: InputMaybe<Order_By>;
   flow_membership?: InputMaybe<Order_By>;
   form?: InputMaybe<Forms_Order_By>;
   form_id?: InputMaybe<Order_By>;
@@ -2958,6 +3535,8 @@ export const Form_Steps_Select_Column = {
   CreatedAt: 'created_at',
   /** column name */
   CreatedBy: 'created_by',
+  /** column name */
+  FlowId: 'flow_id',
   /** column name */
   FlowMembership: 'flow_membership',
   /** column name */
@@ -3005,6 +3584,8 @@ export interface Form_Steps_Set_Input {
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
   /** Foreign key to users table. Records which user originally created this step for audit purposes. */
   created_by?: InputMaybe<Scalars['String']['input']>;
+  /** Foreign key to flows table. Links step to its parent flow (shared, testimonial, or improvement). Will be NOT NULL after backfill migration. */
+  flow_id?: InputMaybe<Scalars['String']['input']>;
   /** Which flow this step belongs to: shared (all paths), testimonial (positive rating), or improvement (negative rating) */
   flow_membership?: InputMaybe<Scalars['String']['input']>;
   /** Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed. */
@@ -3084,6 +3665,8 @@ export interface Form_Steps_Stream_Cursor_Value_Input {
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
   /** Foreign key to users table. Records which user originally created this step for audit purposes. */
   created_by?: InputMaybe<Scalars['String']['input']>;
+  /** Foreign key to flows table. Links step to its parent flow (shared, testimonial, or improvement). Will be NOT NULL after backfill migration. */
+  flow_id?: InputMaybe<Scalars['String']['input']>;
   /** Which flow this step belongs to: shared (all paths), testimonial (positive rating), or improvement (negative rating) */
   flow_membership?: InputMaybe<Scalars['String']['input']>;
   /** Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed. */
@@ -3129,6 +3712,8 @@ export const Form_Steps_Update_Column = {
   CreatedAt: 'created_at',
   /** column name */
   CreatedBy: 'created_by',
+  /** column name */
+  FlowId: 'flow_id',
   /** column name */
   FlowMembership: 'flow_membership',
   /** column name */
@@ -3633,6 +4218,10 @@ export interface Forms {
   created_by: Scalars['String']['output'];
   /** An object relationship */
   creator: Users;
+  /** An array relationship */
+  flows: Array<Flows>;
+  /** An aggregate relationship */
+  flows_aggregate: Flows_Aggregate;
   /** Primary key - NanoID 12-char unique identifier */
   id: Scalars['String']['output'];
   /** Soft delete flag. False = form disabled, public link returns 404 */
@@ -3695,6 +4284,26 @@ export interface Forms_Contacts_AggregateArgs {
   offset?: InputMaybe<Scalars['Int']['input']>;
   order_by?: InputMaybe<Array<Contacts_Order_By>>;
   where?: InputMaybe<Contacts_Bool_Exp>;
+}
+
+
+/** Testimonial collection forms - questions normalized to form_questions table */
+export interface Forms_FlowsArgs {
+  distinct_on?: InputMaybe<Array<Flows_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Flows_Order_By>>;
+  where?: InputMaybe<Flows_Bool_Exp>;
+}
+
+
+/** Testimonial collection forms - questions normalized to form_questions table */
+export interface Forms_Flows_AggregateArgs {
+  distinct_on?: InputMaybe<Array<Flows_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Flows_Order_By>>;
+  where?: InputMaybe<Flows_Bool_Exp>;
 }
 
 
@@ -3845,6 +4454,8 @@ export interface Forms_Bool_Exp {
   created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
   created_by?: InputMaybe<String_Comparison_Exp>;
   creator?: InputMaybe<Users_Bool_Exp>;
+  flows?: InputMaybe<Flows_Bool_Exp>;
+  flows_aggregate?: InputMaybe<Flows_Aggregate_Bool_Exp>;
   id?: InputMaybe<String_Comparison_Exp>;
   is_active?: InputMaybe<Boolean_Comparison_Exp>;
   name?: InputMaybe<String_Comparison_Exp>;
@@ -3906,6 +4517,7 @@ export interface Forms_Insert_Input {
   /** FK to users - user who created this form */
   created_by?: InputMaybe<Scalars['String']['input']>;
   creator?: InputMaybe<Users_Obj_Rel_Insert_Input>;
+  flows?: InputMaybe<Flows_Arr_Rel_Insert_Input>;
   /** Primary key - NanoID 12-char unique identifier */
   id?: InputMaybe<Scalars['String']['input']>;
   /** Soft delete flag. False = form disabled, public link returns 404 */
@@ -4061,6 +4673,7 @@ export interface Forms_Order_By {
   created_at?: InputMaybe<Order_By>;
   created_by?: InputMaybe<Order_By>;
   creator?: InputMaybe<Users_Order_By>;
+  flows_aggregate?: InputMaybe<Flows_Aggregate_Order_By>;
   id?: InputMaybe<Order_By>;
   is_active?: InputMaybe<Order_By>;
   name?: InputMaybe<Order_By>;
@@ -4288,6 +4901,10 @@ export interface Mutation_Root {
   delete_contacts?: Maybe<Contacts_Mutation_Response>;
   /** delete single row from the table: "contacts" */
   delete_contacts_by_pk?: Maybe<Contacts>;
+  /** delete data from the table: "flows" */
+  delete_flows?: Maybe<Flows_Mutation_Response>;
+  /** delete single row from the table: "flows" */
+  delete_flows_by_pk?: Maybe<Flows>;
   /** delete data from the table: "form_question_responses" */
   delete_form_question_responses?: Maybe<Form_Question_Responses_Mutation_Response>;
   /** delete single row from the table: "form_question_responses" */
@@ -4368,6 +4985,10 @@ export interface Mutation_Root {
   insert_contacts?: Maybe<Contacts_Mutation_Response>;
   /** insert a single row into the table: "contacts" */
   insert_contacts_one?: Maybe<Contacts>;
+  /** insert data into the table: "flows" */
+  insert_flows?: Maybe<Flows_Mutation_Response>;
+  /** insert a single row into the table: "flows" */
+  insert_flows_one?: Maybe<Flows>;
   /** insert data into the table: "form_question_responses" */
   insert_form_question_responses?: Maybe<Form_Question_Responses_Mutation_Response>;
   /** insert a single row into the table: "form_question_responses" */
@@ -4450,6 +5071,12 @@ export interface Mutation_Root {
   update_contacts_by_pk?: Maybe<Contacts>;
   /** update multiples rows of table: "contacts" */
   update_contacts_many?: Maybe<Array<Maybe<Contacts_Mutation_Response>>>;
+  /** update data of the table: "flows" */
+  update_flows?: Maybe<Flows_Mutation_Response>;
+  /** update single row of the table: "flows" */
+  update_flows_by_pk?: Maybe<Flows>;
+  /** update multiples rows of table: "flows" */
+  update_flows_many?: Maybe<Array<Maybe<Flows_Mutation_Response>>>;
   /** update data of the table: "form_question_responses" */
   update_form_question_responses?: Maybe<Form_Question_Responses_Mutation_Response>;
   /** update single row of the table: "form_question_responses" */
@@ -4575,6 +5202,18 @@ export interface Mutation_Root_Delete_ContactsArgs {
 
 /** mutation root */
 export interface Mutation_Root_Delete_Contacts_By_PkArgs {
+  id: Scalars['String']['input'];
+}
+
+
+/** mutation root */
+export interface Mutation_Root_Delete_FlowsArgs {
+  where: Flows_Bool_Exp;
+}
+
+
+/** mutation root */
+export interface Mutation_Root_Delete_Flows_By_PkArgs {
   id: Scalars['String']['input'];
 }
 
@@ -4818,6 +5457,20 @@ export interface Mutation_Root_Insert_ContactsArgs {
 export interface Mutation_Root_Insert_Contacts_OneArgs {
   object: Contacts_Insert_Input;
   on_conflict?: InputMaybe<Contacts_On_Conflict>;
+}
+
+
+/** mutation root */
+export interface Mutation_Root_Insert_FlowsArgs {
+  objects: Array<Flows_Insert_Input>;
+  on_conflict?: InputMaybe<Flows_On_Conflict>;
+}
+
+
+/** mutation root */
+export interface Mutation_Root_Insert_Flows_OneArgs {
+  object: Flows_Insert_Input;
+  on_conflict?: InputMaybe<Flows_On_Conflict>;
 }
 
 
@@ -5106,6 +5759,38 @@ export interface Mutation_Root_Update_Contacts_By_PkArgs {
 /** mutation root */
 export interface Mutation_Root_Update_Contacts_ManyArgs {
   updates: Array<Contacts_Updates>;
+}
+
+
+/** mutation root */
+export interface Mutation_Root_Update_FlowsArgs {
+  _append?: InputMaybe<Flows_Append_Input>;
+  _delete_at_path?: InputMaybe<Flows_Delete_At_Path_Input>;
+  _delete_elem?: InputMaybe<Flows_Delete_Elem_Input>;
+  _delete_key?: InputMaybe<Flows_Delete_Key_Input>;
+  _inc?: InputMaybe<Flows_Inc_Input>;
+  _prepend?: InputMaybe<Flows_Prepend_Input>;
+  _set?: InputMaybe<Flows_Set_Input>;
+  where: Flows_Bool_Exp;
+}
+
+
+/** mutation root */
+export interface Mutation_Root_Update_Flows_By_PkArgs {
+  _append?: InputMaybe<Flows_Append_Input>;
+  _delete_at_path?: InputMaybe<Flows_Delete_At_Path_Input>;
+  _delete_elem?: InputMaybe<Flows_Delete_Elem_Input>;
+  _delete_key?: InputMaybe<Flows_Delete_Key_Input>;
+  _inc?: InputMaybe<Flows_Inc_Input>;
+  _prepend?: InputMaybe<Flows_Prepend_Input>;
+  _set?: InputMaybe<Flows_Set_Input>;
+  pk_columns: Flows_Pk_Columns_Input;
+}
+
+
+/** mutation root */
+export interface Mutation_Root_Update_Flows_ManyArgs {
+  updates: Array<Flows_Updates>;
 }
 
 
@@ -8996,6 +9681,12 @@ export interface Query_Root {
   contacts_aggregate: Contacts_Aggregate;
   /** fetch data from the table: "contacts" using primary key columns */
   contacts_by_pk?: Maybe<Contacts>;
+  /** An array relationship */
+  flows: Array<Flows>;
+  /** An aggregate relationship */
+  flows_aggregate: Flows_Aggregate;
+  /** fetch data from the table: "flows" using primary key columns */
+  flows_by_pk?: Maybe<Flows>;
   /** fetch data from the table: "form_question_responses" */
   form_question_responses: Array<Form_Question_Responses>;
   /** fetch aggregated fields from the table: "form_question_responses" */
@@ -9132,6 +9823,29 @@ export interface Query_Root_Contacts_AggregateArgs {
 
 
 export interface Query_Root_Contacts_By_PkArgs {
+  id: Scalars['String']['input'];
+}
+
+
+export interface Query_Root_FlowsArgs {
+  distinct_on?: InputMaybe<Array<Flows_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Flows_Order_By>>;
+  where?: InputMaybe<Flows_Bool_Exp>;
+}
+
+
+export interface Query_Root_Flows_AggregateArgs {
+  distinct_on?: InputMaybe<Array<Flows_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Flows_Order_By>>;
+  where?: InputMaybe<Flows_Bool_Exp>;
+}
+
+
+export interface Query_Root_Flows_By_PkArgs {
   id: Scalars['String']['input'];
 }
 
@@ -11127,6 +11841,14 @@ export interface Subscription_Root {
   contacts_by_pk?: Maybe<Contacts>;
   /** fetch data from the table in a streaming manner: "contacts" */
   contacts_stream: Array<Contacts>;
+  /** An array relationship */
+  flows: Array<Flows>;
+  /** An aggregate relationship */
+  flows_aggregate: Flows_Aggregate;
+  /** fetch data from the table: "flows" using primary key columns */
+  flows_by_pk?: Maybe<Flows>;
+  /** fetch data from the table in a streaming manner: "flows" */
+  flows_stream: Array<Flows>;
   /** fetch data from the table: "form_question_responses" */
   form_question_responses: Array<Form_Question_Responses>;
   /** fetch aggregated fields from the table: "form_question_responses" */
@@ -11309,6 +12031,36 @@ export interface Subscription_Root_Contacts_StreamArgs {
   batch_size: Scalars['Int']['input'];
   cursor: Array<InputMaybe<Contacts_Stream_Cursor_Input>>;
   where?: InputMaybe<Contacts_Bool_Exp>;
+}
+
+
+export interface Subscription_Root_FlowsArgs {
+  distinct_on?: InputMaybe<Array<Flows_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Flows_Order_By>>;
+  where?: InputMaybe<Flows_Bool_Exp>;
+}
+
+
+export interface Subscription_Root_Flows_AggregateArgs {
+  distinct_on?: InputMaybe<Array<Flows_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Flows_Order_By>>;
+  where?: InputMaybe<Flows_Bool_Exp>;
+}
+
+
+export interface Subscription_Root_Flows_By_PkArgs {
+  id: Scalars['String']['input'];
+}
+
+
+export interface Subscription_Root_Flows_StreamArgs {
+  batch_size: Scalars['Int']['input'];
+  cursor: Array<InputMaybe<Flows_Stream_Cursor_Input>>;
+  where?: InputMaybe<Flows_Bool_Exp>;
 }
 
 
