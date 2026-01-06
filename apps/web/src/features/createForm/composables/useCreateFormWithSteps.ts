@@ -1,6 +1,7 @@
 import { ref, toRefs, computed, readonly, type DeepReadonly } from 'vue';
 import { getErrorMessage } from '@/shared/api';
-import type { AIQuestion, AIContext } from '@/shared/api';
+import type { AIQuestion, StepContent, FlowMembership } from '@/shared/api';
+import type { WizardAIContext } from './useFormWizard';
 import { useCreateForm } from '@/entities/form';
 import { useCreateFormQuestions } from '@/entities/formQuestion';
 import { useCreateFormSteps } from '@/entities/formStep';
@@ -19,7 +20,7 @@ export interface CreateFormWithStepsParams {
   conceptName: string;
   description: string;
   questions: DeepReadonly<AIQuestion[]>;
-  aiContext: DeepReadonly<AIContext> | null;
+  aiContext: DeepReadonly<WizardAIContext> | null;
 }
 
 export interface CreateFormWithStepsResult {
@@ -124,14 +125,15 @@ export function useCreateFormWithSteps() {
         throw new Error('Failed to create questions');
       }
 
-      // 3. Create form_steps
+      // 3. Create form_steps with branching support
       const stepInputs = buildFormSteps(
         form.id,
         currentOrganizationId.value!,
         currentUserId.value!,
         params.conceptName,
         createdQuestions,
-        params.questions
+        params.questions,
+        params.aiContext?.step_content ?? null
       );
 
       const createdSteps = await createFormSteps({
@@ -156,7 +158,29 @@ export function useCreateFormWithSteps() {
   }
 
   /**
-   * Build form steps array for insertion
+   * Step input type for creating form steps
+   */
+  interface FormStepInput {
+    form_id: string;
+    organization_id: string;
+    created_by: string;
+    step_type: string;
+    step_order: number;
+    question_id: string | null;
+    content: Record<string, unknown>;
+    flow_membership: FlowMembership;
+    is_active: boolean;
+  }
+
+  /**
+   * Build form steps array for insertion with branching support
+   *
+   * Creates steps with proper flow_membership:
+   * - Shared: welcome + questions before/including branch point
+   * - Testimonial: questions after branch + consent + thank_you
+   * - Improvement: questions after branch + thank_you
+   *
+   * Uses global step_order to satisfy UNIQUE(form_id, step_order) constraint
    */
   function buildFormSteps(
     formId: string,
@@ -164,67 +188,125 @@ export function useCreateFormWithSteps() {
     userId: string,
     conceptName: string,
     createdQuestions: readonly { id: string; question_type_id: string }[],
-    originalQuestions: DeepReadonly<AIQuestion[]>
-  ) {
-    const steps: Array<{
-      form_id: string;
-      organization_id: string;
-      created_by: string;
-      step_type: string;
-      step_order: number;
-      question_id: string | null;
-      content: Record<string, unknown>;
-      is_active: boolean;
-    }> = [];
+    originalQuestions: DeepReadonly<AIQuestion[]>,
+    stepContent: DeepReadonly<StepContent> | null
+  ): FormStepInput[] {
+    const steps: FormStepInput[] = [];
+    let globalOrder = 0;
 
-    let order = 0;
-
-    // Welcome step
-    const welcomeContent = getDefaultWelcomeContent(conceptName);
-    steps.push({
+    // Helper to create a step
+    const createStep = (
+      stepType: string,
+      flowMembership: FlowMembership,
+      content: Record<string, unknown>,
+      questionId: string | null = null
+    ): FormStepInput => ({
       form_id: formId,
       organization_id: organizationId,
       created_by: userId,
-      step_type: 'welcome',
-      step_order: order++,
-      question_id: null,
-      content: welcomeContent,
+      step_type: stepType,
+      step_order: globalOrder++,
+      question_id: questionId,
+      content,
+      flow_membership: flowMembership,
       is_active: true,
     });
 
-    // Question/Rating steps
-    for (let i = 0; i < createdQuestions.length; i++) {
-      const createdQuestion = createdQuestions[i];
-      const originalQuestion = originalQuestions[i];
+    // =========================================================================
+    // 1. Welcome step (shared)
+    // =========================================================================
+    const welcomeContent = getDefaultWelcomeContent(conceptName);
+    steps.push(createStep('welcome', 'shared', welcomeContent));
 
-      // Determine step type based on question type
+    // =========================================================================
+    // 2. Question/Rating steps grouped by flow_membership
+    // =========================================================================
+
+    // 2a. Shared questions (including branch point)
+    for (let i = 0; i < createdQuestions.length; i++) {
+      const originalQuestion = originalQuestions[i];
+      if (originalQuestion.flow_membership !== 'shared') continue;
+
+      const createdQuestion = createdQuestions[i];
       const isRating = originalQuestion.question_type_id.startsWith('rating');
       const stepType = isRating ? 'rating' : 'question';
 
-      steps.push({
-        form_id: formId,
-        organization_id: organizationId,
-        created_by: userId,
-        step_type: stepType,
-        step_order: order++,
-        question_id: createdQuestion.id,
-        content: {},
-        is_active: true,
-      });
+      steps.push(createStep(stepType, 'shared', {}, createdQuestion.id));
     }
 
-    // Thank you step
-    const thankYouContent = getDefaultThankYouContent();
-    steps.push({
-      form_id: formId,
-      organization_id: organizationId,
-      created_by: userId,
-      step_type: 'thank_you',
-      step_order: order++,
-      question_id: null,
-      content: thankYouContent,
-      is_active: true,
-    });
+    // =========================================================================
+    // 3. Testimonial flow steps
+    // =========================================================================
+
+    // 3a. Testimonial questions
+    for (let i = 0; i < createdQuestions.length; i++) {
+      const originalQuestion = originalQuestions[i];
+      if (originalQuestion.flow_membership !== 'testimonial') continue;
+
+      const createdQuestion = createdQuestions[i];
+      steps.push(createStep('question', 'testimonial', {}, createdQuestion.id));
+    }
+
+    // 3b. Consent step (testimonial flow only)
+    const consentContent = stepContent?.consent
+      ? {
+          title: stepContent.consent.title,
+          description: stepContent.consent.description,
+          options: {
+            public: {
+              label: stepContent.consent.public_label,
+              description: stepContent.consent.public_description,
+            },
+            private: {
+              label: stepContent.consent.private_label,
+              description: stepContent.consent.private_description,
+            },
+          },
+        }
+      : {
+          title: 'One last thing...',
+          description: 'Would you like us to share your testimonial publicly?',
+          options: {
+            public: {
+              label: 'Yes, share publicly',
+              description: 'Your testimonial may be featured on our website',
+            },
+            private: {
+              label: 'Keep it private',
+              description: 'Only the team will see your feedback',
+            },
+          },
+        };
+    steps.push(createStep('consent', 'testimonial', consentContent));
+
+    // 3c. Thank you step (testimonial flow)
+    const testimonialThankYouContent = getDefaultThankYouContent();
+    steps.push(createStep('thank_you', 'testimonial', testimonialThankYouContent));
+
+    // =========================================================================
+    // 4. Improvement flow steps
+    // =========================================================================
+
+    // 4a. Improvement questions
+    for (let i = 0; i < createdQuestions.length; i++) {
+      const originalQuestion = originalQuestions[i];
+      if (originalQuestion.flow_membership !== 'improvement') continue;
+
+      const createdQuestion = createdQuestions[i];
+      steps.push(createStep('question', 'improvement', {}, createdQuestion.id));
+    }
+
+    // 4b. Thank you step (improvement flow)
+    const improvementThankYouContent = stepContent?.improvement_thank_you
+      ? {
+          title: stepContent.improvement_thank_you.title,
+          subtitle: stepContent.improvement_thank_you.message,
+        }
+      : {
+          title: 'Thank you for your feedback',
+          subtitle: 'We take your feedback seriously and will work to improve.',
+        };
+    steps.push(createStep('thank_you', 'improvement', improvementThankYouContent));
 
     return steps;
   }
