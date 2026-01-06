@@ -35,3 +35,6 @@ Each ADR follows this structure:
 | [ADR-004](./004-single-page-form-builder.md) | Single-Page Form Builder Pattern | Superseded | 2026-01-02 |
 | [ADR-005](./005-public-form-url-strategy.md) | Public Form URL Strategy | Accepted | 2026-01-02 |
 | [ADR-006](./006-timeline-form-editor.md) | Timeline Form Editor Layout | Accepted | 2026-01-03 |
+| [ADR-007](./007-form-editor-data-fetching.md) | Form Editor Data Fetching | Accepted | 2026-01-03 |
+| ADR-008 | *(Reserved)* | In Progress | 2026-01-06 |
+| [ADR-009](./009-flows-table-branching-architecture.md) | Flows Table for Branching Architecture | Accepted | 2026-01-06 |
