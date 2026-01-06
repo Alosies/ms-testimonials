@@ -1,6 +1,7 @@
 fragment FormStepBasic on form_steps {
   id
   form_id
+  flow_id
   step_type
   step_order
   question_id
