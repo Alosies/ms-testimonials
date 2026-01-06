@@ -1,4 +1,5 @@
 - "!include public_contacts.yaml"
+- "!include public_flows.yaml"
 - "!include public_form_question_responses.yaml"
 - "!include public_form_questions.yaml"
 - "!include public_form_steps.yaml"
