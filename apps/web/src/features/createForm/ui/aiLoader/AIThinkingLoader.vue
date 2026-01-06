@@ -63,96 +63,116 @@ onMounted(start);
 </script>
 
 <template>
-  <div class="relative overflow-hidden rounded-2xl">
-    <!-- Animated gradient background -->
-    <GlassmorphicBackground />
+  <div class="fixed inset-0 flex items-center justify-center">
+    <!-- Animated gradient background - fills entire viewport -->
+    <GlassmorphicBackground class="absolute inset-0" />
 
-    <!-- Main glass container - light theme -->
-    <div class="relative z-10 m-4 rounded-xl border border-white/60 bg-white/70 p-8 shadow-xl shadow-black/5 backdrop-blur-xl">
-      <!-- Inner glow - subtle teal accent -->
-      <div class="absolute inset-0 rounded-xl bg-gradient-to-br from-teal-500/5 via-transparent to-purple-500/5" />
+    <!-- Main content area - centered -->
+    <div class="relative z-10 w-full max-w-2xl px-8 py-8">
 
       <div class="relative z-10">
-        <!-- Stage dots -->
-        <div class="mb-6 flex items-center justify-center gap-3">
+        <!-- AI Status Indicator - Above icon -->
+        <div class="mb-6 flex items-center justify-center gap-2">
+          <Icon icon="lucide:sparkles" class="h-5 w-5 text-teal-500 drop-shadow-[0_0_6px_rgba(20,184,166,0.4)]" />
+          <span class="text-lg font-medium text-gray-700">Generating with AI</span>
+          <div class="flex gap-1">
+            <span class="ai-dot h-1.5 w-1.5 rounded-full bg-teal-500" />
+            <span class="ai-dot h-1.5 w-1.5 rounded-full bg-teal-500 [animation-delay:0.2s]" />
+            <span class="ai-dot h-1.5 w-1.5 rounded-full bg-teal-500 [animation-delay:0.4s]" />
+          </div>
+        </div>
+
+        <!-- Icon with pulse effect - Main focus -->
+        <div class="mb-6 flex justify-center">
+          <div class="relative animate-float-gentle">
+            <!-- Pulse rings -->
+            <div class="absolute -inset-4 animate-ping-slow rounded-full bg-teal-500/10" />
+            <div class="absolute -inset-6 animate-ping-slower rounded-full bg-teal-500/5" />
+
+            <!-- Icon box - slides right to left on stage change -->
+            <Transition
+              enter-active-class="transition-all duration-400 ease-out"
+              enter-from-class="opacity-0 translate-x-6"
+              enter-to-class="opacity-100 translate-x-0"
+              leave-active-class="transition-all duration-300 ease-in"
+              leave-from-class="opacity-100 translate-x-0"
+              leave-to-class="opacity-0 -translate-x-6"
+              mode="out-in"
+            >
+              <div
+                :key="currentStageIndex"
+                class="relative flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-teal-500 to-teal-600 shadow-xl shadow-teal-500/25"
+              >
+                <Icon
+                  :icon="currentStage.icon"
+                  class="h-10 w-10 text-white"
+                />
+              </div>
+            </Transition>
+          </div>
+        </div>
+
+        <!-- Stage dots - positioned below icon -->
+        <div class="mb-6 flex items-center justify-center gap-2.5">
           <div
             v-for="(_, index) in stages"
             :key="index"
-            class="relative h-2 rounded-full transition-all duration-500"
+            class="relative h-1.5 rounded-full transition-all duration-500"
             :class="[
               index === currentStageIndex
-                ? 'w-6 bg-teal-500 shadow-md shadow-teal-500/30'
+                ? 'w-5 bg-teal-500 shadow-sm shadow-teal-500/30'
                 : index < currentStageIndex
-                  ? 'w-2 bg-teal-500/70'
-                  : 'w-2 bg-gray-300'
+                  ? 'w-1.5 bg-teal-500/60'
+                  : 'w-1.5 bg-gray-300/60'
             ]"
           />
         </div>
 
-        <!-- Icon with effects -->
-        <div class="mb-6 flex justify-center">
-          <div class="relative">
-            <!-- Orbital ring -->
-            <div class="absolute -inset-4 animate-spin-slow rounded-full border border-dashed border-teal-400/40" />
-            <!-- Pulse rings -->
-            <div class="absolute -inset-2 animate-ping-slow rounded-full bg-teal-500/20" />
-            <div class="absolute -inset-3 animate-ping-slower rounded-full bg-teal-500/10 [animation-delay:0.5s]" />
-
-            <!-- Icon box with gradient -->
-            <div class="relative flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-teal-500 to-teal-600 shadow-lg shadow-teal-500/25">
-              <!-- Sparkles -->
-              <div class="absolute -right-1 -top-1 h-1.5 w-1.5 animate-sparkle rounded-full bg-white" />
-              <div class="absolute -bottom-1 -left-1 h-1 w-1 animate-sparkle rounded-full bg-teal-300 [animation-delay:0.5s]" />
-
-              <Icon
-                :icon="currentStage.icon"
-                class="relative z-10 h-8 w-8 text-white transition-all duration-300"
-              />
-            </div>
-          </div>
-        </div>
-
-        <!-- Text content -->
+        <!-- Text content with horizontal slide transitions -->
         <div class="text-center">
-          <!-- Main text - fades in -->
-          <div class="min-h-[28px]">
+          <!-- Main text - slides left/right on change -->
+          <div class="min-h-[32px] overflow-hidden">
             <Transition
-              enter-active-class="transition-all duration-300 ease-out"
-              enter-from-class="opacity-0 translate-y-1"
-              enter-to-class="opacity-100 translate-y-0"
-              leave-active-class="transition-all duration-200"
-              leave-from-class="opacity-100"
-              leave-to-class="opacity-0"
+              enter-active-class="transition-all duration-400 ease-out"
+              enter-from-class="opacity-0 translate-x-12"
+              enter-to-class="opacity-100 translate-x-0"
+              leave-active-class="transition-all duration-300 ease-in"
+              leave-from-class="opacity-100 translate-x-0"
+              leave-to-class="opacity-0 -translate-x-12"
               mode="out-in"
             >
-              <span :key="displayedText" class="inline-block text-lg font-medium text-gray-800">
+              <span :key="currentStageIndex" class="inline-block text-xl font-medium text-gray-800">
                 {{ displayedText }}
               </span>
             </Transition>
           </div>
 
-          <!-- Detail text - typing effect -->
-          <div class="mt-2 min-h-[20px]">
+          <!-- Detail text - slides left/right with typing effect -->
+          <div class="mt-3 min-h-[24px] overflow-hidden">
             <Transition
-              enter-active-class="transition-opacity duration-200"
-              enter-from-class="opacity-0"
-              enter-to-class="opacity-100"
+              enter-active-class="transition-all duration-300 ease-out delay-75"
+              enter-from-class="opacity-0 translate-x-8"
+              enter-to-class="opacity-100 translate-x-0"
+              leave-active-class="transition-all duration-200"
+              leave-from-class="opacity-100 translate-x-0"
+              leave-to-class="opacity-0 -translate-x-8"
+              mode="out-in"
             >
-              <p v-if="showDetail" class="text-sm text-gray-500">
+              <p v-if="showDetail" :key="currentStageIndex" class="text-sm text-gray-500">
                 {{ displayedDetail }}
                 <span
                   v-if="isTypingDetail"
-                  class="ml-0.5 inline-block h-3 w-0.5 animate-blink rounded-full bg-teal-500"
+                  class="ml-0.5 inline-block h-3.5 w-0.5 animate-blink rounded-full bg-teal-500"
                 />
               </p>
             </Transition>
           </div>
         </div>
 
-        <!-- Skeleton cards -->
-        <div class="mt-8 space-y-3">
+        <!-- Skeleton cards - reduced to 3 for better visual balance -->
+        <div class="mt-12 space-y-2.5 opacity-80">
           <SkeletonQuestionCard
-            v-for="i in 5"
+            v-for="i in 3"
             :key="i"
             :index="i - 1"
             :is-revealed="isLastStage"
@@ -162,3 +182,22 @@ onMounted(start);
     </div>
   </div>
 </template>
+
+<style scoped>
+/* Animated loading dots - requires scale+opacity which Tailwind can't combine */
+.ai-dot {
+  animation: dot-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes dot-pulse {
+  0%, 80%, 100% {
+    opacity: 0.3;
+    transform: scale(0.8);
+  }
+  40% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+</style>
+
