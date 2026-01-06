@@ -4,16 +4,19 @@
  *
  * Shows the generated testimonial flow with:
  * - Welcome step
- * - AI-generated question steps
- * - Thank you step
+ * - AI-generated question steps with branching visualization
+ * - Consent step (testimonial flow)
+ * - Thank you steps for each flow
  *
  * User can regenerate or proceed to Form Studio.
  */
 import { inject, computed } from 'vue';
 import { Icon } from '@testimonials/icons';
 import type { FormWizardContext } from '../../../composables/useFormWizard';
+import type { FlowMembership } from '@/entities/form';
 import { getDefaultWelcomeContent, getDefaultThankYouContent } from '../../../constants/wizardConfig';
 import PreviewStepCard from '../components/PreviewStepCard.vue';
+import BranchingFlowPreview from '../components/BranchingFlowPreview.vue';
 
 const props = defineProps<{
   isCreating?: boolean;
@@ -25,13 +28,18 @@ const emit = defineEmits<{
   customize: [];
 }>();
 
-// Build preview steps from generated questions
-const previewSteps = computed(() => {
-  const steps: Array<{
-    type: 'welcome' | 'question' | 'rating' | 'thank_you';
-    title: string;
-    subtitle?: string;
-  }> = [];
+// Step type definition
+interface PreviewStep {
+  type: 'welcome' | 'question' | 'rating' | 'thank_you' | 'consent';
+  title: string;
+  subtitle?: string;
+  flowMembership: FlowMembership;
+  isBranchPoint?: boolean;
+}
+
+// Build preview steps from generated questions with branching
+const sharedSteps = computed(() => {
+  const steps: PreviewStep[] = [];
 
   // Welcome step
   const welcomeContent = getDefaultWelcomeContent(wizard.conceptName.value);
@@ -39,14 +47,56 @@ const previewSteps = computed(() => {
     type: 'welcome',
     title: welcomeContent.title,
     subtitle: welcomeContent.subtitle,
+    flowMembership: 'shared',
   });
 
-  // Question/Rating steps
+  // Shared question steps (before and including rating)
   for (const question of wizard.generatedQuestions.value) {
+    if (question.flow_membership !== 'shared') continue;
+
     const isRating = question.question_type_id.startsWith('rating');
     steps.push({
       type: isRating ? 'rating' : 'question',
       title: question.question_text,
+      flowMembership: 'shared',
+      isBranchPoint: question.is_branch_point,
+    });
+  }
+
+  return steps;
+});
+
+// Testimonial flow steps (after rating, for happy customers)
+const testimonialSteps = computed(() => {
+  const steps: PreviewStep[] = [];
+
+  // Testimonial flow questions
+  for (const question of wizard.generatedQuestions.value) {
+    if (question.flow_membership !== 'testimonial') continue;
+
+    steps.push({
+      type: 'question',
+      title: question.question_text,
+      flowMembership: 'testimonial',
+    });
+  }
+
+  // Consent step (from step_content if available)
+  const stepContent = wizard.aiContext.value?.step_content;
+  if (stepContent?.consent) {
+    steps.push({
+      type: 'consent',
+      title: stepContent.consent.title,
+      subtitle: stepContent.consent.description,
+      flowMembership: 'testimonial',
+    });
+  } else {
+    // Default consent step
+    steps.push({
+      type: 'consent',
+      title: 'One last thing...',
+      subtitle: 'Would you like us to share your testimonial publicly?',
+      flowMembership: 'testimonial',
     });
   }
 
@@ -56,9 +106,52 @@ const previewSteps = computed(() => {
     type: 'thank_you',
     title: thankYouContent.title,
     subtitle: thankYouContent.subtitle,
+    flowMembership: 'testimonial',
   });
 
   return steps;
+});
+
+// Improvement flow steps (after rating, for unhappy customers)
+const improvementSteps = computed(() => {
+  const steps: PreviewStep[] = [];
+
+  // Improvement flow questions
+  for (const question of wizard.generatedQuestions.value) {
+    if (question.flow_membership !== 'improvement') continue;
+
+    steps.push({
+      type: 'question',
+      title: question.question_text,
+      flowMembership: 'improvement',
+    });
+  }
+
+  // Thank you step (from step_content if available)
+  const stepContent = wizard.aiContext.value?.step_content;
+  if (stepContent?.improvement_thank_you) {
+    steps.push({
+      type: 'thank_you',
+      title: stepContent.improvement_thank_you.title,
+      subtitle: stepContent.improvement_thank_you.message,
+      flowMembership: 'improvement',
+    });
+  } else {
+    // Default improvement thank you
+    steps.push({
+      type: 'thank_you',
+      title: 'Thank you for your feedback',
+      subtitle: 'We take your feedback seriously and will work to improve.',
+      flowMembership: 'improvement',
+    });
+  }
+
+  return steps;
+});
+
+// Check if we have branching (testimonial or improvement questions)
+const hasBranching = computed(() => {
+  return testimonialSteps.value.length > 1 || improvementSteps.value.length > 1;
 });
 
 function handleRegenerate() {
@@ -86,16 +179,41 @@ function handleCustomize() {
       </p>
     </div>
 
-    <!-- Step Cards -->
-    <div class="space-y-3">
-      <PreviewStepCard
-        v-for="(step, index) in previewSteps"
-        :key="index"
-        :step-number="index + 1"
-        :step-type="step.type"
-        :title="step.title"
-        :subtitle="step.subtitle"
+    <!-- Timeline with Branching -->
+    <div>
+      <!-- Shared Steps (before branch) -->
+      <div class="space-y-3">
+        <PreviewStepCard
+          v-for="(step, index) in sharedSteps"
+          :key="`shared-${index}`"
+          :step-number="index + 1"
+          :step-type="step.type"
+          :title="step.title"
+          :subtitle="step.subtitle"
+          :flow-membership="step.flowMembership"
+          :is-branch-point="step.isBranchPoint"
+        />
+      </div>
+
+      <!-- Branching Flow (branch indicator + side-by-side columns) -->
+      <BranchingFlowPreview
+        v-if="hasBranching"
+        :shared-steps-count="sharedSteps.length"
+        :testimonial-steps="testimonialSteps"
+        :improvement-steps="improvementSteps"
       />
+
+      <!-- Non-branching flow (simple list) -->
+      <div v-else class="space-y-3">
+        <PreviewStepCard
+          v-for="(step, index) in [...testimonialSteps, ...improvementSteps]"
+          :key="`linear-${index}`"
+          :step-number="sharedSteps.length + index + 1"
+          :step-type="step.type"
+          :title="step.title"
+          :subtitle="step.subtitle"
+        />
+      </div>
     </div>
 
     <!-- AI Context -->

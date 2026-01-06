@@ -3,15 +3,21 @@
  * Preview Step Card
  *
  * Read-only card showing a step in the preview flow.
+ * Supports flow membership styling for branching visualization.
  */
 import { computed } from 'vue';
 import { Icon } from '@testimonials/icons';
+import { FLOW_METADATA, type FlowMembership } from '@/entities/form';
 
 const props = defineProps<{
   stepNumber: number;
-  stepType: 'welcome' | 'question' | 'rating' | 'thank_you';
+  stepType: 'welcome' | 'question' | 'rating' | 'thank_you' | 'consent';
   title: string;
   subtitle?: string;
+  /** Flow membership for color coding (shared, testimonial, improvement) */
+  flowMembership?: FlowMembership;
+  /** Whether this step is the branch point */
+  isBranchPoint?: boolean;
 }>();
 
 const stepConfig = computed(() => {
@@ -34,6 +40,12 @@ const stepConfig = computed(() => {
         icon: 'heroicons:star',
         color: 'text-amber-600 bg-amber-100',
       };
+    case 'consent':
+      return {
+        label: 'Consent',
+        icon: 'heroicons:check-circle',
+        color: 'text-emerald-600 bg-emerald-100',
+      };
     case 'thank_you':
       return {
         label: 'Thank You',
@@ -42,12 +54,46 @@ const stepConfig = computed(() => {
       };
   }
 });
+
+// Get flow metadata for styling (uses centralized colors from FLOW_METADATA)
+const flowMetadata = computed(() => {
+  if (props.flowMembership === 'testimonial') {
+    return FLOW_METADATA.testimonial;
+  }
+  if (props.flowMembership === 'improvement') {
+    return FLOW_METADATA.improvement;
+  }
+  return null;
+});
+
+// Card border color based on flow membership
+const cardBorderClass = computed(() => {
+  if (flowMetadata.value) {
+    // Use FLOW_METADATA colors with lighter variants for card background
+    return `${flowMetadata.value.borderClass} ${flowMetadata.value.bgClass}`;
+  }
+  return 'border-gray-200 bg-white';
+});
+
+// Step number badge color based on flow membership
+const badgeClass = computed(() => {
+  if (flowMetadata.value) {
+    return `${flowMetadata.value.bgClass} ${flowMetadata.value.colorClass}`;
+  }
+  return 'bg-gray-100 text-gray-600';
+});
 </script>
 
 <template>
-  <div class="flex items-start gap-4 rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+  <div
+    class="flex items-start gap-4 rounded-xl border p-4 shadow-sm transition-colors"
+    :class="cardBorderClass"
+  >
     <!-- Step Number -->
-    <div class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-gray-100 text-sm font-medium text-gray-600">
+    <div
+      class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-sm font-medium"
+      :class="badgeClass"
+    >
       {{ stepNumber }}
     </div>
 
@@ -61,6 +107,14 @@ const stepConfig = computed(() => {
         >
           <Icon :icon="stepConfig.icon" class="h-3 w-3" />
           {{ stepConfig.label }}
+        </span>
+        <!-- Branch Point Indicator -->
+        <span
+          v-if="isBranchPoint"
+          class="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700"
+        >
+          <Icon icon="mdi:source-branch" class="h-3 w-3" />
+          Branch Point
         </span>
       </div>
 
