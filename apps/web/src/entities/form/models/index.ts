@@ -2,11 +2,11 @@ export type * from './queries';
 export type * from './mutations';
 export type * from './branchingConfig';
 export type * from './designConfig';
+export type * from './flowMetadata';
 
 // Re-export functions from branchingConfig
 export {
   DEFAULT_BRANCHING_CONFIG,
-  FLOW_METADATA,
   parseBranchingConfig,
   serializeBranchingConfig,
 } from './branchingConfig';
