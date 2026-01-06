@@ -50,6 +50,8 @@ function createBlankQuestion(displayOrder: number): QuestionData {
     is_required: true,
     display_order: displayOrder,
     options: null,
+    flow_membership: 'shared',
+    is_branch_point: false,
     isNew: true,
   };
 }

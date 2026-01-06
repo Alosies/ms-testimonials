@@ -50,6 +50,8 @@ export function useCreateFormWizard() {
       is_required: question.is_required ?? false,
       display_order: questions.value.length + 1,
       options: question.options || null,
+      flow_membership: question.flow_membership || 'shared',
+      is_branch_point: question.is_branch_point ?? false,
       isNew: true,
       isModified: false,
     };

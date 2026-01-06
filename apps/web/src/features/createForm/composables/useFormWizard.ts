@@ -1,6 +1,13 @@
 import { ref, computed, readonly } from 'vue';
 import { useApiForAI, getErrorMessage } from '@/shared/api';
-import type { AIQuestion, AIContext } from '@/shared/api';
+import type { AIQuestion, AIContext, StepContent } from '@/shared/api';
+
+/**
+ * Extended AI context that includes step content for system-generated steps
+ */
+export interface WizardAIContext extends AIContext {
+  step_content?: StepContent;
+}
 
 // ============================================================================
 // Types
@@ -17,7 +24,7 @@ export interface WizardState {
   selectedFocusAreas: string[];
   customFocusAreas: string;
   generatedQuestions: AIQuestion[];
-  aiContext: AIContext | null;
+  aiContext: WizardAIContext | null;
   isGenerating: boolean;
   generationError: string | null;
 }
@@ -58,7 +65,7 @@ export function useFormWizard() {
 
   // Screen 4 & 5: Generation
   const generatedQuestions = ref<AIQuestion[]>([]);
-  const aiContext = ref<AIContext | null>(null);
+  const aiContext = ref<WizardAIContext | null>(null);
   const isGenerating = ref(false);
   const generationError = ref<string | null>(null);
 
@@ -153,7 +160,10 @@ export function useFormWizard() {
       });
 
       generatedQuestions.value = result.questions;
-      aiContext.value = result.inferred_context;
+      aiContext.value = {
+        ...result.inferred_context,
+        step_content: result.step_content,
+      };
       currentScreen.value = 5;
 
       return true;

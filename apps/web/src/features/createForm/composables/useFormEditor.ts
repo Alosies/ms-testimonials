@@ -93,6 +93,9 @@ export function useFormEditor(options: UseFormEditorOptions = {}) {
       is_required: q.is_required,
       display_order: q.display_order,
       options: null, // TODO: Load question options if needed
+      // Flow membership defaults - will be overridden by step data if available
+      flow_membership: 'shared',
+      is_branch_point: false,
       isNew: false,
       isModified: false,
     }));
