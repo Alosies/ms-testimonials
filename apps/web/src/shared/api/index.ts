@@ -34,9 +34,14 @@ export type { ApiClientError } from './lib';
 export { useApiForAI } from './ai';
 export type {
   QuestionTypeId,
+  FlowMembership,
   AIQuestionOption,
   AIQuestion,
   AIContext,
+  FormStructure,
+  ConsentContent,
+  ImprovementThankYou,
+  StepContent,
   SuggestQuestionsRequest,
   SuggestQuestionsResponse,
   QuestionAnswerPair,

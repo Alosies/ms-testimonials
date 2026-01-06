@@ -24,6 +24,14 @@ export type QuestionTypeId =
   | 'input_switch';   // On/Off toggle switch (boolean)
 
 /**
+ * Flow membership for conditional branching
+ * - 'shared': Steps visible in all flows (before branch point)
+ * - 'testimonial': Steps for positive ratings (rating >= threshold)
+ * - 'improvement': Steps for negative ratings (rating < threshold)
+ */
+export type FlowMembership = 'shared' | 'testimonial' | 'improvement';
+
+/**
  * Question option for choice_single and choice_multiple questions
  * Maps to: question_options table
  */
@@ -46,6 +54,8 @@ export interface AIQuestion {
   is_required: boolean;
   display_order: number;
   options: AIQuestionOption[] | null; // Required for choice_single/choice_multiple, null for others
+  flow_membership: FlowMembership;    // Which flow this question belongs to
+  is_branch_point: boolean;           // True only for the rating question that determines flow branch
 }
 
 /**
@@ -57,6 +67,42 @@ export interface AIContext {
   audience: string;
   tone: string;
   value_props: string[];
+}
+
+/**
+ * Form structure recommendations from AI
+ */
+export interface FormStructure {
+  branching_recommended: boolean;     // Whether rating-based branching is recommended
+  rating_question_index: number;      // 0-indexed position of the rating (branch point) question
+}
+
+/**
+ * Consent step content for testimonial flow
+ */
+export interface ConsentContent {
+  title: string;
+  description: string;
+  public_label: string;
+  public_description: string;
+  private_label: string;
+  private_description: string;
+}
+
+/**
+ * Improvement flow thank you content
+ */
+export interface ImprovementThankYou {
+  title: string;
+  message: string;
+}
+
+/**
+ * Step content suggestions for system-generated steps
+ */
+export interface StepContent {
+  consent: ConsentContent;                   // Content for consent step in testimonial flow
+  improvement_thank_you: ImprovementThankYou; // Content for thank you step in improvement flow
 }
 
 /**
@@ -75,5 +121,7 @@ export interface SuggestQuestionsRequest {
  */
 export interface SuggestQuestionsResponse {
   inferred_context: AIContext;
+  form_structure: FormStructure;
   questions: AIQuestion[];
+  step_content: StepContent;
 }
