@@ -1,0 +1,34 @@
+{
+  "name": "testimonials-infrastructure",
+  "version": "1.0.0",
+  "description": "AWS CDK infrastructure for Testimonials",
+  "scripts": {
+    "build": "tsc",
+    "synth": "cdk synth",
+    "synth:dev": "cdk synth -c stage=dev",
+    "synth:qa": "cdk synth -c stage=qa",
+    "synth:prod": "cdk synth -c stage=prod",
+    "diff:dev": "cdk diff -c stage=dev --profile testimonials-dev",
+    "diff:qa": "cdk diff -c stage=qa --profile testimonials-qa",
+    "diff:prod": "cdk diff -c stage=prod --profile testimonials-prod",
+    "deploy:dev": "cdk deploy --all -c stage=dev --profile testimonials-dev --require-approval never",
+    "deploy:qa": "cdk deploy --all -c stage=qa --profile testimonials-qa --require-approval never",
+    "deploy:prod": "cdk deploy --all -c stage=prod --profile testimonials-prod",
+    "destroy:dev": "cdk destroy --all -c stage=dev --profile testimonials-dev",
+    "destroy:qa": "cdk destroy --all -c stage=qa --profile testimonials-qa",
+    "destroy:prod": "cdk destroy --all -c stage=prod --profile testimonials-prod",
+    "bootstrap:dev": "cdk bootstrap aws://378257622586/ap-south-1 --profile testimonials-dev",
+    "bootstrap:qa": "cdk bootstrap aws://745791801068/ap-south-1 --profile testimonials-qa",
+    "bootstrap:prod": "cdk bootstrap aws://405062306867/ap-south-1 --profile testimonials-prod"
+  },
+  "dependencies": {
+    "aws-cdk-lib": "^2.170.0",
+    "constructs": "^10.4.2",
+    "source-map-support": "^0.5.21"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "typescript": "^5.7.0",
+    "ts-node": "^10.9.2"
+  }
+}

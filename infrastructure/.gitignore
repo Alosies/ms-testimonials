@@ -1,0 +1,21 @@
+# CDK
+cdk.out/
+.cdk.staging/
+
+# Build
+dist/
+*.js
+*.d.ts
+!jest.config.js
+
+# Dependencies
+node_modules/
+lambdas/**/node_modules/
+
+# IDE
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
