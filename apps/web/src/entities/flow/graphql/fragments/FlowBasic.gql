@@ -1,0 +1,11 @@
+fragment FlowBasic on flows {
+  id
+  form_id
+  organization_id
+  name
+  flow_type
+  branch_condition
+  display_order
+  created_at
+  updated_at
+}

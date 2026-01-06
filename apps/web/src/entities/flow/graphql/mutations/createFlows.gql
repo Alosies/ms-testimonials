@@ -1,0 +1,9 @@
+#import "../fragments/FlowBasic.gql"
+
+mutation CreateFlows($inputs: [flows_insert_input!]!) {
+  insert_flows(objects: $inputs) {
+    returning {
+      ...FlowBasic
+    }
+  }
+}
