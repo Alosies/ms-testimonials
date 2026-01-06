@@ -19,6 +19,13 @@ array_relationships:
         table:
           name: contacts
           schema: public
+  - name: flows
+    using:
+      foreign_key_constraint_on:
+        column: form_id
+        table:
+          name: flows
+          schema: public
   - name: questions
     using:
       foreign_key_constraint_on:

@@ -5,6 +5,9 @@ object_relationships:
   - name: creator
     using:
       foreign_key_constraint_on: created_by
+  - name: flow
+    using:
+      foreign_key_constraint_on: flow_id
   - name: form
     using:
       foreign_key_constraint_on: form_id
@@ -42,6 +45,7 @@ select_permissions:
       columns:
         - id
         - form_id
+        - flow_id
         - step_type
         - step_order
         - question_id
