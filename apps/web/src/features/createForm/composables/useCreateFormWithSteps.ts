@@ -2,7 +2,9 @@ import { ref, toRefs, computed, readonly, type DeepReadonly } from 'vue';
 import { getErrorMessage } from '@/shared/api';
 import type { AIQuestion, StepContent, FlowMembership } from '@/shared/api';
 import type { WizardAIContext } from './useFormWizard';
-import { useCreateForm } from '@/entities/form';
+import { useCreateForm, useUpdateForm, serializeBranchingConfig } from '@/entities/form';
+import type { BranchingConfig } from '@/entities/form';
+import { useCreateFlows, type BranchCondition } from '@/entities/flow';
 import { useCreateFormQuestions } from '@/entities/formQuestion';
 import { useCreateFormSteps } from '@/entities/formStep';
 import { useGetQuestionTypes } from '@/entities/questionType';
@@ -42,6 +44,8 @@ export interface CreateFormWithStepsResult {
  */
 export function useCreateFormWithSteps() {
   const { createForm } = useCreateForm();
+  const { updateForm } = useUpdateForm();
+  const { createFlows } = useCreateFlows();
   const { createFormQuestions } = useCreateFormQuestions();
   const { createFormSteps } = useCreateFormSteps();
   const { questionTypes } = useGetQuestionTypes();
@@ -103,7 +107,53 @@ export function useCreateFormWithSteps() {
         throw new Error('Failed to create form');
       }
 
-      // 2. Create form_questions
+      // 2. Create flows for the form (shared, testimonial, improvement)
+      const flowInputs = [
+        {
+          form_id: form.id,
+          organization_id: currentOrganizationId.value,
+          name: 'Shared Steps',
+          flow_type: 'shared',
+          branch_condition: null,
+          display_order: 0,
+        },
+        {
+          form_id: form.id,
+          organization_id: currentOrganizationId.value,
+          name: 'Testimonial Flow',
+          flow_type: 'branch',
+          branch_condition: { field: 'rating', op: '>=', value: 4 } as BranchCondition,
+          display_order: 1,
+        },
+        {
+          form_id: form.id,
+          organization_id: currentOrganizationId.value,
+          name: 'Improvement Flow',
+          flow_type: 'branch',
+          branch_condition: { field: 'rating', op: '<', value: 4 } as BranchCondition,
+          display_order: 2,
+        },
+      ];
+
+      const createdFlows = await createFlows({ inputs: flowInputs });
+
+      if (!createdFlows || createdFlows.length !== 3) {
+        throw new Error('Failed to create flows');
+      }
+
+      // Create a map of flow_type to flow_id for easy lookup
+      const flowMap = new Map<string, string>();
+      for (const flow of createdFlows) {
+        if (flow.flow_type === 'shared') {
+          flowMap.set('shared', flow.id);
+        } else if (flow.name === 'Testimonial Flow') {
+          flowMap.set('testimonial', flow.id);
+        } else if (flow.name === 'Improvement Flow') {
+          flowMap.set('improvement', flow.id);
+        }
+      }
+
+      // 3. Create form_questions
       const questionInputs = params.questions.map((q, index) => ({
         form_id: form.id,
         organization_id: currentOrganizationId.value,
@@ -125,7 +175,7 @@ export function useCreateFormWithSteps() {
         throw new Error('Failed to create questions');
       }
 
-      // 3. Create form_steps with branching support
+      // 4. Create form_steps with branching support
       const stepInputs = buildFormSteps(
         form.id,
         currentOrganizationId.value!,
@@ -133,7 +183,8 @@ export function useCreateFormWithSteps() {
         params.conceptName,
         createdQuestions,
         params.questions,
-        params.aiContext?.step_content ?? null
+        params.aiContext?.step_content ?? null,
+        flowMap
       );
 
       const createdSteps = await createFormSteps({
@@ -142,6 +193,26 @@ export function useCreateFormWithSteps() {
 
       if (!createdSteps || createdSteps.length === 0) {
         throw new Error('Failed to create steps');
+      }
+
+      // 5. Set branching_config on form with rating step ID
+      // Find the rating step index from stepInputs
+      const ratingStepIndex = stepInputs.findIndex(s => s.step_type === 'rating');
+      if (ratingStepIndex >= 0) {
+        const ratingStepId = createdSteps[ratingStepIndex]?.id;
+        if (ratingStepId) {
+          const branchingConfig: BranchingConfig = {
+            enabled: true,
+            threshold: 4,
+            ratingStepId,
+          };
+          await updateForm({
+            id: form.id,
+            changes: {
+              branching_config: serializeBranchingConfig(branchingConfig),
+            },
+          });
+        }
       }
 
       return {
@@ -168,6 +239,7 @@ export function useCreateFormWithSteps() {
     step_order: number;
     question_id: string | null;
     content: Record<string, unknown>;
+    flow_id: string;
     flow_membership: FlowMembership;
     is_active: boolean;
   }
@@ -175,12 +247,12 @@ export function useCreateFormWithSteps() {
   /**
    * Build form steps array for insertion with branching support
    *
-   * Creates steps with proper flow_membership:
+   * Creates steps with proper flow_id:
    * - Shared: welcome + questions before/including branch point
    * - Testimonial: questions after branch + consent + thank_you
    * - Improvement: questions after branch + thank_you
    *
-   * Uses global step_order to satisfy UNIQUE(form_id, step_order) constraint
+   * Uses per-flow step_order: UNIQUE(form_id, flow_id, step_order)
    */
   function buildFormSteps(
     formId: string,
@@ -189,28 +261,42 @@ export function useCreateFormWithSteps() {
     conceptName: string,
     createdQuestions: readonly { id: string; question_type_id: string }[],
     originalQuestions: DeepReadonly<AIQuestion[]>,
-    stepContent: DeepReadonly<StepContent> | null
+    stepContent: DeepReadonly<StepContent> | null,
+    flowMap: Map<string, string>
   ): FormStepInput[] {
     const steps: FormStepInput[] = [];
-    let globalOrder = 0;
 
-    // Helper to create a step
+    // Per-flow step ordering (each flow starts at 0)
+    const flowStepOrder = {
+      shared: 0,
+      testimonial: 0,
+      improvement: 0,
+    };
+
+    // Helper to create a step with per-flow ordering
     const createStep = (
       stepType: string,
       flowMembership: FlowMembership,
       content: Record<string, unknown>,
       questionId: string | null = null
-    ): FormStepInput => ({
-      form_id: formId,
-      organization_id: organizationId,
-      created_by: userId,
-      step_type: stepType,
-      step_order: globalOrder++,
-      question_id: questionId,
-      content,
-      flow_membership: flowMembership,
-      is_active: true,
-    });
+    ): FormStepInput => {
+      const flowId = flowMap.get(flowMembership);
+      if (!flowId) {
+        throw new Error(`Flow not found for membership: ${flowMembership}`);
+      }
+      return {
+        form_id: formId,
+        organization_id: organizationId,
+        created_by: userId,
+        step_type: stepType,
+        step_order: flowStepOrder[flowMembership]++,
+        question_id: questionId,
+        content,
+        flow_id: flowId,
+        flow_membership: flowMembership,
+        is_active: true,
+      };
+    };
 
     // =========================================================================
     // 1. Welcome step (shared)
