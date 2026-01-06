@@ -14,7 +14,7 @@ const wizard = inject<FormWizardContext>('wizardContext')!;
 </script>
 
 <template>
-  <div class="space-y-8">
+  <div>
     <!-- Error State -->
     <div
       v-if="wizard.generationError.value"

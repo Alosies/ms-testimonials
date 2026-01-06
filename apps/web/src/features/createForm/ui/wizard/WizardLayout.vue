@@ -34,10 +34,14 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="flex min-h-screen flex-col bg-gradient-to-br from-gray-50 to-gray-100">
+  <div
+    class="flex min-h-screen flex-col"
+    :class="currentScreen === 4 ? 'bg-transparent' : 'bg-gradient-to-br from-gray-50 to-gray-100'"
+  >
     <!-- Escape hint -->
     <button
-      class="absolute left-4 top-4 flex items-center gap-2 text-sm text-gray-400 transition-colors hover:text-gray-600"
+      class="absolute left-4 top-4 z-50 flex items-center gap-2 text-sm transition-colors"
+      :class="currentScreen === 4 ? 'text-gray-500 hover:text-gray-700' : 'text-gray-400 hover:text-gray-600'"
       @click="emit('escape')"
     >
       <Kbd>Esc</Kbd>
@@ -53,8 +57,14 @@ onUnmounted(() => {
     </div>
 
     <!-- Main content area -->
-    <div class="flex flex-1 items-center justify-center px-4 py-8">
-      <div class="w-full max-w-xl">
+    <div
+      class="flex flex-1 items-center justify-center"
+      :class="currentScreen === 4 ? 'px-0 py-0' : 'px-4 py-8'"
+    >
+      <div
+        class="w-full"
+        :class="currentScreen === 4 ? 'h-full' : 'max-w-xl'"
+      >
         <slot />
       </div>
     </div>
