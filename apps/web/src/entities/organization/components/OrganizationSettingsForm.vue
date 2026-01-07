@@ -29,12 +29,15 @@ const logoValue = ref(props.organization.logo_url ?? '');
 
 /**
  * Check if a value is a storage path (vs legacy full URL)
- * Storage paths follow the pattern: org_xxx/entity_type/YYYY/MM/DD/med_xxx_timestamp.ext
+ * Storage paths follow the pattern: {org_id}/{entity_type}/YYYY/MM/DD/med_xxx_timestamp.ext
+ * They contain path segments and don't start with http
  */
 function isStoragePath(value: string): boolean {
   if (!value) return false;
-  // Storage paths start with org_ prefix and don't start with http
-  return value.startsWith('org_') && !value.startsWith('http');
+  // Storage paths don't start with http and contain path segments with media ID
+  if (value.startsWith('http://') || value.startsWith('https://')) return false;
+  // Check for typical storage path pattern: contains /organization_logo/ or /med_ pattern
+  return value.includes('/') && (value.includes('/med_') || value.includes('organization_logo'));
 }
 
 // Handle successful upload

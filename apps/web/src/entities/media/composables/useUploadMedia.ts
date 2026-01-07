@@ -158,8 +158,12 @@ async function uploadToS3(
     xhr.open('PUT', uploadUrl);
 
     // Set headers from presign response
+    // Filter out forbidden headers that browsers block (Content-Length is auto-calculated)
+    const forbiddenHeaders = ['content-length', 'host', 'connection', 'keep-alive'];
     Object.entries(headers).forEach(([key, value]) => {
-      xhr.setRequestHeader(key, value);
+      if (!forbiddenHeaders.includes(key.toLowerCase())) {
+        xhr.setRequestHeader(key, value);
+      }
     });
 
     // Send the file
