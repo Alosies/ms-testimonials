@@ -4,3 +4,4 @@ packages:
   - 'packages/libs/core'
   - 'packages/libs/ui'
   - 'packages/libs/icons'
+  - 'packages/libs/media-service'

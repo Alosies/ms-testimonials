@@ -21,6 +21,13 @@
         "PLAYWRIGHT_MCP_EXTENSION_TOKEN": "OSir6AjZkDYVvAgDNiylbpduqbOlZgHMNmlRpr6-4TY"
       }
     },
+    "playwright-alosies": {
+      "command": "npx",
+      "args": ["@playwright/mcp@latest", "--extension"],
+      "env": {
+        "PLAYWRIGHT_MCP_EXTENSION_TOKEN": "7iFFBC_P12e51WaW3VX3PXqWNZnEGmBd-JzHlA_3lUY"
+      }
+    },
     "Context7": {
       "command": "npx",
       "args": ["-y", "@upstash/context7-mcp"]
