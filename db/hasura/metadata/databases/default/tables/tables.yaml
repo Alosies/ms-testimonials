@@ -4,6 +4,8 @@
 - "!include public_form_steps.yaml"
 - "!include public_form_submissions.yaml"
 - "!include public_forms.yaml"
+- "!include public_media.yaml"
+- "!include public_media_entity_types.yaml"
 - "!include public_organization_plans.yaml"
 - "!include public_organization_roles.yaml"
 - "!include public_organizations.yaml"
