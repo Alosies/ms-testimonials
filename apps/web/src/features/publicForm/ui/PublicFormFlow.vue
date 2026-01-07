@@ -21,6 +21,7 @@ import {
   RewardStepCard,
   ThankYouStepCard,
 } from '@/shared/stepCards';
+import { OrganizationLogo } from '@/entities/organization';
 import { usePublicFormFlow } from '../composables';
 
 interface Props {
@@ -109,11 +110,11 @@ function handleWelcomeStart() {
     :style="customPrimaryStyles"
   >
     <!-- Logo (fixed position, top-left) -->
-    <div v-if="logoUrl" class="fixed top-4 left-4 z-10">
-      <img
-        :src="logoUrl"
-        alt="Logo"
-        class="h-8 object-contain max-w-[120px]"
+    <div v-if="logoUrl" class="fixed top-6 left-6 z-10">
+      <OrganizationLogo
+        :logo-url="logoUrl"
+        size="lg"
+        :show-placeholder="false"
       />
     </div>
 

@@ -111,13 +111,8 @@ const designConfig = computed(() => {
   return parseDesignConfig(form.value.settings);
 });
 
-// Get organization logo for fallback
+// Get organization logo
 const orgLogoUrl = computed(() => form.value?.organization?.logo_url ?? null);
-
-// Effective logo with fallback to org logo
-const effectiveLogo = computed(
-  () => designConfig.value?.logoUrl ?? orgLogoUrl.value
-);
 
 // Primary color in HSL format for card content
 const primaryColorHsl = computed(() => {
@@ -175,7 +170,7 @@ const primaryColorHsl = computed(() => {
       :steps="steps"
       :form-name="form.name"
       :branching-config="branchingConfig"
-      :logo-url="effectiveLogo"
+      :logo-url="orgLogoUrl"
       :primary-color-hsl="primaryColorHsl"
     />
   </div>
