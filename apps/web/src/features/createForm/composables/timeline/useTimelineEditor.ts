@@ -336,6 +336,7 @@ export const useTimelineEditor = createSharedComposable(() => {
     setBranchingThreshold: branching.setBranchingThreshold,
     addStepToFlow: branching.addStepToFlow,
     focusFlow: branching.focusFlow,
+    setFlowFocus: branching.setFlowFocus,
     switchFlow: branching.switchFlow,
     expandCurrentFlow: branching.expandCurrentFlow,
     collapseFlow: branching.collapseFlow,

@@ -210,12 +210,24 @@ export function useTimelineBranching(deps: BranchingDeps) {
     return newStep;
   }
 
+  /**
+   * Set flow focus AND select the first step of that flow.
+   * Used for UI buttons/interactions that want to jump to a flow.
+   */
   function focusFlow(flow: 'testimonial' | 'improvement') {
     currentFlowFocus.value = flow;
     const flowSteps = flow === 'testimonial' ? testimonialSteps.value : improvementSteps.value;
     if (flowSteps.length > 0) {
       selectStepById(flowSteps[0].id);
     }
+  }
+
+  /**
+   * Set flow focus WITHOUT selecting a step.
+   * Used for keyboard navigation where selection is handled separately.
+   */
+  function setFlowFocus(flow: 'testimonial' | 'improvement' | null) {
+    currentFlowFocus.value = flow;
   }
 
   function switchFlow() {
@@ -265,6 +277,7 @@ export function useTimelineBranching(deps: BranchingDeps) {
     setBranchingThreshold,
     addStepToFlow,
     focusFlow,
+    setFlowFocus,
     switchFlow,
     expandCurrentFlow,
     collapseFlow,
