@@ -21,6 +21,7 @@ import {
   RewardStepCard,
   ThankYouStepCard,
 } from '@/shared/stepCards';
+import { OrganizationLogo } from '@/entities/organization';
 import TimelineConnector from './TimelineConnector.vue';
 
 const props = defineProps<{
@@ -30,6 +31,8 @@ const props = defineProps<{
   isLast: boolean;
   /** Custom CSS styles for card content (e.g., custom --primary color) */
   contentStyles?: CSSProperties;
+  /** Logo URL to display in the top-left corner of the card */
+  logoUrl?: string | null;
 }>();
 
 const emit = defineEmits<{
@@ -110,6 +113,19 @@ function handleInsert(type: StepType) {
       }"
       @click="emit('select', index)"
     >
+      <!-- Logo in top-left corner -->
+      <div
+        v-if="logoUrl"
+        class="absolute top-4 left-4 z-10"
+      >
+        <OrganizationLogo
+          :logo-url="logoUrl"
+          size="md"
+          rounded
+          :show-placeholder="false"
+        />
+      </div>
+
       <!-- Action buttons - faded until hover -->
       <div
         class="absolute top-4 right-4 z-10 flex items-center gap-2 rounded-lg bg-background/90 backdrop-blur-sm px-2 py-1.5 shadow-sm border border-border/50 opacity-40 group-hover:opacity-100 transition-opacity duration-200"

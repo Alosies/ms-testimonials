@@ -47,6 +47,7 @@ function handleInsert(afterIndex: number, type: StepType) {
       :is-active="index === editor.selectedIndex.value"
       :is-last="index === editor.steps.value.length - 1"
       :content-styles="cardContentStyles"
+      :logo-url="editor.effectiveLogo.value"
       @select="editor.selectStep"
       @edit="editor.handleEditStep"
       @remove="editor.handleRemoveStep"
