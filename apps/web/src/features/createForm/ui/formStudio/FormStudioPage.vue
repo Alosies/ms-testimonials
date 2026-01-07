@@ -26,6 +26,7 @@ import type { FormStep, StepType, StepContent } from '@/shared/stepCards';
 import TimelineSidebar from './TimelineSidebar.vue';
 import TimelineCanvas from './TimelineCanvas.vue';
 import BranchedTimelineCanvas from './BranchedTimelineCanvas.vue';
+import CanvasErrorState from './CanvasErrorState.vue';
 
 const props = defineProps<{
   formId: string;
@@ -103,7 +104,31 @@ watch(form, (loadedForm) => {
 
 // Fetch form steps
 const stepsQueryVars = computed(() => ({ formId: props.formId }));
-const { formSteps } = useGetFormSteps(stepsQueryVars);
+const { formSteps, error: stepsError, refetch: refetchSteps } = useGetFormSteps(stepsQueryVars);
+
+// Manual retry state tracking (Apollo's refetch doesn't always update error ref)
+const isRetrying = ref(false);
+const retryError = ref<Error | null>(null);
+
+// Canvas state: show error or loading state in canvas area
+// Only show timeline canvas when we have steps loaded
+const hasError = computed(() => stepsError.value || retryError.value);
+
+const showCanvasError = computed(() => {
+  // Show error if query failed and no steps in editor
+  return hasError.value && editor.steps.value.length === 0 && !isRetrying.value;
+});
+
+const showCanvasLoading = computed(() => {
+  // Show loading during retry or when no steps and no error
+  if (isRetrying.value) return true;
+  return editor.steps.value.length === 0 && !hasError.value;
+});
+
+const showTimeline = computed(() => {
+  // Show timeline only when we have steps
+  return editor.steps.value.length > 0;
+});
 
 // Transform and load steps into editor when data arrives
 watch(formSteps, (steps) => {
@@ -195,6 +220,30 @@ async function handleSave() {
 function handleNavigate(index: number) {
   navigation.navigateTo(index);
 }
+
+/**
+ * Handle retry when steps query fails
+ * Note: Apollo's refetch() doesn't throw on GraphQL errors - they're in the result
+ */
+async function handleRetrySteps() {
+  isRetrying.value = true;
+  retryError.value = null;
+
+  try {
+    const result = await refetchSteps();
+    // Check if the result contains errors (GraphQL errors don't throw)
+    if (result?.error) {
+      retryError.value = result.error;
+    } else if (result?.errors?.length) {
+      retryError.value = new Error(result.errors[0]?.message ?? 'Query failed');
+    }
+  } catch (err) {
+    // Network errors will throw
+    retryError.value = err instanceof Error ? err : new Error('Failed to load steps');
+  } finally {
+    isRetrying.value = false;
+  }
+}
 </script>
 
 <template>
@@ -218,7 +267,7 @@ function handleNavigate(index: number) {
 
     <template #canvas-overlay>
       <div
-        v-if="editor.steps.value.length > 1"
+        v-if="showTimeline && editor.steps.value.length > 1"
         class="absolute top-4 right-4 hidden md:flex items-center gap-2 px-3 py-2 rounded-lg bg-background/90 backdrop-blur-sm border border-border/50 text-muted-foreground text-sm shadow-sm pointer-events-auto"
       >
         <Kbd>↑</Kbd>
@@ -228,8 +277,17 @@ function handleNavigate(index: number) {
     </template>
 
     <template #timeline>
-      <BranchedTimelineCanvas v-if="editor.isBranchingEnabled.value" />
-      <TimelineCanvas v-else />
+      <!-- Error State: Show in canvas when steps query fails -->
+      <CanvasErrorState
+        v-if="showCanvasError || showCanvasLoading"
+        :is-loading="showCanvasLoading"
+        @retry="handleRetrySteps"
+      />
+      <!-- Normal State: Show timeline when we have steps -->
+      <template v-else-if="showTimeline">
+        <BranchedTimelineCanvas v-if="editor.isBranchingEnabled.value" />
+        <TimelineCanvas v-else />
+      </template>
     </template>
 
     <template #properties>
@@ -237,5 +295,5 @@ function handleNavigate(index: number) {
     </template>
   </FormEditorLayout>
 
-  <StepEditorSlideIn @navigate="handleNavigate" />
+  <StepEditorSlideIn v-if="showTimeline" @navigate="handleNavigate" />
 </template>
