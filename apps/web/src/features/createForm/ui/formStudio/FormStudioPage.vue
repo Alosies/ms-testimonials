@@ -17,7 +17,7 @@ import FormEditorLayout from '@/layouts/FormEditorLayout.vue';
 import FormEditorHeader from '../FormEditorHeader.vue';
 import { PropertiesPanel } from '../propertiesPanel';
 import StepEditorSlideIn from '../stepEditor/StepEditorSlideIn.vue';
-import { useTimelineEditor, useSaveFormSteps } from '../../composables/timeline';
+import { useTimelineEditor, useSaveFormSteps, useBranchedKeyboardNavigation } from '../../composables/timeline';
 import { useScrollSnapNavigation } from '@/shared/composables';
 import { useGetForm, parseBranchingConfig } from '@/entities/form';
 import { useGetFormSteps } from '@/entities/formStep';
@@ -48,16 +48,37 @@ const { currentOrganizationId, currentUserId } = toRefs(contextStore);
 // Initialize save composable
 const saveComposable = useSaveFormSteps();
 
-// Initialize scroll-snap navigation (keyboard + scroll detection)
+// Initialize scroll-snap navigation (scroll detection only for linear mode)
+// Keyboard navigation is handled by useBranchedKeyboardNavigation which supports branching
 // This is set up at component level to properly bind to DOM lifecycle
+// NOTE: Scroll detection is disabled when branching is enabled because branch steps
+// use a different layout (FlowColumn) without data-step-index attributes.
+// Since branching config is loaded at page initialization, this is evaluated once at setup.
 const navigation = useScrollSnapNavigation({
   containerSelector: '.timeline-scroll',
   itemSelector: '[data-step-index]',
   itemCount: () => editor.steps.value.length,
   selectedIndex: editor.selectedIndex,
   onSelect: (index) => editor.selectStep(index),
-  enableKeyboard: true,
-  enableScrollDetection: true,
+  enableKeyboard: false,
+  enableScrollDetection: false, // Disabled - causes conflicts with branch navigation
+});
+
+// Selected step ID for keyboard navigation
+const selectedStepId = computed(() => editor.selectedStep.value?.id ?? null);
+
+// Branch-aware keyboard navigation
+// Uses useFlowNavigation as single source of truth for flow structure
+useBranchedKeyboardNavigation({
+  steps: editor.steps,
+  selectedStepId,
+  isBranchingEnabled: editor.isBranchingEnabled,
+  branchPointIndex: editor.branchPointIndex,
+  stepsBeforeBranch: editor.stepsBeforeBranch,
+  testimonialSteps: editor.testimonialSteps,
+  improvementSteps: editor.improvementSteps,
+  selectStepById: editor.selectStepById,
+  setFlowFocus: editor.setFlowFocus,
 });
 
 // Track if design config has been loaded for current form
@@ -273,6 +294,12 @@ async function handleRetrySteps() {
         <Kbd>↑</Kbd>
         <Kbd>↓</Kbd>
         <span class="ml-1 text-xs">to navigate</span>
+        <template v-if="editor.isBranchingEnabled.value">
+          <span class="mx-1 text-muted-foreground/50">·</span>
+          <Kbd>←</Kbd>
+          <Kbd>→</Kbd>
+          <span class="ml-1 text-xs">switch branch</span>
+        </template>
       </div>
     </template>
 
