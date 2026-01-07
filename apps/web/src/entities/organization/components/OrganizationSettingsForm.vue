@@ -6,6 +6,11 @@ import { useCheckSlugAvailability } from '../composables/queries';
 import { useUpdateOrganization } from '../composables/mutations';
 import { isReservedSlug, getReservedSlugMessage } from '../utils';
 import type { UserDefaultOrganization } from '../models';
+import {
+  MediaUploader,
+  ImagePreview,
+  type UploadResult,
+} from '@/entities/media';
 
 const props = defineProps<{
   organization: UserDefaultOrganization;
@@ -18,7 +23,29 @@ const emit = defineEmits<{
 // Form state
 const name = ref(props.organization.name);
 const slug = ref(props.organization.slug);
-const logoUrl = ref(props.organization.logo_url ?? '');
+
+// Logo state - can be storage path (new uploads) or legacy URL
+const logoValue = ref(props.organization.logo_url ?? '');
+
+/**
+ * Check if a value is a storage path (vs legacy full URL)
+ * Storage paths follow the pattern: org_xxx/entity_type/YYYY/MM/DD/med_xxx_timestamp.ext
+ */
+function isStoragePath(value: string): boolean {
+  if (!value) return false;
+  // Storage paths start with org_ prefix and don't start with http
+  return value.startsWith('org_') && !value.startsWith('http');
+}
+
+// Handle successful upload
+function handleLogoUploadSuccess(result: UploadResult) {
+  logoValue.value = result.storagePath;
+}
+
+// Remove current logo
+function handleRemoveLogo() {
+  logoValue.value = '';
+}
 
 // Track if user has manually touched the slug field in this session
 // Starts as false - slug will auto-generate from name until user edits it
@@ -121,13 +148,17 @@ const slugError = computed(() => {
   return null;
 });
 
-const logoUrlError = computed(() => {
-  if (!logoUrl.value.trim()) return null;
+// Logo validation - storage paths and valid URLs are both acceptable
+const logoError = computed(() => {
+  if (!logoValue.value.trim()) return null;
+  // Storage paths are always valid
+  if (isStoragePath(logoValue.value)) return null;
+  // Legacy URLs must be valid
   try {
-    new URL(logoUrl.value);
+    new URL(logoValue.value);
     return null;
   } catch {
-    return 'Please enter a valid URL';
+    return 'Please enter a valid URL or upload an image';
   }
 });
 
@@ -135,7 +166,7 @@ const logoUrlError = computed(() => {
 const hasChanges = computed(() => {
   const nameChanged = name.value !== props.organization.name;
   const slugChanged = canEditSlug.value && slug.value !== props.organization.slug;
-  const logoChanged = logoUrl.value !== (props.organization.logo_url ?? '');
+  const logoChanged = logoValue.value !== (props.organization.logo_url ?? '');
   return nameChanged || slugChanged || logoChanged;
 });
 
@@ -143,7 +174,7 @@ const hasChanges = computed(() => {
 const isValid = computed(() => {
   if (nameError.value) return false;
   if (slugError.value) return false;
-  if (logoUrlError.value) return false;
+  if (logoError.value) return false;
   // If slug is editable and changed, must be confirmed available and match the validated slug
   if (canEditSlug.value && slug.value !== props.organization.slug) {
     if (slugAvailable.value !== true || slug.value !== lastValidatedSlug.value) {
@@ -164,7 +195,8 @@ async function handleSave() {
   try {
     const changes: Record<string, unknown> = {
       name: name.value.trim(),
-      logo_url: logoUrl.value.trim() || null,
+      // Store either storage path (new uploads) or legacy URL
+      logo_url: logoValue.value.trim() || null,
     };
 
     // Only include slug if editable
@@ -305,19 +337,62 @@ async function handleSave() {
           </p>
         </div>
 
-        <!-- Logo URL -->
+        <!-- Logo Upload -->
         <div class="space-y-2">
-          <Label for="org-logo">Logo URL</Label>
-          <Input
-            id="org-logo"
-            v-model="logoUrl"
-            type="url"
-            placeholder="https://example.com/logo.png"
-            :class="{ 'border-red-300 focus:border-red-500': logoUrlError }"
+          <Label>Organization Logo</Label>
+
+          <!-- Current Logo Preview -->
+          <div v-if="logoValue" class="flex items-start gap-4">
+            <!-- Preview Image -->
+            <div class="relative shrink-0">
+              <!-- Storage path - use ImageKit CDN -->
+              <ImagePreview
+                v-if="isStoragePath(logoValue)"
+                :storage-path="logoValue"
+                :width="80"
+                :height="80"
+                fit="contain"
+                alt="Organization logo"
+                class="w-20 h-20 rounded-lg border border-gray-200 bg-white"
+                img-class="w-full h-full object-contain p-1"
+              />
+              <!-- Legacy URL - direct img tag -->
+              <img
+                v-else
+                :src="logoValue"
+                alt="Organization logo"
+                class="w-20 h-20 rounded-lg border border-gray-200 bg-white object-contain p-1"
+              />
+            </div>
+
+            <!-- Actions -->
+            <div class="flex flex-col gap-2">
+              <p class="text-sm text-gray-600">Current logo</p>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                class="text-red-600 hover:text-red-700 hover:bg-red-50"
+                @click="handleRemoveLogo"
+              >
+                <Icon icon="lucide:trash-2" class="w-4 h-4 mr-1.5" />
+                Remove
+              </Button>
+            </div>
+          </div>
+
+          <!-- Upload Zone -->
+          <MediaUploader
+            entity-type="organization_logo"
+            :entity-id="organization.id"
+            :label="logoValue ? 'Upload New Logo' : 'Upload Logo'"
+            hint="Recommended: Square image, at least 200x200px"
+            @success="handleLogoUploadSuccess"
           />
-          <p v-if="logoUrlError" class="text-xs text-red-500">{{ logoUrlError }}</p>
+
+          <p v-if="logoError" class="text-xs text-red-500">{{ logoError }}</p>
           <p v-else class="text-xs text-gray-500">
-            Optional. URL to your organization's logo image
+            Optional. Your logo will be displayed on forms and widgets.
           </p>
         </div>
       </form>

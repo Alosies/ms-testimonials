@@ -623,7 +623,7 @@ export function useMediaUrl() {
 - [x] Create `useUploadMedia` composable for presign + upload flow
 - [x] Build `MediaUploader` component
 - [x] Build `ImagePreview` component with transform support
-- [ ] Integrate with organization logo form
+- [x] Integrate with organization logo form
 
 ### Phase 4: Production Hardening
 - [ ] Hasura permissions for media table (RLS by organization)
