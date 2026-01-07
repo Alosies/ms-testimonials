@@ -114,6 +114,9 @@ importers:
       '@apollo/client':
         specifier: ^3.11.0
         version: 3.14.0(@types/react@19.2.7)(graphql-ws@6.0.6(graphql@16.12.0)(ws@8.18.3))(graphql@16.12.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      '@imagekit/javascript':
+        specifier: ^5.1.0
+        version: 5.1.0
       '@supabase/supabase-js':
         specifier: ^2.58.0
         version: 2.89.0
@@ -1730,6 +1733,9 @@ packages:
     resolution: {integrity: sha512-Xq0h6zMrHBbrW8jXJ9fISi+x8oDQllg5hTDkDuxnWiskJ63rpJu9CvJshj8VniHVTbsxCg9fVoPAaNp3RQI5OQ==}
     peerDependencies:
       vue: '>=3'
+
+  '@imagekit/javascript@5.1.0':
+    resolution: {integrity: sha512-P12NaxlO6Qu4GROFagX9qgP5kKde236mCu5jJB1cWJ6mPaVdjyk0Mw3ciGIWdKXST/jP1cFqS2ZoBVRSq1SWow==}
 
   '@inquirer/external-editor@1.0.3':
     resolution: {integrity: sha512-RWbSrDiYmO4LbejWY7ttpxczuwQyZLBUyygsA9Nsv95hpzUWwnNTVQmAq3xuh7vNwCp07UTmE5i11XAEExx4RA==}
@@ -6969,6 +6975,8 @@ snapshots:
     dependencies:
       '@iconify/types': 2.0.0
       vue: 3.5.26(typescript@5.9.3)
+
+  '@imagekit/javascript@5.1.0': {}
 
   '@inquirer/external-editor@1.0.3(@types/node@22.19.3)':
     dependencies:

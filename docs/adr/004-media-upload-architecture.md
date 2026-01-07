@@ -618,11 +618,11 @@ export function useMediaUrl() {
 - [ ] Test end-to-end flow
 
 ### Phase 3: Frontend (CDN Integration)
-- [ ] Add ImageKit Vue SDK (`@imagekit/javascript`)
-- [ ] Create `useMediaUrl` composable for CDN URL generation
-- [ ] Create `useUploadMedia` composable for presign + upload flow
-- [ ] Build `MediaUploader` component
-- [ ] Build `ImagePreview` component with transform support
+- [x] Add ImageKit Vue SDK (`@imagekit/javascript`)
+- [x] Create `useMediaUrl` composable for CDN URL generation
+- [x] Create `useUploadMedia` composable for presign + upload flow
+- [x] Build `MediaUploader` component
+- [x] Build `ImagePreview` component with transform support
 - [ ] Integrate with organization logo form
 
 ### Phase 4: Production Hardening
