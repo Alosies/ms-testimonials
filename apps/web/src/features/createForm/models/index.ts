@@ -3,6 +3,15 @@ import type { AIQuestion, AIContext } from '@/shared/api';
 // Step types - re-export from shared
 export * from '@/shared/stepCards/models/stepContent';
 
+// Flow navigation types
+export type {
+  FlowStep,
+  FlowNavigationDeps,
+  FlowNavigationResult,
+  BranchedNavigationDeps,
+  BranchedNavigationResult,
+} from './flowNavigation';
+
 // Help content for properties panel
 export interface HelpContent {
   title: string;
