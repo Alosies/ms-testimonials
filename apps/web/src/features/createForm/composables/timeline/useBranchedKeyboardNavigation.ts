@@ -1,0 +1,197 @@
+/**
+ * Branched Keyboard Navigation
+ *
+ * Branch-aware keyboard navigation for form studio with conditional flows.
+ * Uses useFlowNavigation as the single source of truth for flow structure.
+ *
+ * NAVIGATION BEHAVIOR:
+ *
+ * Shared Steps (before branch point):
+ * - ArrowDown/j: Navigate to next shared step
+ * - ArrowUp/k: Navigate to previous shared step
+ * - At last shared step (branch point): Down enters default branch (testimonial)
+ *
+ * Within a Branch (testimonial or improvement):
+ * - ArrowDown/j: Navigate to next step in current branch
+ * - ArrowUp/k: Navigate to prev step, OR exit to branch point if at first step
+ * - ArrowLeft/h: Switch to testimonial branch (or enter if at branch point)
+ * - ArrowRight/l: Switch to improvement branch (or enter if at branch point)
+ *
+ * The default branch when entering from branch point is 'testimonial'.
+ */
+import { computed } from 'vue';
+import { onKeyStroke } from '@vueuse/core';
+import { isInputFocused } from '@/shared/composables/scrollSnapNavigation/utils';
+import type { BranchedNavigationDeps, BranchedNavigationResult } from '../../models';
+import { useFlowNavigation } from './useFlowNavigation';
+
+export function useBranchedKeyboardNavigation(deps: BranchedNavigationDeps): BranchedNavigationResult {
+  const {
+    steps,
+    selectedStepId,
+    isBranchingEnabled,
+    branchPointIndex,
+    stepsBeforeBranch,
+    testimonialSteps,
+    improvementSteps,
+    selectStepById,
+    setFlowFocus,
+  } = deps;
+
+  // Initialize flow navigation - single source of truth
+  const flowNav = useFlowNavigation({
+    steps,
+    stepsBeforeBranch,
+    testimonialSteps,
+    improvementSteps,
+    isBranchingEnabled,
+    branchPointIndex,
+  });
+
+  // Current step info computed from flow navigation
+  const currentFlow = computed(() => {
+    const stepId = selectedStepId.value;
+    if (!stepId) return null;
+    return flowNav.getStepFlow(stepId);
+  });
+
+  const isAtBranchPoint = computed(() => {
+    const stepId = selectedStepId.value;
+    if (!stepId) return false;
+    return flowNav.isAtBranchPoint(stepId);
+  });
+
+  const isInBranch = computed(() => {
+    const stepId = selectedStepId.value;
+    if (!stepId) return false;
+    return flowNav.isInBranch(stepId);
+  });
+
+  /**
+   * Navigate to a step by ID, updating focus flow if entering a branch.
+   * Uses setFlowFocus (not focusFlow) to avoid auto-selecting the first step.
+   */
+  function navigateToStep(stepId: string | null): void {
+    if (!stepId) return;
+
+    const flow = flowNav.getStepFlow(stepId);
+    if (flow === 'testimonial' || flow === 'improvement') {
+      setFlowFocus(flow);
+    } else {
+      // Clear flow focus when navigating to shared steps
+      setFlowFocus(null);
+    }
+    selectStepById(stepId);
+  }
+
+  /**
+   * Handle Down navigation
+   */
+  function handleKeyDown(e: KeyboardEvent): void {
+    if (isInputFocused()) return;
+
+    const currentId = selectedStepId.value;
+    if (!currentId) return;
+
+    e.preventDefault();
+
+    const nextId = flowNav.getNextStepId(currentId);
+    navigateToStep(nextId);
+  }
+
+  /**
+   * Handle Up navigation
+   */
+  function handleKeyUp(e: KeyboardEvent): void {
+    if (isInputFocused()) return;
+
+    const currentId = selectedStepId.value;
+    if (!currentId) return;
+
+    e.preventDefault();
+
+    const prevId = flowNav.getPrevStepId(currentId);
+    navigateToStep(prevId);
+  }
+
+  /**
+   * Handle Left navigation - Switch to testimonial branch
+   */
+  function handleKeyLeft(e: KeyboardEvent): void {
+    if (isInputFocused()) return;
+    if (!isBranchingEnabled.value) return;
+
+    const currentId = selectedStepId.value;
+    if (!currentId) return;
+
+    // Only handle if we're in a branch or at branch point
+    if (!isInBranch.value && !isAtBranchPoint.value) return;
+
+    e.preventDefault();
+
+    // At branch point: enter testimonial
+    if (isAtBranchPoint.value) {
+      const entryId = flowNav.getBranchEntryStepId('testimonial');
+      navigateToStep(entryId);
+      return;
+    }
+
+    // If already in testimonial, do nothing
+    if (currentFlow.value === 'testimonial') return;
+
+    // Switch from improvement to testimonial (parallel position)
+    const parallelId = flowNav.getParallelStepId(currentId);
+    if (parallelId) {
+      setFlowFocus('testimonial');
+      selectStepById(parallelId);
+    }
+  }
+
+  /**
+   * Handle Right navigation - Switch to improvement branch
+   */
+  function handleKeyRight(e: KeyboardEvent): void {
+    if (isInputFocused()) return;
+    if (!isBranchingEnabled.value) return;
+
+    const currentId = selectedStepId.value;
+    if (!currentId) return;
+
+    // Only handle if we're in a branch or at branch point
+    if (!isInBranch.value && !isAtBranchPoint.value) return;
+
+    e.preventDefault();
+
+    // At branch point: enter improvement
+    if (isAtBranchPoint.value) {
+      const entryId = flowNav.getBranchEntryStepId('improvement');
+      navigateToStep(entryId);
+      return;
+    }
+
+    // If already in improvement, do nothing
+    if (currentFlow.value === 'improvement') return;
+
+    // Switch from testimonial to improvement (parallel position)
+    const parallelId = flowNav.getParallelStepId(currentId);
+    if (parallelId) {
+      setFlowFocus('improvement');
+      selectStepById(parallelId);
+    }
+  }
+
+  // Register keyboard handlers
+  onKeyStroke(['ArrowDown', 'j'], handleKeyDown, { eventName: 'keydown' });
+  onKeyStroke(['ArrowUp', 'k'], handleKeyUp, { eventName: 'keydown' });
+  onKeyStroke(['ArrowLeft', 'h'], handleKeyLeft, { eventName: 'keydown' });
+  onKeyStroke(['ArrowRight', 'l'], handleKeyRight, { eventName: 'keydown' });
+
+  return {
+    // Exposed state for debugging/UI
+    currentFlow,
+    isAtBranchPoint,
+    isInBranch,
+    // Flow navigation methods (for direct use if needed)
+    flowNav,
+  };
+}
