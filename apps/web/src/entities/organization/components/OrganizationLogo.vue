@@ -11,7 +11,7 @@
  * <OrganizationLogo :logo-url="effectiveLogo" size="sm" rounded />
  * ```
  */
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { Icon } from '@testimonials/icons';
 import { ImagePreview } from '@/entities/media';
 
@@ -69,8 +69,13 @@ function handleLoad() {
   hasError.value = false;
 }
 
-// Reset error state when URL changes
+// Normalized logo URL for template usage
 const logoUrlNormalized = computed(() => props.logoUrl ?? '');
+
+// Reset error state when URL changes
+watch(() => props.logoUrl, () => {
+  hasError.value = false;
+});
 </script>
 
 <template>
