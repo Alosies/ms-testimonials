@@ -83,6 +83,12 @@ export interface BranchedNavigationDeps {
   // Actions
   selectStepById: (id: string) => void;
   setFlowFocus: (flow: 'testimonial' | 'improvement' | null) => void;
+
+  // Optional action callbacks for keyboard shortcuts
+  /** Called when E key is pressed on selected step */
+  onEditStep?: (index: number) => void;
+  /** Called when D or Backspace key is pressed on selected step */
+  onRemoveStep?: (index: number) => void;
 }
 
 /**

@@ -36,6 +36,8 @@ export function useBranchedKeyboardNavigation(deps: BranchedNavigationDeps): Bra
     improvementSteps,
     selectStepById,
     setFlowFocus,
+    onEditStep,
+    onRemoveStep,
   } = deps;
 
   // Initialize flow navigation - single source of truth
@@ -65,6 +67,13 @@ export function useBranchedKeyboardNavigation(deps: BranchedNavigationDeps): Bra
     const stepId = selectedStepId.value;
     if (!stepId) return false;
     return flowNav.isInBranch(stepId);
+  });
+
+  // Get index of selected step in main steps array
+  const selectedIndex = computed(() => {
+    const stepId = selectedStepId.value;
+    if (!stepId) return -1;
+    return steps.value.findIndex(s => s.id === stepId);
   });
 
   /**
@@ -180,11 +189,41 @@ export function useBranchedKeyboardNavigation(deps: BranchedNavigationDeps): Bra
     }
   }
 
+  /**
+   * Handle Edit action (E key)
+   */
+  function handleKeyEdit(e: KeyboardEvent): void {
+    if (isInputFocused()) return;
+    if (!onEditStep) return;
+
+    const index = selectedIndex.value;
+    if (index === -1) return;
+
+    e.preventDefault();
+    onEditStep(index);
+  }
+
+  /**
+   * Handle Remove/Delete action (D or Backspace key)
+   */
+  function handleKeyRemove(e: KeyboardEvent): void {
+    if (isInputFocused()) return;
+    if (!onRemoveStep) return;
+
+    const index = selectedIndex.value;
+    if (index === -1) return;
+
+    e.preventDefault();
+    onRemoveStep(index);
+  }
+
   // Register keyboard handlers
   onKeyStroke(['ArrowDown', 'j'], handleKeyDown, { eventName: 'keydown' });
   onKeyStroke(['ArrowUp', 'k'], handleKeyUp, { eventName: 'keydown' });
   onKeyStroke(['ArrowLeft', 'h'], handleKeyLeft, { eventName: 'keydown' });
   onKeyStroke(['ArrowRight', 'l'], handleKeyRight, { eventName: 'keydown' });
+  onKeyStroke(['e'], handleKeyEdit, { eventName: 'keydown' });
+  onKeyStroke(['d', 'Backspace'], handleKeyRemove, { eventName: 'keydown' });
 
   return {
     // Exposed state for debugging/UI

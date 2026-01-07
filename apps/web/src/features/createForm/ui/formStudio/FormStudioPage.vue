@@ -79,6 +79,9 @@ useBranchedKeyboardNavigation({
   improvementSteps: editor.improvementSteps,
   selectStepById: editor.selectStepById,
   setFlowFocus: editor.setFlowFocus,
+  // Action callbacks for E and D keyboard shortcuts
+  onEditStep: editor.handleEditStep,
+  onRemoveStep: editor.handleRemoveStep,
 });
 
 // Track if design config has been loaded for current form
