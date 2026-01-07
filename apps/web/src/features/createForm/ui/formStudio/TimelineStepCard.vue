@@ -5,8 +5,9 @@
  * Displays a step with header, content preview, and action buttons.
  * Uses the SAME shared step card components as the public form for consistency.
  * Uses TimelineConnector for the interactive insert functionality.
+ * Automatically scrolls into view when selected via keyboard navigation.
  */
-import { type CSSProperties, type Component } from 'vue';
+import { type CSSProperties, type Component, ref, watch, nextTick } from 'vue';
 import { Icon } from '@testimonials/icons';
 import { Kbd } from '@testimonials/ui';
 import { useStepSave } from '../../composables/timeline';
@@ -44,6 +45,23 @@ const emit = defineEmits<{
 
 const stepSave = useStepSave();
 
+const cardRef = ref<HTMLElement | null>(null);
+
+// Scroll into view when this card becomes active (keyboard navigation)
+watch(
+  () => props.isActive,
+  async (active) => {
+    if (active && cardRef.value) {
+      await nextTick();
+      cardRef.value.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      });
+    }
+  },
+  { immediate: true },
+);
+
 // Map step types to their shared card components
 const stepCardComponents: Record<StepType, Component> = {
   welcome: WelcomeStepCard,
@@ -67,6 +85,7 @@ function handleInsert(type: StepType) {
 
 <template>
   <div
+    ref="cardRef"
     :data-step-index="index"
     class="timeline-step"
     :class="{
