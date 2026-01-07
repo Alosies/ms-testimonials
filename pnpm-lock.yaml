@@ -23,6 +23,12 @@ importers:
       '@ai-sdk/openai':
         specifier: ^3.0.2
         version: 3.0.2(zod@3.25.76)
+      '@aws-sdk/client-s3':
+        specifier: ^3.800.0
+        version: 3.962.0
+      '@aws-sdk/s3-request-presigner':
+        specifier: ^3.800.0
+        version: 3.962.0
       '@hono/node-server':
         specifier: ^1.13.0
         version: 1.19.7(hono@4.11.3)
@@ -41,9 +47,6 @@ importers:
       '@supabase/supabase-js':
         specifier: ^2.58.0
         version: 2.89.0
-      '@testimonials/media-service':
-        specifier: workspace:*
-        version: link:../packages/libs/media-service
       ai:
         specifier: ^6.0.5
         version: 6.0.5(zod@3.25.76)
@@ -62,6 +65,9 @@ importers:
       jsonwebtoken:
         specifier: ^9.0.2
         version: 9.0.3
+      nanoid:
+        specifier: ^5.0.0
+        version: 5.1.6
       openai:
         specifier: ^4.67.0
         version: 4.104.0(ws@8.18.3)(zod@3.25.76)

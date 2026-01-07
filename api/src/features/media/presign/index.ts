@@ -1,9 +1,8 @@
 import type { Context } from 'hono';
 import { successResponse, errorResponse } from '@/shared/utils/http';
-import { getMediaService } from '@/shared/libs/media';
+import { getMediaService, type EntityType } from '@/shared/libs/media';
 import { createMedia } from '@/entities/media';
 import { env } from '@/shared/config/env';
-import type { EntityType } from '@testimonials/media-service';
 
 /**
  * POST /media/presign

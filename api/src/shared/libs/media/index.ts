@@ -1,9 +1,7 @@
-import {
-  MediaService,
-  S3StorageAdapter,
-  ImageKitCDNAdapter,
-} from '@testimonials/media-service';
 import { env } from '@/shared/config/env';
+import { MediaService } from './core/MediaService';
+import { S3StorageAdapter } from './adapters/s3.adapter';
+import { ImageKitCDNAdapter } from './adapters/imagekit.adapter';
 
 let mediaService: MediaService | null = null;
 
@@ -52,4 +50,21 @@ export function resetMediaService(): void {
   mediaService = null;
 }
 
-export { MediaService } from '@testimonials/media-service';
+// Re-export types and utilities for convenience
+export { MediaService } from './core/MediaService';
+export type { MediaServiceConfig } from './core/MediaService';
+export { S3StorageAdapter } from './adapters/s3.adapter';
+export type { S3AdapterConfig } from './adapters/s3.adapter';
+export { ImageKitCDNAdapter } from './adapters/imagekit.adapter';
+export type { ImageKitConfig } from './adapters/imagekit.adapter';
+export { PathBuilder, pathBuilder } from './core/pathBuilder';
+export type { PathBuilderConfig } from './core/pathBuilder';
+export {
+  validateUploadRequest,
+  getValidationConfig,
+  isValidEntityType,
+  getValidEntityTypes,
+  formatFileSize,
+} from './core/validators';
+export type { ValidationResult } from './core/validators';
+export * from './types';

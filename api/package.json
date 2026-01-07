@@ -12,7 +12,8 @@
     "codegen": "graphql-codegen"
   },
   "dependencies": {
-    "@testimonials/media-service": "workspace:*",
+    "@aws-sdk/client-s3": "^3.800.0",
+    "@aws-sdk/s3-request-presigner": "^3.800.0",
     "@ai-sdk/anthropic": "^3.0.2",
     "@ai-sdk/google": "^3.0.2",
     "@ai-sdk/openai": "^3.0.2",
@@ -28,6 +29,7 @@
     "graphql-request": "^7.1.0",
     "hono": "^4.6.0",
     "jsonwebtoken": "^9.0.2",
+    "nanoid": "^5.0.0",
     "openai": "^4.67.0",
     "zod": "^3.23.0"
   },
