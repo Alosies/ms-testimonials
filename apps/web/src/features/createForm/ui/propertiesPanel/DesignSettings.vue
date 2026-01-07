@@ -4,13 +4,14 @@
  *
  * Allows customization of:
  * - Primary accent color (buttons, links, highlights)
- * - Logo URL (with fallback to organization logo)
+ * - Displays organization logo (read-only, set in Settings)
  */
 import { ref, watch } from 'vue';
 import { Icon } from '@testimonials/icons';
-import { Button, Input, Label } from '@testimonials/ui';
+import { Button, Label } from '@testimonials/ui';
 import { useTimelineEditor } from '../../composables/timeline';
 import { isValidHexColor, normalizeHexColor } from '@/entities/form';
+import { OrganizationLogo } from '@/entities/organization';
 
 const editor = useTimelineEditor();
 
@@ -35,40 +36,6 @@ function handleColorChange(event: Event) {
     editor.updatePrimaryColor(localColor.value);
   }
 }
-
-// Logo URL input
-const logoUrlInput = ref('');
-
-// Sync logo URL input with editor state
-watch(
-  () => editor.logoUrl.value,
-  (newUrl) => {
-    logoUrlInput.value = newUrl ?? '';
-  },
-  { immediate: true }
-);
-
-// Handle logo URL change
-function handleLogoUrlChange() {
-  const url = logoUrlInput.value.trim();
-  editor.updateLogoUrl(url || null);
-}
-
-// Logo preview error handling
-const logoLoadError = ref(false);
-
-function handleLogoError() {
-  logoLoadError.value = true;
-}
-
-function handleLogoLoad() {
-  logoLoadError.value = false;
-}
-
-// Reset logo error when URL changes
-watch(logoUrlInput, () => {
-  logoLoadError.value = false;
-});
 </script>
 
 <template>
@@ -117,68 +84,37 @@ watch(logoUrlInput, () => {
         </div>
       </div>
 
-      <!-- Logo URL -->
+      <!-- Logo -->
       <div>
         <Label class="text-sm mb-2 block">Logo</Label>
 
-        <div class="space-y-2">
-          <div class="flex gap-2">
-            <Input
-              v-model="logoUrlInput"
-              type="url"
-              placeholder="https://example.com/logo.png"
-              class="flex-1 h-9 text-sm"
-              @change="handleLogoUrlChange"
-              @blur="handleLogoUrlChange"
-            />
-            <Button
-              v-if="editor.hasCustomLogo.value"
-              variant="ghost"
-              size="sm"
-              class="h-9 px-2"
-              @click="editor.resetLogoUrl"
-            >
-              <Icon icon="heroicons:x-mark" class="w-4 h-4" />
-            </Button>
+        <!-- Organization Logo Preview -->
+        <div
+          v-if="editor.orgLogoUrl.value"
+          class="flex items-center gap-3 p-3 rounded-lg bg-muted/50 border border-border/50"
+        >
+          <OrganizationLogo
+            :logo-url="editor.orgLogoUrl.value"
+            size="md"
+            :show-placeholder="false"
+          />
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium text-foreground">
+              Organization Logo
+            </p>
+            <p class="text-xs text-muted-foreground">
+              Displayed on all form steps
+            </p>
           </div>
-
-          <!-- Logo preview -->
-          <div
-            v-if="editor.effectiveLogo.value"
-            class="flex items-center gap-3 p-2 rounded-lg bg-muted/50"
-          >
-            <div class="w-12 h-12 flex items-center justify-center bg-white rounded border">
-              <img
-                v-if="!logoLoadError"
-                :src="editor.effectiveLogo.value"
-                alt="Logo preview"
-                class="max-w-full max-h-full object-contain"
-                @error="handleLogoError"
-                @load="handleLogoLoad"
-              />
-              <Icon
-                v-else
-                icon="heroicons:photo"
-                class="w-6 h-6 text-muted-foreground"
-              />
-            </div>
-            <div class="flex-1 min-w-0">
-              <p
-                v-if="editor.isUsingOrgLogo.value"
-                class="text-xs text-muted-foreground"
-              >
-                Using organization logo
-              </p>
-              <p v-else class="text-xs text-muted-foreground truncate">
-                {{ editor.effectiveLogo.value }}
-              </p>
-            </div>
-          </div>
-
-          <p v-else class="text-xs text-muted-foreground">
-            Enter a URL to display your logo on the form.
-          </p>
         </div>
+
+        <!-- No logo message -->
+        <p
+          v-else
+          class="text-xs text-muted-foreground"
+        >
+          Set your organization logo in Settings to display it on forms.
+        </p>
       </div>
 
       <!-- Saving indicator -->
