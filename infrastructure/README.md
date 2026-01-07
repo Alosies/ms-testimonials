@@ -95,5 +95,6 @@ Each environment has its own dedicated AWS account for complete isolation.
 
 See `/docs/infrastructure/` for detailed documentation:
 - [AWS Overview](../docs/infrastructure/aws-overview.md)
+- [AWS Credentials](../docs/infrastructure/aws-credentials.md) - IAM users, local setup
 - [Service Patterns](../docs/infrastructure/service-patterns.md)
 - [Deployment Guide](../docs/infrastructure/deployment-guide.md)

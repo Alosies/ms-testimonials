@@ -10,6 +10,7 @@
 
 **Related ReadMes**:
 - `infra-aws-overview` - AWS account structure
+- `infra-aws-credentials` - AWS credentials setup for local development
 - `infra-service-patterns` - Service naming conventions
 - `infra-deployment-guide` - CDK deployment workflow
 
@@ -22,6 +23,7 @@ AWS infrastructure documentation for the Testimonials project.
 | Document | Description |
 |----------|-------------|
 | [AWS Overview](./aws-overview.md) | Account structure, access patterns, CLI profiles |
+| [AWS Credentials](./aws-credentials.md) | IAM users, local setup, credential management |
 | [Service Patterns](./service-patterns.md) | Naming conventions, S3, Lambda, SQS patterns |
 | [Deployment Guide](./deployment-guide.md) | CDK setup, deployment workflow, troubleshooting |
 
