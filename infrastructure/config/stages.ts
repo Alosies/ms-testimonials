@@ -19,6 +19,8 @@ export interface StageConfig {
   apiBaseUrl: string;
   /** AWS CLI profile to use for deployments */
   profile: string;
+  /** Secret for webhook HMAC signing (from environment or SSM) */
+  webhookSecret?: string;
 }
 
 /**
@@ -33,6 +35,7 @@ export function getStageConfig(stage: Stage): StageConfig {
       bucketName: 'testimonials-dev-uploads',
       apiBaseUrl: process.env.API_BASE_URL || 'http://localhost:3001',
       profile: 'testimonials-dev',
+      webhookSecret: process.env.AWS_LAMBDA_MEDIA_WEBHOOK_SECRET || 'dev-webhook-secret',
     },
     qa: {
       stage: 'qa',
