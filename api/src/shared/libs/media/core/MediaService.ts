@@ -1,40 +1,38 @@
 import type {
   StorageAdapter,
-  CDNAdapter,
   UploadRequest,
   UploadInitResult,
   EntityType,
-  ImageTransforms,
 } from '../types';
 import { PathBuilder } from './pathBuilder';
 import { validateUploadRequest } from './validators';
 
 export interface MediaServiceConfig {
   storageAdapter: StorageAdapter;
-  cdnAdapter: CDNAdapter;
   bucket: string;
   region?: string;
 }
 
 /**
- * MediaService - Main orchestrator for media uploads
+ * MediaService - Main orchestrator for media storage operations
  *
  * Responsibilities:
  * - Generate presigned URLs for direct uploads
  * - Build storage paths with embedded media IDs
  * - Validate upload requests
- * - Generate CDN URLs for serving media
+ * - Storage operations (delete, exists, download URL)
+ *
+ * Note: CDN URL generation is handled by the frontend using ImageKit SDK.
+ * The API only stores the storage_path - frontend builds CDN URLs dynamically.
  */
 export class MediaService {
   private storage: StorageAdapter;
-  private cdn: CDNAdapter;
   private pathBuilder: PathBuilder;
   private bucket: string;
   private region?: string;
 
   constructor(config: MediaServiceConfig) {
     this.storage = config.storageAdapter;
-    this.cdn = config.cdnAdapter;
     this.bucket = config.bucket;
     this.region = config.region;
     this.pathBuilder = new PathBuilder();
@@ -92,19 +90,6 @@ export class MediaService {
       expiresAt: presign.expiresAt,
       headers: presign.headers,
     };
-  }
-
-  /**
-   * Get a CDN URL for a media file
-   *
-   * @param storagePath - The storage path of the media file
-   * @param transforms - Optional image transforms
-   */
-  getMediaUrl(storagePath: string, transforms?: ImageTransforms): string {
-    if (transforms && Object.keys(transforms).length > 0) {
-      return this.cdn.getTransformUrl(storagePath, transforms);
-    }
-    return this.cdn.getOriginalUrl(storagePath);
   }
 
   /**

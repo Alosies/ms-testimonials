@@ -284,22 +284,24 @@ COMMENT ON COLUMN public.media.entity_id IS
    NULL for pending uploads not yet linked to an entity.';
 ```
 
-### CDN Configuration (Environment Variables)
+### CDN Configuration (Frontend Only)
 
-CDN provider configuration is managed via environment variables, not stored per-record:
+CDN URL generation is a **frontend responsibility**. The API stores only the `storage_path` - the frontend uses ImageKit's Vue SDK to generate transformed URLs.
 
 ```bash
-# Frontend (.env)
-VITE_CDN_PROVIDER=imagekit
-VITE_CDN_BASE_URL=https://ik.imagekit.io/your_imagekit_id
-VITE_CDN_PATH_PREFIX=/testimonials
-
-# API (.env) - if server-side URL generation needed
-CDN_BASE_URL=https://ik.imagekit.io/your_imagekit_id
-CDN_PATH_PREFIX=/testimonials
+# Frontend (.env) - CDN configuration lives here
+VITE_IMAGEKIT_URL_ENDPOINT=https://ik.imagekit.io/your_imagekit_id
+VITE_IMAGEKIT_PUBLIC_KEY=public_xxxx  # Optional, for uploads only
 ```
 
-**Rationale**: CDN configuration is deployment-specific, not per-file. The `storage_path` is the portable key - changing CDNs only requires updating environment variables.
+**Why Frontend CDN URL Generation?**
+1. **Lightweight** - URL construction is simple string building, no server needed
+2. **Responsive images** - Frontend knows device size, can request optimal dimensions
+3. **Reduced backend load** - API doesn't need to generate URLs for every image
+4. **Dynamic** - Transforms can change based on UI context without API calls
+5. **SDK support** - ImageKit provides Vue SDK with `<IKImage>` component and `buildSrc()` utility
+
+**Rationale**: CDN configuration is deployment-specific, not per-file. The `storage_path` is the portable key - changing CDNs only requires updating frontend environment variables.
 
 ### Key Fields for Portability
 
@@ -374,44 +376,57 @@ const dimensions = imageSize(buffer);
 
 > **Future Extension (Videos):** The schema includes `duration_seconds` and `thumbnail_path` fields for future video support. Video metadata extraction requires a different architecture (async processing queue + ffprobe) and will be designed separately when video testimonials are implemented.
 
-### Adapter Pattern
+### API Storage Adapter Pattern
+
+The API handles storage operations only. CDN URL generation is handled by the frontend.
 
 ```
-packages/libs/media-service/
-├── src/
-│   ├── adapters/
-│   │   ├── storage/
-│   │   │   ├── types.ts              # StorageAdapter interface
-│   │   │   ├── s3.adapter.ts         # AWS S3 implementation
-│   │   │   └── index.ts
-│   │   ├── cdn/
-│   │   │   ├── types.ts              # CDNAdapter interface
-│   │   │   ├── imagekit.adapter.ts   # ImageKit implementation
-│   │   │   └── index.ts
-│   │   └── index.ts
-│   ├── core/
-│   │   ├── MediaService.ts           # Orchestrator
-│   │   ├── validators.ts
-│   │   └── pathBuilder.ts
-│   └── index.ts
+api/src/shared/libs/media/
+├── adapters/
+│   └── s3.adapter.ts         # AWS S3 storage implementation
+├── core/
+│   ├── MediaService.ts       # Storage orchestrator (no CDN)
+│   ├── validators.ts         # Upload validation
+│   └── pathBuilder.ts        # S3 path generation
+├── types.ts                  # Storage types only
+└── index.ts
 ```
 
-**Storage Adapter Interface**:
+**Storage Adapter Interface** (API):
 ```typescript
 interface StorageAdapter {
   generatePresignedUploadUrl(params: PresignParams): Promise<PresignedUrl>;
-  generatePresignedDownloadUrl(path: string, expiresIn?: number): Promise<string>;
-  deleteObject(path: string): Promise<void>;
-  getObjectMetadata(path: string): Promise<ObjectMetadata>;
+  generatePresignedDownloadUrl(bucket: string, key: string, expiresIn?: number): Promise<string>;
+  deleteObject(bucket: string, key: string): Promise<void>;
+  getObjectMetadata(bucket: string, key: string): Promise<ObjectMetadata>;
+  objectExists(bucket: string, key: string): Promise<boolean>;
 }
 ```
 
-**CDN Adapter Interface**:
+### Frontend CDN Integration
+
+The frontend uses ImageKit's Vue SDK for URL generation with transforms:
+
+```
+apps/web/src/entities/media/
+├── adapters/
+│   └── imagekit.ts           # buildMediaUrl() using @imagekit/javascript
+├── composables/
+│   └── useMediaUrl.ts        # Composable wrapping ImageKit SDK
+└── components/
+    └── IKImage.vue           # Wrapper around ImageKit's Image component
+```
+
+**Frontend URL Generation** (using ImageKit SDK):
 ```typescript
-interface CDNAdapter {
-  getTransformUrl(storagePath: string, transforms: ImageTransforms): string;
-  getOriginalUrl(storagePath: string): string;
-}
+import { buildSrc } from '@imagekit/javascript';
+
+// Generate transformed URL from storage_path
+const imageUrl = buildSrc({
+  urlEndpoint: import.meta.env.VITE_IMAGEKIT_URL_ENDPOINT,
+  src: media.storagePath,  // From GraphQL
+  transformation: [{ width: 200, height: 200, focus: 'auto' }]
+});
 ```
 
 ### Lambda Function
@@ -479,16 +494,49 @@ tr=w-300,h-200,c-maintain_ratio,fo-auto,f-webp
 ```
 apps/web/src/entities/media/
 ├── models/
-│   ├── media.ts          # Media, MediaStatus types
+│   ├── media.ts          # Media, MediaStatus types (from GraphQL)
 │   └── upload.ts         # UploadProgress, UploadConfig types
 ├── composables/
-│   ├── useUploadMedia.ts # Main upload logic
-│   └── useMediaUrl.ts    # URL generation with transforms
+│   ├── useUploadMedia.ts # Main upload logic (presign + S3 upload)
+│   └── useMediaUrl.ts    # CDN URL generation using ImageKit SDK
 ├── components/
 │   ├── MediaUploader.vue # Drag-drop upload component
 │   └── ImagePreview.vue  # Image with transform support
 └── adapters/
-    └── imagekit.ts       # Client-side URL builder
+    └── imagekit.ts       # buildMediaUrl() wrapper for ImageKit SDK
+```
+
+**ImageKit Vue SDK Integration**:
+```bash
+pnpm add @imagekit/javascript  # Core SDK for URL generation
+# Or use the Vue-specific SDK:
+pnpm add @imagekit/vue
+```
+
+**useMediaUrl Composable Pattern**:
+```typescript
+// apps/web/src/entities/media/composables/useMediaUrl.ts
+import { buildSrc } from '@imagekit/javascript';
+
+export function useMediaUrl() {
+  const urlEndpoint = import.meta.env.VITE_IMAGEKIT_URL_ENDPOINT;
+
+  function getImageUrl(storagePath: string, options?: {
+    width?: number;
+    height?: number;
+    quality?: number;
+  }) {
+    return buildSrc({
+      urlEndpoint,
+      src: storagePath,
+      transformation: [
+        { width: options?.width, height: options?.height, quality: options?.quality }
+      ].filter(t => Object.values(t).some(v => v !== undefined))
+    });
+  }
+
+  return { getImageUrl };
+}
 ```
 
 ## Consequences
@@ -556,29 +604,31 @@ apps/web/src/entities/media/
 
 ## Implementation Phases
 
-### Phase 1: Foundation
-- [ ] Create `media` table migration
-- [ ] Create `packages/libs/media-service` with adapter interfaces
-- [ ] Implement S3 adapter
-- [ ] Implement ImageKit adapter
-- [ ] Add presigned URL API endpoint
+### Phase 1: Foundation (Database + API Storage)
+- [x] Create `media_entity_types` lookup table migration
+- [x] Create `media` table migration
+- [x] Inline S3 storage adapter in API (`api/src/shared/libs/media/`)
+- [x] Add presigned URL API endpoint (`POST /media/presign`)
+- [x] Add Hasura metadata for media tables
 
 ### Phase 2: Lambda & Webhook
-- [ ] Create Lambda function code
-- [ ] Deploy Lambda with S3 trigger
-- [ ] Implement webhook endpoint with HMAC validation
+- [x] Create Lambda function code (`infrastructure/lambdas/media-validator/`)
+- [x] Deploy Lambda with S3 trigger via CDK
+- [x] Implement webhook endpoint with HMAC validation
 - [ ] Test end-to-end flow
 
-### Phase 3: Frontend
-- [ ] Create media entity structure
-- [ ] Implement `useUploadMedia` composable
+### Phase 3: Frontend (CDN Integration)
+- [ ] Add ImageKit Vue SDK (`@imagekit/javascript`)
+- [ ] Create `useMediaUrl` composable for CDN URL generation
+- [ ] Create `useUploadMedia` composable for presign + upload flow
 - [ ] Build `MediaUploader` component
+- [ ] Build `ImagePreview` component with transform support
 - [ ] Integrate with organization logo form
 
-### Phase 4: Production
-- [ ] Hasura permissions for media table
+### Phase 4: Production Hardening
+- [ ] Hasura permissions for media table (RLS by organization)
 - [ ] Quota tracking per organization
-- [ ] Orphan cleanup job
+- [ ] Orphan cleanup job (delete S3 files for failed/deleted records)
 - [ ] Monitoring and alerts
 
 ## References

@@ -3,9 +3,33 @@
 > Provider-agnostic image upload with AWS S3 storage and ImageKit CDN transformations.
 
 **ADR:** `docs/adr/004-media-upload-architecture.md`
-**Status:** Proposed
+**Status:** In Progress
 **Created:** January 5, 2026
+**Updated:** January 7, 2026
 **Scope:** Images only (architecture extensible for future video support)
+
+---
+
+## Architectural Update (2026-01-07)
+
+**Key Change:** CDN URL generation moved to **frontend only**.
+
+### Previous Approach (Superseded)
+- Shared `@testimonials/media-service` package with both S3 and ImageKit adapters
+- API imported package for presign + CDN URL generation
+
+### Current Approach
+- **API**: Storage operations inlined in `api/src/shared/libs/media/` (S3 adapter, validators, path builder)
+- **Frontend**: ImageKit Vue SDK (`@imagekit/javascript`) for CDN URL generation
+- **Database**: Stores only `storage_path` - frontend builds CDN URLs dynamically
+
+### Rationale
+1. ImageKit recommends client-side URL generation for SPAs
+2. Reduces API complexity and backend load
+3. Enables responsive images based on device context
+4. No workspace package dependency issues during deployment
+
+See ADR-004 for full rationale.
 
 ---
 
@@ -59,16 +83,16 @@ Implement a modular image upload system using presigned URLs for direct browser-
 └─────────────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                              DISPLAY FLOW                                    │
+│                        DISPLAY FLOW (Frontend CDN)                           │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                              │
 │   ┌──────────┐    1. Query       ┌──────────┐    2. Get         ┌────────┐ │
 │   │  Browser │ ──────────────▶   │  Hasura  │ ──────────────▶   │ Media  │ │
-│   │  (Vue)   │    Media          │  GraphQL │    Record         │ Table  │ │
+│   │  (Vue)   │    Media          │  GraphQL │    storagePath    │ Table  │ │
 │   └──────────┘                   └──────────┘                   └────────┘ │
 │        │                                                                    │
-│        │ 3. Build CDN URL                                                   │
-│        │    (ImageKit Adapter)                                              │
+│        │ 3. Build CDN URL (Frontend)                                        │
+│        │    useMediaUrl() → ImageKit SDK                                    │
 │        ▼                                                                    │
 │   ┌──────────┐    4. Request     ┌──────────┐    5. Fetch       ┌────────┐ │
 │   │  <img>   │ ──────────────▶   │ ImageKit │ ──────────────▶   │  AWS   │ │

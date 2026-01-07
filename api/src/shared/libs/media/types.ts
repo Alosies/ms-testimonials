@@ -42,32 +42,10 @@ export interface StorageAdapter {
 }
 
 // ============================================================
-// CDN ADAPTER TYPES
-// ============================================================
-
-export interface ImageTransforms {
-  width?: number;
-  height?: number;
-  fit?: 'cover' | 'contain' | 'fill' | 'inside' | 'outside';
-  format?: 'auto' | 'webp' | 'avif' | 'jpg' | 'png';
-  quality?: number;
-  blur?: number;
-  focus?: 'auto' | 'face' | 'center';
-  cropMode?: 'maintain_ratio' | 'force' | 'at_max' | 'at_least';
-}
-
-export interface CDNConfig {
-  baseUrl: string;
-  pathPrefix?: string;
-}
-
-export interface CDNAdapter {
-  getTransformUrl(storagePath: string, transforms?: ImageTransforms): string;
-  getOriginalUrl(storagePath: string): string;
-}
-
-// ============================================================
 // ENTITY TYPES & VALIDATION CONFIG
+// ============================================================
+// Note: CDN URL generation is handled by frontend using ImageKit SDK.
+// The API only handles storage operations (presign, delete, metadata).
 // ============================================================
 
 export type EntityType =
