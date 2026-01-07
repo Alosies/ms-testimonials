@@ -12,6 +12,7 @@ import testimonialRoutes from '@/routes/testimonials';
 import formRoutes from '@/routes/forms';
 import widgetRoutes from '@/routes/widgets';
 import aiRoutes from '@/routes/ai';
+import mediaRoutes from '@/routes/media';
 
 const app = new OpenAPIHono();
 
@@ -54,6 +55,7 @@ app.route('/testimonials', testimonialRoutes);
 app.route('/forms', formRoutes);
 app.route('/widgets', widgetRoutes);
 app.route('/ai', aiRoutes);
+app.route('/media', mediaRoutes);
 
 // OpenAPI Documentation
 app.doc('/openapi.json', {
@@ -93,6 +95,14 @@ app.doc('/openapi.json', {
     {
       name: 'AI',
       description: 'AI-powered testimonial assembly',
+    },
+    {
+      name: 'Media',
+      description: 'Media upload and management',
+    },
+    {
+      name: 'Webhooks',
+      description: 'Internal webhook endpoints',
     },
     {
       name: 'System',

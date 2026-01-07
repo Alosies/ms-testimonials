@@ -38,4 +38,19 @@ export const env = {
 
   // CORS - Allow all worktree ports (3000 main, 3001 yellow, 3002 green, 3003 blue)
   CORS_ALLOWED_ORIGINS: getEnvVar('CORS_ALLOWED_ORIGINS', 'http://localhost:3000,http://localhost:3001,http://localhost:3002,http://localhost:3003'),
+
+  // AWS S3 (Media Upload)
+  // Credentials: Use AWS_PROFILE for local dev, or explicit keys for production
+  AWS_PROFILE: getEnvVar('AWS_PROFILE', ''),
+  AWS_REGION: getEnvVar('AWS_REGION', 'ap-south-1'),
+  AWS_ACCESS_KEY_ID: getEnvVar('AWS_ACCESS_KEY_ID', ''),
+  AWS_SECRET_ACCESS_KEY: getEnvVar('AWS_SECRET_ACCESS_KEY', ''),
+  S3_MEDIA_BUCKET: getEnvVar('S3_MEDIA_BUCKET', 'testimonials-dev-uploads'),
+
+  // CDN (ImageKit)
+  CDN_BASE_URL: getEnvVar('CDN_BASE_URL', ''),
+  CDN_PATH_PREFIX: getEnvVar('CDN_PATH_PREFIX', ''),
+
+  // AWS Lambda Media Webhook (Lambda uses this secret to authenticate callbacks)
+  AWS_LAMBDA_MEDIA_WEBHOOK_SECRET: getEnvVar('AWS_LAMBDA_MEDIA_WEBHOOK_SECRET', 'dev-webhook-secret'),
 };
