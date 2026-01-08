@@ -1,20 +1,6 @@
 /**
  * Flow Metadata Types
- * Type definitions for flow styling metadata
+ * Re-exported from shared layer for backwards compatibility
+ * @see @/shared/stepCards/models/flowMetadata
  */
-
-import type { FlowMembership } from '@/shared/stepCards/models';
-
-/**
- * Metadata for each flow type (used in UI)
- */
-export interface FlowMetadata {
-  id: Exclude<FlowMembership, 'shared'>;
-  label: string;
-  description: string;
-  colorClass: string;
-  bgClass: string;
-  borderClass: string;
-  dotClass: string;
-  icon: string;
-}
+export type { FlowMetadata } from '@/shared/stepCards';
