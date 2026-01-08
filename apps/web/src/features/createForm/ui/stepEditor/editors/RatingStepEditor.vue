@@ -15,6 +15,7 @@ import {
 import { Icon } from '@testimonials/icons';
 import type { FormStep, LinkedQuestion } from '@/shared/stepCards';
 import { FLOW_METADATA } from '@/entities/form';
+import { useDisableBranchingModal } from '@/shared/widgets';
 import { useTimelineEditor } from '../../../composables/timeline';
 
 interface Props {
@@ -28,6 +29,7 @@ const emit = defineEmits<{
 }>();
 
 const editor = useTimelineEditor();
+const { showDisableBranchingModal } = useDisableBranchingModal();
 
 // Get current question data
 const question = computed(() => props.step.question);
@@ -49,7 +51,39 @@ function handleBranchingToggle(enabled: boolean) {
   if (enabled) {
     editor.enableBranching(props.step.id, 4);
   } else {
-    editor.disableBranching();
+    // Check if there are any branched steps
+    const testimonialCount = editor.testimonialSteps.value.length;
+    const improvementCount = editor.improvementSteps.value.length;
+
+    if (testimonialCount === 0 && improvementCount === 0) {
+      // No branched steps, disable directly
+      editor.disableBranching();
+      return;
+    }
+
+    // Show confirmation modal
+    showDisableBranchingModal({
+      context: {
+        testimonialStepCount: testimonialCount,
+        improvementStepCount: improvementCount,
+      },
+      onChoice: (choice) => {
+        switch (choice) {
+          case 'keep-testimonial':
+            editor.disableBranchingKeepTestimonial();
+            break;
+          case 'keep-improvement':
+            editor.disableBranchingKeepImprovement();
+            break;
+          case 'delete-all':
+            editor.disableBranchingDeleteAll();
+            break;
+          case 'cancel':
+            // Do nothing
+            break;
+        }
+      },
+    });
   }
 }
 

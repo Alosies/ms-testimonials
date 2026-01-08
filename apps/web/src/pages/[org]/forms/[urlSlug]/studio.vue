@@ -11,6 +11,7 @@ import { definePage } from 'unplugin-vue-router/runtime';
 import { FormStudioPage } from '@/features/createForm/ui';
 import { extractEntityIdFromSlug, createPublicFormUrl } from '@/shared/urls';
 import { useGetForm } from '@/entities/form';
+import { DisableBranchingModal } from '@/shared/widgets';
 
 definePage({
   meta: {
@@ -55,4 +56,6 @@ function handlePublish() {
     @preview="handlePreview"
     @publish="handlePublish"
   />
+  <!-- Disable branching confirmation modal (scoped to Form Studio) -->
+  <DisableBranchingModal />
 </template>
