@@ -39,7 +39,7 @@ export const useTimelineEditor = createSharedComposable(() => {
   const { steps, originalSteps, isDirty, hasSteps, setStepsCore, markClean, markStepSaved, markStepSavedByOrder, getStepById, resetStepState } = stepState;
 
   const selection = useTimelineSelection({ steps });
-  const { selectedIndex, selectedStep, canGoNext, canGoPrev, selectStep, selectStepById, resetSelection } = selection;
+  const { selectedIndex, selectedStep, canGoNext, canGoPrev, selectStep: selectStepCore, selectStepById: selectStepByIdCore, resetSelection } = selection;
 
   const stepCrud = useTimelineStepCrud({ steps, formId: currentFormId, formContext });
 
@@ -47,10 +47,53 @@ export const useTimelineEditor = createSharedComposable(() => {
     steps,
     originalSteps,
     formId: currentFormId,
-    selectStepById,
+    selectStepById: selectStepByIdCore,
   });
 
   const design = useTimelineDesignConfig({ formId: currentFormId });
+
+  // ============================================
+  // Selection with Flow Focus Sync
+  // ============================================
+
+  /**
+   * Select a step by index, automatically syncing flow focus for branched steps.
+   * This ensures FlowStepCard scrolls into view when selected from sidebar.
+   */
+  function selectStep(index: number) {
+    selectStepCore(index);
+    syncFlowFocusForSelectedStep(index);
+  }
+
+  /**
+   * Select a step by ID, automatically syncing flow focus for branched steps.
+   */
+  function selectStepById(id: string) {
+    selectStepByIdCore(id);
+    const index = steps.value.findIndex(s => s.id === id);
+    if (index !== -1) {
+      syncFlowFocusForSelectedStep(index);
+    }
+  }
+
+  /**
+   * Sync flow focus based on the selected step's flowMembership.
+   * Called after selection to ensure branched steps properly scroll into view.
+   */
+  function syncFlowFocusForSelectedStep(index: number) {
+    const step = steps.value[index];
+    if (!step || !branching.isBranchingEnabled.value) {
+      branching.setFlowFocus(null);
+      return;
+    }
+
+    const membership = step.flowMembership;
+    if (membership === 'testimonial' || membership === 'improvement') {
+      branching.setFlowFocus(membership);
+    } else {
+      branching.setFlowFocus(null);
+    }
+  }
 
   // ============================================
   // Form ID & Context Management
