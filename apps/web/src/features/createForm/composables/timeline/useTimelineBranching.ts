@@ -3,12 +3,20 @@
  *
  * Handles conditional flow branching based on rating threshold.
  * Extracted from useTimelineEditor for maintainability.
+ *
+ * This composable orchestrates smaller modules:
+ * - useBranchingDisable: Disable operations with different retention strategies
+ * - useBranchingFlowFocus: Flow focus and expansion UI state
+ * - useBranchingDetection: Auto-detect branching from loaded steps
  */
 import { ref, computed, type Ref } from 'vue';
 import type { FormStep, StepType, FlowMembership } from '@/shared/stepCards';
 import type { BranchingConfig } from '@/entities/form';
 import { DEFAULT_BRANCHING_CONFIG } from '@/entities/form';
 import { generateTempId, reorderSteps } from './useStepOperations';
+import { useBranchingDisable } from './useBranchingDisable';
+import { useBranchingFlowFocus } from './useBranchingFlowFocus';
+import { useBranchingDetection } from './useBranchingDetection';
 
 interface BranchingDeps {
   steps: Ref<FormStep[]>;
@@ -33,8 +41,6 @@ export function useTimelineBranching(deps: BranchingDeps) {
   // State
   // ============================================
   const branchingConfig = ref<BranchingConfig>({ ...DEFAULT_BRANCHING_CONFIG });
-  const currentFlowFocus = ref<'testimonial' | 'improvement' | null>(null);
-  const expandedFlow = ref<'testimonial' | 'improvement' | null>(null);
 
   // ============================================
   // Computed
@@ -71,6 +77,30 @@ export function useTimelineBranching(deps: BranchingDeps) {
   });
 
   // ============================================
+  // Compose Sub-Modules
+  // ============================================
+
+  // Flow focus and expansion UI state
+  const flowFocus = useBranchingFlowFocus({
+    testimonialSteps,
+    improvementSteps,
+    selectStepById,
+  });
+
+  // Disable operations (needs currentFlowFocus from flowFocus)
+  const disableOps = useBranchingDisable({
+    steps,
+    originalSteps,
+    branchingConfig,
+    currentFlowFocus: flowFocus.currentFlowFocus,
+  });
+
+  // Detection logic
+  const detection = useBranchingDetection({
+    branchingConfig,
+  });
+
+  // ============================================
   // Operations
   // ============================================
 
@@ -101,28 +131,6 @@ export function useTimelineBranching(deps: BranchingDeps) {
     });
 
     addDefaultImprovementSteps();
-  }
-
-  function disableBranching() {
-    branchingConfig.value = { ...DEFAULT_BRANCHING_CONFIG };
-
-    // Remove improvement flow steps
-    const filtered = steps.value.filter(s => s.flowMembership !== 'improvement');
-    steps.value.length = 0;
-    steps.value.push(...filtered);
-
-    // Set all remaining as shared and update modification state
-    steps.value.forEach(step => {
-      if (step.flowMembership !== 'shared') {
-        step.flowMembership = 'shared';
-      }
-      // Update isModified based on whether current state differs from original
-      // This resets isModified to false when step returns to original state
-      step.isModified = hasFlowMembershipChanged(step, originalSteps.value);
-    });
-
-    reorderSteps(steps.value);
-    currentFlowFocus.value = null;
   }
 
   function setBranchingThreshold(threshold: number) {
@@ -210,56 +218,11 @@ export function useTimelineBranching(deps: BranchingDeps) {
     return newStep;
   }
 
-  /**
-   * Set flow focus AND select the first step of that flow.
-   * Used for UI buttons/interactions that want to jump to a flow.
-   */
-  function focusFlow(flow: 'testimonial' | 'improvement') {
-    currentFlowFocus.value = flow;
-    const flowSteps = flow === 'testimonial' ? testimonialSteps.value : improvementSteps.value;
-    if (flowSteps.length > 0) {
-      selectStepById(flowSteps[0].id);
-    }
-  }
-
-  /**
-   * Set flow focus WITHOUT selecting a step.
-   * Used for keyboard navigation where selection is handled separately.
-   */
-  function setFlowFocus(flow: 'testimonial' | 'improvement' | null) {
-    currentFlowFocus.value = flow;
-  }
-
-  function switchFlow() {
-    if (currentFlowFocus.value === 'testimonial') {
-      focusFlow('improvement');
-    } else if (currentFlowFocus.value === 'improvement') {
-      focusFlow('testimonial');
-    }
-  }
-
-  function expandCurrentFlow() {
-    if (currentFlowFocus.value) {
-      expandedFlow.value = currentFlowFocus.value;
-    }
-  }
-
-  function collapseFlow() {
-    expandedFlow.value = null;
-  }
-
-  function setExpandedFlow(flow: 'testimonial' | 'improvement' | null) {
-    expandedFlow.value = flow;
-    if (flow) {
-      focusFlow(flow);
-    }
-  }
-
   return {
     // State
     branchingConfig,
-    currentFlowFocus,
-    expandedFlow,
+    currentFlowFocus: flowFocus.currentFlowFocus,
+    expandedFlow: flowFocus.expandedFlow,
 
     // Computed
     isBranchingEnabled,
@@ -273,14 +236,18 @@ export function useTimelineBranching(deps: BranchingDeps) {
     // Operations
     setBranchingConfig,
     enableBranching,
-    disableBranching,
+    disableBranching: disableOps.disableBranching,
+    disableBranchingKeepTestimonial: disableOps.disableBranchingKeepTestimonial,
+    disableBranchingKeepImprovement: disableOps.disableBranchingKeepImprovement,
+    disableBranchingDeleteAll: disableOps.disableBranchingDeleteAll,
     setBranchingThreshold,
     addStepToFlow,
-    focusFlow,
-    setFlowFocus,
-    switchFlow,
-    expandCurrentFlow,
-    collapseFlow,
-    setExpandedFlow,
+    focusFlow: flowFocus.focusFlow,
+    setFlowFocus: flowFocus.setFlowFocus,
+    switchFlow: flowFocus.switchFlow,
+    expandCurrentFlow: flowFocus.expandCurrentFlow,
+    collapseFlow: flowFocus.collapseFlow,
+    setExpandedFlow: flowFocus.setExpandedFlow,
+    detectBranchingFromSteps: detection.detectBranchingFromSteps,
   };
 }
