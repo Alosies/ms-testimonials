@@ -77,13 +77,30 @@ stash_changes() {
   local wt="$1"
   local branch="$2"
 
-  # Check if there are changes to stash
-  if git -C "$wt" diff --quiet && git -C "$wt" diff --cached --quiet; then
+  # Check if there are changes to stash (tracked changes OR untracked files)
+  local has_tracked_changes=false
+  local has_untracked_files=false
+
+  if ! git -C "$wt" diff --quiet || ! git -C "$wt" diff --cached --quiet; then
+    has_tracked_changes=true
+  fi
+
+  # Check for untracked files (excluding ignored files)
+  if [ -n "$(git -C "$wt" ls-files --others --exclude-standard)" ]; then
+    has_untracked_files=true
+  fi
+
+  if [ "$has_tracked_changes" = false ] && [ "$has_untracked_files" = false ]; then
     return 1  # Nothing to stash
   fi
 
   log_info "Stashing uncommitted changes in $branch..."
-  if git -C "$wt" stash push -m "sync-worktrees: auto-stash before rebase"; then
+  if [ "$has_untracked_files" = true ]; then
+    log_detail "Including untracked files in stash"
+  fi
+
+  # Use -u to include untracked files (prevents them from being lost during rebase)
+  if git -C "$wt" stash push -u -m "sync-worktrees: auto-stash before rebase"; then
     mark_stashed "$wt"
     log_success "Changes stashed"
     return 0
@@ -220,6 +237,36 @@ echo ""
 log_info "Main worktree: $MAIN_WORKTREE"
 log_info "Target branch: $DEV_BRANCH"
 log_info "Worktrees to sync: ${#WORKTREES[@]}"
+
+# CRITICAL: Fetch from remote to ensure we have latest state
+log_section "Fetching from remote"
+log_info "Running: git fetch origin"
+if git -C "$MAIN_WORKTREE" fetch origin; then
+  log_success "Fetched latest from origin"
+
+  # Check if local dev is behind origin/dev (someone pushed directly to remote)
+  ORIGIN_AHEAD=$(git -C "$MAIN_WORKTREE" rev-list --count "$DEV_BRANCH"..origin/"$DEV_BRANCH" 2>/dev/null || echo "0")
+  if [ "$ORIGIN_AHEAD" != "0" ]; then
+    log_warning "origin/$DEV_BRANCH is $ORIGIN_AHEAD commit(s) ahead of local $DEV_BRANCH"
+    log_info "Pulling remote changes into local $DEV_BRANCH first..."
+
+    # Fast-forward local dev to origin/dev if possible
+    if git -C "$MAIN_WORKTREE" merge origin/"$DEV_BRANCH" --ff-only 2>/dev/null; then
+      log_success "Updated local $DEV_BRANCH to match origin"
+    else
+      log_error "Cannot fast-forward local $DEV_BRANCH to origin/$DEV_BRANCH"
+      log_error "This could happen if local dev has diverged. Manual intervention required."
+      log_detail "Options:"
+      log_detail "  1. git merge origin/$DEV_BRANCH (merge remote changes)"
+      log_detail "  2. git rebase origin/$DEV_BRANCH (rebase local onto remote)"
+      log_detail "  3. Investigate the divergence manually"
+      exit 1
+    fi
+  fi
+else
+  log_warning "Failed to fetch from origin - continuing with local state"
+  log_warning "⚠️  Remote changes won't be considered - work may be lost on push!"
+fi
 if [ "$FORCE_PUSH" = true ]; then
   log_warning "Force push enabled - will push all branches to remote"
   echo ""
@@ -250,7 +297,17 @@ log_success "Main worktree is clean"
 for wt in "${WORKTREES[@]}"; do
   if [ -d "$wt" ]; then
     BRANCH=$(git -C "$wt" rev-parse --abbrev-ref HEAD)
+    has_tracked_changes=false
+    has_untracked_files=false
+
     if ! git -C "$wt" diff --quiet || ! git -C "$wt" diff --cached --quiet; then
+      has_tracked_changes=true
+    fi
+    if [ -n "$(git -C "$wt" ls-files --others --exclude-standard)" ]; then
+      has_untracked_files=true
+    fi
+
+    if [ "$has_tracked_changes" = true ] || [ "$has_untracked_files" = true ]; then
       log_warning "$BRANCH has uncommitted changes (will stash before rebase)"
       mark_dirty "$wt"
       git -C "$wt" status --short | head -5 | while read -r line; do
