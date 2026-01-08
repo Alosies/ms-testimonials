@@ -54,7 +54,7 @@ export function useCurrentContext() {
           id: newOrg.id,
           name: newOrg.name,
           slug: newOrg.slug,
-          logoUrl: newOrg.logo_url ?? null,
+          logoUrl: newOrg.logo?.storage_path ?? null,
           setupStatus: newOrg.setup_status as 'pending_setup' | 'completed',
         };
         contextStore.setCurrentOrganization(org);

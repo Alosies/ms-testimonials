@@ -112,7 +112,7 @@ const designConfig = computed(() => {
 });
 
 // Get organization logo
-const orgLogoUrl = computed(() => form.value?.organization?.logo_url ?? null);
+const orgLogoUrl = computed(() => form.value?.organization?.logo?.storage_path ?? null);
 
 // Primary color in HSL format for card content
 const primaryColorHsl = computed(() => {
