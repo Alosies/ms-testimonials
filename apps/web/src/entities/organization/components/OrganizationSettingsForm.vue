@@ -25,7 +25,8 @@ const emit = defineEmits<{
 // Form state
 const name = ref(props.organization.name);
 const slug = ref(props.organization.slug);
-const logoValue = ref(props.organization.logo_url ?? '');
+const logoValue = ref(props.organization.logo?.storage_path ?? '');
+const logoId = ref<string | null>(props.organization.logo_id ?? null);
 
 // Child component refs for validation
 const nameFieldRef = useTemplateRef<InstanceType<typeof OrganizationNameField>>('nameField');
@@ -42,8 +43,8 @@ const canEditSlug = computed(() => props.organization.setup_status === 'pending_
 const hasChanges = computed(() => {
   const nameChanged = name.value !== props.organization.name;
   const slugChanged = canEditSlug.value && slug.value !== props.organization.slug;
-  const logoChanged = logoValue.value !== (props.organization.logo_url ?? '');
-  return nameChanged || slugChanged || logoChanged;
+  const logoIdChanged = logoId.value !== (props.organization.logo_id ?? null);
+  return nameChanged || slugChanged || logoIdChanged;
 });
 
 // Form validity - check child component errors
@@ -81,7 +82,7 @@ async function handleSave() {
   try {
     const changes: Record<string, unknown> = {
       name: name.value.trim(),
-      logo_url: logoValue.value.trim() || null,
+      logo_id: logoId.value || null,
     };
 
     // Only include slug if editable
@@ -134,6 +135,7 @@ async function handleSave() {
         <OrganizationLogoUpload
           ref="logoUpload"
           v-model="logoValue"
+          v-model:media-id="logoId"
           :organization-id="organization.id"
         />
       </form>

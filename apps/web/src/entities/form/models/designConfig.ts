@@ -10,7 +10,7 @@
 export interface FormDesignConfig {
   /** Primary accent color in hex format (e.g., "#0d9488"). Null uses app default. */
   primaryColor: string | null;
-  /** Form-specific logo URL. Falls back to organization.logo_url if null. */
+  /** Form-specific logo URL/path. Falls back to organization.logo.storage_path if null. */
   logoUrl: string | null;
 }
 

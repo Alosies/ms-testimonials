@@ -3,11 +3,11 @@
  * OrganizationLogo Component
  *
  * Centralized component for displaying organization logos.
- * Handles both storage paths (via ImageKit CDN) and legacy URLs.
+ * Handles storage paths (via ImageKit CDN).
  *
  * @example
  * ```vue
- * <OrganizationLogo :logo-url="organization.logo_url" size="md" />
+ * <OrganizationLogo :logo-url="organization.logo?.storage_path" size="md" />
  * <OrganizationLogo :logo-url="effectiveLogo" size="sm" rounded />
  * ```
  */

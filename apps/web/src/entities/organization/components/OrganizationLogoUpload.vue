@@ -14,7 +14,11 @@ const props = defineProps<{
   organizationId: string;
 }>();
 
+/** Storage path for display/preview (derived from logo.storage_path) */
 const modelValue = defineModel<string>({ required: true });
+
+/** Media ID for the logo (saved as logo_id for proper relationship) */
+const mediaId = defineModel<string | null>('mediaId', { default: null });
 
 // File input ref
 const fileInputRef = ref<HTMLInputElement | null>(null);
@@ -30,6 +34,7 @@ const {
   entityId: props.organizationId,
   onSuccess: (result) => {
     modelValue.value = result.storagePath;
+    mediaId.value = result.mediaId;
   },
 });
 
@@ -75,6 +80,7 @@ async function handleFileSelect(event: Event) {
 // Remove current logo
 function handleRemoveLogo() {
   modelValue.value = '';
+  mediaId.value = null;
   resetUpload();
 }
 
