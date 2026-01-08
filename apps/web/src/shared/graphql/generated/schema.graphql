@@ -104,6 +104,23 @@ input String_comparison_exp {
   _similar: String
 }
 
+scalar bigint
+
+"""
+Boolean expression to compare columns of type "bigint". All fields are combined with logical 'AND'.
+"""
+input bigint_comparison_exp {
+  _eq: bigint
+  _gt: bigint
+  _gte: bigint
+  _in: [bigint!]
+  _is_null: Boolean
+  _lt: bigint
+  _lte: bigint
+  _neq: bigint
+  _nin: [bigint!]
+}
+
 """
 Normalized contact data for testimonial submitters. Enables contact management, deduplication across forms, and tracking of repeat submissions within an organization.
 """
@@ -6374,6 +6391,2494 @@ input jsonb_comparison_exp {
   _nin: [jsonb!]
 }
 
+"""
+Centralized tracking for all uploaded media files.
+
+   This table stores metadata for files uploaded to cloud storage (S3, GCS, etc.)
+   and tracks their processing status through the upload workflow.
+
+   Key features:
+   1. Provider-agnostic: storage_path is portable across providers
+   2. Polymorphic: entity_type + entity_id links to any entity type
+   3. Status workflow: tracks upload from pending to ready/failed
+   4. Audit trail: tracks who uploaded and when
+
+   Upload flow:
+   1. API creates media record with status=pending
+   2. Frontend uploads to presigned URL
+   3. Lambda validates and calls webhook
+   4. Webhook updates status to ready/failed
+"""
+type media {
+  """Timestamp when the media record was created (upload initiated)."""
+  created_at: timestamptz!
+  """
+  Duration of video in seconds. Reserved for future video support.
+     NULL for images.
+  """
+  duration_seconds: numeric
+  """
+  ID of the entity this media is associated with.
+     Nullable for pending uploads (entity may not exist yet).
+     The target table is defined in media_entity_types.target_table.
+  """
+  entity_id: String
+  """
+  Type of entity this media is associated with.
+     References media_entity_types.code (not id).
+     Examples: organization_logo, contact_avatar, testimonial_video.
+  """
+  entity_type: String!
+  """An object relationship"""
+  entity_type_config: media_entity_types!
+  """
+  Error details when status is failed.
+     Examples: "File size exceeds limit", "Invalid MIME type", etc.
+  """
+  error_message: String
+  """
+  File size in bytes. Used for quota tracking and validation against
+     media_entity_types.max_file_size_bytes.
+  """
+  file_size_bytes: bigint!
+  """
+  Original filename from the upload. Preserved for display purposes.
+     The actual storage path uses a sanitized, unique name.
+  """
+  filename: String!
+  """
+  Height of image/video in pixels. Populated by Lambda after processing.
+     NULL for non-image files.
+  """
+  height: Int
+  """
+  Opaque unique identifier (NanoID 12-char). This ID is embedded in the S3 path
+     to correlate presigned URL with webhook callback.
+  """
+  id: String!
+  """
+  MIME type of the file (e.g., image/png, video/mp4).
+     Validated against media_entity_types.allowed_mime_types.
+  """
+  mime_type: String!
+  """An object relationship"""
+  organization: organizations!
+  """
+  Organization that owns this media. Used for RLS, quota tracking, and data export.
+     All media queries should filter by organization_id.
+  """
+  organization_id: String!
+  """
+  JSONB for provider-specific metadata.
+     Examples: ImageKit file_id, CloudFront invalidation_id, virus scan results.
+     This is appropriate use of JSONB: truly dynamic, provider-specific data.
+  """
+  processing_metadata(
+    """JSON select path"""
+    path: String
+  ): jsonb!
+  """
+  Processing status of the media file.
+     - pending: Upload initiated, waiting for file
+     - processing: File received, being validated
+     - ready: Validation passed, file is available
+     - failed: Validation failed, see error_message
+     - deleted: Soft deleted, file may be retained for backup
+  """
+  status: String!
+  """
+  Bucket/container name where the file is stored.
+     Environment-specific: testimonials-dev-uploads, testimonials-prod-uploads, etc.
+  """
+  storage_bucket: String!
+  """
+  Full object path within the bucket. This is the portable key.
+     Format: {org_id}/{entity_type}/{year}/{month}/{day}/{media_id}_{timestamp}.{ext}
+     Example: org_abc/organization_logo/2025/01/05/med_xyz_20250105T143022.png
+  """
+  storage_path: String!
+  """
+  Storage provider identifier. Default is aws_s3.
+     Other possible values: gcs (Google Cloud), azure_blob, etc.
+     Used by CDN adapter to construct URLs.
+  """
+  storage_provider: String!
+  """
+  AWS region or equivalent for other providers.
+     Used for constructing direct S3 URLs if needed.
+  """
+  storage_region: String
+  """
+  Storage path for video thumbnail. Reserved for future video support.
+     Lambda generates thumbnail and stores path here.
+  """
+  thumbnail_path: String
+  """
+  Timestamp of last modification. Auto-updated by trigger.
+     Changes when status updates, processing completes, etc.
+  """
+  updated_at: timestamptz!
+  """
+  User who initiated the upload. NULL for anonymous uploads
+     (e.g., form submissions by external customers).
+     References users.id.
+  """
+  uploaded_by: String
+  """An object relationship"""
+  uploader: users
+  """
+  Width of image/video in pixels. Populated by Lambda after processing.
+     NULL for non-image files.
+  """
+  width: Int
+}
+
+"""
+aggregated selection of "media"
+"""
+type media_aggregate {
+  aggregate: media_aggregate_fields
+  nodes: [media!]!
+}
+
+input media_aggregate_bool_exp {
+  count: media_aggregate_bool_exp_count
+}
+
+input media_aggregate_bool_exp_count {
+  arguments: [media_select_column!]
+  distinct: Boolean
+  filter: media_bool_exp
+  predicate: Int_comparison_exp!
+}
+
+"""
+aggregate fields of "media"
+"""
+type media_aggregate_fields {
+  avg: media_avg_fields
+  count(columns: [media_select_column!], distinct: Boolean): Int!
+  max: media_max_fields
+  min: media_min_fields
+  stddev: media_stddev_fields
+  stddev_pop: media_stddev_pop_fields
+  stddev_samp: media_stddev_samp_fields
+  sum: media_sum_fields
+  var_pop: media_var_pop_fields
+  var_samp: media_var_samp_fields
+  variance: media_variance_fields
+}
+
+"""
+order by aggregate values of table "media"
+"""
+input media_aggregate_order_by {
+  avg: media_avg_order_by
+  count: order_by
+  max: media_max_order_by
+  min: media_min_order_by
+  stddev: media_stddev_order_by
+  stddev_pop: media_stddev_pop_order_by
+  stddev_samp: media_stddev_samp_order_by
+  sum: media_sum_order_by
+  var_pop: media_var_pop_order_by
+  var_samp: media_var_samp_order_by
+  variance: media_variance_order_by
+}
+
+"""append existing jsonb value of filtered columns with new jsonb value"""
+input media_append_input {
+  """
+  JSONB for provider-specific metadata.
+     Examples: ImageKit file_id, CloudFront invalidation_id, virus scan results.
+     This is appropriate use of JSONB: truly dynamic, provider-specific data.
+  """
+  processing_metadata: jsonb
+}
+
+"""
+input type for inserting array relation for remote table "media"
+"""
+input media_arr_rel_insert_input {
+  data: [media_insert_input!]!
+  """upsert condition"""
+  on_conflict: media_on_conflict
+}
+
+"""aggregate avg on columns"""
+type media_avg_fields {
+  """
+  Duration of video in seconds. Reserved for future video support.
+     NULL for images.
+  """
+  duration_seconds: Float
+  """
+  File size in bytes. Used for quota tracking and validation against
+     media_entity_types.max_file_size_bytes.
+  """
+  file_size_bytes: Float
+  """
+  Height of image/video in pixels. Populated by Lambda after processing.
+     NULL for non-image files.
+  """
+  height: Float
+  """
+  Width of image/video in pixels. Populated by Lambda after processing.
+     NULL for non-image files.
+  """
+  width: Float
+}
+
+"""
+order by avg() on columns of table "media"
+"""
+input media_avg_order_by {
+  """
+  Duration of video in seconds. Reserved for future video support.
+     NULL for images.
+  """
+  duration_seconds: order_by
+  """
+  File size in bytes. Used for quota tracking and validation against
+     media_entity_types.max_file_size_bytes.
+  """
+  file_size_bytes: order_by
+  """
+  Height of image/video in pixels. Populated by Lambda after processing.
+     NULL for non-image files.
+  """
+  height: order_by
+  """
+  Width of image/video in pixels. Populated by Lambda after processing.
+     NULL for non-image files.
+  """
+  width: order_by
+}
+
+"""
+Boolean expression to filter rows from the table "media". All fields are combined with a logical 'AND'.
+"""
+input media_bool_exp {
+  _and: [media_bool_exp!]
+  _not: media_bool_exp
+  _or: [media_bool_exp!]
+  created_at: timestamptz_comparison_exp
+  duration_seconds: numeric_comparison_exp
+  entity_id: String_comparison_exp
+  entity_type: String_comparison_exp
+  entity_type_config: media_entity_types_bool_exp
+  error_message: String_comparison_exp
+  file_size_bytes: bigint_comparison_exp
+  filename: String_comparison_exp
+  height: Int_comparison_exp
+  id: String_comparison_exp
+  mime_type: String_comparison_exp
+  organization: organizations_bool_exp
+  organization_id: String_comparison_exp
+  processing_metadata: jsonb_comparison_exp
+  status: String_comparison_exp
+  storage_bucket: String_comparison_exp
+  storage_path: String_comparison_exp
+  storage_provider: String_comparison_exp
+  storage_region: String_comparison_exp
+  thumbnail_path: String_comparison_exp
+  updated_at: timestamptz_comparison_exp
+  uploaded_by: String_comparison_exp
+  uploader: users_bool_exp
+  width: Int_comparison_exp
+}
+
+"""
+unique or primary key constraints on table "media"
+"""
+enum media_constraint {
+  """
+  unique or primary key constraint on columns "storage_path", "storage_bucket"
+  """
+  idx_media_storage_path
+  """
+  unique or primary key constraint on columns "id"
+  """
+  media_pkey
+}
+
+"""
+delete the field or element with specified path (for JSON arrays, negative integers count from the end)
+"""
+input media_delete_at_path_input {
+  """
+  JSONB for provider-specific metadata.
+     Examples: ImageKit file_id, CloudFront invalidation_id, virus scan results.
+     This is appropriate use of JSONB: truly dynamic, provider-specific data.
+  """
+  processing_metadata: [String!]
+}
+
+"""
+delete the array element with specified index (negative integers count from the end). throws an error if top level container is not an array
+"""
+input media_delete_elem_input {
+  """
+  JSONB for provider-specific metadata.
+     Examples: ImageKit file_id, CloudFront invalidation_id, virus scan results.
+     This is appropriate use of JSONB: truly dynamic, provider-specific data.
+  """
+  processing_metadata: Int
+}
+
+"""
+delete key/value pair or string element. key/value pairs are matched based on their key value
+"""
+input media_delete_key_input {
+  """
+  JSONB for provider-specific metadata.
+     Examples: ImageKit file_id, CloudFront invalidation_id, virus scan results.
+     This is appropriate use of JSONB: truly dynamic, provider-specific data.
+  """
+  processing_metadata: String
+}
+
+"""
+Lookup table defining valid media entity types with validation rules.
+
+   This table serves multiple purposes:
+   1. Enforces valid values for media.entity_type via FK constraint on `code`
+   2. Stores validation rules (mime types, max size) queryable at runtime
+   3. Documents the polymorphic relationship (which table entity_id references)
+   4. Allows enabling/disabling entity types without code changes
+
+   When adding a new entity type:
+   1. INSERT a new row with appropriate validation rules
+   2. Update Lambda validator if needed (for content-based validation)
+   3. Update frontend upload config to match
+"""
+type media_entity_types {
+  """
+  PostgreSQL array of MIME types allowed for uploads of this entity type.
+     Validated at two points:
+     1. API presign endpoint (fast rejection)
+     2. Lambda after upload (content-based verification)
+     Example: ARRAY['image/jpeg', 'image/png', 'image/webp']
+  """
+  allowed_mime_types: [String!]!
+  """
+  Semantic code for the entity type. Use lowercase_snake_case.
+     Examples: organization_logo, contact_avatar, testimonial_video.
+     This value is stored in media.entity_type (FK target).
+     UNIQUE constraint allows foreign key references.
+  """
+  code: String!
+  """Timestamp when this entity type was created. For audit purposes."""
+  created_at: timestamptz!
+  """
+  User who created this entity type. NULL for seed data inserted by migrations.
+     References users.id.
+  """
+  created_by: String
+  """
+  Detailed description of what this media type is used for.
+     Helps developers understand the purpose and context.
+  """
+  description: String!
+  """
+  Human-readable name shown in UI. Example: "Organization Logo"
+  """
+  display_name: String!
+  """
+  Opaque unique identifier (NanoID 12-char). Following project convention
+     that IDs should be meaningless. Use `code` for semantic lookups.
+  """
+  id: String!
+  """
+  Whether this entity type is currently enabled for uploads.
+     Set to false to disable without deleting (preserves existing references).
+     Use for feature flags or deprecating entity types.
+  """
+  is_active: Boolean!
+  """
+  Maximum allowed file size in bytes. Enforced at:
+     1. API presign endpoint (rejects before upload)
+     2. Lambda validation (rejects after upload, deletes file)
+     Common values: 2MB=2097152, 5MB=5242880, 10MB=10485760, 500MB=524288000
+  """
+  max_file_size_bytes: bigint!
+  """An array relationship"""
+  media(
+    """distinct select on columns"""
+    distinct_on: [media_select_column!]
+    """limit the number of rows returned"""
+    limit: Int
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+    """sort the rows by one or more columns"""
+    order_by: [media_order_by!]
+    """filter the rows returned"""
+    where: media_bool_exp
+  ): [media!]!
+  """An aggregate relationship"""
+  media_aggregate(
+    """distinct select on columns"""
+    distinct_on: [media_select_column!]
+    """limit the number of rows returned"""
+    limit: Int
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+    """sort the rows by one or more columns"""
+    order_by: [media_order_by!]
+    """filter the rows returned"""
+    where: media_bool_exp
+  ): media_aggregate!
+  """
+  The column in target_table that entity_id references. Usually "id".
+     Allows flexibility for tables with non-standard PK names.
+  """
+  target_column: String!
+  """
+  The database table that media.entity_id references for this type.
+     Example: "organizations" means entity_id is an organizations.id value.
+     Used for documentation; actual FK validation is application-level.
+  """
+  target_table: String!
+  """Timestamp of last modification. Auto-updated by trigger."""
+  updated_at: timestamptz!
+  """
+  User who last modified this entity type. Set by application on updates.
+     References users.id.
+  """
+  updated_by: String
+}
+
+"""
+aggregated selection of "media_entity_types"
+"""
+type media_entity_types_aggregate {
+  aggregate: media_entity_types_aggregate_fields
+  nodes: [media_entity_types!]!
+}
+
+"""
+aggregate fields of "media_entity_types"
+"""
+type media_entity_types_aggregate_fields {
+  avg: media_entity_types_avg_fields
+  count(columns: [media_entity_types_select_column!], distinct: Boolean): Int!
+  max: media_entity_types_max_fields
+  min: media_entity_types_min_fields
+  stddev: media_entity_types_stddev_fields
+  stddev_pop: media_entity_types_stddev_pop_fields
+  stddev_samp: media_entity_types_stddev_samp_fields
+  sum: media_entity_types_sum_fields
+  var_pop: media_entity_types_var_pop_fields
+  var_samp: media_entity_types_var_samp_fields
+  variance: media_entity_types_variance_fields
+}
+
+"""aggregate avg on columns"""
+type media_entity_types_avg_fields {
+  """
+  Maximum allowed file size in bytes. Enforced at:
+     1. API presign endpoint (rejects before upload)
+     2. Lambda validation (rejects after upload, deletes file)
+     Common values: 2MB=2097152, 5MB=5242880, 10MB=10485760, 500MB=524288000
+  """
+  max_file_size_bytes: Float
+}
+
+"""
+Boolean expression to filter rows from the table "media_entity_types". All fields are combined with a logical 'AND'.
+"""
+input media_entity_types_bool_exp {
+  _and: [media_entity_types_bool_exp!]
+  _not: media_entity_types_bool_exp
+  _or: [media_entity_types_bool_exp!]
+  allowed_mime_types: String_array_comparison_exp
+  code: String_comparison_exp
+  created_at: timestamptz_comparison_exp
+  created_by: String_comparison_exp
+  description: String_comparison_exp
+  display_name: String_comparison_exp
+  id: String_comparison_exp
+  is_active: Boolean_comparison_exp
+  max_file_size_bytes: bigint_comparison_exp
+  media: media_bool_exp
+  media_aggregate: media_aggregate_bool_exp
+  target_column: String_comparison_exp
+  target_table: String_comparison_exp
+  updated_at: timestamptz_comparison_exp
+  updated_by: String_comparison_exp
+}
+
+"""
+unique or primary key constraints on table "media_entity_types"
+"""
+enum media_entity_types_constraint {
+  """
+  unique or primary key constraint on columns "code"
+  """
+  media_entity_types_code_key
+  """
+  unique or primary key constraint on columns "id"
+  """
+  media_entity_types_pkey
+}
+
+"""
+input type for incrementing numeric columns in table "media_entity_types"
+"""
+input media_entity_types_inc_input {
+  """
+  Maximum allowed file size in bytes. Enforced at:
+     1. API presign endpoint (rejects before upload)
+     2. Lambda validation (rejects after upload, deletes file)
+     Common values: 2MB=2097152, 5MB=5242880, 10MB=10485760, 500MB=524288000
+  """
+  max_file_size_bytes: bigint
+}
+
+"""
+input type for inserting data into table "media_entity_types"
+"""
+input media_entity_types_insert_input {
+  """
+  PostgreSQL array of MIME types allowed for uploads of this entity type.
+     Validated at two points:
+     1. API presign endpoint (fast rejection)
+     2. Lambda after upload (content-based verification)
+     Example: ARRAY['image/jpeg', 'image/png', 'image/webp']
+  """
+  allowed_mime_types: [String!]
+  """
+  Semantic code for the entity type. Use lowercase_snake_case.
+     Examples: organization_logo, contact_avatar, testimonial_video.
+     This value is stored in media.entity_type (FK target).
+     UNIQUE constraint allows foreign key references.
+  """
+  code: String
+  """Timestamp when this entity type was created. For audit purposes."""
+  created_at: timestamptz
+  """
+  User who created this entity type. NULL for seed data inserted by migrations.
+     References users.id.
+  """
+  created_by: String
+  """
+  Detailed description of what this media type is used for.
+     Helps developers understand the purpose and context.
+  """
+  description: String
+  """
+  Human-readable name shown in UI. Example: "Organization Logo"
+  """
+  display_name: String
+  """
+  Opaque unique identifier (NanoID 12-char). Following project convention
+     that IDs should be meaningless. Use `code` for semantic lookups.
+  """
+  id: String
+  """
+  Whether this entity type is currently enabled for uploads.
+     Set to false to disable without deleting (preserves existing references).
+     Use for feature flags or deprecating entity types.
+  """
+  is_active: Boolean
+  """
+  Maximum allowed file size in bytes. Enforced at:
+     1. API presign endpoint (rejects before upload)
+     2. Lambda validation (rejects after upload, deletes file)
+     Common values: 2MB=2097152, 5MB=5242880, 10MB=10485760, 500MB=524288000
+  """
+  max_file_size_bytes: bigint
+  media: media_arr_rel_insert_input
+  """
+  The column in target_table that entity_id references. Usually "id".
+     Allows flexibility for tables with non-standard PK names.
+  """
+  target_column: String
+  """
+  The database table that media.entity_id references for this type.
+     Example: "organizations" means entity_id is an organizations.id value.
+     Used for documentation; actual FK validation is application-level.
+  """
+  target_table: String
+  """Timestamp of last modification. Auto-updated by trigger."""
+  updated_at: timestamptz
+  """
+  User who last modified this entity type. Set by application on updates.
+     References users.id.
+  """
+  updated_by: String
+}
+
+"""aggregate max on columns"""
+type media_entity_types_max_fields {
+  """
+  PostgreSQL array of MIME types allowed for uploads of this entity type.
+     Validated at two points:
+     1. API presign endpoint (fast rejection)
+     2. Lambda after upload (content-based verification)
+     Example: ARRAY['image/jpeg', 'image/png', 'image/webp']
+  """
+  allowed_mime_types: [String!]
+  """
+  Semantic code for the entity type. Use lowercase_snake_case.
+     Examples: organization_logo, contact_avatar, testimonial_video.
+     This value is stored in media.entity_type (FK target).
+     UNIQUE constraint allows foreign key references.
+  """
+  code: String
+  """Timestamp when this entity type was created. For audit purposes."""
+  created_at: timestamptz
+  """
+  User who created this entity type. NULL for seed data inserted by migrations.
+     References users.id.
+  """
+  created_by: String
+  """
+  Detailed description of what this media type is used for.
+     Helps developers understand the purpose and context.
+  """
+  description: String
+  """
+  Human-readable name shown in UI. Example: "Organization Logo"
+  """
+  display_name: String
+  """
+  Opaque unique identifier (NanoID 12-char). Following project convention
+     that IDs should be meaningless. Use `code` for semantic lookups.
+  """
+  id: String
+  """
+  Maximum allowed file size in bytes. Enforced at:
+     1. API presign endpoint (rejects before upload)
+     2. Lambda validation (rejects after upload, deletes file)
+     Common values: 2MB=2097152, 5MB=5242880, 10MB=10485760, 500MB=524288000
+  """
+  max_file_size_bytes: bigint
+  """
+  The column in target_table that entity_id references. Usually "id".
+     Allows flexibility for tables with non-standard PK names.
+  """
+  target_column: String
+  """
+  The database table that media.entity_id references for this type.
+     Example: "organizations" means entity_id is an organizations.id value.
+     Used for documentation; actual FK validation is application-level.
+  """
+  target_table: String
+  """Timestamp of last modification. Auto-updated by trigger."""
+  updated_at: timestamptz
+  """
+  User who last modified this entity type. Set by application on updates.
+     References users.id.
+  """
+  updated_by: String
+}
+
+"""aggregate min on columns"""
+type media_entity_types_min_fields {
+  """
+  PostgreSQL array of MIME types allowed for uploads of this entity type.
+     Validated at two points:
+     1. API presign endpoint (fast rejection)
+     2. Lambda after upload (content-based verification)
+     Example: ARRAY['image/jpeg', 'image/png', 'image/webp']
+  """
+  allowed_mime_types: [String!]
+  """
+  Semantic code for the entity type. Use lowercase_snake_case.
+     Examples: organization_logo, contact_avatar, testimonial_video.
+     This value is stored in media.entity_type (FK target).
+     UNIQUE constraint allows foreign key references.
+  """
+  code: String
+  """Timestamp when this entity type was created. For audit purposes."""
+  created_at: timestamptz
+  """
+  User who created this entity type. NULL for seed data inserted by migrations.
+     References users.id.
+  """
+  created_by: String
+  """
+  Detailed description of what this media type is used for.
+     Helps developers understand the purpose and context.
+  """
+  description: String
+  """
+  Human-readable name shown in UI. Example: "Organization Logo"
+  """
+  display_name: String
+  """
+  Opaque unique identifier (NanoID 12-char). Following project convention
+     that IDs should be meaningless. Use `code` for semantic lookups.
+  """
+  id: String
+  """
+  Maximum allowed file size in bytes. Enforced at:
+     1. API presign endpoint (rejects before upload)
+     2. Lambda validation (rejects after upload, deletes file)
+     Common values: 2MB=2097152, 5MB=5242880, 10MB=10485760, 500MB=524288000
+  """
+  max_file_size_bytes: bigint
+  """
+  The column in target_table that entity_id references. Usually "id".
+     Allows flexibility for tables with non-standard PK names.
+  """
+  target_column: String
+  """
+  The database table that media.entity_id references for this type.
+     Example: "organizations" means entity_id is an organizations.id value.
+     Used for documentation; actual FK validation is application-level.
+  """
+  target_table: String
+  """Timestamp of last modification. Auto-updated by trigger."""
+  updated_at: timestamptz
+  """
+  User who last modified this entity type. Set by application on updates.
+     References users.id.
+  """
+  updated_by: String
+}
+
+"""
+response of any mutation on the table "media_entity_types"
+"""
+type media_entity_types_mutation_response {
+  """number of rows affected by the mutation"""
+  affected_rows: Int!
+  """data from the rows affected by the mutation"""
+  returning: [media_entity_types!]!
+}
+
+"""
+input type for inserting object relation for remote table "media_entity_types"
+"""
+input media_entity_types_obj_rel_insert_input {
+  data: media_entity_types_insert_input!
+  """upsert condition"""
+  on_conflict: media_entity_types_on_conflict
+}
+
+"""
+on_conflict condition type for table "media_entity_types"
+"""
+input media_entity_types_on_conflict {
+  constraint: media_entity_types_constraint!
+  update_columns: [media_entity_types_update_column!]! = []
+  where: media_entity_types_bool_exp
+}
+
+"""Ordering options when selecting data from "media_entity_types"."""
+input media_entity_types_order_by {
+  allowed_mime_types: order_by
+  code: order_by
+  created_at: order_by
+  created_by: order_by
+  description: order_by
+  display_name: order_by
+  id: order_by
+  is_active: order_by
+  max_file_size_bytes: order_by
+  media_aggregate: media_aggregate_order_by
+  target_column: order_by
+  target_table: order_by
+  updated_at: order_by
+  updated_by: order_by
+}
+
+"""primary key columns input for table: media_entity_types"""
+input media_entity_types_pk_columns_input {
+  """
+  Opaque unique identifier (NanoID 12-char). Following project convention
+     that IDs should be meaningless. Use `code` for semantic lookups.
+  """
+  id: String!
+}
+
+"""
+select columns of table "media_entity_types"
+"""
+enum media_entity_types_select_column {
+  """column name"""
+  allowed_mime_types
+  """column name"""
+  code
+  """column name"""
+  created_at
+  """column name"""
+  created_by
+  """column name"""
+  description
+  """column name"""
+  display_name
+  """column name"""
+  id
+  """column name"""
+  is_active
+  """column name"""
+  max_file_size_bytes
+  """column name"""
+  target_column
+  """column name"""
+  target_table
+  """column name"""
+  updated_at
+  """column name"""
+  updated_by
+}
+
+"""
+input type for updating data in table "media_entity_types"
+"""
+input media_entity_types_set_input {
+  """
+  PostgreSQL array of MIME types allowed for uploads of this entity type.
+     Validated at two points:
+     1. API presign endpoint (fast rejection)
+     2. Lambda after upload (content-based verification)
+     Example: ARRAY['image/jpeg', 'image/png', 'image/webp']
+  """
+  allowed_mime_types: [String!]
+  """
+  Semantic code for the entity type. Use lowercase_snake_case.
+     Examples: organization_logo, contact_avatar, testimonial_video.
+     This value is stored in media.entity_type (FK target).
+     UNIQUE constraint allows foreign key references.
+  """
+  code: String
+  """Timestamp when this entity type was created. For audit purposes."""
+  created_at: timestamptz
+  """
+  User who created this entity type. NULL for seed data inserted by migrations.
+     References users.id.
+  """
+  created_by: String
+  """
+  Detailed description of what this media type is used for.
+     Helps developers understand the purpose and context.
+  """
+  description: String
+  """
+  Human-readable name shown in UI. Example: "Organization Logo"
+  """
+  display_name: String
+  """
+  Opaque unique identifier (NanoID 12-char). Following project convention
+     that IDs should be meaningless. Use `code` for semantic lookups.
+  """
+  id: String
+  """
+  Whether this entity type is currently enabled for uploads.
+     Set to false to disable without deleting (preserves existing references).
+     Use for feature flags or deprecating entity types.
+  """
+  is_active: Boolean
+  """
+  Maximum allowed file size in bytes. Enforced at:
+     1. API presign endpoint (rejects before upload)
+     2. Lambda validation (rejects after upload, deletes file)
+     Common values: 2MB=2097152, 5MB=5242880, 10MB=10485760, 500MB=524288000
+  """
+  max_file_size_bytes: bigint
+  """
+  The column in target_table that entity_id references. Usually "id".
+     Allows flexibility for tables with non-standard PK names.
+  """
+  target_column: String
+  """
+  The database table that media.entity_id references for this type.
+     Example: "organizations" means entity_id is an organizations.id value.
+     Used for documentation; actual FK validation is application-level.
+  """
+  target_table: String
+  """Timestamp of last modification. Auto-updated by trigger."""
+  updated_at: timestamptz
+  """
+  User who last modified this entity type. Set by application on updates.
+     References users.id.
+  """
+  updated_by: String
+}
+
+"""aggregate stddev on columns"""
+type media_entity_types_stddev_fields {
+  """
+  Maximum allowed file size in bytes. Enforced at:
+     1. API presign endpoint (rejects before upload)
+     2. Lambda validation (rejects after upload, deletes file)
+     Common values: 2MB=2097152, 5MB=5242880, 10MB=10485760, 500MB=524288000
+  """
+  max_file_size_bytes: Float
+}
+
+"""aggregate stddev_pop on columns"""
+type media_entity_types_stddev_pop_fields {
+  """
+  Maximum allowed file size in bytes. Enforced at:
+     1. API presign endpoint (rejects before upload)
+     2. Lambda validation (rejects after upload, deletes file)
+     Common values: 2MB=2097152, 5MB=5242880, 10MB=10485760, 500MB=524288000
+  """
+  max_file_size_bytes: Float
+}
+
+"""aggregate stddev_samp on columns"""
+type media_entity_types_stddev_samp_fields {
+  """
+  Maximum allowed file size in bytes. Enforced at:
+     1. API presign endpoint (rejects before upload)
+     2. Lambda validation (rejects after upload, deletes file)
+     Common values: 2MB=2097152, 5MB=5242880, 10MB=10485760, 500MB=524288000
+  """
+  max_file_size_bytes: Float
+}
+
+"""
+Streaming cursor of the table "media_entity_types"
+"""
+input media_entity_types_stream_cursor_input {
+  """Stream column input with initial value"""
+  initial_value: media_entity_types_stream_cursor_value_input!
+  """cursor ordering"""
+  ordering: cursor_ordering
+}
+
+"""Initial value of the column from where the streaming should start"""
+input media_entity_types_stream_cursor_value_input {
+  """
+  PostgreSQL array of MIME types allowed for uploads of this entity type.
+     Validated at two points:
+     1. API presign endpoint (fast rejection)
+     2. Lambda after upload (content-based verification)
+     Example: ARRAY['image/jpeg', 'image/png', 'image/webp']
+  """
+  allowed_mime_types: [String!]
+  """
+  Semantic code for the entity type. Use lowercase_snake_case.
+     Examples: organization_logo, contact_avatar, testimonial_video.
+     This value is stored in media.entity_type (FK target).
+     UNIQUE constraint allows foreign key references.
+  """
+  code: String
+  """Timestamp when this entity type was created. For audit purposes."""
+  created_at: timestamptz
+  """
+  User who created this entity type. NULL for seed data inserted by migrations.
+     References users.id.
+  """
+  created_by: String
+  """
+  Detailed description of what this media type is used for.
+     Helps developers understand the purpose and context.
+  """
+  description: String
+  """
+  Human-readable name shown in UI. Example: "Organization Logo"
+  """
+  display_name: String
+  """
+  Opaque unique identifier (NanoID 12-char). Following project convention
+     that IDs should be meaningless. Use `code` for semantic lookups.
+  """
+  id: String
+  """
+  Whether this entity type is currently enabled for uploads.
+     Set to false to disable without deleting (preserves existing references).
+     Use for feature flags or deprecating entity types.
+  """
+  is_active: Boolean
+  """
+  Maximum allowed file size in bytes. Enforced at:
+     1. API presign endpoint (rejects before upload)
+     2. Lambda validation (rejects after upload, deletes file)
+     Common values: 2MB=2097152, 5MB=5242880, 10MB=10485760, 500MB=524288000
+  """
+  max_file_size_bytes: bigint
+  """
+  The column in target_table that entity_id references. Usually "id".
+     Allows flexibility for tables with non-standard PK names.
+  """
+  target_column: String
+  """
+  The database table that media.entity_id references for this type.
+     Example: "organizations" means entity_id is an organizations.id value.
+     Used for documentation; actual FK validation is application-level.
+  """
+  target_table: String
+  """Timestamp of last modification. Auto-updated by trigger."""
+  updated_at: timestamptz
+  """
+  User who last modified this entity type. Set by application on updates.
+     References users.id.
+  """
+  updated_by: String
+}
+
+"""aggregate sum on columns"""
+type media_entity_types_sum_fields {
+  """
+  Maximum allowed file size in bytes. Enforced at:
+     1. API presign endpoint (rejects before upload)
+     2. Lambda validation (rejects after upload, deletes file)
+     Common values: 2MB=2097152, 5MB=5242880, 10MB=10485760, 500MB=524288000
+  """
+  max_file_size_bytes: bigint
+}
+
+"""
+update columns of table "media_entity_types"
+"""
+enum media_entity_types_update_column {
+  """column name"""
+  allowed_mime_types
+  """column name"""
+  code
+  """column name"""
+  created_at
+  """column name"""
+  created_by
+  """column name"""
+  description
+  """column name"""
+  display_name
+  """column name"""
+  id
+  """column name"""
+  is_active
+  """column name"""
+  max_file_size_bytes
+  """column name"""
+  target_column
+  """column name"""
+  target_table
+  """column name"""
+  updated_at
+  """column name"""
+  updated_by
+}
+
+input media_entity_types_updates {
+  """increments the numeric columns with given value of the filtered values"""
+  _inc: media_entity_types_inc_input
+  """sets the columns of the filtered rows to the given values"""
+  _set: media_entity_types_set_input
+  """filter the rows which have to be updated"""
+  where: media_entity_types_bool_exp!
+}
+
+"""aggregate var_pop on columns"""
+type media_entity_types_var_pop_fields {
+  """
+  Maximum allowed file size in bytes. Enforced at:
+     1. API presign endpoint (rejects before upload)
+     2. Lambda validation (rejects after upload, deletes file)
+     Common values: 2MB=2097152, 5MB=5242880, 10MB=10485760, 500MB=524288000
+  """
+  max_file_size_bytes: Float
+}
+
+"""aggregate var_samp on columns"""
+type media_entity_types_var_samp_fields {
+  """
+  Maximum allowed file size in bytes. Enforced at:
+     1. API presign endpoint (rejects before upload)
+     2. Lambda validation (rejects after upload, deletes file)
+     Common values: 2MB=2097152, 5MB=5242880, 10MB=10485760, 500MB=524288000
+  """
+  max_file_size_bytes: Float
+}
+
+"""aggregate variance on columns"""
+type media_entity_types_variance_fields {
+  """
+  Maximum allowed file size in bytes. Enforced at:
+     1. API presign endpoint (rejects before upload)
+     2. Lambda validation (rejects after upload, deletes file)
+     Common values: 2MB=2097152, 5MB=5242880, 10MB=10485760, 500MB=524288000
+  """
+  max_file_size_bytes: Float
+}
+
+"""
+input type for incrementing numeric columns in table "media"
+"""
+input media_inc_input {
+  """
+  Duration of video in seconds. Reserved for future video support.
+     NULL for images.
+  """
+  duration_seconds: numeric
+  """
+  File size in bytes. Used for quota tracking and validation against
+     media_entity_types.max_file_size_bytes.
+  """
+  file_size_bytes: bigint
+  """
+  Height of image/video in pixels. Populated by Lambda after processing.
+     NULL for non-image files.
+  """
+  height: Int
+  """
+  Width of image/video in pixels. Populated by Lambda after processing.
+     NULL for non-image files.
+  """
+  width: Int
+}
+
+"""
+input type for inserting data into table "media"
+"""
+input media_insert_input {
+  """Timestamp when the media record was created (upload initiated)."""
+  created_at: timestamptz
+  """
+  Duration of video in seconds. Reserved for future video support.
+     NULL for images.
+  """
+  duration_seconds: numeric
+  """
+  ID of the entity this media is associated with.
+     Nullable for pending uploads (entity may not exist yet).
+     The target table is defined in media_entity_types.target_table.
+  """
+  entity_id: String
+  """
+  Type of entity this media is associated with.
+     References media_entity_types.code (not id).
+     Examples: organization_logo, contact_avatar, testimonial_video.
+  """
+  entity_type: String
+  entity_type_config: media_entity_types_obj_rel_insert_input
+  """
+  Error details when status is failed.
+     Examples: "File size exceeds limit", "Invalid MIME type", etc.
+  """
+  error_message: String
+  """
+  File size in bytes. Used for quota tracking and validation against
+     media_entity_types.max_file_size_bytes.
+  """
+  file_size_bytes: bigint
+  """
+  Original filename from the upload. Preserved for display purposes.
+     The actual storage path uses a sanitized, unique name.
+  """
+  filename: String
+  """
+  Height of image/video in pixels. Populated by Lambda after processing.
+     NULL for non-image files.
+  """
+  height: Int
+  """
+  Opaque unique identifier (NanoID 12-char). This ID is embedded in the S3 path
+     to correlate presigned URL with webhook callback.
+  """
+  id: String
+  """
+  MIME type of the file (e.g., image/png, video/mp4).
+     Validated against media_entity_types.allowed_mime_types.
+  """
+  mime_type: String
+  organization: organizations_obj_rel_insert_input
+  """
+  Organization that owns this media. Used for RLS, quota tracking, and data export.
+     All media queries should filter by organization_id.
+  """
+  organization_id: String
+  """
+  JSONB for provider-specific metadata.
+     Examples: ImageKit file_id, CloudFront invalidation_id, virus scan results.
+     This is appropriate use of JSONB: truly dynamic, provider-specific data.
+  """
+  processing_metadata: jsonb
+  """
+  Processing status of the media file.
+     - pending: Upload initiated, waiting for file
+     - processing: File received, being validated
+     - ready: Validation passed, file is available
+     - failed: Validation failed, see error_message
+     - deleted: Soft deleted, file may be retained for backup
+  """
+  status: String
+  """
+  Bucket/container name where the file is stored.
+     Environment-specific: testimonials-dev-uploads, testimonials-prod-uploads, etc.
+  """
+  storage_bucket: String
+  """
+  Full object path within the bucket. This is the portable key.
+     Format: {org_id}/{entity_type}/{year}/{month}/{day}/{media_id}_{timestamp}.{ext}
+     Example: org_abc/organization_logo/2025/01/05/med_xyz_20250105T143022.png
+  """
+  storage_path: String
+  """
+  Storage provider identifier. Default is aws_s3.
+     Other possible values: gcs (Google Cloud), azure_blob, etc.
+     Used by CDN adapter to construct URLs.
+  """
+  storage_provider: String
+  """
+  AWS region or equivalent for other providers.
+     Used for constructing direct S3 URLs if needed.
+  """
+  storage_region: String
+  """
+  Storage path for video thumbnail. Reserved for future video support.
+     Lambda generates thumbnail and stores path here.
+  """
+  thumbnail_path: String
+  """
+  Timestamp of last modification. Auto-updated by trigger.
+     Changes when status updates, processing completes, etc.
+  """
+  updated_at: timestamptz
+  """
+  User who initiated the upload. NULL for anonymous uploads
+     (e.g., form submissions by external customers).
+     References users.id.
+  """
+  uploaded_by: String
+  uploader: users_obj_rel_insert_input
+  """
+  Width of image/video in pixels. Populated by Lambda after processing.
+     NULL for non-image files.
+  """
+  width: Int
+}
+
+"""aggregate max on columns"""
+type media_max_fields {
+  """Timestamp when the media record was created (upload initiated)."""
+  created_at: timestamptz
+  """
+  Duration of video in seconds. Reserved for future video support.
+     NULL for images.
+  """
+  duration_seconds: numeric
+  """
+  ID of the entity this media is associated with.
+     Nullable for pending uploads (entity may not exist yet).
+     The target table is defined in media_entity_types.target_table.
+  """
+  entity_id: String
+  """
+  Type of entity this media is associated with.
+     References media_entity_types.code (not id).
+     Examples: organization_logo, contact_avatar, testimonial_video.
+  """
+  entity_type: String
+  """
+  Error details when status is failed.
+     Examples: "File size exceeds limit", "Invalid MIME type", etc.
+  """
+  error_message: String
+  """
+  File size in bytes. Used for quota tracking and validation against
+     media_entity_types.max_file_size_bytes.
+  """
+  file_size_bytes: bigint
+  """
+  Original filename from the upload. Preserved for display purposes.
+     The actual storage path uses a sanitized, unique name.
+  """
+  filename: String
+  """
+  Height of image/video in pixels. Populated by Lambda after processing.
+     NULL for non-image files.
+  """
+  height: Int
+  """
+  Opaque unique identifier (NanoID 12-char). This ID is embedded in the S3 path
+     to correlate presigned URL with webhook callback.
+  """
+  id: String
+  """
+  MIME type of the file (e.g., image/png, video/mp4).
+     Validated against media_entity_types.allowed_mime_types.
+  """
+  mime_type: String
+  """
+  Organization that owns this media. Used for RLS, quota tracking, and data export.
+     All media queries should filter by organization_id.
+  """
+  organization_id: String
+  """
+  Processing status of the media file.
+     - pending: Upload initiated, waiting for file
+     - processing: File received, being validated
+     - ready: Validation passed, file is available
+     - failed: Validation failed, see error_message
+     - deleted: Soft deleted, file may be retained for backup
+  """
+  status: String
+  """
+  Bucket/container name where the file is stored.
+     Environment-specific: testimonials-dev-uploads, testimonials-prod-uploads, etc.
+  """
+  storage_bucket: String
+  """
+  Full object path within the bucket. This is the portable key.
+     Format: {org_id}/{entity_type}/{year}/{month}/{day}/{media_id}_{timestamp}.{ext}
+     Example: org_abc/organization_logo/2025/01/05/med_xyz_20250105T143022.png
+  """
+  storage_path: String
+  """
+  Storage provider identifier. Default is aws_s3.
+     Other possible values: gcs (Google Cloud), azure_blob, etc.
+     Used by CDN adapter to construct URLs.
+  """
+  storage_provider: String
+  """
+  AWS region or equivalent for other providers.
+     Used for constructing direct S3 URLs if needed.
+  """
+  storage_region: String
+  """
+  Storage path for video thumbnail. Reserved for future video support.
+     Lambda generates thumbnail and stores path here.
+  """
+  thumbnail_path: String
+  """
+  Timestamp of last modification. Auto-updated by trigger.
+     Changes when status updates, processing completes, etc.
+  """
+  updated_at: timestamptz
+  """
+  User who initiated the upload. NULL for anonymous uploads
+     (e.g., form submissions by external customers).
+     References users.id.
+  """
+  uploaded_by: String
+  """
+  Width of image/video in pixels. Populated by Lambda after processing.
+     NULL for non-image files.
+  """
+  width: Int
+}
+
+"""
+order by max() on columns of table "media"
+"""
+input media_max_order_by {
+  """Timestamp when the media record was created (upload initiated)."""
+  created_at: order_by
+  """
+  Duration of video in seconds. Reserved for future video support.
+     NULL for images.
+  """
+  duration_seconds: order_by
+  """
+  ID of the entity this media is associated with.
+     Nullable for pending uploads (entity may not exist yet).
+     The target table is defined in media_entity_types.target_table.
+  """
+  entity_id: order_by
+  """
+  Type of entity this media is associated with.
+     References media_entity_types.code (not id).
+     Examples: organization_logo, contact_avatar, testimonial_video.
+  """
+  entity_type: order_by
+  """
+  Error details when status is failed.
+     Examples: "File size exceeds limit", "Invalid MIME type", etc.
+  """
+  error_message: order_by
+  """
+  File size in bytes. Used for quota tracking and validation against
+     media_entity_types.max_file_size_bytes.
+  """
+  file_size_bytes: order_by
+  """
+  Original filename from the upload. Preserved for display purposes.
+     The actual storage path uses a sanitized, unique name.
+  """
+  filename: order_by
+  """
+  Height of image/video in pixels. Populated by Lambda after processing.
+     NULL for non-image files.
+  """
+  height: order_by
+  """
+  Opaque unique identifier (NanoID 12-char). This ID is embedded in the S3 path
+     to correlate presigned URL with webhook callback.
+  """
+  id: order_by
+  """
+  MIME type of the file (e.g., image/png, video/mp4).
+     Validated against media_entity_types.allowed_mime_types.
+  """
+  mime_type: order_by
+  """
+  Organization that owns this media. Used for RLS, quota tracking, and data export.
+     All media queries should filter by organization_id.
+  """
+  organization_id: order_by
+  """
+  Processing status of the media file.
+     - pending: Upload initiated, waiting for file
+     - processing: File received, being validated
+     - ready: Validation passed, file is available
+     - failed: Validation failed, see error_message
+     - deleted: Soft deleted, file may be retained for backup
+  """
+  status: order_by
+  """
+  Bucket/container name where the file is stored.
+     Environment-specific: testimonials-dev-uploads, testimonials-prod-uploads, etc.
+  """
+  storage_bucket: order_by
+  """
+  Full object path within the bucket. This is the portable key.
+     Format: {org_id}/{entity_type}/{year}/{month}/{day}/{media_id}_{timestamp}.{ext}
+     Example: org_abc/organization_logo/2025/01/05/med_xyz_20250105T143022.png
+  """
+  storage_path: order_by
+  """
+  Storage provider identifier. Default is aws_s3.
+     Other possible values: gcs (Google Cloud), azure_blob, etc.
+     Used by CDN adapter to construct URLs.
+  """
+  storage_provider: order_by
+  """
+  AWS region or equivalent for other providers.
+     Used for constructing direct S3 URLs if needed.
+  """
+  storage_region: order_by
+  """
+  Storage path for video thumbnail. Reserved for future video support.
+     Lambda generates thumbnail and stores path here.
+  """
+  thumbnail_path: order_by
+  """
+  Timestamp of last modification. Auto-updated by trigger.
+     Changes when status updates, processing completes, etc.
+  """
+  updated_at: order_by
+  """
+  User who initiated the upload. NULL for anonymous uploads
+     (e.g., form submissions by external customers).
+     References users.id.
+  """
+  uploaded_by: order_by
+  """
+  Width of image/video in pixels. Populated by Lambda after processing.
+     NULL for non-image files.
+  """
+  width: order_by
+}
+
+"""aggregate min on columns"""
+type media_min_fields {
+  """Timestamp when the media record was created (upload initiated)."""
+  created_at: timestamptz
+  """
+  Duration of video in seconds. Reserved for future video support.
+     NULL for images.
+  """
+  duration_seconds: numeric
+  """
+  ID of the entity this media is associated with.
+     Nullable for pending uploads (entity may not exist yet).
+     The target table is defined in media_entity_types.target_table.
+  """
+  entity_id: String
+  """
+  Type of entity this media is associated with.
+     References media_entity_types.code (not id).
+     Examples: organization_logo, contact_avatar, testimonial_video.
+  """
+  entity_type: String
+  """
+  Error details when status is failed.
+     Examples: "File size exceeds limit", "Invalid MIME type", etc.
+  """
+  error_message: String
+  """
+  File size in bytes. Used for quota tracking and validation against
+     media_entity_types.max_file_size_bytes.
+  """
+  file_size_bytes: bigint
+  """
+  Original filename from the upload. Preserved for display purposes.
+     The actual storage path uses a sanitized, unique name.
+  """
+  filename: String
+  """
+  Height of image/video in pixels. Populated by Lambda after processing.
+     NULL for non-image files.
+  """
+  height: Int
+  """
+  Opaque unique identifier (NanoID 12-char). This ID is embedded in the S3 path
+     to correlate presigned URL with webhook callback.
+  """
+  id: String
+  """
+  MIME type of the file (e.g., image/png, video/mp4).
+     Validated against media_entity_types.allowed_mime_types.
+  """
+  mime_type: String
+  """
+  Organization that owns this media. Used for RLS, quota tracking, and data export.
+     All media queries should filter by organization_id.
+  """
+  organization_id: String
+  """
+  Processing status of the media file.
+     - pending: Upload initiated, waiting for file
+     - processing: File received, being validated
+     - ready: Validation passed, file is available
+     - failed: Validation failed, see error_message
+     - deleted: Soft deleted, file may be retained for backup
+  """
+  status: String
+  """
+  Bucket/container name where the file is stored.
+     Environment-specific: testimonials-dev-uploads, testimonials-prod-uploads, etc.
+  """
+  storage_bucket: String
+  """
+  Full object path within the bucket. This is the portable key.
+     Format: {org_id}/{entity_type}/{year}/{month}/{day}/{media_id}_{timestamp}.{ext}
+     Example: org_abc/organization_logo/2025/01/05/med_xyz_20250105T143022.png
+  """
+  storage_path: String
+  """
+  Storage provider identifier. Default is aws_s3.
+     Other possible values: gcs (Google Cloud), azure_blob, etc.
+     Used by CDN adapter to construct URLs.
+  """
+  storage_provider: String
+  """
+  AWS region or equivalent for other providers.
+     Used for constructing direct S3 URLs if needed.
+  """
+  storage_region: String
+  """
+  Storage path for video thumbnail. Reserved for future video support.
+     Lambda generates thumbnail and stores path here.
+  """
+  thumbnail_path: String
+  """
+  Timestamp of last modification. Auto-updated by trigger.
+     Changes when status updates, processing completes, etc.
+  """
+  updated_at: timestamptz
+  """
+  User who initiated the upload. NULL for anonymous uploads
+     (e.g., form submissions by external customers).
+     References users.id.
+  """
+  uploaded_by: String
+  """
+  Width of image/video in pixels. Populated by Lambda after processing.
+     NULL for non-image files.
+  """
+  width: Int
+}
+
+"""
+order by min() on columns of table "media"
+"""
+input media_min_order_by {
+  """Timestamp when the media record was created (upload initiated)."""
+  created_at: order_by
+  """
+  Duration of video in seconds. Reserved for future video support.
+     NULL for images.
+  """
+  duration_seconds: order_by
+  """
+  ID of the entity this media is associated with.
+     Nullable for pending uploads (entity may not exist yet).
+     The target table is defined in media_entity_types.target_table.
+  """
+  entity_id: order_by
+  """
+  Type of entity this media is associated with.
+     References media_entity_types.code (not id).
+     Examples: organization_logo, contact_avatar, testimonial_video.
+  """
+  entity_type: order_by
+  """
+  Error details when status is failed.
+     Examples: "File size exceeds limit", "Invalid MIME type", etc.
+  """
+  error_message: order_by
+  """
+  File size in bytes. Used for quota tracking and validation against
+     media_entity_types.max_file_size_bytes.
+  """
+  file_size_bytes: order_by
+  """
+  Original filename from the upload. Preserved for display purposes.
+     The actual storage path uses a sanitized, unique name.
+  """
+  filename: order_by
+  """
+  Height of image/video in pixels. Populated by Lambda after processing.
+     NULL for non-image files.
+  """
+  height: order_by
+  """
+  Opaque unique identifier (NanoID 12-char). This ID is embedded in the S3 path
+     to correlate presigned URL with webhook callback.
+  """
+  id: order_by
+  """
+  MIME type of the file (e.g., image/png, video/mp4).
+     Validated against media_entity_types.allowed_mime_types.
+  """
+  mime_type: order_by
+  """
+  Organization that owns this media. Used for RLS, quota tracking, and data export.
+     All media queries should filter by organization_id.
+  """
+  organization_id: order_by
+  """
+  Processing status of the media file.
+     - pending: Upload initiated, waiting for file
+     - processing: File received, being validated
+     - ready: Validation passed, file is available
+     - failed: Validation failed, see error_message
+     - deleted: Soft deleted, file may be retained for backup
+  """
+  status: order_by
+  """
+  Bucket/container name where the file is stored.
+     Environment-specific: testimonials-dev-uploads, testimonials-prod-uploads, etc.
+  """
+  storage_bucket: order_by
+  """
+  Full object path within the bucket. This is the portable key.
+     Format: {org_id}/{entity_type}/{year}/{month}/{day}/{media_id}_{timestamp}.{ext}
+     Example: org_abc/organization_logo/2025/01/05/med_xyz_20250105T143022.png
+  """
+  storage_path: order_by
+  """
+  Storage provider identifier. Default is aws_s3.
+     Other possible values: gcs (Google Cloud), azure_blob, etc.
+     Used by CDN adapter to construct URLs.
+  """
+  storage_provider: order_by
+  """
+  AWS region or equivalent for other providers.
+     Used for constructing direct S3 URLs if needed.
+  """
+  storage_region: order_by
+  """
+  Storage path for video thumbnail. Reserved for future video support.
+     Lambda generates thumbnail and stores path here.
+  """
+  thumbnail_path: order_by
+  """
+  Timestamp of last modification. Auto-updated by trigger.
+     Changes when status updates, processing completes, etc.
+  """
+  updated_at: order_by
+  """
+  User who initiated the upload. NULL for anonymous uploads
+     (e.g., form submissions by external customers).
+     References users.id.
+  """
+  uploaded_by: order_by
+  """
+  Width of image/video in pixels. Populated by Lambda after processing.
+     NULL for non-image files.
+  """
+  width: order_by
+}
+
+"""
+response of any mutation on the table "media"
+"""
+type media_mutation_response {
+  """number of rows affected by the mutation"""
+  affected_rows: Int!
+  """data from the rows affected by the mutation"""
+  returning: [media!]!
+}
+
+"""
+input type for inserting object relation for remote table "media"
+"""
+input media_obj_rel_insert_input {
+  data: media_insert_input!
+  """upsert condition"""
+  on_conflict: media_on_conflict
+}
+
+"""
+on_conflict condition type for table "media"
+"""
+input media_on_conflict {
+  constraint: media_constraint!
+  update_columns: [media_update_column!]! = []
+  where: media_bool_exp
+}
+
+"""Ordering options when selecting data from "media"."""
+input media_order_by {
+  created_at: order_by
+  duration_seconds: order_by
+  entity_id: order_by
+  entity_type: order_by
+  entity_type_config: media_entity_types_order_by
+  error_message: order_by
+  file_size_bytes: order_by
+  filename: order_by
+  height: order_by
+  id: order_by
+  mime_type: order_by
+  organization: organizations_order_by
+  organization_id: order_by
+  processing_metadata: order_by
+  status: order_by
+  storage_bucket: order_by
+  storage_path: order_by
+  storage_provider: order_by
+  storage_region: order_by
+  thumbnail_path: order_by
+  updated_at: order_by
+  uploaded_by: order_by
+  uploader: users_order_by
+  width: order_by
+}
+
+"""primary key columns input for table: media"""
+input media_pk_columns_input {
+  """
+  Opaque unique identifier (NanoID 12-char). This ID is embedded in the S3 path
+     to correlate presigned URL with webhook callback.
+  """
+  id: String!
+}
+
+"""prepend existing jsonb value of filtered columns with new jsonb value"""
+input media_prepend_input {
+  """
+  JSONB for provider-specific metadata.
+     Examples: ImageKit file_id, CloudFront invalidation_id, virus scan results.
+     This is appropriate use of JSONB: truly dynamic, provider-specific data.
+  """
+  processing_metadata: jsonb
+}
+
+"""
+select columns of table "media"
+"""
+enum media_select_column {
+  """column name"""
+  created_at
+  """column name"""
+  duration_seconds
+  """column name"""
+  entity_id
+  """column name"""
+  entity_type
+  """column name"""
+  error_message
+  """column name"""
+  file_size_bytes
+  """column name"""
+  filename
+  """column name"""
+  height
+  """column name"""
+  id
+  """column name"""
+  mime_type
+  """column name"""
+  organization_id
+  """column name"""
+  processing_metadata
+  """column name"""
+  status
+  """column name"""
+  storage_bucket
+  """column name"""
+  storage_path
+  """column name"""
+  storage_provider
+  """column name"""
+  storage_region
+  """column name"""
+  thumbnail_path
+  """column name"""
+  updated_at
+  """column name"""
+  uploaded_by
+  """column name"""
+  width
+}
+
+"""
+input type for updating data in table "media"
+"""
+input media_set_input {
+  """Timestamp when the media record was created (upload initiated)."""
+  created_at: timestamptz
+  """
+  Duration of video in seconds. Reserved for future video support.
+     NULL for images.
+  """
+  duration_seconds: numeric
+  """
+  ID of the entity this media is associated with.
+     Nullable for pending uploads (entity may not exist yet).
+     The target table is defined in media_entity_types.target_table.
+  """
+  entity_id: String
+  """
+  Type of entity this media is associated with.
+     References media_entity_types.code (not id).
+     Examples: organization_logo, contact_avatar, testimonial_video.
+  """
+  entity_type: String
+  """
+  Error details when status is failed.
+     Examples: "File size exceeds limit", "Invalid MIME type", etc.
+  """
+  error_message: String
+  """
+  File size in bytes. Used for quota tracking and validation against
+     media_entity_types.max_file_size_bytes.
+  """
+  file_size_bytes: bigint
+  """
+  Original filename from the upload. Preserved for display purposes.
+     The actual storage path uses a sanitized, unique name.
+  """
+  filename: String
+  """
+  Height of image/video in pixels. Populated by Lambda after processing.
+     NULL for non-image files.
+  """
+  height: Int
+  """
+  Opaque unique identifier (NanoID 12-char). This ID is embedded in the S3 path
+     to correlate presigned URL with webhook callback.
+  """
+  id: String
+  """
+  MIME type of the file (e.g., image/png, video/mp4).
+     Validated against media_entity_types.allowed_mime_types.
+  """
+  mime_type: String
+  """
+  Organization that owns this media. Used for RLS, quota tracking, and data export.
+     All media queries should filter by organization_id.
+  """
+  organization_id: String
+  """
+  JSONB for provider-specific metadata.
+     Examples: ImageKit file_id, CloudFront invalidation_id, virus scan results.
+     This is appropriate use of JSONB: truly dynamic, provider-specific data.
+  """
+  processing_metadata: jsonb
+  """
+  Processing status of the media file.
+     - pending: Upload initiated, waiting for file
+     - processing: File received, being validated
+     - ready: Validation passed, file is available
+     - failed: Validation failed, see error_message
+     - deleted: Soft deleted, file may be retained for backup
+  """
+  status: String
+  """
+  Bucket/container name where the file is stored.
+     Environment-specific: testimonials-dev-uploads, testimonials-prod-uploads, etc.
+  """
+  storage_bucket: String
+  """
+  Full object path within the bucket. This is the portable key.
+     Format: {org_id}/{entity_type}/{year}/{month}/{day}/{media_id}_{timestamp}.{ext}
+     Example: org_abc/organization_logo/2025/01/05/med_xyz_20250105T143022.png
+  """
+  storage_path: String
+  """
+  Storage provider identifier. Default is aws_s3.
+     Other possible values: gcs (Google Cloud), azure_blob, etc.
+     Used by CDN adapter to construct URLs.
+  """
+  storage_provider: String
+  """
+  AWS region or equivalent for other providers.
+     Used for constructing direct S3 URLs if needed.
+  """
+  storage_region: String
+  """
+  Storage path for video thumbnail. Reserved for future video support.
+     Lambda generates thumbnail and stores path here.
+  """
+  thumbnail_path: String
+  """
+  Timestamp of last modification. Auto-updated by trigger.
+     Changes when status updates, processing completes, etc.
+  """
+  updated_at: timestamptz
+  """
+  User who initiated the upload. NULL for anonymous uploads
+     (e.g., form submissions by external customers).
+     References users.id.
+  """
+  uploaded_by: String
+  """
+  Width of image/video in pixels. Populated by Lambda after processing.
+     NULL for non-image files.
+  """
+  width: Int
+}
+
+"""aggregate stddev on columns"""
+type media_stddev_fields {
+  """
+  Duration of video in seconds. Reserved for future video support.
+     NULL for images.
+  """
+  duration_seconds: Float
+  """
+  File size in bytes. Used for quota tracking and validation against
+     media_entity_types.max_file_size_bytes.
+  """
+  file_size_bytes: Float
+  """
+  Height of image/video in pixels. Populated by Lambda after processing.
+     NULL for non-image files.
+  """
+  height: Float
+  """
+  Width of image/video in pixels. Populated by Lambda after processing.
+     NULL for non-image files.
+  """
+  width: Float
+}
+
+"""
+order by stddev() on columns of table "media"
+"""
+input media_stddev_order_by {
+  """
+  Duration of video in seconds. Reserved for future video support.
+     NULL for images.
+  """
+  duration_seconds: order_by
+  """
+  File size in bytes. Used for quota tracking and validation against
+     media_entity_types.max_file_size_bytes.
+  """
+  file_size_bytes: order_by
+  """
+  Height of image/video in pixels. Populated by Lambda after processing.
+     NULL for non-image files.
+  """
+  height: order_by
+  """
+  Width of image/video in pixels. Populated by Lambda after processing.
+     NULL for non-image files.
+  """
+  width: order_by
+}
+
+"""aggregate stddev_pop on columns"""
+type media_stddev_pop_fields {
+  """
+  Duration of video in seconds. Reserved for future video support.
+     NULL for images.
+  """
+  duration_seconds: Float
+  """
+  File size in bytes. Used for quota tracking and validation against
+     media_entity_types.max_file_size_bytes.
+  """
+  file_size_bytes: Float
+  """
+  Height of image/video in pixels. Populated by Lambda after processing.
+     NULL for non-image files.
+  """
+  height: Float
+  """
+  Width of image/video in pixels. Populated by Lambda after processing.
+     NULL for non-image files.
+  """
+  width: Float
+}
+
+"""
+order by stddev_pop() on columns of table "media"
+"""
+input media_stddev_pop_order_by {
+  """
+  Duration of video in seconds. Reserved for future video support.
+     NULL for images.
+  """
+  duration_seconds: order_by
+  """
+  File size in bytes. Used for quota tracking and validation against
+     media_entity_types.max_file_size_bytes.
+  """
+  file_size_bytes: order_by
+  """
+  Height of image/video in pixels. Populated by Lambda after processing.
+     NULL for non-image files.
+  """
+  height: order_by
+  """
+  Width of image/video in pixels. Populated by Lambda after processing.
+     NULL for non-image files.
+  """
+  width: order_by
+}
+
+"""aggregate stddev_samp on columns"""
+type media_stddev_samp_fields {
+  """
+  Duration of video in seconds. Reserved for future video support.
+     NULL for images.
+  """
+  duration_seconds: Float
+  """
+  File size in bytes. Used for quota tracking and validation against
+     media_entity_types.max_file_size_bytes.
+  """
+  file_size_bytes: Float
+  """
+  Height of image/video in pixels. Populated by Lambda after processing.
+     NULL for non-image files.
+  """
+  height: Float
+  """
+  Width of image/video in pixels. Populated by Lambda after processing.
+     NULL for non-image files.
+  """
+  width: Float
+}
+
+"""
+order by stddev_samp() on columns of table "media"
+"""
+input media_stddev_samp_order_by {
+  """
+  Duration of video in seconds. Reserved for future video support.
+     NULL for images.
+  """
+  duration_seconds: order_by
+  """
+  File size in bytes. Used for quota tracking and validation against
+     media_entity_types.max_file_size_bytes.
+  """
+  file_size_bytes: order_by
+  """
+  Height of image/video in pixels. Populated by Lambda after processing.
+     NULL for non-image files.
+  """
+  height: order_by
+  """
+  Width of image/video in pixels. Populated by Lambda after processing.
+     NULL for non-image files.
+  """
+  width: order_by
+}
+
+"""
+Streaming cursor of the table "media"
+"""
+input media_stream_cursor_input {
+  """Stream column input with initial value"""
+  initial_value: media_stream_cursor_value_input!
+  """cursor ordering"""
+  ordering: cursor_ordering
+}
+
+"""Initial value of the column from where the streaming should start"""
+input media_stream_cursor_value_input {
+  """Timestamp when the media record was created (upload initiated)."""
+  created_at: timestamptz
+  """
+  Duration of video in seconds. Reserved for future video support.
+     NULL for images.
+  """
+  duration_seconds: numeric
+  """
+  ID of the entity this media is associated with.
+     Nullable for pending uploads (entity may not exist yet).
+     The target table is defined in media_entity_types.target_table.
+  """
+  entity_id: String
+  """
+  Type of entity this media is associated with.
+     References media_entity_types.code (not id).
+     Examples: organization_logo, contact_avatar, testimonial_video.
+  """
+  entity_type: String
+  """
+  Error details when status is failed.
+     Examples: "File size exceeds limit", "Invalid MIME type", etc.
+  """
+  error_message: String
+  """
+  File size in bytes. Used for quota tracking and validation against
+     media_entity_types.max_file_size_bytes.
+  """
+  file_size_bytes: bigint
+  """
+  Original filename from the upload. Preserved for display purposes.
+     The actual storage path uses a sanitized, unique name.
+  """
+  filename: String
+  """
+  Height of image/video in pixels. Populated by Lambda after processing.
+     NULL for non-image files.
+  """
+  height: Int
+  """
+  Opaque unique identifier (NanoID 12-char). This ID is embedded in the S3 path
+     to correlate presigned URL with webhook callback.
+  """
+  id: String
+  """
+  MIME type of the file (e.g., image/png, video/mp4).
+     Validated against media_entity_types.allowed_mime_types.
+  """
+  mime_type: String
+  """
+  Organization that owns this media. Used for RLS, quota tracking, and data export.
+     All media queries should filter by organization_id.
+  """
+  organization_id: String
+  """
+  JSONB for provider-specific metadata.
+     Examples: ImageKit file_id, CloudFront invalidation_id, virus scan results.
+     This is appropriate use of JSONB: truly dynamic, provider-specific data.
+  """
+  processing_metadata: jsonb
+  """
+  Processing status of the media file.
+     - pending: Upload initiated, waiting for file
+     - processing: File received, being validated
+     - ready: Validation passed, file is available
+     - failed: Validation failed, see error_message
+     - deleted: Soft deleted, file may be retained for backup
+  """
+  status: String
+  """
+  Bucket/container name where the file is stored.
+     Environment-specific: testimonials-dev-uploads, testimonials-prod-uploads, etc.
+  """
+  storage_bucket: String
+  """
+  Full object path within the bucket. This is the portable key.
+     Format: {org_id}/{entity_type}/{year}/{month}/{day}/{media_id}_{timestamp}.{ext}
+     Example: org_abc/organization_logo/2025/01/05/med_xyz_20250105T143022.png
+  """
+  storage_path: String
+  """
+  Storage provider identifier. Default is aws_s3.
+     Other possible values: gcs (Google Cloud), azure_blob, etc.
+     Used by CDN adapter to construct URLs.
+  """
+  storage_provider: String
+  """
+  AWS region or equivalent for other providers.
+     Used for constructing direct S3 URLs if needed.
+  """
+  storage_region: String
+  """
+  Storage path for video thumbnail. Reserved for future video support.
+     Lambda generates thumbnail and stores path here.
+  """
+  thumbnail_path: String
+  """
+  Timestamp of last modification. Auto-updated by trigger.
+     Changes when status updates, processing completes, etc.
+  """
+  updated_at: timestamptz
+  """
+  User who initiated the upload. NULL for anonymous uploads
+     (e.g., form submissions by external customers).
+     References users.id.
+  """
+  uploaded_by: String
+  """
+  Width of image/video in pixels. Populated by Lambda after processing.
+     NULL for non-image files.
+  """
+  width: Int
+}
+
+"""aggregate sum on columns"""
+type media_sum_fields {
+  """
+  Duration of video in seconds. Reserved for future video support.
+     NULL for images.
+  """
+  duration_seconds: numeric
+  """
+  File size in bytes. Used for quota tracking and validation against
+     media_entity_types.max_file_size_bytes.
+  """
+  file_size_bytes: bigint
+  """
+  Height of image/video in pixels. Populated by Lambda after processing.
+     NULL for non-image files.
+  """
+  height: Int
+  """
+  Width of image/video in pixels. Populated by Lambda after processing.
+     NULL for non-image files.
+  """
+  width: Int
+}
+
+"""
+order by sum() on columns of table "media"
+"""
+input media_sum_order_by {
+  """
+  Duration of video in seconds. Reserved for future video support.
+     NULL for images.
+  """
+  duration_seconds: order_by
+  """
+  File size in bytes. Used for quota tracking and validation against
+     media_entity_types.max_file_size_bytes.
+  """
+  file_size_bytes: order_by
+  """
+  Height of image/video in pixels. Populated by Lambda after processing.
+     NULL for non-image files.
+  """
+  height: order_by
+  """
+  Width of image/video in pixels. Populated by Lambda after processing.
+     NULL for non-image files.
+  """
+  width: order_by
+}
+
+"""
+update columns of table "media"
+"""
+enum media_update_column {
+  """column name"""
+  created_at
+  """column name"""
+  duration_seconds
+  """column name"""
+  entity_id
+  """column name"""
+  entity_type
+  """column name"""
+  error_message
+  """column name"""
+  file_size_bytes
+  """column name"""
+  filename
+  """column name"""
+  height
+  """column name"""
+  id
+  """column name"""
+  mime_type
+  """column name"""
+  organization_id
+  """column name"""
+  processing_metadata
+  """column name"""
+  status
+  """column name"""
+  storage_bucket
+  """column name"""
+  storage_path
+  """column name"""
+  storage_provider
+  """column name"""
+  storage_region
+  """column name"""
+  thumbnail_path
+  """column name"""
+  updated_at
+  """column name"""
+  uploaded_by
+  """column name"""
+  width
+}
+
+input media_updates {
+  """append existing jsonb value of filtered columns with new jsonb value"""
+  _append: media_append_input
+  """
+  delete the field or element with specified path (for JSON arrays, negative integers count from the end)
+  """
+  _delete_at_path: media_delete_at_path_input
+  """
+  delete the array element with specified index (negative integers count from the end). throws an error if top level container is not an array
+  """
+  _delete_elem: media_delete_elem_input
+  """
+  delete key/value pair or string element. key/value pairs are matched based on their key value
+  """
+  _delete_key: media_delete_key_input
+  """increments the numeric columns with given value of the filtered values"""
+  _inc: media_inc_input
+  """prepend existing jsonb value of filtered columns with new jsonb value"""
+  _prepend: media_prepend_input
+  """sets the columns of the filtered rows to the given values"""
+  _set: media_set_input
+  """filter the rows which have to be updated"""
+  where: media_bool_exp!
+}
+
+"""aggregate var_pop on columns"""
+type media_var_pop_fields {
+  """
+  Duration of video in seconds. Reserved for future video support.
+     NULL for images.
+  """
+  duration_seconds: Float
+  """
+  File size in bytes. Used for quota tracking and validation against
+     media_entity_types.max_file_size_bytes.
+  """
+  file_size_bytes: Float
+  """
+  Height of image/video in pixels. Populated by Lambda after processing.
+     NULL for non-image files.
+  """
+  height: Float
+  """
+  Width of image/video in pixels. Populated by Lambda after processing.
+     NULL for non-image files.
+  """
+  width: Float
+}
+
+"""
+order by var_pop() on columns of table "media"
+"""
+input media_var_pop_order_by {
+  """
+  Duration of video in seconds. Reserved for future video support.
+     NULL for images.
+  """
+  duration_seconds: order_by
+  """
+  File size in bytes. Used for quota tracking and validation against
+     media_entity_types.max_file_size_bytes.
+  """
+  file_size_bytes: order_by
+  """
+  Height of image/video in pixels. Populated by Lambda after processing.
+     NULL for non-image files.
+  """
+  height: order_by
+  """
+  Width of image/video in pixels. Populated by Lambda after processing.
+     NULL for non-image files.
+  """
+  width: order_by
+}
+
+"""aggregate var_samp on columns"""
+type media_var_samp_fields {
+  """
+  Duration of video in seconds. Reserved for future video support.
+     NULL for images.
+  """
+  duration_seconds: Float
+  """
+  File size in bytes. Used for quota tracking and validation against
+     media_entity_types.max_file_size_bytes.
+  """
+  file_size_bytes: Float
+  """
+  Height of image/video in pixels. Populated by Lambda after processing.
+     NULL for non-image files.
+  """
+  height: Float
+  """
+  Width of image/video in pixels. Populated by Lambda after processing.
+     NULL for non-image files.
+  """
+  width: Float
+}
+
+"""
+order by var_samp() on columns of table "media"
+"""
+input media_var_samp_order_by {
+  """
+  Duration of video in seconds. Reserved for future video support.
+     NULL for images.
+  """
+  duration_seconds: order_by
+  """
+  File size in bytes. Used for quota tracking and validation against
+     media_entity_types.max_file_size_bytes.
+  """
+  file_size_bytes: order_by
+  """
+  Height of image/video in pixels. Populated by Lambda after processing.
+     NULL for non-image files.
+  """
+  height: order_by
+  """
+  Width of image/video in pixels. Populated by Lambda after processing.
+     NULL for non-image files.
+  """
+  width: order_by
+}
+
+"""aggregate variance on columns"""
+type media_variance_fields {
+  """
+  Duration of video in seconds. Reserved for future video support.
+     NULL for images.
+  """
+  duration_seconds: Float
+  """
+  File size in bytes. Used for quota tracking and validation against
+     media_entity_types.max_file_size_bytes.
+  """
+  file_size_bytes: Float
+  """
+  Height of image/video in pixels. Populated by Lambda after processing.
+     NULL for non-image files.
+  """
+  height: Float
+  """
+  Width of image/video in pixels. Populated by Lambda after processing.
+     NULL for non-image files.
+  """
+  width: Float
+}
+
+"""
+order by variance() on columns of table "media"
+"""
+input media_variance_order_by {
+  """
+  Duration of video in seconds. Reserved for future video support.
+     NULL for images.
+  """
+  duration_seconds: order_by
+  """
+  File size in bytes. Used for quota tracking and validation against
+     media_entity_types.max_file_size_bytes.
+  """
+  file_size_bytes: order_by
+  """
+  Height of image/video in pixels. Populated by Lambda after processing.
+     NULL for non-image files.
+  """
+  height: order_by
+  """
+  Width of image/video in pixels. Populated by Lambda after processing.
+     NULL for non-image files.
+  """
+  width: order_by
+}
+
 """mutation root"""
 type mutation_root {
   """
@@ -6480,6 +8985,40 @@ type mutation_root {
     """Primary key - NanoID 12-char unique identifier"""
     id: String!
   ): forms
+  """
+  delete data from the table: "media"
+  """
+  delete_media(
+    """filter the rows which have to be deleted"""
+    where: media_bool_exp!
+  ): media_mutation_response
+  """
+  delete single row from the table: "media"
+  """
+  delete_media_by_pk(
+    """
+    Opaque unique identifier (NanoID 12-char). This ID is embedded in the S3 path
+       to correlate presigned URL with webhook callback.
+    """
+    id: String!
+  ): media
+  """
+  delete data from the table: "media_entity_types"
+  """
+  delete_media_entity_types(
+    """filter the rows which have to be deleted"""
+    where: media_entity_types_bool_exp!
+  ): media_entity_types_mutation_response
+  """
+  delete single row from the table: "media_entity_types"
+  """
+  delete_media_entity_types_by_pk(
+    """
+    Opaque unique identifier (NanoID 12-char). Following project convention
+       that IDs should be meaningless. Use `code` for semantic lookups.
+    """
+    id: String!
+  ): media_entity_types
   """
   delete data from the table: "organization_plans"
   """
@@ -6802,6 +9341,42 @@ type mutation_root {
     """upsert condition"""
     on_conflict: forms_on_conflict
   ): forms
+  """
+  insert data into the table: "media"
+  """
+  insert_media(
+    """the rows to be inserted"""
+    objects: [media_insert_input!]!
+    """upsert condition"""
+    on_conflict: media_on_conflict
+  ): media_mutation_response
+  """
+  insert data into the table: "media_entity_types"
+  """
+  insert_media_entity_types(
+    """the rows to be inserted"""
+    objects: [media_entity_types_insert_input!]!
+    """upsert condition"""
+    on_conflict: media_entity_types_on_conflict
+  ): media_entity_types_mutation_response
+  """
+  insert a single row into the table: "media_entity_types"
+  """
+  insert_media_entity_types_one(
+    """the row to be inserted"""
+    object: media_entity_types_insert_input!
+    """upsert condition"""
+    on_conflict: media_entity_types_on_conflict
+  ): media_entity_types
+  """
+  insert a single row into the table: "media"
+  """
+  insert_media_one(
+    """the row to be inserted"""
+    object: media_insert_input!
+    """upsert condition"""
+    on_conflict: media_on_conflict
+  ): media
   """
   insert data into the table: "organization_plans"
   """
@@ -7371,6 +9946,94 @@ type mutation_root {
     updates: [forms_updates!]!
   ): [forms_mutation_response]
   """
+  update data of the table: "media"
+  """
+  update_media(
+    """append existing jsonb value of filtered columns with new jsonb value"""
+    _append: media_append_input
+    """
+    delete the field or element with specified path (for JSON arrays, negative integers count from the end)
+    """
+    _delete_at_path: media_delete_at_path_input
+    """
+    delete the array element with specified index (negative integers count from the end). throws an error if top level container is not an array
+    """
+    _delete_elem: media_delete_elem_input
+    """
+    delete key/value pair or string element. key/value pairs are matched based on their key value
+    """
+    _delete_key: media_delete_key_input
+    """increments the numeric columns with given value of the filtered values"""
+    _inc: media_inc_input
+    """prepend existing jsonb value of filtered columns with new jsonb value"""
+    _prepend: media_prepend_input
+    """sets the columns of the filtered rows to the given values"""
+    _set: media_set_input
+    """filter the rows which have to be updated"""
+    where: media_bool_exp!
+  ): media_mutation_response
+  """
+  update single row of the table: "media"
+  """
+  update_media_by_pk(
+    """append existing jsonb value of filtered columns with new jsonb value"""
+    _append: media_append_input
+    """
+    delete the field or element with specified path (for JSON arrays, negative integers count from the end)
+    """
+    _delete_at_path: media_delete_at_path_input
+    """
+    delete the array element with specified index (negative integers count from the end). throws an error if top level container is not an array
+    """
+    _delete_elem: media_delete_elem_input
+    """
+    delete key/value pair or string element. key/value pairs are matched based on their key value
+    """
+    _delete_key: media_delete_key_input
+    """increments the numeric columns with given value of the filtered values"""
+    _inc: media_inc_input
+    """prepend existing jsonb value of filtered columns with new jsonb value"""
+    _prepend: media_prepend_input
+    """sets the columns of the filtered rows to the given values"""
+    _set: media_set_input
+    pk_columns: media_pk_columns_input!
+  ): media
+  """
+  update data of the table: "media_entity_types"
+  """
+  update_media_entity_types(
+    """increments the numeric columns with given value of the filtered values"""
+    _inc: media_entity_types_inc_input
+    """sets the columns of the filtered rows to the given values"""
+    _set: media_entity_types_set_input
+    """filter the rows which have to be updated"""
+    where: media_entity_types_bool_exp!
+  ): media_entity_types_mutation_response
+  """
+  update single row of the table: "media_entity_types"
+  """
+  update_media_entity_types_by_pk(
+    """increments the numeric columns with given value of the filtered values"""
+    _inc: media_entity_types_inc_input
+    """sets the columns of the filtered rows to the given values"""
+    _set: media_entity_types_set_input
+    pk_columns: media_entity_types_pk_columns_input!
+  ): media_entity_types
+  """
+  update multiples rows of table: "media_entity_types"
+  """
+  update_media_entity_types_many(
+    """updates to execute, in order"""
+    updates: [media_entity_types_updates!]!
+  ): [media_entity_types_mutation_response]
+  """
+  update multiples rows of table: "media"
+  """
+  update_media_many(
+    """updates to execute, in order"""
+    updates: [media_updates!]!
+  ): [media_mutation_response]
+  """
   update data of the table: "organization_plans"
   """
   update_organization_plans(
@@ -7866,6 +10529,23 @@ type mutation_root {
     """updates to execute, in order"""
     updates: [widgets_updates!]!
   ): [widgets_mutation_response]
+}
+
+scalar numeric
+
+"""
+Boolean expression to compare columns of type "numeric". All fields are combined with logical 'AND'.
+"""
+input numeric_comparison_exp {
+  _eq: numeric
+  _gt: numeric
+  _gte: numeric
+  _in: [numeric!]
+  _is_null: Boolean
+  _lt: numeric
+  _lte: numeric
+  _neq: numeric
+  _nin: [numeric!]
 }
 
 """column ordering options"""
@@ -9352,8 +12032,16 @@ type organizations {
   id: String!
   """Soft delete flag - false means organization is deactivated"""
   is_active: Boolean!
-  """Organization logo image URL"""
-  logo_url: String
+  """An object relationship"""
+  logo: media
+  """
+  Reference to the current organization logo in the media table.
+   When a new logo is uploaded and reaches "ready" status, this field
+   is updated to point to the new media record. The logo relationship
+   provides access to storage_path, dimensions, mime_type, and status.
+   NULL means no logo is set.
+  """
+  logo_id: String
   """An array relationship"""
   members(
     """distinct select on columns"""
@@ -9557,7 +12245,8 @@ input organizations_bool_exp {
   forms_aggregate: forms_aggregate_bool_exp
   id: String_comparison_exp
   is_active: Boolean_comparison_exp
-  logo_url: String_comparison_exp
+  logo: media_bool_exp
+  logo_id: String_comparison_exp
   members: organization_roles_bool_exp
   members_aggregate: organization_roles_aggregate_bool_exp
   name: String_comparison_exp
@@ -9629,8 +12318,15 @@ input organizations_insert_input {
   id: String
   """Soft delete flag - false means organization is deactivated"""
   is_active: Boolean
-  """Organization logo image URL"""
-  logo_url: String
+  logo: media_obj_rel_insert_input
+  """
+  Reference to the current organization logo in the media table.
+   When a new logo is uploaded and reaches "ready" status, this field
+   is updated to point to the new media record. The logo relationship
+   provides access to storage_path, dimensions, mime_type, and status.
+   NULL means no logo is set.
+  """
+  logo_id: String
   members: organization_roles_arr_rel_insert_input
   """Organization display name"""
   name: String
@@ -9657,8 +12353,14 @@ type organizations_max_fields {
   created_by: String
   """Primary key (NanoID 12-char)"""
   id: String
-  """Organization logo image URL"""
-  logo_url: String
+  """
+  Reference to the current organization logo in the media table.
+   When a new logo is uploaded and reaches "ready" status, this field
+   is updated to point to the new media record. The logo relationship
+   provides access to storage_path, dimensions, mime_type, and status.
+   NULL means no logo is set.
+  """
+  logo_id: String
   """Organization display name"""
   name: String
   """
@@ -9681,8 +12383,14 @@ input organizations_max_order_by {
   created_by: order_by
   """Primary key (NanoID 12-char)"""
   id: order_by
-  """Organization logo image URL"""
-  logo_url: order_by
+  """
+  Reference to the current organization logo in the media table.
+   When a new logo is uploaded and reaches "ready" status, this field
+   is updated to point to the new media record. The logo relationship
+   provides access to storage_path, dimensions, mime_type, and status.
+   NULL means no logo is set.
+  """
+  logo_id: order_by
   """Organization display name"""
   name: order_by
   """
@@ -9703,8 +12411,14 @@ type organizations_min_fields {
   created_by: String
   """Primary key (NanoID 12-char)"""
   id: String
-  """Organization logo image URL"""
-  logo_url: String
+  """
+  Reference to the current organization logo in the media table.
+   When a new logo is uploaded and reaches "ready" status, this field
+   is updated to point to the new media record. The logo relationship
+   provides access to storage_path, dimensions, mime_type, and status.
+   NULL means no logo is set.
+  """
+  logo_id: String
   """Organization display name"""
   name: String
   """
@@ -9727,8 +12441,14 @@ input organizations_min_order_by {
   created_by: order_by
   """Primary key (NanoID 12-char)"""
   id: order_by
-  """Organization logo image URL"""
-  logo_url: order_by
+  """
+  Reference to the current organization logo in the media table.
+   When a new logo is uploaded and reaches "ready" status, this field
+   is updated to point to the new media record. The logo relationship
+   provides access to storage_path, dimensions, mime_type, and status.
+   NULL means no logo is set.
+  """
+  logo_id: order_by
   """Organization display name"""
   name: order_by
   """
@@ -9777,7 +12497,8 @@ input organizations_order_by {
   forms_aggregate: forms_aggregate_order_by
   id: order_by
   is_active: order_by
-  logo_url: order_by
+  logo: media_order_by
+  logo_id: order_by
   members_aggregate: organization_roles_aggregate_order_by
   name: order_by
   plans_aggregate: organization_plans_aggregate_order_by
@@ -9814,7 +12535,7 @@ enum organizations_select_column {
   """column name"""
   is_active
   """column name"""
-  logo_url
+  logo_id
   """column name"""
   name
   """column name"""
@@ -9855,8 +12576,14 @@ input organizations_set_input {
   id: String
   """Soft delete flag - false means organization is deactivated"""
   is_active: Boolean
-  """Organization logo image URL"""
-  logo_url: String
+  """
+  Reference to the current organization logo in the media table.
+   When a new logo is uploaded and reaches "ready" status, this field
+   is updated to point to the new media record. The logo relationship
+   provides access to storage_path, dimensions, mime_type, and status.
+   NULL means no logo is set.
+  """
+  logo_id: String
   """Organization display name"""
   name: String
   """UI preferences only (theme, locale) - not business logic"""
@@ -9891,8 +12618,14 @@ input organizations_stream_cursor_value_input {
   id: String
   """Soft delete flag - false means organization is deactivated"""
   is_active: Boolean
-  """Organization logo image URL"""
-  logo_url: String
+  """
+  Reference to the current organization logo in the media table.
+   When a new logo is uploaded and reaches "ready" status, this field
+   is updated to point to the new media record. The logo relationship
+   provides access to storage_path, dimensions, mime_type, and status.
+   NULL means no logo is set.
+  """
+  logo_id: String
   """Organization display name"""
   name: String
   """UI preferences only (theme, locale) - not business logic"""
@@ -9920,7 +12653,7 @@ enum organizations_update_column {
   """column name"""
   is_active
   """column name"""
-  logo_url
+  logo_id
   """column name"""
   name
   """column name"""
@@ -11696,6 +14429,80 @@ type query_root {
     """Primary key - NanoID 12-char unique identifier"""
     id: String!
   ): forms
+  """An array relationship"""
+  media(
+    """distinct select on columns"""
+    distinct_on: [media_select_column!]
+    """limit the number of rows returned"""
+    limit: Int
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+    """sort the rows by one or more columns"""
+    order_by: [media_order_by!]
+    """filter the rows returned"""
+    where: media_bool_exp
+  ): [media!]!
+  """An aggregate relationship"""
+  media_aggregate(
+    """distinct select on columns"""
+    distinct_on: [media_select_column!]
+    """limit the number of rows returned"""
+    limit: Int
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+    """sort the rows by one or more columns"""
+    order_by: [media_order_by!]
+    """filter the rows returned"""
+    where: media_bool_exp
+  ): media_aggregate!
+  """fetch data from the table: "media" using primary key columns"""
+  media_by_pk(
+    """
+    Opaque unique identifier (NanoID 12-char). This ID is embedded in the S3 path
+       to correlate presigned URL with webhook callback.
+    """
+    id: String!
+  ): media
+  """
+  fetch data from the table: "media_entity_types"
+  """
+  media_entity_types(
+    """distinct select on columns"""
+    distinct_on: [media_entity_types_select_column!]
+    """limit the number of rows returned"""
+    limit: Int
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+    """sort the rows by one or more columns"""
+    order_by: [media_entity_types_order_by!]
+    """filter the rows returned"""
+    where: media_entity_types_bool_exp
+  ): [media_entity_types!]!
+  """
+  fetch aggregated fields from the table: "media_entity_types"
+  """
+  media_entity_types_aggregate(
+    """distinct select on columns"""
+    distinct_on: [media_entity_types_select_column!]
+    """limit the number of rows returned"""
+    limit: Int
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+    """sort the rows by one or more columns"""
+    order_by: [media_entity_types_order_by!]
+    """filter the rows returned"""
+    where: media_entity_types_bool_exp
+  ): media_entity_types_aggregate!
+  """
+  fetch data from the table: "media_entity_types" using primary key columns
+  """
+  media_entity_types_by_pk(
+    """
+    Opaque unique identifier (NanoID 12-char). Following project convention
+       that IDs should be meaningless. Use `code` for semantic lookups.
+    """
+    id: String!
+  ): media_entity_types
   """An array relationship"""
   organization_plans(
     """distinct select on columns"""
@@ -14232,6 +17039,102 @@ type subscription_root {
     """filter the rows returned"""
     where: forms_bool_exp
   ): [forms!]!
+  """An array relationship"""
+  media(
+    """distinct select on columns"""
+    distinct_on: [media_select_column!]
+    """limit the number of rows returned"""
+    limit: Int
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+    """sort the rows by one or more columns"""
+    order_by: [media_order_by!]
+    """filter the rows returned"""
+    where: media_bool_exp
+  ): [media!]!
+  """An aggregate relationship"""
+  media_aggregate(
+    """distinct select on columns"""
+    distinct_on: [media_select_column!]
+    """limit the number of rows returned"""
+    limit: Int
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+    """sort the rows by one or more columns"""
+    order_by: [media_order_by!]
+    """filter the rows returned"""
+    where: media_bool_exp
+  ): media_aggregate!
+  """fetch data from the table: "media" using primary key columns"""
+  media_by_pk(
+    """
+    Opaque unique identifier (NanoID 12-char). This ID is embedded in the S3 path
+       to correlate presigned URL with webhook callback.
+    """
+    id: String!
+  ): media
+  """
+  fetch data from the table: "media_entity_types"
+  """
+  media_entity_types(
+    """distinct select on columns"""
+    distinct_on: [media_entity_types_select_column!]
+    """limit the number of rows returned"""
+    limit: Int
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+    """sort the rows by one or more columns"""
+    order_by: [media_entity_types_order_by!]
+    """filter the rows returned"""
+    where: media_entity_types_bool_exp
+  ): [media_entity_types!]!
+  """
+  fetch aggregated fields from the table: "media_entity_types"
+  """
+  media_entity_types_aggregate(
+    """distinct select on columns"""
+    distinct_on: [media_entity_types_select_column!]
+    """limit the number of rows returned"""
+    limit: Int
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+    """sort the rows by one or more columns"""
+    order_by: [media_entity_types_order_by!]
+    """filter the rows returned"""
+    where: media_entity_types_bool_exp
+  ): media_entity_types_aggregate!
+  """
+  fetch data from the table: "media_entity_types" using primary key columns
+  """
+  media_entity_types_by_pk(
+    """
+    Opaque unique identifier (NanoID 12-char). Following project convention
+       that IDs should be meaningless. Use `code` for semantic lookups.
+    """
+    id: String!
+  ): media_entity_types
+  """
+  fetch data from the table in a streaming manner: "media_entity_types"
+  """
+  media_entity_types_stream(
+    """maximum number of rows returned in a single batch"""
+    batch_size: Int!
+    """cursor to stream the results returned by the query"""
+    cursor: [media_entity_types_stream_cursor_input]!
+    """filter the rows returned"""
+    where: media_entity_types_bool_exp
+  ): [media_entity_types!]!
+  """
+  fetch data from the table in a streaming manner: "media"
+  """
+  media_stream(
+    """maximum number of rows returned in a single batch"""
+    batch_size: Int!
+    """cursor to stream the results returned by the query"""
+    cursor: [media_stream_cursor_input]!
+    """filter the rows returned"""
+    where: media_bool_exp
+  ): [media!]!
   """An array relationship"""
   organization_plans(
     """distinct select on columns"""

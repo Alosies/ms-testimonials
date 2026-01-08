@@ -16,7 +16,9 @@ export type Scalars = {
   Boolean: { input: boolean; output: boolean; }
   Int: { input: number; output: number; }
   Float: { input: number; output: number; }
+  bigint: { input: number; output: number; }
   jsonb: { input: any; output: any; }
+  numeric: { input: number; output: number; }
   organization_setup_status: { input: 'pending_setup' | 'completed'; output: 'pending_setup' | 'completed'; }
   smallint: { input: number; output: number; }
   timestamptz: { input: string; output: string; }
@@ -96,6 +98,19 @@ export type String_Comparison_Exp = {
   _regex?: InputMaybe<Scalars['String']['input']>;
   /** does the column match the given SQL regular expression */
   _similar?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** Boolean expression to compare columns of type "bigint". All fields are combined with logical 'AND'. */
+export type Bigint_Comparison_Exp = {
+  _eq?: InputMaybe<Scalars['bigint']['input']>;
+  _gt?: InputMaybe<Scalars['bigint']['input']>;
+  _gte?: InputMaybe<Scalars['bigint']['input']>;
+  _in?: InputMaybe<Array<Scalars['bigint']['input']>>;
+  _is_null?: InputMaybe<Scalars['Boolean']['input']>;
+  _lt?: InputMaybe<Scalars['bigint']['input']>;
+  _lte?: InputMaybe<Scalars['bigint']['input']>;
+  _neq?: InputMaybe<Scalars['bigint']['input']>;
+  _nin?: InputMaybe<Array<Scalars['bigint']['input']>>;
 };
 
 /** Normalized contact data for testimonial submitters. Enables contact management, deduplication across forms, and tracking of repeat submissions within an organization. */
@@ -4866,6 +4881,2472 @@ export type Jsonb_Comparison_Exp = {
   _nin?: InputMaybe<Array<Scalars['jsonb']['input']>>;
 };
 
+/**
+ * Centralized tracking for all uploaded media files.
+ *
+ *    This table stores metadata for files uploaded to cloud storage (S3, GCS, etc.)
+ *    and tracks their processing status through the upload workflow.
+ *
+ *    Key features:
+ *    1. Provider-agnostic: storage_path is portable across providers
+ *    2. Polymorphic: entity_type + entity_id links to any entity type
+ *    3. Status workflow: tracks upload from pending to ready/failed
+ *    4. Audit trail: tracks who uploaded and when
+ *
+ *    Upload flow:
+ *    1. API creates media record with status=pending
+ *    2. Frontend uploads to presigned URL
+ *    3. Lambda validates and calls webhook
+ *    4. Webhook updates status to ready/failed
+ */
+export type Media = {
+  __typename?: 'media';
+  /** Timestamp when the media record was created (upload initiated). */
+  created_at: Scalars['timestamptz']['output'];
+  /**
+   * Duration of video in seconds. Reserved for future video support.
+   *    NULL for images.
+   */
+  duration_seconds?: Maybe<Scalars['numeric']['output']>;
+  /**
+   * ID of the entity this media is associated with.
+   *    Nullable for pending uploads (entity may not exist yet).
+   *    The target table is defined in media_entity_types.target_table.
+   */
+  entity_id?: Maybe<Scalars['String']['output']>;
+  /**
+   * Type of entity this media is associated with.
+   *    References media_entity_types.code (not id).
+   *    Examples: organization_logo, contact_avatar, testimonial_video.
+   */
+  entity_type: Scalars['String']['output'];
+  /** An object relationship */
+  entity_type_config: Media_Entity_Types;
+  /**
+   * Error details when status is failed.
+   *    Examples: "File size exceeds limit", "Invalid MIME type", etc.
+   */
+  error_message?: Maybe<Scalars['String']['output']>;
+  /**
+   * File size in bytes. Used for quota tracking and validation against
+   *    media_entity_types.max_file_size_bytes.
+   */
+  file_size_bytes: Scalars['bigint']['output'];
+  /**
+   * Original filename from the upload. Preserved for display purposes.
+   *    The actual storage path uses a sanitized, unique name.
+   */
+  filename: Scalars['String']['output'];
+  /**
+   * Height of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  height?: Maybe<Scalars['Int']['output']>;
+  /**
+   * Opaque unique identifier (NanoID 12-char). This ID is embedded in the S3 path
+   *    to correlate presigned URL with webhook callback.
+   */
+  id: Scalars['String']['output'];
+  /**
+   * MIME type of the file (e.g., image/png, video/mp4).
+   *    Validated against media_entity_types.allowed_mime_types.
+   */
+  mime_type: Scalars['String']['output'];
+  /** An object relationship */
+  organization: Organizations;
+  /**
+   * Organization that owns this media. Used for RLS, quota tracking, and data export.
+   *    All media queries should filter by organization_id.
+   */
+  organization_id: Scalars['String']['output'];
+  /**
+   * JSONB for provider-specific metadata.
+   *    Examples: ImageKit file_id, CloudFront invalidation_id, virus scan results.
+   *    This is appropriate use of JSONB: truly dynamic, provider-specific data.
+   */
+  processing_metadata: Scalars['jsonb']['output'];
+  /**
+   * Processing status of the media file.
+   *    - pending: Upload initiated, waiting for file
+   *    - processing: File received, being validated
+   *    - ready: Validation passed, file is available
+   *    - failed: Validation failed, see error_message
+   *    - deleted: Soft deleted, file may be retained for backup
+   */
+  status: Scalars['String']['output'];
+  /**
+   * Bucket/container name where the file is stored.
+   *    Environment-specific: testimonials-dev-uploads, testimonials-prod-uploads, etc.
+   */
+  storage_bucket: Scalars['String']['output'];
+  /**
+   * Full object path within the bucket. This is the portable key.
+   *    Format: {org_id}/{entity_type}/{year}/{month}/{day}/{media_id}_{timestamp}.{ext}
+   *    Example: org_abc/organization_logo/2025/01/05/med_xyz_20250105T143022.png
+   */
+  storage_path: Scalars['String']['output'];
+  /**
+   * Storage provider identifier. Default is aws_s3.
+   *    Other possible values: gcs (Google Cloud), azure_blob, etc.
+   *    Used by CDN adapter to construct URLs.
+   */
+  storage_provider: Scalars['String']['output'];
+  /**
+   * AWS region or equivalent for other providers.
+   *    Used for constructing direct S3 URLs if needed.
+   */
+  storage_region?: Maybe<Scalars['String']['output']>;
+  /**
+   * Storage path for video thumbnail. Reserved for future video support.
+   *    Lambda generates thumbnail and stores path here.
+   */
+  thumbnail_path?: Maybe<Scalars['String']['output']>;
+  /**
+   * Timestamp of last modification. Auto-updated by trigger.
+   *    Changes when status updates, processing completes, etc.
+   */
+  updated_at: Scalars['timestamptz']['output'];
+  /**
+   * User who initiated the upload. NULL for anonymous uploads
+   *    (e.g., form submissions by external customers).
+   *    References users.id.
+   */
+  uploaded_by?: Maybe<Scalars['String']['output']>;
+  /** An object relationship */
+  uploader?: Maybe<Users>;
+  /**
+   * Width of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  width?: Maybe<Scalars['Int']['output']>;
+};
+
+
+/**
+ * Centralized tracking for all uploaded media files.
+ *
+ *    This table stores metadata for files uploaded to cloud storage (S3, GCS, etc.)
+ *    and tracks their processing status through the upload workflow.
+ *
+ *    Key features:
+ *    1. Provider-agnostic: storage_path is portable across providers
+ *    2. Polymorphic: entity_type + entity_id links to any entity type
+ *    3. Status workflow: tracks upload from pending to ready/failed
+ *    4. Audit trail: tracks who uploaded and when
+ *
+ *    Upload flow:
+ *    1. API creates media record with status=pending
+ *    2. Frontend uploads to presigned URL
+ *    3. Lambda validates and calls webhook
+ *    4. Webhook updates status to ready/failed
+ */
+export type MediaProcessing_MetadataArgs = {
+  path?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** aggregated selection of "media" */
+export type Media_Aggregate = {
+  __typename?: 'media_aggregate';
+  aggregate?: Maybe<Media_Aggregate_Fields>;
+  nodes: Array<Media>;
+};
+
+export type Media_Aggregate_Bool_Exp = {
+  count?: InputMaybe<Media_Aggregate_Bool_Exp_Count>;
+};
+
+export type Media_Aggregate_Bool_Exp_Count = {
+  arguments?: InputMaybe<Array<Media_Select_Column>>;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+  filter?: InputMaybe<Media_Bool_Exp>;
+  predicate: Int_Comparison_Exp;
+};
+
+/** aggregate fields of "media" */
+export type Media_Aggregate_Fields = {
+  __typename?: 'media_aggregate_fields';
+  avg?: Maybe<Media_Avg_Fields>;
+  count: Scalars['Int']['output'];
+  max?: Maybe<Media_Max_Fields>;
+  min?: Maybe<Media_Min_Fields>;
+  stddev?: Maybe<Media_Stddev_Fields>;
+  stddev_pop?: Maybe<Media_Stddev_Pop_Fields>;
+  stddev_samp?: Maybe<Media_Stddev_Samp_Fields>;
+  sum?: Maybe<Media_Sum_Fields>;
+  var_pop?: Maybe<Media_Var_Pop_Fields>;
+  var_samp?: Maybe<Media_Var_Samp_Fields>;
+  variance?: Maybe<Media_Variance_Fields>;
+};
+
+
+/** aggregate fields of "media" */
+export type Media_Aggregate_FieldsCountArgs = {
+  columns?: InputMaybe<Array<Media_Select_Column>>;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+/** order by aggregate values of table "media" */
+export type Media_Aggregate_Order_By = {
+  avg?: InputMaybe<Media_Avg_Order_By>;
+  count?: InputMaybe<Order_By>;
+  max?: InputMaybe<Media_Max_Order_By>;
+  min?: InputMaybe<Media_Min_Order_By>;
+  stddev?: InputMaybe<Media_Stddev_Order_By>;
+  stddev_pop?: InputMaybe<Media_Stddev_Pop_Order_By>;
+  stddev_samp?: InputMaybe<Media_Stddev_Samp_Order_By>;
+  sum?: InputMaybe<Media_Sum_Order_By>;
+  var_pop?: InputMaybe<Media_Var_Pop_Order_By>;
+  var_samp?: InputMaybe<Media_Var_Samp_Order_By>;
+  variance?: InputMaybe<Media_Variance_Order_By>;
+};
+
+/** append existing jsonb value of filtered columns with new jsonb value */
+export type Media_Append_Input = {
+  /**
+   * JSONB for provider-specific metadata.
+   *    Examples: ImageKit file_id, CloudFront invalidation_id, virus scan results.
+   *    This is appropriate use of JSONB: truly dynamic, provider-specific data.
+   */
+  processing_metadata?: InputMaybe<Scalars['jsonb']['input']>;
+};
+
+/** input type for inserting array relation for remote table "media" */
+export type Media_Arr_Rel_Insert_Input = {
+  data: Array<Media_Insert_Input>;
+  /** upsert condition */
+  on_conflict?: InputMaybe<Media_On_Conflict>;
+};
+
+/** aggregate avg on columns */
+export type Media_Avg_Fields = {
+  __typename?: 'media_avg_fields';
+  /**
+   * Duration of video in seconds. Reserved for future video support.
+   *    NULL for images.
+   */
+  duration_seconds?: Maybe<Scalars['Float']['output']>;
+  /**
+   * File size in bytes. Used for quota tracking and validation against
+   *    media_entity_types.max_file_size_bytes.
+   */
+  file_size_bytes?: Maybe<Scalars['Float']['output']>;
+  /**
+   * Height of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  height?: Maybe<Scalars['Float']['output']>;
+  /**
+   * Width of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  width?: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by avg() on columns of table "media" */
+export type Media_Avg_Order_By = {
+  /**
+   * Duration of video in seconds. Reserved for future video support.
+   *    NULL for images.
+   */
+  duration_seconds?: InputMaybe<Order_By>;
+  /**
+   * File size in bytes. Used for quota tracking and validation against
+   *    media_entity_types.max_file_size_bytes.
+   */
+  file_size_bytes?: InputMaybe<Order_By>;
+  /**
+   * Height of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  height?: InputMaybe<Order_By>;
+  /**
+   * Width of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  width?: InputMaybe<Order_By>;
+};
+
+/** Boolean expression to filter rows from the table "media". All fields are combined with a logical 'AND'. */
+export type Media_Bool_Exp = {
+  _and?: InputMaybe<Array<Media_Bool_Exp>>;
+  _not?: InputMaybe<Media_Bool_Exp>;
+  _or?: InputMaybe<Array<Media_Bool_Exp>>;
+  created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  duration_seconds?: InputMaybe<Numeric_Comparison_Exp>;
+  entity_id?: InputMaybe<String_Comparison_Exp>;
+  entity_type?: InputMaybe<String_Comparison_Exp>;
+  entity_type_config?: InputMaybe<Media_Entity_Types_Bool_Exp>;
+  error_message?: InputMaybe<String_Comparison_Exp>;
+  file_size_bytes?: InputMaybe<Bigint_Comparison_Exp>;
+  filename?: InputMaybe<String_Comparison_Exp>;
+  height?: InputMaybe<Int_Comparison_Exp>;
+  id?: InputMaybe<String_Comparison_Exp>;
+  mime_type?: InputMaybe<String_Comparison_Exp>;
+  organization?: InputMaybe<Organizations_Bool_Exp>;
+  organization_id?: InputMaybe<String_Comparison_Exp>;
+  processing_metadata?: InputMaybe<Jsonb_Comparison_Exp>;
+  status?: InputMaybe<String_Comparison_Exp>;
+  storage_bucket?: InputMaybe<String_Comparison_Exp>;
+  storage_path?: InputMaybe<String_Comparison_Exp>;
+  storage_provider?: InputMaybe<String_Comparison_Exp>;
+  storage_region?: InputMaybe<String_Comparison_Exp>;
+  thumbnail_path?: InputMaybe<String_Comparison_Exp>;
+  updated_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  uploaded_by?: InputMaybe<String_Comparison_Exp>;
+  uploader?: InputMaybe<Users_Bool_Exp>;
+  width?: InputMaybe<Int_Comparison_Exp>;
+};
+
+/** unique or primary key constraints on table "media" */
+export enum Media_Constraint {
+  /** unique or primary key constraint on columns "storage_path", "storage_bucket" */
+  IdxMediaStoragePath = 'idx_media_storage_path',
+  /** unique or primary key constraint on columns "id" */
+  MediaPkey = 'media_pkey'
+}
+
+/** delete the field or element with specified path (for JSON arrays, negative integers count from the end) */
+export type Media_Delete_At_Path_Input = {
+  /**
+   * JSONB for provider-specific metadata.
+   *    Examples: ImageKit file_id, CloudFront invalidation_id, virus scan results.
+   *    This is appropriate use of JSONB: truly dynamic, provider-specific data.
+   */
+  processing_metadata?: InputMaybe<Array<Scalars['String']['input']>>;
+};
+
+/** delete the array element with specified index (negative integers count from the end). throws an error if top level container is not an array */
+export type Media_Delete_Elem_Input = {
+  /**
+   * JSONB for provider-specific metadata.
+   *    Examples: ImageKit file_id, CloudFront invalidation_id, virus scan results.
+   *    This is appropriate use of JSONB: truly dynamic, provider-specific data.
+   */
+  processing_metadata?: InputMaybe<Scalars['Int']['input']>;
+};
+
+/** delete key/value pair or string element. key/value pairs are matched based on their key value */
+export type Media_Delete_Key_Input = {
+  /**
+   * JSONB for provider-specific metadata.
+   *    Examples: ImageKit file_id, CloudFront invalidation_id, virus scan results.
+   *    This is appropriate use of JSONB: truly dynamic, provider-specific data.
+   */
+  processing_metadata?: InputMaybe<Scalars['String']['input']>;
+};
+
+/**
+ * Lookup table defining valid media entity types with validation rules.
+ *
+ *    This table serves multiple purposes:
+ *    1. Enforces valid values for media.entity_type via FK constraint on `code`
+ *    2. Stores validation rules (mime types, max size) queryable at runtime
+ *    3. Documents the polymorphic relationship (which table entity_id references)
+ *    4. Allows enabling/disabling entity types without code changes
+ *
+ *    When adding a new entity type:
+ *    1. INSERT a new row with appropriate validation rules
+ *    2. Update Lambda validator if needed (for content-based validation)
+ *    3. Update frontend upload config to match
+ */
+export type Media_Entity_Types = {
+  __typename?: 'media_entity_types';
+  /**
+   * PostgreSQL array of MIME types allowed for uploads of this entity type.
+   *    Validated at two points:
+   *    1. API presign endpoint (fast rejection)
+   *    2. Lambda after upload (content-based verification)
+   *    Example: ARRAY['image/jpeg', 'image/png', 'image/webp']
+   */
+  allowed_mime_types: Array<Scalars['String']['output']>;
+  /**
+   * Semantic code for the entity type. Use lowercase_snake_case.
+   *    Examples: organization_logo, contact_avatar, testimonial_video.
+   *    This value is stored in media.entity_type (FK target).
+   *    UNIQUE constraint allows foreign key references.
+   */
+  code: Scalars['String']['output'];
+  /** Timestamp when this entity type was created. For audit purposes. */
+  created_at: Scalars['timestamptz']['output'];
+  /**
+   * User who created this entity type. NULL for seed data inserted by migrations.
+   *    References users.id.
+   */
+  created_by?: Maybe<Scalars['String']['output']>;
+  /**
+   * Detailed description of what this media type is used for.
+   *    Helps developers understand the purpose and context.
+   */
+  description: Scalars['String']['output'];
+  /** Human-readable name shown in UI. Example: "Organization Logo" */
+  display_name: Scalars['String']['output'];
+  /**
+   * Opaque unique identifier (NanoID 12-char). Following project convention
+   *    that IDs should be meaningless. Use `code` for semantic lookups.
+   */
+  id: Scalars['String']['output'];
+  /**
+   * Whether this entity type is currently enabled for uploads.
+   *    Set to false to disable without deleting (preserves existing references).
+   *    Use for feature flags or deprecating entity types.
+   */
+  is_active: Scalars['Boolean']['output'];
+  /**
+   * Maximum allowed file size in bytes. Enforced at:
+   *    1. API presign endpoint (rejects before upload)
+   *    2. Lambda validation (rejects after upload, deletes file)
+   *    Common values: 2MB=2097152, 5MB=5242880, 10MB=10485760, 500MB=524288000
+   */
+  max_file_size_bytes: Scalars['bigint']['output'];
+  /** An array relationship */
+  media: Array<Media>;
+  /** An aggregate relationship */
+  media_aggregate: Media_Aggregate;
+  /**
+   * The column in target_table that entity_id references. Usually "id".
+   *    Allows flexibility for tables with non-standard PK names.
+   */
+  target_column: Scalars['String']['output'];
+  /**
+   * The database table that media.entity_id references for this type.
+   *    Example: "organizations" means entity_id is an organizations.id value.
+   *    Used for documentation; actual FK validation is application-level.
+   */
+  target_table: Scalars['String']['output'];
+  /** Timestamp of last modification. Auto-updated by trigger. */
+  updated_at: Scalars['timestamptz']['output'];
+  /**
+   * User who last modified this entity type. Set by application on updates.
+   *    References users.id.
+   */
+  updated_by?: Maybe<Scalars['String']['output']>;
+};
+
+
+/**
+ * Lookup table defining valid media entity types with validation rules.
+ *
+ *    This table serves multiple purposes:
+ *    1. Enforces valid values for media.entity_type via FK constraint on `code`
+ *    2. Stores validation rules (mime types, max size) queryable at runtime
+ *    3. Documents the polymorphic relationship (which table entity_id references)
+ *    4. Allows enabling/disabling entity types without code changes
+ *
+ *    When adding a new entity type:
+ *    1. INSERT a new row with appropriate validation rules
+ *    2. Update Lambda validator if needed (for content-based validation)
+ *    3. Update frontend upload config to match
+ */
+export type Media_Entity_TypesMediaArgs = {
+  distinct_on?: InputMaybe<Array<Media_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Media_Order_By>>;
+  where?: InputMaybe<Media_Bool_Exp>;
+};
+
+
+/**
+ * Lookup table defining valid media entity types with validation rules.
+ *
+ *    This table serves multiple purposes:
+ *    1. Enforces valid values for media.entity_type via FK constraint on `code`
+ *    2. Stores validation rules (mime types, max size) queryable at runtime
+ *    3. Documents the polymorphic relationship (which table entity_id references)
+ *    4. Allows enabling/disabling entity types without code changes
+ *
+ *    When adding a new entity type:
+ *    1. INSERT a new row with appropriate validation rules
+ *    2. Update Lambda validator if needed (for content-based validation)
+ *    3. Update frontend upload config to match
+ */
+export type Media_Entity_TypesMedia_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Media_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Media_Order_By>>;
+  where?: InputMaybe<Media_Bool_Exp>;
+};
+
+/** aggregated selection of "media_entity_types" */
+export type Media_Entity_Types_Aggregate = {
+  __typename?: 'media_entity_types_aggregate';
+  aggregate?: Maybe<Media_Entity_Types_Aggregate_Fields>;
+  nodes: Array<Media_Entity_Types>;
+};
+
+/** aggregate fields of "media_entity_types" */
+export type Media_Entity_Types_Aggregate_Fields = {
+  __typename?: 'media_entity_types_aggregate_fields';
+  avg?: Maybe<Media_Entity_Types_Avg_Fields>;
+  count: Scalars['Int']['output'];
+  max?: Maybe<Media_Entity_Types_Max_Fields>;
+  min?: Maybe<Media_Entity_Types_Min_Fields>;
+  stddev?: Maybe<Media_Entity_Types_Stddev_Fields>;
+  stddev_pop?: Maybe<Media_Entity_Types_Stddev_Pop_Fields>;
+  stddev_samp?: Maybe<Media_Entity_Types_Stddev_Samp_Fields>;
+  sum?: Maybe<Media_Entity_Types_Sum_Fields>;
+  var_pop?: Maybe<Media_Entity_Types_Var_Pop_Fields>;
+  var_samp?: Maybe<Media_Entity_Types_Var_Samp_Fields>;
+  variance?: Maybe<Media_Entity_Types_Variance_Fields>;
+};
+
+
+/** aggregate fields of "media_entity_types" */
+export type Media_Entity_Types_Aggregate_FieldsCountArgs = {
+  columns?: InputMaybe<Array<Media_Entity_Types_Select_Column>>;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+/** aggregate avg on columns */
+export type Media_Entity_Types_Avg_Fields = {
+  __typename?: 'media_entity_types_avg_fields';
+  /**
+   * Maximum allowed file size in bytes. Enforced at:
+   *    1. API presign endpoint (rejects before upload)
+   *    2. Lambda validation (rejects after upload, deletes file)
+   *    Common values: 2MB=2097152, 5MB=5242880, 10MB=10485760, 500MB=524288000
+   */
+  max_file_size_bytes?: Maybe<Scalars['Float']['output']>;
+};
+
+/** Boolean expression to filter rows from the table "media_entity_types". All fields are combined with a logical 'AND'. */
+export type Media_Entity_Types_Bool_Exp = {
+  _and?: InputMaybe<Array<Media_Entity_Types_Bool_Exp>>;
+  _not?: InputMaybe<Media_Entity_Types_Bool_Exp>;
+  _or?: InputMaybe<Array<Media_Entity_Types_Bool_Exp>>;
+  allowed_mime_types?: InputMaybe<String_Array_Comparison_Exp>;
+  code?: InputMaybe<String_Comparison_Exp>;
+  created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  created_by?: InputMaybe<String_Comparison_Exp>;
+  description?: InputMaybe<String_Comparison_Exp>;
+  display_name?: InputMaybe<String_Comparison_Exp>;
+  id?: InputMaybe<String_Comparison_Exp>;
+  is_active?: InputMaybe<Boolean_Comparison_Exp>;
+  max_file_size_bytes?: InputMaybe<Bigint_Comparison_Exp>;
+  media?: InputMaybe<Media_Bool_Exp>;
+  media_aggregate?: InputMaybe<Media_Aggregate_Bool_Exp>;
+  target_column?: InputMaybe<String_Comparison_Exp>;
+  target_table?: InputMaybe<String_Comparison_Exp>;
+  updated_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  updated_by?: InputMaybe<String_Comparison_Exp>;
+};
+
+/** unique or primary key constraints on table "media_entity_types" */
+export enum Media_Entity_Types_Constraint {
+  /** unique or primary key constraint on columns "code" */
+  MediaEntityTypesCodeKey = 'media_entity_types_code_key',
+  /** unique or primary key constraint on columns "id" */
+  MediaEntityTypesPkey = 'media_entity_types_pkey'
+}
+
+/** input type for incrementing numeric columns in table "media_entity_types" */
+export type Media_Entity_Types_Inc_Input = {
+  /**
+   * Maximum allowed file size in bytes. Enforced at:
+   *    1. API presign endpoint (rejects before upload)
+   *    2. Lambda validation (rejects after upload, deletes file)
+   *    Common values: 2MB=2097152, 5MB=5242880, 10MB=10485760, 500MB=524288000
+   */
+  max_file_size_bytes?: InputMaybe<Scalars['bigint']['input']>;
+};
+
+/** input type for inserting data into table "media_entity_types" */
+export type Media_Entity_Types_Insert_Input = {
+  /**
+   * PostgreSQL array of MIME types allowed for uploads of this entity type.
+   *    Validated at two points:
+   *    1. API presign endpoint (fast rejection)
+   *    2. Lambda after upload (content-based verification)
+   *    Example: ARRAY['image/jpeg', 'image/png', 'image/webp']
+   */
+  allowed_mime_types?: InputMaybe<Array<Scalars['String']['input']>>;
+  /**
+   * Semantic code for the entity type. Use lowercase_snake_case.
+   *    Examples: organization_logo, contact_avatar, testimonial_video.
+   *    This value is stored in media.entity_type (FK target).
+   *    UNIQUE constraint allows foreign key references.
+   */
+  code?: InputMaybe<Scalars['String']['input']>;
+  /** Timestamp when this entity type was created. For audit purposes. */
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /**
+   * User who created this entity type. NULL for seed data inserted by migrations.
+   *    References users.id.
+   */
+  created_by?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Detailed description of what this media type is used for.
+   *    Helps developers understand the purpose and context.
+   */
+  description?: InputMaybe<Scalars['String']['input']>;
+  /** Human-readable name shown in UI. Example: "Organization Logo" */
+  display_name?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Opaque unique identifier (NanoID 12-char). Following project convention
+   *    that IDs should be meaningless. Use `code` for semantic lookups.
+   */
+  id?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Whether this entity type is currently enabled for uploads.
+   *    Set to false to disable without deleting (preserves existing references).
+   *    Use for feature flags or deprecating entity types.
+   */
+  is_active?: InputMaybe<Scalars['Boolean']['input']>;
+  /**
+   * Maximum allowed file size in bytes. Enforced at:
+   *    1. API presign endpoint (rejects before upload)
+   *    2. Lambda validation (rejects after upload, deletes file)
+   *    Common values: 2MB=2097152, 5MB=5242880, 10MB=10485760, 500MB=524288000
+   */
+  max_file_size_bytes?: InputMaybe<Scalars['bigint']['input']>;
+  media?: InputMaybe<Media_Arr_Rel_Insert_Input>;
+  /**
+   * The column in target_table that entity_id references. Usually "id".
+   *    Allows flexibility for tables with non-standard PK names.
+   */
+  target_column?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * The database table that media.entity_id references for this type.
+   *    Example: "organizations" means entity_id is an organizations.id value.
+   *    Used for documentation; actual FK validation is application-level.
+   */
+  target_table?: InputMaybe<Scalars['String']['input']>;
+  /** Timestamp of last modification. Auto-updated by trigger. */
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /**
+   * User who last modified this entity type. Set by application on updates.
+   *    References users.id.
+   */
+  updated_by?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** aggregate max on columns */
+export type Media_Entity_Types_Max_Fields = {
+  __typename?: 'media_entity_types_max_fields';
+  /**
+   * PostgreSQL array of MIME types allowed for uploads of this entity type.
+   *    Validated at two points:
+   *    1. API presign endpoint (fast rejection)
+   *    2. Lambda after upload (content-based verification)
+   *    Example: ARRAY['image/jpeg', 'image/png', 'image/webp']
+   */
+  allowed_mime_types?: Maybe<Array<Scalars['String']['output']>>;
+  /**
+   * Semantic code for the entity type. Use lowercase_snake_case.
+   *    Examples: organization_logo, contact_avatar, testimonial_video.
+   *    This value is stored in media.entity_type (FK target).
+   *    UNIQUE constraint allows foreign key references.
+   */
+  code?: Maybe<Scalars['String']['output']>;
+  /** Timestamp when this entity type was created. For audit purposes. */
+  created_at?: Maybe<Scalars['timestamptz']['output']>;
+  /**
+   * User who created this entity type. NULL for seed data inserted by migrations.
+   *    References users.id.
+   */
+  created_by?: Maybe<Scalars['String']['output']>;
+  /**
+   * Detailed description of what this media type is used for.
+   *    Helps developers understand the purpose and context.
+   */
+  description?: Maybe<Scalars['String']['output']>;
+  /** Human-readable name shown in UI. Example: "Organization Logo" */
+  display_name?: Maybe<Scalars['String']['output']>;
+  /**
+   * Opaque unique identifier (NanoID 12-char). Following project convention
+   *    that IDs should be meaningless. Use `code` for semantic lookups.
+   */
+  id?: Maybe<Scalars['String']['output']>;
+  /**
+   * Maximum allowed file size in bytes. Enforced at:
+   *    1. API presign endpoint (rejects before upload)
+   *    2. Lambda validation (rejects after upload, deletes file)
+   *    Common values: 2MB=2097152, 5MB=5242880, 10MB=10485760, 500MB=524288000
+   */
+  max_file_size_bytes?: Maybe<Scalars['bigint']['output']>;
+  /**
+   * The column in target_table that entity_id references. Usually "id".
+   *    Allows flexibility for tables with non-standard PK names.
+   */
+  target_column?: Maybe<Scalars['String']['output']>;
+  /**
+   * The database table that media.entity_id references for this type.
+   *    Example: "organizations" means entity_id is an organizations.id value.
+   *    Used for documentation; actual FK validation is application-level.
+   */
+  target_table?: Maybe<Scalars['String']['output']>;
+  /** Timestamp of last modification. Auto-updated by trigger. */
+  updated_at?: Maybe<Scalars['timestamptz']['output']>;
+  /**
+   * User who last modified this entity type. Set by application on updates.
+   *    References users.id.
+   */
+  updated_by?: Maybe<Scalars['String']['output']>;
+};
+
+/** aggregate min on columns */
+export type Media_Entity_Types_Min_Fields = {
+  __typename?: 'media_entity_types_min_fields';
+  /**
+   * PostgreSQL array of MIME types allowed for uploads of this entity type.
+   *    Validated at two points:
+   *    1. API presign endpoint (fast rejection)
+   *    2. Lambda after upload (content-based verification)
+   *    Example: ARRAY['image/jpeg', 'image/png', 'image/webp']
+   */
+  allowed_mime_types?: Maybe<Array<Scalars['String']['output']>>;
+  /**
+   * Semantic code for the entity type. Use lowercase_snake_case.
+   *    Examples: organization_logo, contact_avatar, testimonial_video.
+   *    This value is stored in media.entity_type (FK target).
+   *    UNIQUE constraint allows foreign key references.
+   */
+  code?: Maybe<Scalars['String']['output']>;
+  /** Timestamp when this entity type was created. For audit purposes. */
+  created_at?: Maybe<Scalars['timestamptz']['output']>;
+  /**
+   * User who created this entity type. NULL for seed data inserted by migrations.
+   *    References users.id.
+   */
+  created_by?: Maybe<Scalars['String']['output']>;
+  /**
+   * Detailed description of what this media type is used for.
+   *    Helps developers understand the purpose and context.
+   */
+  description?: Maybe<Scalars['String']['output']>;
+  /** Human-readable name shown in UI. Example: "Organization Logo" */
+  display_name?: Maybe<Scalars['String']['output']>;
+  /**
+   * Opaque unique identifier (NanoID 12-char). Following project convention
+   *    that IDs should be meaningless. Use `code` for semantic lookups.
+   */
+  id?: Maybe<Scalars['String']['output']>;
+  /**
+   * Maximum allowed file size in bytes. Enforced at:
+   *    1. API presign endpoint (rejects before upload)
+   *    2. Lambda validation (rejects after upload, deletes file)
+   *    Common values: 2MB=2097152, 5MB=5242880, 10MB=10485760, 500MB=524288000
+   */
+  max_file_size_bytes?: Maybe<Scalars['bigint']['output']>;
+  /**
+   * The column in target_table that entity_id references. Usually "id".
+   *    Allows flexibility for tables with non-standard PK names.
+   */
+  target_column?: Maybe<Scalars['String']['output']>;
+  /**
+   * The database table that media.entity_id references for this type.
+   *    Example: "organizations" means entity_id is an organizations.id value.
+   *    Used for documentation; actual FK validation is application-level.
+   */
+  target_table?: Maybe<Scalars['String']['output']>;
+  /** Timestamp of last modification. Auto-updated by trigger. */
+  updated_at?: Maybe<Scalars['timestamptz']['output']>;
+  /**
+   * User who last modified this entity type. Set by application on updates.
+   *    References users.id.
+   */
+  updated_by?: Maybe<Scalars['String']['output']>;
+};
+
+/** response of any mutation on the table "media_entity_types" */
+export type Media_Entity_Types_Mutation_Response = {
+  __typename?: 'media_entity_types_mutation_response';
+  /** number of rows affected by the mutation */
+  affected_rows: Scalars['Int']['output'];
+  /** data from the rows affected by the mutation */
+  returning: Array<Media_Entity_Types>;
+};
+
+/** input type for inserting object relation for remote table "media_entity_types" */
+export type Media_Entity_Types_Obj_Rel_Insert_Input = {
+  data: Media_Entity_Types_Insert_Input;
+  /** upsert condition */
+  on_conflict?: InputMaybe<Media_Entity_Types_On_Conflict>;
+};
+
+/** on_conflict condition type for table "media_entity_types" */
+export type Media_Entity_Types_On_Conflict = {
+  constraint: Media_Entity_Types_Constraint;
+  update_columns?: Array<Media_Entity_Types_Update_Column>;
+  where?: InputMaybe<Media_Entity_Types_Bool_Exp>;
+};
+
+/** Ordering options when selecting data from "media_entity_types". */
+export type Media_Entity_Types_Order_By = {
+  allowed_mime_types?: InputMaybe<Order_By>;
+  code?: InputMaybe<Order_By>;
+  created_at?: InputMaybe<Order_By>;
+  created_by?: InputMaybe<Order_By>;
+  description?: InputMaybe<Order_By>;
+  display_name?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
+  is_active?: InputMaybe<Order_By>;
+  max_file_size_bytes?: InputMaybe<Order_By>;
+  media_aggregate?: InputMaybe<Media_Aggregate_Order_By>;
+  target_column?: InputMaybe<Order_By>;
+  target_table?: InputMaybe<Order_By>;
+  updated_at?: InputMaybe<Order_By>;
+  updated_by?: InputMaybe<Order_By>;
+};
+
+/** primary key columns input for table: media_entity_types */
+export type Media_Entity_Types_Pk_Columns_Input = {
+  /**
+   * Opaque unique identifier (NanoID 12-char). Following project convention
+   *    that IDs should be meaningless. Use `code` for semantic lookups.
+   */
+  id: Scalars['String']['input'];
+};
+
+/** select columns of table "media_entity_types" */
+export enum Media_Entity_Types_Select_Column {
+  /** column name */
+  AllowedMimeTypes = 'allowed_mime_types',
+  /** column name */
+  Code = 'code',
+  /** column name */
+  CreatedAt = 'created_at',
+  /** column name */
+  CreatedBy = 'created_by',
+  /** column name */
+  Description = 'description',
+  /** column name */
+  DisplayName = 'display_name',
+  /** column name */
+  Id = 'id',
+  /** column name */
+  IsActive = 'is_active',
+  /** column name */
+  MaxFileSizeBytes = 'max_file_size_bytes',
+  /** column name */
+  TargetColumn = 'target_column',
+  /** column name */
+  TargetTable = 'target_table',
+  /** column name */
+  UpdatedAt = 'updated_at',
+  /** column name */
+  UpdatedBy = 'updated_by'
+}
+
+/** input type for updating data in table "media_entity_types" */
+export type Media_Entity_Types_Set_Input = {
+  /**
+   * PostgreSQL array of MIME types allowed for uploads of this entity type.
+   *    Validated at two points:
+   *    1. API presign endpoint (fast rejection)
+   *    2. Lambda after upload (content-based verification)
+   *    Example: ARRAY['image/jpeg', 'image/png', 'image/webp']
+   */
+  allowed_mime_types?: InputMaybe<Array<Scalars['String']['input']>>;
+  /**
+   * Semantic code for the entity type. Use lowercase_snake_case.
+   *    Examples: organization_logo, contact_avatar, testimonial_video.
+   *    This value is stored in media.entity_type (FK target).
+   *    UNIQUE constraint allows foreign key references.
+   */
+  code?: InputMaybe<Scalars['String']['input']>;
+  /** Timestamp when this entity type was created. For audit purposes. */
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /**
+   * User who created this entity type. NULL for seed data inserted by migrations.
+   *    References users.id.
+   */
+  created_by?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Detailed description of what this media type is used for.
+   *    Helps developers understand the purpose and context.
+   */
+  description?: InputMaybe<Scalars['String']['input']>;
+  /** Human-readable name shown in UI. Example: "Organization Logo" */
+  display_name?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Opaque unique identifier (NanoID 12-char). Following project convention
+   *    that IDs should be meaningless. Use `code` for semantic lookups.
+   */
+  id?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Whether this entity type is currently enabled for uploads.
+   *    Set to false to disable without deleting (preserves existing references).
+   *    Use for feature flags or deprecating entity types.
+   */
+  is_active?: InputMaybe<Scalars['Boolean']['input']>;
+  /**
+   * Maximum allowed file size in bytes. Enforced at:
+   *    1. API presign endpoint (rejects before upload)
+   *    2. Lambda validation (rejects after upload, deletes file)
+   *    Common values: 2MB=2097152, 5MB=5242880, 10MB=10485760, 500MB=524288000
+   */
+  max_file_size_bytes?: InputMaybe<Scalars['bigint']['input']>;
+  /**
+   * The column in target_table that entity_id references. Usually "id".
+   *    Allows flexibility for tables with non-standard PK names.
+   */
+  target_column?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * The database table that media.entity_id references for this type.
+   *    Example: "organizations" means entity_id is an organizations.id value.
+   *    Used for documentation; actual FK validation is application-level.
+   */
+  target_table?: InputMaybe<Scalars['String']['input']>;
+  /** Timestamp of last modification. Auto-updated by trigger. */
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /**
+   * User who last modified this entity type. Set by application on updates.
+   *    References users.id.
+   */
+  updated_by?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** aggregate stddev on columns */
+export type Media_Entity_Types_Stddev_Fields = {
+  __typename?: 'media_entity_types_stddev_fields';
+  /**
+   * Maximum allowed file size in bytes. Enforced at:
+   *    1. API presign endpoint (rejects before upload)
+   *    2. Lambda validation (rejects after upload, deletes file)
+   *    Common values: 2MB=2097152, 5MB=5242880, 10MB=10485760, 500MB=524288000
+   */
+  max_file_size_bytes?: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate stddev_pop on columns */
+export type Media_Entity_Types_Stddev_Pop_Fields = {
+  __typename?: 'media_entity_types_stddev_pop_fields';
+  /**
+   * Maximum allowed file size in bytes. Enforced at:
+   *    1. API presign endpoint (rejects before upload)
+   *    2. Lambda validation (rejects after upload, deletes file)
+   *    Common values: 2MB=2097152, 5MB=5242880, 10MB=10485760, 500MB=524288000
+   */
+  max_file_size_bytes?: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate stddev_samp on columns */
+export type Media_Entity_Types_Stddev_Samp_Fields = {
+  __typename?: 'media_entity_types_stddev_samp_fields';
+  /**
+   * Maximum allowed file size in bytes. Enforced at:
+   *    1. API presign endpoint (rejects before upload)
+   *    2. Lambda validation (rejects after upload, deletes file)
+   *    Common values: 2MB=2097152, 5MB=5242880, 10MB=10485760, 500MB=524288000
+   */
+  max_file_size_bytes?: Maybe<Scalars['Float']['output']>;
+};
+
+/** Streaming cursor of the table "media_entity_types" */
+export type Media_Entity_Types_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Media_Entity_Types_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type Media_Entity_Types_Stream_Cursor_Value_Input = {
+  /**
+   * PostgreSQL array of MIME types allowed for uploads of this entity type.
+   *    Validated at two points:
+   *    1. API presign endpoint (fast rejection)
+   *    2. Lambda after upload (content-based verification)
+   *    Example: ARRAY['image/jpeg', 'image/png', 'image/webp']
+   */
+  allowed_mime_types?: InputMaybe<Array<Scalars['String']['input']>>;
+  /**
+   * Semantic code for the entity type. Use lowercase_snake_case.
+   *    Examples: organization_logo, contact_avatar, testimonial_video.
+   *    This value is stored in media.entity_type (FK target).
+   *    UNIQUE constraint allows foreign key references.
+   */
+  code?: InputMaybe<Scalars['String']['input']>;
+  /** Timestamp when this entity type was created. For audit purposes. */
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /**
+   * User who created this entity type. NULL for seed data inserted by migrations.
+   *    References users.id.
+   */
+  created_by?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Detailed description of what this media type is used for.
+   *    Helps developers understand the purpose and context.
+   */
+  description?: InputMaybe<Scalars['String']['input']>;
+  /** Human-readable name shown in UI. Example: "Organization Logo" */
+  display_name?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Opaque unique identifier (NanoID 12-char). Following project convention
+   *    that IDs should be meaningless. Use `code` for semantic lookups.
+   */
+  id?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Whether this entity type is currently enabled for uploads.
+   *    Set to false to disable without deleting (preserves existing references).
+   *    Use for feature flags or deprecating entity types.
+   */
+  is_active?: InputMaybe<Scalars['Boolean']['input']>;
+  /**
+   * Maximum allowed file size in bytes. Enforced at:
+   *    1. API presign endpoint (rejects before upload)
+   *    2. Lambda validation (rejects after upload, deletes file)
+   *    Common values: 2MB=2097152, 5MB=5242880, 10MB=10485760, 500MB=524288000
+   */
+  max_file_size_bytes?: InputMaybe<Scalars['bigint']['input']>;
+  /**
+   * The column in target_table that entity_id references. Usually "id".
+   *    Allows flexibility for tables with non-standard PK names.
+   */
+  target_column?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * The database table that media.entity_id references for this type.
+   *    Example: "organizations" means entity_id is an organizations.id value.
+   *    Used for documentation; actual FK validation is application-level.
+   */
+  target_table?: InputMaybe<Scalars['String']['input']>;
+  /** Timestamp of last modification. Auto-updated by trigger. */
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /**
+   * User who last modified this entity type. Set by application on updates.
+   *    References users.id.
+   */
+  updated_by?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** aggregate sum on columns */
+export type Media_Entity_Types_Sum_Fields = {
+  __typename?: 'media_entity_types_sum_fields';
+  /**
+   * Maximum allowed file size in bytes. Enforced at:
+   *    1. API presign endpoint (rejects before upload)
+   *    2. Lambda validation (rejects after upload, deletes file)
+   *    Common values: 2MB=2097152, 5MB=5242880, 10MB=10485760, 500MB=524288000
+   */
+  max_file_size_bytes?: Maybe<Scalars['bigint']['output']>;
+};
+
+/** update columns of table "media_entity_types" */
+export enum Media_Entity_Types_Update_Column {
+  /** column name */
+  AllowedMimeTypes = 'allowed_mime_types',
+  /** column name */
+  Code = 'code',
+  /** column name */
+  CreatedAt = 'created_at',
+  /** column name */
+  CreatedBy = 'created_by',
+  /** column name */
+  Description = 'description',
+  /** column name */
+  DisplayName = 'display_name',
+  /** column name */
+  Id = 'id',
+  /** column name */
+  IsActive = 'is_active',
+  /** column name */
+  MaxFileSizeBytes = 'max_file_size_bytes',
+  /** column name */
+  TargetColumn = 'target_column',
+  /** column name */
+  TargetTable = 'target_table',
+  /** column name */
+  UpdatedAt = 'updated_at',
+  /** column name */
+  UpdatedBy = 'updated_by'
+}
+
+export type Media_Entity_Types_Updates = {
+  /** increments the numeric columns with given value of the filtered values */
+  _inc?: InputMaybe<Media_Entity_Types_Inc_Input>;
+  /** sets the columns of the filtered rows to the given values */
+  _set?: InputMaybe<Media_Entity_Types_Set_Input>;
+  /** filter the rows which have to be updated */
+  where: Media_Entity_Types_Bool_Exp;
+};
+
+/** aggregate var_pop on columns */
+export type Media_Entity_Types_Var_Pop_Fields = {
+  __typename?: 'media_entity_types_var_pop_fields';
+  /**
+   * Maximum allowed file size in bytes. Enforced at:
+   *    1. API presign endpoint (rejects before upload)
+   *    2. Lambda validation (rejects after upload, deletes file)
+   *    Common values: 2MB=2097152, 5MB=5242880, 10MB=10485760, 500MB=524288000
+   */
+  max_file_size_bytes?: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate var_samp on columns */
+export type Media_Entity_Types_Var_Samp_Fields = {
+  __typename?: 'media_entity_types_var_samp_fields';
+  /**
+   * Maximum allowed file size in bytes. Enforced at:
+   *    1. API presign endpoint (rejects before upload)
+   *    2. Lambda validation (rejects after upload, deletes file)
+   *    Common values: 2MB=2097152, 5MB=5242880, 10MB=10485760, 500MB=524288000
+   */
+  max_file_size_bytes?: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate variance on columns */
+export type Media_Entity_Types_Variance_Fields = {
+  __typename?: 'media_entity_types_variance_fields';
+  /**
+   * Maximum allowed file size in bytes. Enforced at:
+   *    1. API presign endpoint (rejects before upload)
+   *    2. Lambda validation (rejects after upload, deletes file)
+   *    Common values: 2MB=2097152, 5MB=5242880, 10MB=10485760, 500MB=524288000
+   */
+  max_file_size_bytes?: Maybe<Scalars['Float']['output']>;
+};
+
+/** input type for incrementing numeric columns in table "media" */
+export type Media_Inc_Input = {
+  /**
+   * Duration of video in seconds. Reserved for future video support.
+   *    NULL for images.
+   */
+  duration_seconds?: InputMaybe<Scalars['numeric']['input']>;
+  /**
+   * File size in bytes. Used for quota tracking and validation against
+   *    media_entity_types.max_file_size_bytes.
+   */
+  file_size_bytes?: InputMaybe<Scalars['bigint']['input']>;
+  /**
+   * Height of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  height?: InputMaybe<Scalars['Int']['input']>;
+  /**
+   * Width of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  width?: InputMaybe<Scalars['Int']['input']>;
+};
+
+/** input type for inserting data into table "media" */
+export type Media_Insert_Input = {
+  /** Timestamp when the media record was created (upload initiated). */
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /**
+   * Duration of video in seconds. Reserved for future video support.
+   *    NULL for images.
+   */
+  duration_seconds?: InputMaybe<Scalars['numeric']['input']>;
+  /**
+   * ID of the entity this media is associated with.
+   *    Nullable for pending uploads (entity may not exist yet).
+   *    The target table is defined in media_entity_types.target_table.
+   */
+  entity_id?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Type of entity this media is associated with.
+   *    References media_entity_types.code (not id).
+   *    Examples: organization_logo, contact_avatar, testimonial_video.
+   */
+  entity_type?: InputMaybe<Scalars['String']['input']>;
+  entity_type_config?: InputMaybe<Media_Entity_Types_Obj_Rel_Insert_Input>;
+  /**
+   * Error details when status is failed.
+   *    Examples: "File size exceeds limit", "Invalid MIME type", etc.
+   */
+  error_message?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * File size in bytes. Used for quota tracking and validation against
+   *    media_entity_types.max_file_size_bytes.
+   */
+  file_size_bytes?: InputMaybe<Scalars['bigint']['input']>;
+  /**
+   * Original filename from the upload. Preserved for display purposes.
+   *    The actual storage path uses a sanitized, unique name.
+   */
+  filename?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Height of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  height?: InputMaybe<Scalars['Int']['input']>;
+  /**
+   * Opaque unique identifier (NanoID 12-char). This ID is embedded in the S3 path
+   *    to correlate presigned URL with webhook callback.
+   */
+  id?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * MIME type of the file (e.g., image/png, video/mp4).
+   *    Validated against media_entity_types.allowed_mime_types.
+   */
+  mime_type?: InputMaybe<Scalars['String']['input']>;
+  organization?: InputMaybe<Organizations_Obj_Rel_Insert_Input>;
+  /**
+   * Organization that owns this media. Used for RLS, quota tracking, and data export.
+   *    All media queries should filter by organization_id.
+   */
+  organization_id?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * JSONB for provider-specific metadata.
+   *    Examples: ImageKit file_id, CloudFront invalidation_id, virus scan results.
+   *    This is appropriate use of JSONB: truly dynamic, provider-specific data.
+   */
+  processing_metadata?: InputMaybe<Scalars['jsonb']['input']>;
+  /**
+   * Processing status of the media file.
+   *    - pending: Upload initiated, waiting for file
+   *    - processing: File received, being validated
+   *    - ready: Validation passed, file is available
+   *    - failed: Validation failed, see error_message
+   *    - deleted: Soft deleted, file may be retained for backup
+   */
+  status?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Bucket/container name where the file is stored.
+   *    Environment-specific: testimonials-dev-uploads, testimonials-prod-uploads, etc.
+   */
+  storage_bucket?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Full object path within the bucket. This is the portable key.
+   *    Format: {org_id}/{entity_type}/{year}/{month}/{day}/{media_id}_{timestamp}.{ext}
+   *    Example: org_abc/organization_logo/2025/01/05/med_xyz_20250105T143022.png
+   */
+  storage_path?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Storage provider identifier. Default is aws_s3.
+   *    Other possible values: gcs (Google Cloud), azure_blob, etc.
+   *    Used by CDN adapter to construct URLs.
+   */
+  storage_provider?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * AWS region or equivalent for other providers.
+   *    Used for constructing direct S3 URLs if needed.
+   */
+  storage_region?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Storage path for video thumbnail. Reserved for future video support.
+   *    Lambda generates thumbnail and stores path here.
+   */
+  thumbnail_path?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Timestamp of last modification. Auto-updated by trigger.
+   *    Changes when status updates, processing completes, etc.
+   */
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /**
+   * User who initiated the upload. NULL for anonymous uploads
+   *    (e.g., form submissions by external customers).
+   *    References users.id.
+   */
+  uploaded_by?: InputMaybe<Scalars['String']['input']>;
+  uploader?: InputMaybe<Users_Obj_Rel_Insert_Input>;
+  /**
+   * Width of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  width?: InputMaybe<Scalars['Int']['input']>;
+};
+
+/** aggregate max on columns */
+export type Media_Max_Fields = {
+  __typename?: 'media_max_fields';
+  /** Timestamp when the media record was created (upload initiated). */
+  created_at?: Maybe<Scalars['timestamptz']['output']>;
+  /**
+   * Duration of video in seconds. Reserved for future video support.
+   *    NULL for images.
+   */
+  duration_seconds?: Maybe<Scalars['numeric']['output']>;
+  /**
+   * ID of the entity this media is associated with.
+   *    Nullable for pending uploads (entity may not exist yet).
+   *    The target table is defined in media_entity_types.target_table.
+   */
+  entity_id?: Maybe<Scalars['String']['output']>;
+  /**
+   * Type of entity this media is associated with.
+   *    References media_entity_types.code (not id).
+   *    Examples: organization_logo, contact_avatar, testimonial_video.
+   */
+  entity_type?: Maybe<Scalars['String']['output']>;
+  /**
+   * Error details when status is failed.
+   *    Examples: "File size exceeds limit", "Invalid MIME type", etc.
+   */
+  error_message?: Maybe<Scalars['String']['output']>;
+  /**
+   * File size in bytes. Used for quota tracking and validation against
+   *    media_entity_types.max_file_size_bytes.
+   */
+  file_size_bytes?: Maybe<Scalars['bigint']['output']>;
+  /**
+   * Original filename from the upload. Preserved for display purposes.
+   *    The actual storage path uses a sanitized, unique name.
+   */
+  filename?: Maybe<Scalars['String']['output']>;
+  /**
+   * Height of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  height?: Maybe<Scalars['Int']['output']>;
+  /**
+   * Opaque unique identifier (NanoID 12-char). This ID is embedded in the S3 path
+   *    to correlate presigned URL with webhook callback.
+   */
+  id?: Maybe<Scalars['String']['output']>;
+  /**
+   * MIME type of the file (e.g., image/png, video/mp4).
+   *    Validated against media_entity_types.allowed_mime_types.
+   */
+  mime_type?: Maybe<Scalars['String']['output']>;
+  /**
+   * Organization that owns this media. Used for RLS, quota tracking, and data export.
+   *    All media queries should filter by organization_id.
+   */
+  organization_id?: Maybe<Scalars['String']['output']>;
+  /**
+   * Processing status of the media file.
+   *    - pending: Upload initiated, waiting for file
+   *    - processing: File received, being validated
+   *    - ready: Validation passed, file is available
+   *    - failed: Validation failed, see error_message
+   *    - deleted: Soft deleted, file may be retained for backup
+   */
+  status?: Maybe<Scalars['String']['output']>;
+  /**
+   * Bucket/container name where the file is stored.
+   *    Environment-specific: testimonials-dev-uploads, testimonials-prod-uploads, etc.
+   */
+  storage_bucket?: Maybe<Scalars['String']['output']>;
+  /**
+   * Full object path within the bucket. This is the portable key.
+   *    Format: {org_id}/{entity_type}/{year}/{month}/{day}/{media_id}_{timestamp}.{ext}
+   *    Example: org_abc/organization_logo/2025/01/05/med_xyz_20250105T143022.png
+   */
+  storage_path?: Maybe<Scalars['String']['output']>;
+  /**
+   * Storage provider identifier. Default is aws_s3.
+   *    Other possible values: gcs (Google Cloud), azure_blob, etc.
+   *    Used by CDN adapter to construct URLs.
+   */
+  storage_provider?: Maybe<Scalars['String']['output']>;
+  /**
+   * AWS region or equivalent for other providers.
+   *    Used for constructing direct S3 URLs if needed.
+   */
+  storage_region?: Maybe<Scalars['String']['output']>;
+  /**
+   * Storage path for video thumbnail. Reserved for future video support.
+   *    Lambda generates thumbnail and stores path here.
+   */
+  thumbnail_path?: Maybe<Scalars['String']['output']>;
+  /**
+   * Timestamp of last modification. Auto-updated by trigger.
+   *    Changes when status updates, processing completes, etc.
+   */
+  updated_at?: Maybe<Scalars['timestamptz']['output']>;
+  /**
+   * User who initiated the upload. NULL for anonymous uploads
+   *    (e.g., form submissions by external customers).
+   *    References users.id.
+   */
+  uploaded_by?: Maybe<Scalars['String']['output']>;
+  /**
+   * Width of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  width?: Maybe<Scalars['Int']['output']>;
+};
+
+/** order by max() on columns of table "media" */
+export type Media_Max_Order_By = {
+  /** Timestamp when the media record was created (upload initiated). */
+  created_at?: InputMaybe<Order_By>;
+  /**
+   * Duration of video in seconds. Reserved for future video support.
+   *    NULL for images.
+   */
+  duration_seconds?: InputMaybe<Order_By>;
+  /**
+   * ID of the entity this media is associated with.
+   *    Nullable for pending uploads (entity may not exist yet).
+   *    The target table is defined in media_entity_types.target_table.
+   */
+  entity_id?: InputMaybe<Order_By>;
+  /**
+   * Type of entity this media is associated with.
+   *    References media_entity_types.code (not id).
+   *    Examples: organization_logo, contact_avatar, testimonial_video.
+   */
+  entity_type?: InputMaybe<Order_By>;
+  /**
+   * Error details when status is failed.
+   *    Examples: "File size exceeds limit", "Invalid MIME type", etc.
+   */
+  error_message?: InputMaybe<Order_By>;
+  /**
+   * File size in bytes. Used for quota tracking and validation against
+   *    media_entity_types.max_file_size_bytes.
+   */
+  file_size_bytes?: InputMaybe<Order_By>;
+  /**
+   * Original filename from the upload. Preserved for display purposes.
+   *    The actual storage path uses a sanitized, unique name.
+   */
+  filename?: InputMaybe<Order_By>;
+  /**
+   * Height of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  height?: InputMaybe<Order_By>;
+  /**
+   * Opaque unique identifier (NanoID 12-char). This ID is embedded in the S3 path
+   *    to correlate presigned URL with webhook callback.
+   */
+  id?: InputMaybe<Order_By>;
+  /**
+   * MIME type of the file (e.g., image/png, video/mp4).
+   *    Validated against media_entity_types.allowed_mime_types.
+   */
+  mime_type?: InputMaybe<Order_By>;
+  /**
+   * Organization that owns this media. Used for RLS, quota tracking, and data export.
+   *    All media queries should filter by organization_id.
+   */
+  organization_id?: InputMaybe<Order_By>;
+  /**
+   * Processing status of the media file.
+   *    - pending: Upload initiated, waiting for file
+   *    - processing: File received, being validated
+   *    - ready: Validation passed, file is available
+   *    - failed: Validation failed, see error_message
+   *    - deleted: Soft deleted, file may be retained for backup
+   */
+  status?: InputMaybe<Order_By>;
+  /**
+   * Bucket/container name where the file is stored.
+   *    Environment-specific: testimonials-dev-uploads, testimonials-prod-uploads, etc.
+   */
+  storage_bucket?: InputMaybe<Order_By>;
+  /**
+   * Full object path within the bucket. This is the portable key.
+   *    Format: {org_id}/{entity_type}/{year}/{month}/{day}/{media_id}_{timestamp}.{ext}
+   *    Example: org_abc/organization_logo/2025/01/05/med_xyz_20250105T143022.png
+   */
+  storage_path?: InputMaybe<Order_By>;
+  /**
+   * Storage provider identifier. Default is aws_s3.
+   *    Other possible values: gcs (Google Cloud), azure_blob, etc.
+   *    Used by CDN adapter to construct URLs.
+   */
+  storage_provider?: InputMaybe<Order_By>;
+  /**
+   * AWS region or equivalent for other providers.
+   *    Used for constructing direct S3 URLs if needed.
+   */
+  storage_region?: InputMaybe<Order_By>;
+  /**
+   * Storage path for video thumbnail. Reserved for future video support.
+   *    Lambda generates thumbnail and stores path here.
+   */
+  thumbnail_path?: InputMaybe<Order_By>;
+  /**
+   * Timestamp of last modification. Auto-updated by trigger.
+   *    Changes when status updates, processing completes, etc.
+   */
+  updated_at?: InputMaybe<Order_By>;
+  /**
+   * User who initiated the upload. NULL for anonymous uploads
+   *    (e.g., form submissions by external customers).
+   *    References users.id.
+   */
+  uploaded_by?: InputMaybe<Order_By>;
+  /**
+   * Width of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  width?: InputMaybe<Order_By>;
+};
+
+/** aggregate min on columns */
+export type Media_Min_Fields = {
+  __typename?: 'media_min_fields';
+  /** Timestamp when the media record was created (upload initiated). */
+  created_at?: Maybe<Scalars['timestamptz']['output']>;
+  /**
+   * Duration of video in seconds. Reserved for future video support.
+   *    NULL for images.
+   */
+  duration_seconds?: Maybe<Scalars['numeric']['output']>;
+  /**
+   * ID of the entity this media is associated with.
+   *    Nullable for pending uploads (entity may not exist yet).
+   *    The target table is defined in media_entity_types.target_table.
+   */
+  entity_id?: Maybe<Scalars['String']['output']>;
+  /**
+   * Type of entity this media is associated with.
+   *    References media_entity_types.code (not id).
+   *    Examples: organization_logo, contact_avatar, testimonial_video.
+   */
+  entity_type?: Maybe<Scalars['String']['output']>;
+  /**
+   * Error details when status is failed.
+   *    Examples: "File size exceeds limit", "Invalid MIME type", etc.
+   */
+  error_message?: Maybe<Scalars['String']['output']>;
+  /**
+   * File size in bytes. Used for quota tracking and validation against
+   *    media_entity_types.max_file_size_bytes.
+   */
+  file_size_bytes?: Maybe<Scalars['bigint']['output']>;
+  /**
+   * Original filename from the upload. Preserved for display purposes.
+   *    The actual storage path uses a sanitized, unique name.
+   */
+  filename?: Maybe<Scalars['String']['output']>;
+  /**
+   * Height of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  height?: Maybe<Scalars['Int']['output']>;
+  /**
+   * Opaque unique identifier (NanoID 12-char). This ID is embedded in the S3 path
+   *    to correlate presigned URL with webhook callback.
+   */
+  id?: Maybe<Scalars['String']['output']>;
+  /**
+   * MIME type of the file (e.g., image/png, video/mp4).
+   *    Validated against media_entity_types.allowed_mime_types.
+   */
+  mime_type?: Maybe<Scalars['String']['output']>;
+  /**
+   * Organization that owns this media. Used for RLS, quota tracking, and data export.
+   *    All media queries should filter by organization_id.
+   */
+  organization_id?: Maybe<Scalars['String']['output']>;
+  /**
+   * Processing status of the media file.
+   *    - pending: Upload initiated, waiting for file
+   *    - processing: File received, being validated
+   *    - ready: Validation passed, file is available
+   *    - failed: Validation failed, see error_message
+   *    - deleted: Soft deleted, file may be retained for backup
+   */
+  status?: Maybe<Scalars['String']['output']>;
+  /**
+   * Bucket/container name where the file is stored.
+   *    Environment-specific: testimonials-dev-uploads, testimonials-prod-uploads, etc.
+   */
+  storage_bucket?: Maybe<Scalars['String']['output']>;
+  /**
+   * Full object path within the bucket. This is the portable key.
+   *    Format: {org_id}/{entity_type}/{year}/{month}/{day}/{media_id}_{timestamp}.{ext}
+   *    Example: org_abc/organization_logo/2025/01/05/med_xyz_20250105T143022.png
+   */
+  storage_path?: Maybe<Scalars['String']['output']>;
+  /**
+   * Storage provider identifier. Default is aws_s3.
+   *    Other possible values: gcs (Google Cloud), azure_blob, etc.
+   *    Used by CDN adapter to construct URLs.
+   */
+  storage_provider?: Maybe<Scalars['String']['output']>;
+  /**
+   * AWS region or equivalent for other providers.
+   *    Used for constructing direct S3 URLs if needed.
+   */
+  storage_region?: Maybe<Scalars['String']['output']>;
+  /**
+   * Storage path for video thumbnail. Reserved for future video support.
+   *    Lambda generates thumbnail and stores path here.
+   */
+  thumbnail_path?: Maybe<Scalars['String']['output']>;
+  /**
+   * Timestamp of last modification. Auto-updated by trigger.
+   *    Changes when status updates, processing completes, etc.
+   */
+  updated_at?: Maybe<Scalars['timestamptz']['output']>;
+  /**
+   * User who initiated the upload. NULL for anonymous uploads
+   *    (e.g., form submissions by external customers).
+   *    References users.id.
+   */
+  uploaded_by?: Maybe<Scalars['String']['output']>;
+  /**
+   * Width of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  width?: Maybe<Scalars['Int']['output']>;
+};
+
+/** order by min() on columns of table "media" */
+export type Media_Min_Order_By = {
+  /** Timestamp when the media record was created (upload initiated). */
+  created_at?: InputMaybe<Order_By>;
+  /**
+   * Duration of video in seconds. Reserved for future video support.
+   *    NULL for images.
+   */
+  duration_seconds?: InputMaybe<Order_By>;
+  /**
+   * ID of the entity this media is associated with.
+   *    Nullable for pending uploads (entity may not exist yet).
+   *    The target table is defined in media_entity_types.target_table.
+   */
+  entity_id?: InputMaybe<Order_By>;
+  /**
+   * Type of entity this media is associated with.
+   *    References media_entity_types.code (not id).
+   *    Examples: organization_logo, contact_avatar, testimonial_video.
+   */
+  entity_type?: InputMaybe<Order_By>;
+  /**
+   * Error details when status is failed.
+   *    Examples: "File size exceeds limit", "Invalid MIME type", etc.
+   */
+  error_message?: InputMaybe<Order_By>;
+  /**
+   * File size in bytes. Used for quota tracking and validation against
+   *    media_entity_types.max_file_size_bytes.
+   */
+  file_size_bytes?: InputMaybe<Order_By>;
+  /**
+   * Original filename from the upload. Preserved for display purposes.
+   *    The actual storage path uses a sanitized, unique name.
+   */
+  filename?: InputMaybe<Order_By>;
+  /**
+   * Height of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  height?: InputMaybe<Order_By>;
+  /**
+   * Opaque unique identifier (NanoID 12-char). This ID is embedded in the S3 path
+   *    to correlate presigned URL with webhook callback.
+   */
+  id?: InputMaybe<Order_By>;
+  /**
+   * MIME type of the file (e.g., image/png, video/mp4).
+   *    Validated against media_entity_types.allowed_mime_types.
+   */
+  mime_type?: InputMaybe<Order_By>;
+  /**
+   * Organization that owns this media. Used for RLS, quota tracking, and data export.
+   *    All media queries should filter by organization_id.
+   */
+  organization_id?: InputMaybe<Order_By>;
+  /**
+   * Processing status of the media file.
+   *    - pending: Upload initiated, waiting for file
+   *    - processing: File received, being validated
+   *    - ready: Validation passed, file is available
+   *    - failed: Validation failed, see error_message
+   *    - deleted: Soft deleted, file may be retained for backup
+   */
+  status?: InputMaybe<Order_By>;
+  /**
+   * Bucket/container name where the file is stored.
+   *    Environment-specific: testimonials-dev-uploads, testimonials-prod-uploads, etc.
+   */
+  storage_bucket?: InputMaybe<Order_By>;
+  /**
+   * Full object path within the bucket. This is the portable key.
+   *    Format: {org_id}/{entity_type}/{year}/{month}/{day}/{media_id}_{timestamp}.{ext}
+   *    Example: org_abc/organization_logo/2025/01/05/med_xyz_20250105T143022.png
+   */
+  storage_path?: InputMaybe<Order_By>;
+  /**
+   * Storage provider identifier. Default is aws_s3.
+   *    Other possible values: gcs (Google Cloud), azure_blob, etc.
+   *    Used by CDN adapter to construct URLs.
+   */
+  storage_provider?: InputMaybe<Order_By>;
+  /**
+   * AWS region or equivalent for other providers.
+   *    Used for constructing direct S3 URLs if needed.
+   */
+  storage_region?: InputMaybe<Order_By>;
+  /**
+   * Storage path for video thumbnail. Reserved for future video support.
+   *    Lambda generates thumbnail and stores path here.
+   */
+  thumbnail_path?: InputMaybe<Order_By>;
+  /**
+   * Timestamp of last modification. Auto-updated by trigger.
+   *    Changes when status updates, processing completes, etc.
+   */
+  updated_at?: InputMaybe<Order_By>;
+  /**
+   * User who initiated the upload. NULL for anonymous uploads
+   *    (e.g., form submissions by external customers).
+   *    References users.id.
+   */
+  uploaded_by?: InputMaybe<Order_By>;
+  /**
+   * Width of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  width?: InputMaybe<Order_By>;
+};
+
+/** response of any mutation on the table "media" */
+export type Media_Mutation_Response = {
+  __typename?: 'media_mutation_response';
+  /** number of rows affected by the mutation */
+  affected_rows: Scalars['Int']['output'];
+  /** data from the rows affected by the mutation */
+  returning: Array<Media>;
+};
+
+/** input type for inserting object relation for remote table "media" */
+export type Media_Obj_Rel_Insert_Input = {
+  data: Media_Insert_Input;
+  /** upsert condition */
+  on_conflict?: InputMaybe<Media_On_Conflict>;
+};
+
+/** on_conflict condition type for table "media" */
+export type Media_On_Conflict = {
+  constraint: Media_Constraint;
+  update_columns?: Array<Media_Update_Column>;
+  where?: InputMaybe<Media_Bool_Exp>;
+};
+
+/** Ordering options when selecting data from "media". */
+export type Media_Order_By = {
+  created_at?: InputMaybe<Order_By>;
+  duration_seconds?: InputMaybe<Order_By>;
+  entity_id?: InputMaybe<Order_By>;
+  entity_type?: InputMaybe<Order_By>;
+  entity_type_config?: InputMaybe<Media_Entity_Types_Order_By>;
+  error_message?: InputMaybe<Order_By>;
+  file_size_bytes?: InputMaybe<Order_By>;
+  filename?: InputMaybe<Order_By>;
+  height?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
+  mime_type?: InputMaybe<Order_By>;
+  organization?: InputMaybe<Organizations_Order_By>;
+  organization_id?: InputMaybe<Order_By>;
+  processing_metadata?: InputMaybe<Order_By>;
+  status?: InputMaybe<Order_By>;
+  storage_bucket?: InputMaybe<Order_By>;
+  storage_path?: InputMaybe<Order_By>;
+  storage_provider?: InputMaybe<Order_By>;
+  storage_region?: InputMaybe<Order_By>;
+  thumbnail_path?: InputMaybe<Order_By>;
+  updated_at?: InputMaybe<Order_By>;
+  uploaded_by?: InputMaybe<Order_By>;
+  uploader?: InputMaybe<Users_Order_By>;
+  width?: InputMaybe<Order_By>;
+};
+
+/** primary key columns input for table: media */
+export type Media_Pk_Columns_Input = {
+  /**
+   * Opaque unique identifier (NanoID 12-char). This ID is embedded in the S3 path
+   *    to correlate presigned URL with webhook callback.
+   */
+  id: Scalars['String']['input'];
+};
+
+/** prepend existing jsonb value of filtered columns with new jsonb value */
+export type Media_Prepend_Input = {
+  /**
+   * JSONB for provider-specific metadata.
+   *    Examples: ImageKit file_id, CloudFront invalidation_id, virus scan results.
+   *    This is appropriate use of JSONB: truly dynamic, provider-specific data.
+   */
+  processing_metadata?: InputMaybe<Scalars['jsonb']['input']>;
+};
+
+/** select columns of table "media" */
+export enum Media_Select_Column {
+  /** column name */
+  CreatedAt = 'created_at',
+  /** column name */
+  DurationSeconds = 'duration_seconds',
+  /** column name */
+  EntityId = 'entity_id',
+  /** column name */
+  EntityType = 'entity_type',
+  /** column name */
+  ErrorMessage = 'error_message',
+  /** column name */
+  FileSizeBytes = 'file_size_bytes',
+  /** column name */
+  Filename = 'filename',
+  /** column name */
+  Height = 'height',
+  /** column name */
+  Id = 'id',
+  /** column name */
+  MimeType = 'mime_type',
+  /** column name */
+  OrganizationId = 'organization_id',
+  /** column name */
+  ProcessingMetadata = 'processing_metadata',
+  /** column name */
+  Status = 'status',
+  /** column name */
+  StorageBucket = 'storage_bucket',
+  /** column name */
+  StoragePath = 'storage_path',
+  /** column name */
+  StorageProvider = 'storage_provider',
+  /** column name */
+  StorageRegion = 'storage_region',
+  /** column name */
+  ThumbnailPath = 'thumbnail_path',
+  /** column name */
+  UpdatedAt = 'updated_at',
+  /** column name */
+  UploadedBy = 'uploaded_by',
+  /** column name */
+  Width = 'width'
+}
+
+/** input type for updating data in table "media" */
+export type Media_Set_Input = {
+  /** Timestamp when the media record was created (upload initiated). */
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /**
+   * Duration of video in seconds. Reserved for future video support.
+   *    NULL for images.
+   */
+  duration_seconds?: InputMaybe<Scalars['numeric']['input']>;
+  /**
+   * ID of the entity this media is associated with.
+   *    Nullable for pending uploads (entity may not exist yet).
+   *    The target table is defined in media_entity_types.target_table.
+   */
+  entity_id?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Type of entity this media is associated with.
+   *    References media_entity_types.code (not id).
+   *    Examples: organization_logo, contact_avatar, testimonial_video.
+   */
+  entity_type?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Error details when status is failed.
+   *    Examples: "File size exceeds limit", "Invalid MIME type", etc.
+   */
+  error_message?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * File size in bytes. Used for quota tracking and validation against
+   *    media_entity_types.max_file_size_bytes.
+   */
+  file_size_bytes?: InputMaybe<Scalars['bigint']['input']>;
+  /**
+   * Original filename from the upload. Preserved for display purposes.
+   *    The actual storage path uses a sanitized, unique name.
+   */
+  filename?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Height of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  height?: InputMaybe<Scalars['Int']['input']>;
+  /**
+   * Opaque unique identifier (NanoID 12-char). This ID is embedded in the S3 path
+   *    to correlate presigned URL with webhook callback.
+   */
+  id?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * MIME type of the file (e.g., image/png, video/mp4).
+   *    Validated against media_entity_types.allowed_mime_types.
+   */
+  mime_type?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Organization that owns this media. Used for RLS, quota tracking, and data export.
+   *    All media queries should filter by organization_id.
+   */
+  organization_id?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * JSONB for provider-specific metadata.
+   *    Examples: ImageKit file_id, CloudFront invalidation_id, virus scan results.
+   *    This is appropriate use of JSONB: truly dynamic, provider-specific data.
+   */
+  processing_metadata?: InputMaybe<Scalars['jsonb']['input']>;
+  /**
+   * Processing status of the media file.
+   *    - pending: Upload initiated, waiting for file
+   *    - processing: File received, being validated
+   *    - ready: Validation passed, file is available
+   *    - failed: Validation failed, see error_message
+   *    - deleted: Soft deleted, file may be retained for backup
+   */
+  status?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Bucket/container name where the file is stored.
+   *    Environment-specific: testimonials-dev-uploads, testimonials-prod-uploads, etc.
+   */
+  storage_bucket?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Full object path within the bucket. This is the portable key.
+   *    Format: {org_id}/{entity_type}/{year}/{month}/{day}/{media_id}_{timestamp}.{ext}
+   *    Example: org_abc/organization_logo/2025/01/05/med_xyz_20250105T143022.png
+   */
+  storage_path?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Storage provider identifier. Default is aws_s3.
+   *    Other possible values: gcs (Google Cloud), azure_blob, etc.
+   *    Used by CDN adapter to construct URLs.
+   */
+  storage_provider?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * AWS region or equivalent for other providers.
+   *    Used for constructing direct S3 URLs if needed.
+   */
+  storage_region?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Storage path for video thumbnail. Reserved for future video support.
+   *    Lambda generates thumbnail and stores path here.
+   */
+  thumbnail_path?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Timestamp of last modification. Auto-updated by trigger.
+   *    Changes when status updates, processing completes, etc.
+   */
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /**
+   * User who initiated the upload. NULL for anonymous uploads
+   *    (e.g., form submissions by external customers).
+   *    References users.id.
+   */
+  uploaded_by?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Width of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  width?: InputMaybe<Scalars['Int']['input']>;
+};
+
+/** aggregate stddev on columns */
+export type Media_Stddev_Fields = {
+  __typename?: 'media_stddev_fields';
+  /**
+   * Duration of video in seconds. Reserved for future video support.
+   *    NULL for images.
+   */
+  duration_seconds?: Maybe<Scalars['Float']['output']>;
+  /**
+   * File size in bytes. Used for quota tracking and validation against
+   *    media_entity_types.max_file_size_bytes.
+   */
+  file_size_bytes?: Maybe<Scalars['Float']['output']>;
+  /**
+   * Height of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  height?: Maybe<Scalars['Float']['output']>;
+  /**
+   * Width of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  width?: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by stddev() on columns of table "media" */
+export type Media_Stddev_Order_By = {
+  /**
+   * Duration of video in seconds. Reserved for future video support.
+   *    NULL for images.
+   */
+  duration_seconds?: InputMaybe<Order_By>;
+  /**
+   * File size in bytes. Used for quota tracking and validation against
+   *    media_entity_types.max_file_size_bytes.
+   */
+  file_size_bytes?: InputMaybe<Order_By>;
+  /**
+   * Height of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  height?: InputMaybe<Order_By>;
+  /**
+   * Width of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  width?: InputMaybe<Order_By>;
+};
+
+/** aggregate stddev_pop on columns */
+export type Media_Stddev_Pop_Fields = {
+  __typename?: 'media_stddev_pop_fields';
+  /**
+   * Duration of video in seconds. Reserved for future video support.
+   *    NULL for images.
+   */
+  duration_seconds?: Maybe<Scalars['Float']['output']>;
+  /**
+   * File size in bytes. Used for quota tracking and validation against
+   *    media_entity_types.max_file_size_bytes.
+   */
+  file_size_bytes?: Maybe<Scalars['Float']['output']>;
+  /**
+   * Height of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  height?: Maybe<Scalars['Float']['output']>;
+  /**
+   * Width of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  width?: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by stddev_pop() on columns of table "media" */
+export type Media_Stddev_Pop_Order_By = {
+  /**
+   * Duration of video in seconds. Reserved for future video support.
+   *    NULL for images.
+   */
+  duration_seconds?: InputMaybe<Order_By>;
+  /**
+   * File size in bytes. Used for quota tracking and validation against
+   *    media_entity_types.max_file_size_bytes.
+   */
+  file_size_bytes?: InputMaybe<Order_By>;
+  /**
+   * Height of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  height?: InputMaybe<Order_By>;
+  /**
+   * Width of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  width?: InputMaybe<Order_By>;
+};
+
+/** aggregate stddev_samp on columns */
+export type Media_Stddev_Samp_Fields = {
+  __typename?: 'media_stddev_samp_fields';
+  /**
+   * Duration of video in seconds. Reserved for future video support.
+   *    NULL for images.
+   */
+  duration_seconds?: Maybe<Scalars['Float']['output']>;
+  /**
+   * File size in bytes. Used for quota tracking and validation against
+   *    media_entity_types.max_file_size_bytes.
+   */
+  file_size_bytes?: Maybe<Scalars['Float']['output']>;
+  /**
+   * Height of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  height?: Maybe<Scalars['Float']['output']>;
+  /**
+   * Width of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  width?: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by stddev_samp() on columns of table "media" */
+export type Media_Stddev_Samp_Order_By = {
+  /**
+   * Duration of video in seconds. Reserved for future video support.
+   *    NULL for images.
+   */
+  duration_seconds?: InputMaybe<Order_By>;
+  /**
+   * File size in bytes. Used for quota tracking and validation against
+   *    media_entity_types.max_file_size_bytes.
+   */
+  file_size_bytes?: InputMaybe<Order_By>;
+  /**
+   * Height of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  height?: InputMaybe<Order_By>;
+  /**
+   * Width of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  width?: InputMaybe<Order_By>;
+};
+
+/** Streaming cursor of the table "media" */
+export type Media_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Media_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type Media_Stream_Cursor_Value_Input = {
+  /** Timestamp when the media record was created (upload initiated). */
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /**
+   * Duration of video in seconds. Reserved for future video support.
+   *    NULL for images.
+   */
+  duration_seconds?: InputMaybe<Scalars['numeric']['input']>;
+  /**
+   * ID of the entity this media is associated with.
+   *    Nullable for pending uploads (entity may not exist yet).
+   *    The target table is defined in media_entity_types.target_table.
+   */
+  entity_id?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Type of entity this media is associated with.
+   *    References media_entity_types.code (not id).
+   *    Examples: organization_logo, contact_avatar, testimonial_video.
+   */
+  entity_type?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Error details when status is failed.
+   *    Examples: "File size exceeds limit", "Invalid MIME type", etc.
+   */
+  error_message?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * File size in bytes. Used for quota tracking and validation against
+   *    media_entity_types.max_file_size_bytes.
+   */
+  file_size_bytes?: InputMaybe<Scalars['bigint']['input']>;
+  /**
+   * Original filename from the upload. Preserved for display purposes.
+   *    The actual storage path uses a sanitized, unique name.
+   */
+  filename?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Height of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  height?: InputMaybe<Scalars['Int']['input']>;
+  /**
+   * Opaque unique identifier (NanoID 12-char). This ID is embedded in the S3 path
+   *    to correlate presigned URL with webhook callback.
+   */
+  id?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * MIME type of the file (e.g., image/png, video/mp4).
+   *    Validated against media_entity_types.allowed_mime_types.
+   */
+  mime_type?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Organization that owns this media. Used for RLS, quota tracking, and data export.
+   *    All media queries should filter by organization_id.
+   */
+  organization_id?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * JSONB for provider-specific metadata.
+   *    Examples: ImageKit file_id, CloudFront invalidation_id, virus scan results.
+   *    This is appropriate use of JSONB: truly dynamic, provider-specific data.
+   */
+  processing_metadata?: InputMaybe<Scalars['jsonb']['input']>;
+  /**
+   * Processing status of the media file.
+   *    - pending: Upload initiated, waiting for file
+   *    - processing: File received, being validated
+   *    - ready: Validation passed, file is available
+   *    - failed: Validation failed, see error_message
+   *    - deleted: Soft deleted, file may be retained for backup
+   */
+  status?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Bucket/container name where the file is stored.
+   *    Environment-specific: testimonials-dev-uploads, testimonials-prod-uploads, etc.
+   */
+  storage_bucket?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Full object path within the bucket. This is the portable key.
+   *    Format: {org_id}/{entity_type}/{year}/{month}/{day}/{media_id}_{timestamp}.{ext}
+   *    Example: org_abc/organization_logo/2025/01/05/med_xyz_20250105T143022.png
+   */
+  storage_path?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Storage provider identifier. Default is aws_s3.
+   *    Other possible values: gcs (Google Cloud), azure_blob, etc.
+   *    Used by CDN adapter to construct URLs.
+   */
+  storage_provider?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * AWS region or equivalent for other providers.
+   *    Used for constructing direct S3 URLs if needed.
+   */
+  storage_region?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Storage path for video thumbnail. Reserved for future video support.
+   *    Lambda generates thumbnail and stores path here.
+   */
+  thumbnail_path?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Timestamp of last modification. Auto-updated by trigger.
+   *    Changes when status updates, processing completes, etc.
+   */
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /**
+   * User who initiated the upload. NULL for anonymous uploads
+   *    (e.g., form submissions by external customers).
+   *    References users.id.
+   */
+  uploaded_by?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Width of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  width?: InputMaybe<Scalars['Int']['input']>;
+};
+
+/** aggregate sum on columns */
+export type Media_Sum_Fields = {
+  __typename?: 'media_sum_fields';
+  /**
+   * Duration of video in seconds. Reserved for future video support.
+   *    NULL for images.
+   */
+  duration_seconds?: Maybe<Scalars['numeric']['output']>;
+  /**
+   * File size in bytes. Used for quota tracking and validation against
+   *    media_entity_types.max_file_size_bytes.
+   */
+  file_size_bytes?: Maybe<Scalars['bigint']['output']>;
+  /**
+   * Height of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  height?: Maybe<Scalars['Int']['output']>;
+  /**
+   * Width of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  width?: Maybe<Scalars['Int']['output']>;
+};
+
+/** order by sum() on columns of table "media" */
+export type Media_Sum_Order_By = {
+  /**
+   * Duration of video in seconds. Reserved for future video support.
+   *    NULL for images.
+   */
+  duration_seconds?: InputMaybe<Order_By>;
+  /**
+   * File size in bytes. Used for quota tracking and validation against
+   *    media_entity_types.max_file_size_bytes.
+   */
+  file_size_bytes?: InputMaybe<Order_By>;
+  /**
+   * Height of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  height?: InputMaybe<Order_By>;
+  /**
+   * Width of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  width?: InputMaybe<Order_By>;
+};
+
+/** update columns of table "media" */
+export enum Media_Update_Column {
+  /** column name */
+  CreatedAt = 'created_at',
+  /** column name */
+  DurationSeconds = 'duration_seconds',
+  /** column name */
+  EntityId = 'entity_id',
+  /** column name */
+  EntityType = 'entity_type',
+  /** column name */
+  ErrorMessage = 'error_message',
+  /** column name */
+  FileSizeBytes = 'file_size_bytes',
+  /** column name */
+  Filename = 'filename',
+  /** column name */
+  Height = 'height',
+  /** column name */
+  Id = 'id',
+  /** column name */
+  MimeType = 'mime_type',
+  /** column name */
+  OrganizationId = 'organization_id',
+  /** column name */
+  ProcessingMetadata = 'processing_metadata',
+  /** column name */
+  Status = 'status',
+  /** column name */
+  StorageBucket = 'storage_bucket',
+  /** column name */
+  StoragePath = 'storage_path',
+  /** column name */
+  StorageProvider = 'storage_provider',
+  /** column name */
+  StorageRegion = 'storage_region',
+  /** column name */
+  ThumbnailPath = 'thumbnail_path',
+  /** column name */
+  UpdatedAt = 'updated_at',
+  /** column name */
+  UploadedBy = 'uploaded_by',
+  /** column name */
+  Width = 'width'
+}
+
+export type Media_Updates = {
+  /** append existing jsonb value of filtered columns with new jsonb value */
+  _append?: InputMaybe<Media_Append_Input>;
+  /** delete the field or element with specified path (for JSON arrays, negative integers count from the end) */
+  _delete_at_path?: InputMaybe<Media_Delete_At_Path_Input>;
+  /** delete the array element with specified index (negative integers count from the end). throws an error if top level container is not an array */
+  _delete_elem?: InputMaybe<Media_Delete_Elem_Input>;
+  /** delete key/value pair or string element. key/value pairs are matched based on their key value */
+  _delete_key?: InputMaybe<Media_Delete_Key_Input>;
+  /** increments the numeric columns with given value of the filtered values */
+  _inc?: InputMaybe<Media_Inc_Input>;
+  /** prepend existing jsonb value of filtered columns with new jsonb value */
+  _prepend?: InputMaybe<Media_Prepend_Input>;
+  /** sets the columns of the filtered rows to the given values */
+  _set?: InputMaybe<Media_Set_Input>;
+  /** filter the rows which have to be updated */
+  where: Media_Bool_Exp;
+};
+
+/** aggregate var_pop on columns */
+export type Media_Var_Pop_Fields = {
+  __typename?: 'media_var_pop_fields';
+  /**
+   * Duration of video in seconds. Reserved for future video support.
+   *    NULL for images.
+   */
+  duration_seconds?: Maybe<Scalars['Float']['output']>;
+  /**
+   * File size in bytes. Used for quota tracking and validation against
+   *    media_entity_types.max_file_size_bytes.
+   */
+  file_size_bytes?: Maybe<Scalars['Float']['output']>;
+  /**
+   * Height of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  height?: Maybe<Scalars['Float']['output']>;
+  /**
+   * Width of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  width?: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by var_pop() on columns of table "media" */
+export type Media_Var_Pop_Order_By = {
+  /**
+   * Duration of video in seconds. Reserved for future video support.
+   *    NULL for images.
+   */
+  duration_seconds?: InputMaybe<Order_By>;
+  /**
+   * File size in bytes. Used for quota tracking and validation against
+   *    media_entity_types.max_file_size_bytes.
+   */
+  file_size_bytes?: InputMaybe<Order_By>;
+  /**
+   * Height of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  height?: InputMaybe<Order_By>;
+  /**
+   * Width of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  width?: InputMaybe<Order_By>;
+};
+
+/** aggregate var_samp on columns */
+export type Media_Var_Samp_Fields = {
+  __typename?: 'media_var_samp_fields';
+  /**
+   * Duration of video in seconds. Reserved for future video support.
+   *    NULL for images.
+   */
+  duration_seconds?: Maybe<Scalars['Float']['output']>;
+  /**
+   * File size in bytes. Used for quota tracking and validation against
+   *    media_entity_types.max_file_size_bytes.
+   */
+  file_size_bytes?: Maybe<Scalars['Float']['output']>;
+  /**
+   * Height of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  height?: Maybe<Scalars['Float']['output']>;
+  /**
+   * Width of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  width?: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by var_samp() on columns of table "media" */
+export type Media_Var_Samp_Order_By = {
+  /**
+   * Duration of video in seconds. Reserved for future video support.
+   *    NULL for images.
+   */
+  duration_seconds?: InputMaybe<Order_By>;
+  /**
+   * File size in bytes. Used for quota tracking and validation against
+   *    media_entity_types.max_file_size_bytes.
+   */
+  file_size_bytes?: InputMaybe<Order_By>;
+  /**
+   * Height of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  height?: InputMaybe<Order_By>;
+  /**
+   * Width of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  width?: InputMaybe<Order_By>;
+};
+
+/** aggregate variance on columns */
+export type Media_Variance_Fields = {
+  __typename?: 'media_variance_fields';
+  /**
+   * Duration of video in seconds. Reserved for future video support.
+   *    NULL for images.
+   */
+  duration_seconds?: Maybe<Scalars['Float']['output']>;
+  /**
+   * File size in bytes. Used for quota tracking and validation against
+   *    media_entity_types.max_file_size_bytes.
+   */
+  file_size_bytes?: Maybe<Scalars['Float']['output']>;
+  /**
+   * Height of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  height?: Maybe<Scalars['Float']['output']>;
+  /**
+   * Width of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  width?: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by variance() on columns of table "media" */
+export type Media_Variance_Order_By = {
+  /**
+   * Duration of video in seconds. Reserved for future video support.
+   *    NULL for images.
+   */
+  duration_seconds?: InputMaybe<Order_By>;
+  /**
+   * File size in bytes. Used for quota tracking and validation against
+   *    media_entity_types.max_file_size_bytes.
+   */
+  file_size_bytes?: InputMaybe<Order_By>;
+  /**
+   * Height of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  height?: InputMaybe<Order_By>;
+  /**
+   * Width of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  width?: InputMaybe<Order_By>;
+};
+
 /** mutation root */
 export type Mutation_Root = {
   __typename?: 'mutation_root';
@@ -4897,6 +7378,14 @@ export type Mutation_Root = {
   delete_forms?: Maybe<Forms_Mutation_Response>;
   /** delete single row from the table: "forms" */
   delete_forms_by_pk?: Maybe<Forms>;
+  /** delete data from the table: "media" */
+  delete_media?: Maybe<Media_Mutation_Response>;
+  /** delete single row from the table: "media" */
+  delete_media_by_pk?: Maybe<Media>;
+  /** delete data from the table: "media_entity_types" */
+  delete_media_entity_types?: Maybe<Media_Entity_Types_Mutation_Response>;
+  /** delete single row from the table: "media_entity_types" */
+  delete_media_entity_types_by_pk?: Maybe<Media_Entity_Types>;
   /** delete data from the table: "organization_plans" */
   delete_organization_plans?: Maybe<Organization_Plans_Mutation_Response>;
   /** delete single row from the table: "organization_plans" */
@@ -4981,6 +7470,14 @@ export type Mutation_Root = {
   insert_forms?: Maybe<Forms_Mutation_Response>;
   /** insert a single row into the table: "forms" */
   insert_forms_one?: Maybe<Forms>;
+  /** insert data into the table: "media" */
+  insert_media?: Maybe<Media_Mutation_Response>;
+  /** insert data into the table: "media_entity_types" */
+  insert_media_entity_types?: Maybe<Media_Entity_Types_Mutation_Response>;
+  /** insert a single row into the table: "media_entity_types" */
+  insert_media_entity_types_one?: Maybe<Media_Entity_Types>;
+  /** insert a single row into the table: "media" */
+  insert_media_one?: Maybe<Media>;
   /** insert data into the table: "organization_plans" */
   insert_organization_plans?: Maybe<Organization_Plans_Mutation_Response>;
   /** insert a single row into the table: "organization_plans" */
@@ -5079,6 +7576,18 @@ export type Mutation_Root = {
   update_forms_by_pk?: Maybe<Forms>;
   /** update multiples rows of table: "forms" */
   update_forms_many?: Maybe<Array<Maybe<Forms_Mutation_Response>>>;
+  /** update data of the table: "media" */
+  update_media?: Maybe<Media_Mutation_Response>;
+  /** update single row of the table: "media" */
+  update_media_by_pk?: Maybe<Media>;
+  /** update data of the table: "media_entity_types" */
+  update_media_entity_types?: Maybe<Media_Entity_Types_Mutation_Response>;
+  /** update single row of the table: "media_entity_types" */
+  update_media_entity_types_by_pk?: Maybe<Media_Entity_Types>;
+  /** update multiples rows of table: "media_entity_types" */
+  update_media_entity_types_many?: Maybe<Array<Maybe<Media_Entity_Types_Mutation_Response>>>;
+  /** update multiples rows of table: "media" */
+  update_media_many?: Maybe<Array<Maybe<Media_Mutation_Response>>>;
   /** update data of the table: "organization_plans" */
   update_organization_plans?: Maybe<Organization_Plans_Mutation_Response>;
   /** update single row of the table: "organization_plans" */
@@ -5246,6 +7755,30 @@ export type Mutation_RootDelete_FormsArgs = {
 
 /** mutation root */
 export type Mutation_RootDelete_Forms_By_PkArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+/** mutation root */
+export type Mutation_RootDelete_MediaArgs = {
+  where: Media_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootDelete_Media_By_PkArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+/** mutation root */
+export type Mutation_RootDelete_Media_Entity_TypesArgs = {
+  where: Media_Entity_Types_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootDelete_Media_Entity_Types_By_PkArgs = {
   id: Scalars['String']['input'];
 };
 
@@ -5513,6 +8046,34 @@ export type Mutation_RootInsert_FormsArgs = {
 export type Mutation_RootInsert_Forms_OneArgs = {
   object: Forms_Insert_Input;
   on_conflict?: InputMaybe<Forms_On_Conflict>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_MediaArgs = {
+  objects: Array<Media_Insert_Input>;
+  on_conflict?: InputMaybe<Media_On_Conflict>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_Media_Entity_TypesArgs = {
+  objects: Array<Media_Entity_Types_Insert_Input>;
+  on_conflict?: InputMaybe<Media_Entity_Types_On_Conflict>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_Media_Entity_Types_OneArgs = {
+  object: Media_Entity_Types_Insert_Input;
+  on_conflict?: InputMaybe<Media_Entity_Types_On_Conflict>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_Media_OneArgs = {
+  object: Media_Insert_Input;
+  on_conflict?: InputMaybe<Media_On_Conflict>;
 };
 
 
@@ -5903,6 +8464,60 @@ export type Mutation_RootUpdate_Forms_ManyArgs = {
 
 
 /** mutation root */
+export type Mutation_RootUpdate_MediaArgs = {
+  _append?: InputMaybe<Media_Append_Input>;
+  _delete_at_path?: InputMaybe<Media_Delete_At_Path_Input>;
+  _delete_elem?: InputMaybe<Media_Delete_Elem_Input>;
+  _delete_key?: InputMaybe<Media_Delete_Key_Input>;
+  _inc?: InputMaybe<Media_Inc_Input>;
+  _prepend?: InputMaybe<Media_Prepend_Input>;
+  _set?: InputMaybe<Media_Set_Input>;
+  where: Media_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Media_By_PkArgs = {
+  _append?: InputMaybe<Media_Append_Input>;
+  _delete_at_path?: InputMaybe<Media_Delete_At_Path_Input>;
+  _delete_elem?: InputMaybe<Media_Delete_Elem_Input>;
+  _delete_key?: InputMaybe<Media_Delete_Key_Input>;
+  _inc?: InputMaybe<Media_Inc_Input>;
+  _prepend?: InputMaybe<Media_Prepend_Input>;
+  _set?: InputMaybe<Media_Set_Input>;
+  pk_columns: Media_Pk_Columns_Input;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Media_Entity_TypesArgs = {
+  _inc?: InputMaybe<Media_Entity_Types_Inc_Input>;
+  _set?: InputMaybe<Media_Entity_Types_Set_Input>;
+  where: Media_Entity_Types_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Media_Entity_Types_By_PkArgs = {
+  _inc?: InputMaybe<Media_Entity_Types_Inc_Input>;
+  _set?: InputMaybe<Media_Entity_Types_Set_Input>;
+  pk_columns: Media_Entity_Types_Pk_Columns_Input;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Media_Entity_Types_ManyArgs = {
+  updates: Array<Media_Entity_Types_Updates>;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Media_ManyArgs = {
+  updates: Array<Media_Updates>;
+};
+
+
+/** mutation root */
 export type Mutation_RootUpdate_Organization_PlansArgs = {
   _inc?: InputMaybe<Organization_Plans_Inc_Input>;
   _set?: InputMaybe<Organization_Plans_Set_Input>;
@@ -6235,6 +8850,19 @@ export type Mutation_RootUpdate_Widgets_By_PkArgs = {
 /** mutation root */
 export type Mutation_RootUpdate_Widgets_ManyArgs = {
   updates: Array<Widgets_Updates>;
+};
+
+/** Boolean expression to compare columns of type "numeric". All fields are combined with logical 'AND'. */
+export type Numeric_Comparison_Exp = {
+  _eq?: InputMaybe<Scalars['numeric']['input']>;
+  _gt?: InputMaybe<Scalars['numeric']['input']>;
+  _gte?: InputMaybe<Scalars['numeric']['input']>;
+  _in?: InputMaybe<Array<Scalars['numeric']['input']>>;
+  _is_null?: InputMaybe<Scalars['Boolean']['input']>;
+  _lt?: InputMaybe<Scalars['numeric']['input']>;
+  _lte?: InputMaybe<Scalars['numeric']['input']>;
+  _neq?: InputMaybe<Scalars['numeric']['input']>;
+  _nin?: InputMaybe<Array<Scalars['numeric']['input']>>;
 };
 
 /** column ordering options */
@@ -7634,8 +10262,16 @@ export type Organizations = {
   id: Scalars['String']['output'];
   /** Soft delete flag - false means organization is deactivated */
   is_active: Scalars['Boolean']['output'];
-  /** Organization logo image URL */
-  logo_url?: Maybe<Scalars['String']['output']>;
+  /** An object relationship */
+  logo?: Maybe<Media>;
+  /**
+   * Reference to the current organization logo in the media table.
+   *  When a new logo is uploaded and reaches "ready" status, this field
+   *  is updated to point to the new media record. The logo relationship
+   *  provides access to storage_path, dimensions, mime_type, and status.
+   *  NULL means no logo is set.
+   */
+  logo_id?: Maybe<Scalars['String']['output']>;
   /** An array relationship */
   members: Array<Organization_Roles>;
   /** An aggregate relationship */
@@ -7851,7 +10487,8 @@ export type Organizations_Bool_Exp = {
   forms_aggregate?: InputMaybe<Forms_Aggregate_Bool_Exp>;
   id?: InputMaybe<String_Comparison_Exp>;
   is_active?: InputMaybe<Boolean_Comparison_Exp>;
-  logo_url?: InputMaybe<String_Comparison_Exp>;
+  logo?: InputMaybe<Media_Bool_Exp>;
+  logo_id?: InputMaybe<String_Comparison_Exp>;
   members?: InputMaybe<Organization_Roles_Bool_Exp>;
   members_aggregate?: InputMaybe<Organization_Roles_Aggregate_Bool_Exp>;
   name?: InputMaybe<String_Comparison_Exp>;
@@ -7907,8 +10544,15 @@ export type Organizations_Insert_Input = {
   id?: InputMaybe<Scalars['String']['input']>;
   /** Soft delete flag - false means organization is deactivated */
   is_active?: InputMaybe<Scalars['Boolean']['input']>;
-  /** Organization logo image URL */
-  logo_url?: InputMaybe<Scalars['String']['input']>;
+  logo?: InputMaybe<Media_Obj_Rel_Insert_Input>;
+  /**
+   * Reference to the current organization logo in the media table.
+   *  When a new logo is uploaded and reaches "ready" status, this field
+   *  is updated to point to the new media record. The logo relationship
+   *  provides access to storage_path, dimensions, mime_type, and status.
+   *  NULL means no logo is set.
+   */
+  logo_id?: InputMaybe<Scalars['String']['input']>;
   members?: InputMaybe<Organization_Roles_Arr_Rel_Insert_Input>;
   /** Organization display name */
   name?: InputMaybe<Scalars['String']['input']>;
@@ -7934,8 +10578,14 @@ export type Organizations_Max_Fields = {
   created_by?: Maybe<Scalars['String']['output']>;
   /** Primary key (NanoID 12-char) */
   id?: Maybe<Scalars['String']['output']>;
-  /** Organization logo image URL */
-  logo_url?: Maybe<Scalars['String']['output']>;
+  /**
+   * Reference to the current organization logo in the media table.
+   *  When a new logo is uploaded and reaches "ready" status, this field
+   *  is updated to point to the new media record. The logo relationship
+   *  provides access to storage_path, dimensions, mime_type, and status.
+   *  NULL means no logo is set.
+   */
+  logo_id?: Maybe<Scalars['String']['output']>;
   /** Organization display name */
   name?: Maybe<Scalars['String']['output']>;
   /** Organization configuration state: pending_setup for auto-created orgs, completed after user setup */
@@ -7954,8 +10604,14 @@ export type Organizations_Max_Order_By = {
   created_by?: InputMaybe<Order_By>;
   /** Primary key (NanoID 12-char) */
   id?: InputMaybe<Order_By>;
-  /** Organization logo image URL */
-  logo_url?: InputMaybe<Order_By>;
+  /**
+   * Reference to the current organization logo in the media table.
+   *  When a new logo is uploaded and reaches "ready" status, this field
+   *  is updated to point to the new media record. The logo relationship
+   *  provides access to storage_path, dimensions, mime_type, and status.
+   *  NULL means no logo is set.
+   */
+  logo_id?: InputMaybe<Order_By>;
   /** Organization display name */
   name?: InputMaybe<Order_By>;
   /** Organization configuration state: pending_setup for auto-created orgs, completed after user setup */
@@ -7975,8 +10631,14 @@ export type Organizations_Min_Fields = {
   created_by?: Maybe<Scalars['String']['output']>;
   /** Primary key (NanoID 12-char) */
   id?: Maybe<Scalars['String']['output']>;
-  /** Organization logo image URL */
-  logo_url?: Maybe<Scalars['String']['output']>;
+  /**
+   * Reference to the current organization logo in the media table.
+   *  When a new logo is uploaded and reaches "ready" status, this field
+   *  is updated to point to the new media record. The logo relationship
+   *  provides access to storage_path, dimensions, mime_type, and status.
+   *  NULL means no logo is set.
+   */
+  logo_id?: Maybe<Scalars['String']['output']>;
   /** Organization display name */
   name?: Maybe<Scalars['String']['output']>;
   /** Organization configuration state: pending_setup for auto-created orgs, completed after user setup */
@@ -7995,8 +10657,14 @@ export type Organizations_Min_Order_By = {
   created_by?: InputMaybe<Order_By>;
   /** Primary key (NanoID 12-char) */
   id?: InputMaybe<Order_By>;
-  /** Organization logo image URL */
-  logo_url?: InputMaybe<Order_By>;
+  /**
+   * Reference to the current organization logo in the media table.
+   *  When a new logo is uploaded and reaches "ready" status, this field
+   *  is updated to point to the new media record. The logo relationship
+   *  provides access to storage_path, dimensions, mime_type, and status.
+   *  NULL means no logo is set.
+   */
+  logo_id?: InputMaybe<Order_By>;
   /** Organization display name */
   name?: InputMaybe<Order_By>;
   /** Organization configuration state: pending_setup for auto-created orgs, completed after user setup */
@@ -8038,7 +10706,8 @@ export type Organizations_Order_By = {
   forms_aggregate?: InputMaybe<Forms_Aggregate_Order_By>;
   id?: InputMaybe<Order_By>;
   is_active?: InputMaybe<Order_By>;
-  logo_url?: InputMaybe<Order_By>;
+  logo?: InputMaybe<Media_Order_By>;
+  logo_id?: InputMaybe<Order_By>;
   members_aggregate?: InputMaybe<Organization_Roles_Aggregate_Order_By>;
   name?: InputMaybe<Order_By>;
   plans_aggregate?: InputMaybe<Organization_Plans_Aggregate_Order_By>;
@@ -8073,7 +10742,7 @@ export enum Organizations_Select_Column {
   /** column name */
   IsActive = 'is_active',
   /** column name */
-  LogoUrl = 'logo_url',
+  LogoId = 'logo_id',
   /** column name */
   Name = 'name',
   /** column name */
@@ -8108,8 +10777,14 @@ export type Organizations_Set_Input = {
   id?: InputMaybe<Scalars['String']['input']>;
   /** Soft delete flag - false means organization is deactivated */
   is_active?: InputMaybe<Scalars['Boolean']['input']>;
-  /** Organization logo image URL */
-  logo_url?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Reference to the current organization logo in the media table.
+   *  When a new logo is uploaded and reaches "ready" status, this field
+   *  is updated to point to the new media record. The logo relationship
+   *  provides access to storage_path, dimensions, mime_type, and status.
+   *  NULL means no logo is set.
+   */
+  logo_id?: InputMaybe<Scalars['String']['input']>;
   /** Organization display name */
   name?: InputMaybe<Scalars['String']['input']>;
   /** UI preferences only (theme, locale) - not business logic */
@@ -8140,8 +10815,14 @@ export type Organizations_Stream_Cursor_Value_Input = {
   id?: InputMaybe<Scalars['String']['input']>;
   /** Soft delete flag - false means organization is deactivated */
   is_active?: InputMaybe<Scalars['Boolean']['input']>;
-  /** Organization logo image URL */
-  logo_url?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Reference to the current organization logo in the media table.
+   *  When a new logo is uploaded and reaches "ready" status, this field
+   *  is updated to point to the new media record. The logo relationship
+   *  provides access to storage_path, dimensions, mime_type, and status.
+   *  NULL means no logo is set.
+   */
+  logo_id?: InputMaybe<Scalars['String']['input']>;
   /** Organization display name */
   name?: InputMaybe<Scalars['String']['input']>;
   /** UI preferences only (theme, locale) - not business logic */
@@ -8165,7 +10846,7 @@ export enum Organizations_Update_Column {
   /** column name */
   IsActive = 'is_active',
   /** column name */
-  LogoUrl = 'logo_url',
+  LogoId = 'logo_id',
   /** column name */
   Name = 'name',
   /** column name */
@@ -9663,6 +12344,18 @@ export type Query_Root = {
   /** fetch data from the table: "forms" using primary key columns */
   forms_by_pk?: Maybe<Forms>;
   /** An array relationship */
+  media: Array<Media>;
+  /** An aggregate relationship */
+  media_aggregate: Media_Aggregate;
+  /** fetch data from the table: "media" using primary key columns */
+  media_by_pk?: Maybe<Media>;
+  /** fetch data from the table: "media_entity_types" */
+  media_entity_types: Array<Media_Entity_Types>;
+  /** fetch aggregated fields from the table: "media_entity_types" */
+  media_entity_types_aggregate: Media_Entity_Types_Aggregate;
+  /** fetch data from the table: "media_entity_types" using primary key columns */
+  media_entity_types_by_pk?: Maybe<Media_Entity_Types>;
+  /** An array relationship */
   organization_plans: Array<Organization_Plans>;
   /** An aggregate relationship */
   organization_plans_aggregate: Organization_Plans_Aggregate;
@@ -9906,6 +12599,52 @@ export type Query_RootForms_AggregateArgs = {
 
 
 export type Query_RootForms_By_PkArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+export type Query_RootMediaArgs = {
+  distinct_on?: InputMaybe<Array<Media_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Media_Order_By>>;
+  where?: InputMaybe<Media_Bool_Exp>;
+};
+
+
+export type Query_RootMedia_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Media_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Media_Order_By>>;
+  where?: InputMaybe<Media_Bool_Exp>;
+};
+
+
+export type Query_RootMedia_By_PkArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+export type Query_RootMedia_Entity_TypesArgs = {
+  distinct_on?: InputMaybe<Array<Media_Entity_Types_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Media_Entity_Types_Order_By>>;
+  where?: InputMaybe<Media_Entity_Types_Bool_Exp>;
+};
+
+
+export type Query_RootMedia_Entity_Types_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Media_Entity_Types_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Media_Entity_Types_Order_By>>;
+  where?: InputMaybe<Media_Entity_Types_Bool_Exp>;
+};
+
+
+export type Query_RootMedia_Entity_Types_By_PkArgs = {
   id: Scalars['String']['input'];
 };
 
@@ -11824,6 +14563,22 @@ export type Subscription_Root = {
   /** fetch data from the table in a streaming manner: "forms" */
   forms_stream: Array<Forms>;
   /** An array relationship */
+  media: Array<Media>;
+  /** An aggregate relationship */
+  media_aggregate: Media_Aggregate;
+  /** fetch data from the table: "media" using primary key columns */
+  media_by_pk?: Maybe<Media>;
+  /** fetch data from the table: "media_entity_types" */
+  media_entity_types: Array<Media_Entity_Types>;
+  /** fetch aggregated fields from the table: "media_entity_types" */
+  media_entity_types_aggregate: Media_Entity_Types_Aggregate;
+  /** fetch data from the table: "media_entity_types" using primary key columns */
+  media_entity_types_by_pk?: Maybe<Media_Entity_Types>;
+  /** fetch data from the table in a streaming manner: "media_entity_types" */
+  media_entity_types_stream: Array<Media_Entity_Types>;
+  /** fetch data from the table in a streaming manner: "media" */
+  media_stream: Array<Media>;
+  /** An array relationship */
   organization_plans: Array<Organization_Plans>;
   /** An aggregate relationship */
   organization_plans_aggregate: Organization_Plans_Aggregate;
@@ -12145,6 +14900,66 @@ export type Subscription_RootForms_StreamArgs = {
   batch_size: Scalars['Int']['input'];
   cursor: Array<InputMaybe<Forms_Stream_Cursor_Input>>;
   where?: InputMaybe<Forms_Bool_Exp>;
+};
+
+
+export type Subscription_RootMediaArgs = {
+  distinct_on?: InputMaybe<Array<Media_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Media_Order_By>>;
+  where?: InputMaybe<Media_Bool_Exp>;
+};
+
+
+export type Subscription_RootMedia_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Media_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Media_Order_By>>;
+  where?: InputMaybe<Media_Bool_Exp>;
+};
+
+
+export type Subscription_RootMedia_By_PkArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+export type Subscription_RootMedia_Entity_TypesArgs = {
+  distinct_on?: InputMaybe<Array<Media_Entity_Types_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Media_Entity_Types_Order_By>>;
+  where?: InputMaybe<Media_Entity_Types_Bool_Exp>;
+};
+
+
+export type Subscription_RootMedia_Entity_Types_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Media_Entity_Types_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Media_Entity_Types_Order_By>>;
+  where?: InputMaybe<Media_Entity_Types_Bool_Exp>;
+};
+
+
+export type Subscription_RootMedia_Entity_Types_By_PkArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+export type Subscription_RootMedia_Entity_Types_StreamArgs = {
+  batch_size: Scalars['Int']['input'];
+  cursor: Array<InputMaybe<Media_Entity_Types_Stream_Cursor_Input>>;
+  where?: InputMaybe<Media_Entity_Types_Bool_Exp>;
+};
+
+
+export type Subscription_RootMedia_StreamArgs = {
+  batch_size: Scalars['Int']['input'];
+  cursor: Array<InputMaybe<Media_Stream_Cursor_Input>>;
+  where?: InputMaybe<Media_Bool_Exp>;
 };
 
 
@@ -15498,7 +18313,7 @@ export type CreateFlowsMutationVariables = Exact<{
 
 export type CreateFlowsMutation = { __typename?: 'mutation_root', insert_flows?: { __typename?: 'flows_mutation_response', returning: Array<{ __typename?: 'flows', id: string, form_id: string, organization_id: string, name: string, flow_type: string, branch_condition?: any | null, display_order: number, created_at: string, updated_at: string }> } | null };
 
-export type FormBasicFragment = { __typename?: 'forms', id: string, name: string, product_name: string, product_description?: string | null, settings: any, branching_config: any, status: string, is_active: boolean, organization_id: string, created_by: string, created_at: string, updated_at: string, organization: { __typename?: 'organizations', id: string, logo_url?: string | null } };
+export type FormBasicFragment = { __typename?: 'forms', id: string, name: string, product_name: string, product_description?: string | null, settings: any, branching_config: any, status: string, is_active: boolean, organization_id: string, created_by: string, created_at: string, updated_at: string, organization: { __typename?: 'organizations', id: string, logo?: { __typename?: 'media', id: string, storage_path: string } | null } };
 
 export type CreateFormMutationVariables = Exact<{
   form: Forms_Insert_Input;
@@ -15542,14 +18357,14 @@ export type GetFormQueryVariables = Exact<{
 }>;
 
 
-export type GetFormQuery = { __typename?: 'query_root', forms_by_pk?: { __typename?: 'forms', id: string, name: string, product_name: string, product_description?: string | null, settings: any, branching_config: any, status: string, is_active: boolean, organization_id: string, created_by: string, created_at: string, updated_at: string, organization: { __typename?: 'organizations', id: string, logo_url?: string | null } } | null };
+export type GetFormQuery = { __typename?: 'query_root', forms_by_pk?: { __typename?: 'forms', id: string, name: string, product_name: string, product_description?: string | null, settings: any, branching_config: any, status: string, is_active: boolean, organization_id: string, created_by: string, created_at: string, updated_at: string, organization: { __typename?: 'organizations', id: string, logo?: { __typename?: 'media', id: string, storage_path: string } | null } } | null };
 
 export type GetFormsQueryVariables = Exact<{
   organizationId: Scalars['String']['input'];
 }>;
 
 
-export type GetFormsQuery = { __typename?: 'query_root', forms: Array<{ __typename?: 'forms', id: string, name: string, product_name: string, product_description?: string | null, settings: any, branching_config: any, status: string, is_active: boolean, organization_id: string, created_by: string, created_at: string, updated_at: string, organization: { __typename?: 'organizations', id: string, logo_url?: string | null } }> };
+export type GetFormsQuery = { __typename?: 'query_root', forms: Array<{ __typename?: 'forms', id: string, name: string, product_name: string, product_description?: string | null, settings: any, branching_config: any, status: string, is_active: boolean, organization_id: string, created_by: string, created_at: string, updated_at: string, organization: { __typename?: 'organizations', id: string, logo?: { __typename?: 'media', id: string, storage_path: string } | null } }> };
 
 export type FormQuestionBasicFragment = { __typename?: 'form_questions', id: string, form_id: string, organization_id: string, question_type_id: string, question_key: string, question_text: string, placeholder?: string | null, help_text?: string | null, display_order: number, is_required: boolean, min_length?: number | null, max_length?: number | null, min_value?: number | null, max_value?: number | null, validation_pattern?: string | null, allowed_file_types?: Array<string> | null, max_file_size_kb?: number | null, is_active: boolean, created_at: string, updated_at: string, question_type: { __typename?: 'question_types', id: string, unique_name: string, name: string, category: string, input_component: string } };
 
@@ -15645,7 +18460,7 @@ export type GetFormStepsQueryVariables = Exact<{
 
 export type GetFormStepsQuery = { __typename?: 'query_root', form_steps: Array<{ __typename?: 'form_steps', id: string, form_id: string, flow_id: string, step_type: string, step_order: number, question_id?: string | null, content: any, tips?: Array<string> | null, flow_membership: string, is_active: boolean, created_at: string, updated_at: string, question?: { __typename?: 'form_questions', scale_min_label?: string | null, scale_max_label?: string | null, id: string, form_id: string, organization_id: string, question_type_id: string, question_key: string, question_text: string, placeholder?: string | null, help_text?: string | null, display_order: number, is_required: boolean, min_length?: number | null, max_length?: number | null, min_value?: number | null, max_value?: number | null, validation_pattern?: string | null, allowed_file_types?: Array<string> | null, max_file_size_kb?: number | null, is_active: boolean, created_at: string, updated_at: string, options: Array<{ __typename?: 'question_options', id: string, question_id: string, option_value: string, option_label: string, display_order: number, is_default: boolean, is_active: boolean }>, question_type: { __typename?: 'question_types', id: string, unique_name: string, name: string, category: string, input_component: string } } | null }> };
 
-export type OrganizationBasicFragment = { __typename?: 'organizations', id: string, name: string, slug: string, logo_url?: string | null, setup_status: 'pending_setup' | 'completed', is_active: boolean, settings: any, created_at: string, updated_at: string, plans: Array<{ __typename?: 'organization_plans', id: string, plan_id: string, status: string, plan: { __typename?: 'plans', id: string, unique_name: string, name: string, question_types: Array<{ __typename?: 'plan_question_types', question_type: { __typename?: 'question_types', id: string, unique_name: string, name: string, category: string, description?: string | null, icon?: string | null, input_component: string, answer_data_type: string, display_order: number, supports_options: boolean } }> } }> };
+export type OrganizationBasicFragment = { __typename?: 'organizations', id: string, name: string, slug: string, logo_id?: string | null, setup_status: 'pending_setup' | 'completed', is_active: boolean, settings: any, created_at: string, updated_at: string, logo?: { __typename?: 'media', id: string, storage_path: string, status: string, mime_type: string, width?: number | null, height?: number | null } | null, plans: Array<{ __typename?: 'organization_plans', id: string, plan_id: string, status: string, plan: { __typename?: 'plans', id: string, unique_name: string, name: string, question_types: Array<{ __typename?: 'plan_question_types', question_type: { __typename?: 'question_types', id: string, unique_name: string, name: string, category: string, description?: string | null, icon?: string | null, input_component: string, answer_data_type: string, display_order: number, supports_options: boolean } }> } }> };
 
 export type UpdateOrganizationMutationVariables = Exact<{
   id: Scalars['String']['input'];
@@ -15653,7 +18468,7 @@ export type UpdateOrganizationMutationVariables = Exact<{
 }>;
 
 
-export type UpdateOrganizationMutation = { __typename?: 'mutation_root', update_organizations_by_pk?: { __typename?: 'organizations', id: string, name: string, slug: string, logo_url?: string | null, setup_status: 'pending_setup' | 'completed', is_active: boolean, settings: any, updated_at: string } | null };
+export type UpdateOrganizationMutation = { __typename?: 'mutation_root', update_organizations_by_pk?: { __typename?: 'organizations', id: string, name: string, slug: string, logo_id?: string | null, setup_status: 'pending_setup' | 'completed', is_active: boolean, settings: any, updated_at: string, logo?: { __typename?: 'media', id: string, storage_path: string, status: string, mime_type: string, width?: number | null, height?: number | null } | null } | null };
 
 export type CheckSlugAvailabilityQueryVariables = Exact<{
   slug: Scalars['String']['input'];
@@ -15668,14 +18483,14 @@ export type GetOrganizationQueryVariables = Exact<{
 }>;
 
 
-export type GetOrganizationQuery = { __typename?: 'query_root', organizations_by_pk?: { __typename?: 'organizations', id: string, name: string, slug: string, logo_url?: string | null, setup_status: 'pending_setup' | 'completed', is_active: boolean, settings: any, created_at: string, updated_at: string, plans: Array<{ __typename?: 'organization_plans', id: string, plan_id: string, status: string, plan: { __typename?: 'plans', id: string, unique_name: string, name: string, question_types: Array<{ __typename?: 'plan_question_types', question_type: { __typename?: 'question_types', id: string, unique_name: string, name: string, category: string, description?: string | null, icon?: string | null, input_component: string, answer_data_type: string, display_order: number, supports_options: boolean } }> } }> } | null };
+export type GetOrganizationQuery = { __typename?: 'query_root', organizations_by_pk?: { __typename?: 'organizations', id: string, name: string, slug: string, logo_id?: string | null, setup_status: 'pending_setup' | 'completed', is_active: boolean, settings: any, created_at: string, updated_at: string, logo?: { __typename?: 'media', id: string, storage_path: string, status: string, mime_type: string, width?: number | null, height?: number | null } | null, plans: Array<{ __typename?: 'organization_plans', id: string, plan_id: string, status: string, plan: { __typename?: 'plans', id: string, unique_name: string, name: string, question_types: Array<{ __typename?: 'plan_question_types', question_type: { __typename?: 'question_types', id: string, unique_name: string, name: string, category: string, description?: string | null, icon?: string | null, input_component: string, answer_data_type: string, display_order: number, supports_options: boolean } }> } }> } | null };
 
 export type GetUserDefaultOrganizationQueryVariables = Exact<{
   userId: Scalars['String']['input'];
 }>;
 
 
-export type GetUserDefaultOrganizationQuery = { __typename?: 'query_root', organization_roles: Array<{ __typename?: 'organization_roles', id: string, is_default_org: boolean, organization: { __typename?: 'organizations', id: string, name: string, slug: string, logo_url?: string | null, setup_status: 'pending_setup' | 'completed', is_active: boolean, settings: any, created_at: string, updated_at: string, plans: Array<{ __typename?: 'organization_plans', id: string, plan_id: string, status: string, plan: { __typename?: 'plans', id: string, unique_name: string, name: string, question_types: Array<{ __typename?: 'plan_question_types', question_type: { __typename?: 'question_types', id: string, unique_name: string, name: string, category: string, description?: string | null, icon?: string | null, input_component: string, answer_data_type: string, display_order: number, supports_options: boolean } }> } }> }, role: { __typename?: 'roles', id: string, unique_name: string, name: string, can_manage_forms: boolean, can_manage_testimonials: boolean, can_manage_widgets: boolean, can_manage_members: boolean, can_manage_billing: boolean, can_delete_org: boolean, is_viewer: boolean } }> };
+export type GetUserDefaultOrganizationQuery = { __typename?: 'query_root', organization_roles: Array<{ __typename?: 'organization_roles', id: string, is_default_org: boolean, organization: { __typename?: 'organizations', id: string, name: string, slug: string, logo_id?: string | null, setup_status: 'pending_setup' | 'completed', is_active: boolean, settings: any, created_at: string, updated_at: string, logo?: { __typename?: 'media', id: string, storage_path: string, status: string, mime_type: string, width?: number | null, height?: number | null } | null, plans: Array<{ __typename?: 'organization_plans', id: string, plan_id: string, status: string, plan: { __typename?: 'plans', id: string, unique_name: string, name: string, question_types: Array<{ __typename?: 'plan_question_types', question_type: { __typename?: 'question_types', id: string, unique_name: string, name: string, category: string, description?: string | null, icon?: string | null, input_component: string, answer_data_type: string, display_order: number, supports_options: boolean } }> } }> }, role: { __typename?: 'roles', id: string, unique_name: string, name: string, can_manage_forms: boolean, can_manage_testimonials: boolean, can_manage_widgets: boolean, can_manage_members: boolean, can_manage_billing: boolean, can_delete_org: boolean, is_viewer: boolean } }> };
 
 export type PlanBasicFragment = { __typename?: 'plans', id: string, unique_name: string, name: string, description?: string | null, max_forms: number, max_members: number, max_testimonials: number, max_widgets: number, show_branding: boolean, is_active: boolean, created_at: string, updated_at: string };
 
@@ -15791,7 +18606,10 @@ export const FormBasicFragmentDoc = gql`
   updated_at
   organization {
     id
-    logo_url
+    logo {
+      id
+      storage_path
+    }
   }
 }
     `;
@@ -15869,7 +18687,15 @@ export const OrganizationBasicFragmentDoc = gql`
   id
   name
   slug
-  logo_url
+  logo_id
+  logo {
+    id
+    storage_path
+    status
+    mime_type
+    width
+    height
+  }
   setup_status
   is_active
   settings
@@ -16648,7 +19474,15 @@ export const UpdateOrganizationDocument = gql`
     id
     name
     slug
-    logo_url
+    logo_id
+    logo {
+      id
+      storage_path
+      status
+      mime_type
+      width
+      height
+    }
     setup_status
     is_active
     settings

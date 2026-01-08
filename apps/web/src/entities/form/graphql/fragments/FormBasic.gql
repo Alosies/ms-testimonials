@@ -13,6 +13,9 @@ fragment FormBasic on forms {
   updated_at
   organization {
     id
-    logo_url
+    logo {
+      id
+      storage_path
+    }
   }
 }
