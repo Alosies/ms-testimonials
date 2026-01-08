@@ -26,3 +26,6 @@ export {
   getStepLabel,
   getStepIcon,
 } from './stepHelpers';
+
+// Step data transformation
+export { transformFormSteps } from './stepTransform';

@@ -20,3 +20,4 @@ export { useStepSave } from './useStepSave';
 export { useSaveFormSteps } from './useSaveFormSteps';
 export { useFlowNavigation } from './useFlowNavigation';
 export { useBranchedKeyboardNavigation } from './useBranchedKeyboardNavigation';
+export { useFormStudioData } from './useFormStudioData';
