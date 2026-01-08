@@ -33,12 +33,6 @@ const threshold = computed({
   },
 });
 
-function toggleBranching() {
-  const newValue = !localSwitchState.value;
-  localSwitchState.value = newValue;
-  handleBranchingToggle(newValue);
-}
-
 function handleBranchingToggle(enabled: boolean) {
   if (!selectedStep.value) return;
 
@@ -68,8 +62,8 @@ function handleBranchingToggle(enabled: boolean) {
       </Label>
       <Switch
         id="branching-toggle"
-        :checked="localSwitchState"
-        @click="toggleBranching"
+        :model-value="localSwitchState"
+        @update:model-value="handleBranchingToggle"
       />
     </div>
 
