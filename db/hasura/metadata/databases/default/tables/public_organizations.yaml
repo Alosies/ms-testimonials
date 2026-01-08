@@ -5,6 +5,9 @@ object_relationships:
   - name: creator
     using:
       foreign_key_constraint_on: created_by
+  - name: logo
+    using:
+      foreign_key_constraint_on: logo_id
 array_relationships:
   - name: forms
     using:
@@ -50,7 +53,7 @@ insert_permissions:
       columns:
         - name
         - slug
-        - logo_url
+        - logo_id
         - settings
         - created_by
 select_permissions:
@@ -80,7 +83,7 @@ select_permissions:
         - id
         - name
         - slug
-        - logo_url
+        - logo_id
         - is_active
         - created_at
       filter:
@@ -91,7 +94,7 @@ update_permissions:
     permission:
       columns:
         - name
-        - logo_url
+        - logo_id
         - settings
       filter:
         id:
@@ -104,7 +107,7 @@ update_permissions:
       columns:
         - name
         - slug
-        - logo_url
+        - logo_id
         - settings
         - setup_status
         - is_active
