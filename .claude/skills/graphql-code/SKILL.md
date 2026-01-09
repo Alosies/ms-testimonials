@@ -119,10 +119,19 @@ import {
   type GetOrganizationQueryVariables,
 } from '@/shared/graphql/generated/operations';
 
-export function useGetOrganization(variables: Ref<GetOrganizationQueryVariables>) {
-  const { result, loading, error, refetch } = useGetOrganizationQuery(variables, {
-    enabled: computed(() => !!variables.value.organizationId),
-  });
+export function useGetOrganization(organizationId: Ref<string | null>) {
+  // CRITICAL: Variables must be computed, not ref(computed.value)
+  const variables = computed<GetOrganizationQueryVariables>(() => ({
+    organizationId: organizationId.value ?? '',
+  }));
+
+  // CRITICAL: Enabled must be computed for reactivity
+  const enabled = computed(() => !!organizationId.value);
+
+  const { result, loading, error, refetch } = useGetOrganizationQuery(
+    variables,
+    { enabled },
+  );
 
   const organization = computed(() => result.value?.organizations_by_pk ?? null);
 
@@ -135,6 +144,12 @@ export function useGetOrganization(variables: Ref<GetOrganizationQueryVariables>
   };
 }
 ```
+
+### Query Composable Rules (CRITICAL)
+
+1. **Variables**: Always use `computed()` - never `ref(computed.value)`
+2. **Enabled**: Always use `computed()` - enables reactive query toggling
+3. **Data extraction**: Always use `computed()` with safe navigation (`?? null` or `?? []`)
 
 ### Mutation Composable Pattern
 

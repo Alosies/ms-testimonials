@@ -121,11 +121,44 @@ query GetFlowsByFormId($formId: String!) {
 }
 ```
 
-### 1.2 Add Flow Mutations
+### 1.2 Add Flow Fragment
+
+**File:** `apps/web/src/entities/flow/graphql/fragments/FlowBasic.gql`
+
+```graphql
+fragment FlowBasic on flows {
+  id
+  form_id
+  name
+  flow_type
+  branch_condition
+  display_order
+  created_at
+  updated_at
+}
+```
+
+### 1.3 Add Flow Mutations
+
+**File:** `apps/web/src/entities/flow/graphql/mutations/createFlows.gql`
+
+```graphql
+#import "../fragments/FlowBasic.gql"
+
+mutation CreateFlows($inputs: [flows_insert_input!]!) {
+  insert_flows(objects: $inputs) {
+    returning {
+      ...FlowBasic
+    }
+  }
+}
+```
 
 **File:** `apps/web/src/entities/flow/graphql/mutations/updateFlows.gql`
 
 ```graphql
+#import "../fragments/FlowBasic.gql"
+
 mutation UpdateFlows($updates: [flows_updates!]!) {
   update_flows_many(updates: $updates) {
     returning {
@@ -145,7 +178,7 @@ mutation DeleteFlows($ids: [String!]!) {
 }
 ```
 
-### 1.3 Update FormStep Fragment
+### 1.4 Update FormStep Fragment
 
 **File:** `apps/web/src/entities/formStep/graphql/fragments/FormStepBasic.gql`
 
@@ -172,13 +205,13 @@ fragment FormStepBasic on form_steps {
 }
 ```
 
-### 1.4 Update GetFormSteps Query
+### 1.5 Update GetFormSteps Query
 
 **File:** `apps/web/src/entities/formStep/graphql/queries/getFormSteps.gql`
 
 Ensure `flow_id` and `flow` relationship are included.
 
-### 1.5 Run Codegen
+### 1.6 Run Codegen
 
 ```bash
 pnpm codegen:web
@@ -188,16 +221,91 @@ pnpm codegen:web
 
 ## Phase 2: Type Definitions
 
-### 2.1 Add Flow Types
+Following the graphql-code skill patterns: types extracted from queries (not fragments), functions in `functions/` folder.
 
-**File:** `apps/web/src/entities/flow/models/flow.ts`
+### 2.1 Create Flow Models Structure
+
+**Directory Structure:**
+```
+entities/flow/
+├── graphql/
+│   ├── fragments/FlowBasic.gql
+│   ├── queries/getFlowsByFormId.gql
+│   └── mutations/
+│       ├── createFlows.gql
+│       ├── updateFlows.gql
+│       └── deleteFlows.gql
+├── models/
+│   ├── index.ts       # Barrel exports + utility types
+│   ├── queries.ts     # Query-related types
+│   └── mutations.ts   # Mutation-related types
+├── functions/
+│   ├── index.ts
+│   ├── createDefaultFlows.ts
+│   └── deriveFlowMembership.ts
+├── composables/
+│   ├── index.ts
+│   ├── queries/useGetFlowsByFormId.ts
+│   └── mutations/
+│       ├── useCreateFlows.ts
+│       ├── useUpdateFlows.ts
+│       └── useDeleteFlows.ts
+└── index.ts
+```
+
+### 2.2 Flow Query Types
+
+**File:** `apps/web/src/entities/flow/models/queries.ts`
 
 ```typescript
-import type { FlowBasicFragment } from '@/shared/graphql/generated/operations';
+import type {
+  GetFlowsByFormIdQuery,
+  GetFlowsByFormIdQueryVariables,
+} from '@/shared/graphql/generated/operations';
 
-/**
- * Branch condition operators supported by the flows table
- */
+// Re-export Query Variables
+export type GetFlowsByFormIdVariables = GetFlowsByFormIdQueryVariables;
+
+// Extract Data Types from Queries (CORRECT: extract from query, not fragment)
+export type FlowsData = GetFlowsByFormIdQuery['flows'];
+export type Flow = GetFlowsByFormIdQuery['flows'][number];
+```
+
+### 2.3 Flow Mutation Types
+
+**File:** `apps/web/src/entities/flow/models/mutations.ts`
+
+```typescript
+import type {
+  CreateFlowsMutation,
+  CreateFlowsMutationVariables,
+  UpdateFlowsMutation,
+  UpdateFlowsMutationVariables,
+  DeleteFlowsMutation,
+  DeleteFlowsMutationVariables,
+} from '@/shared/graphql/generated/operations';
+
+// Re-export Mutation Variables
+export type CreateFlowsVariables = CreateFlowsMutationVariables;
+export type UpdateFlowsVariables = UpdateFlowsMutationVariables;
+export type DeleteFlowsVariables = DeleteFlowsMutationVariables;
+
+// Extract Mutation Result Types
+export type CreateFlowsResult = NonNullable<CreateFlowsMutation['insert_flows']>['returning'];
+export type UpdateFlowsResult = NonNullable<UpdateFlowsMutation['update_flows_many']>;
+export type DeleteFlowsResult = NonNullable<DeleteFlowsMutation['delete_flows']>;
+```
+
+### 2.4 Flow Barrel Export
+
+**File:** `apps/web/src/entities/flow/models/index.ts`
+
+```typescript
+export type * from './queries';
+export type * from './mutations';
+
+// Utility types (custom types that don't come from GraphQL)
+export type FlowType = 'shared' | 'branch';
 export type BranchConditionOperator = '>=' | '>' | '<' | '<=' | '=' | '!=' | 'between';
 
 /**
@@ -210,37 +318,35 @@ export interface BranchCondition {
 }
 
 /**
- * Flow type from database
+ * Legacy flow membership for backward compatibility
  */
-export type FlowType = 'shared' | 'branch';
+export type FlowMembershipLegacy = 'shared' | 'testimonial' | 'improvement';
+```
 
-/**
- * Flow entity (from GraphQL fragment)
- */
-export type Flow = FlowBasicFragment;
+### 2.5 Flow Functions (NOT in models/)
 
-/**
- * Flow with resolved membership for backward compatibility
- */
-export interface FlowWithMembership extends Flow {
-  membership: 'shared' | 'testimonial' | 'improvement';
-}
+**File:** `apps/web/src/entities/flow/functions/createDefaultFlows.ts`
 
-/**
- * Create default flows for a form
- */
-export function createDefaultFlows(
-  formId: string,
-  organizationId: string,
-  threshold: number = 4
-): Array<{
+```typescript
+import type { BranchCondition, FlowType } from '../models';
+
+export interface DefaultFlowInput {
   form_id: string;
   organization_id: string;
   name: string;
   flow_type: FlowType;
   branch_condition: BranchCondition | null;
   display_order: number;
-}> {
+}
+
+/**
+ * Create default flows for a form when branching is enabled
+ */
+export function createDefaultFlows(
+  formId: string,
+  organizationId: string,
+  threshold: number = 4
+): DefaultFlowInput[] {
   return [
     {
       form_id: formId,
@@ -268,11 +374,17 @@ export function createDefaultFlows(
     },
   ];
 }
+```
+
+**File:** `apps/web/src/entities/flow/functions/deriveFlowMembership.ts`
+
+```typescript
+import type { Flow, BranchCondition, FlowMembershipLegacy } from '../models';
 
 /**
  * Derive legacy flowMembership from flow for backward compat
  */
-export function deriveFlowMembership(flow: Flow): 'shared' | 'testimonial' | 'improvement' {
+export function deriveFlowMembership(flow: Flow): FlowMembershipLegacy {
   if (flow.flow_type === 'shared') return 'shared';
 
   const condition = flow.branch_condition as BranchCondition | null;
@@ -293,7 +405,14 @@ export function deriveFlowMembership(flow: Flow): 'shared' | 'testimonial' | 'im
 }
 ```
 
-### 2.2 Update FormStep Type
+**File:** `apps/web/src/entities/flow/functions/index.ts`
+
+```typescript
+export { createDefaultFlows, type DefaultFlowInput } from './createDefaultFlows';
+export { deriveFlowMembership } from './deriveFlowMembership';
+```
+
+### 2.6 Update FormStep Type
 
 **File:** `apps/web/src/shared/stepCards/models/stepContent.ts`
 
@@ -328,6 +447,8 @@ export interface FormStep {
 
 ## Phase 3: Flow Entity Composables
 
+Following the graphql-code skill patterns: `computed()` for variables and enabled (CRITICAL for reactivity).
+
 ### 3.1 Create useGetFlowsByFormId
 
 **File:** `apps/web/src/entities/flow/composables/queries/useGetFlowsByFormId.ts`
@@ -338,37 +459,43 @@ import {
   useGetFlowsByFormIdQuery,
   type GetFlowsByFormIdQueryVariables,
 } from '@/shared/graphql/generated/operations';
+import type { BranchCondition } from '../../models';
 
 export function useGetFlowsByFormId(formId: Ref<string | null>) {
+  // CRITICAL: Variables must be computed, not ref(computed.value)
+  const variables = computed<GetFlowsByFormIdQueryVariables>(() => ({
+    formId: formId.value ?? '',
+  }));
+
+  // CRITICAL: Enabled must be computed for reactivity
+  const enabled = computed(() => !!formId.value);
+
   const { result, loading, error, refetch } = useGetFlowsByFormIdQuery(
-    () => ({
-      formId: formId.value ?? '',
-    }),
-    () => ({
-      enabled: !!formId.value,
-    }),
+    variables,
+    { enabled },
   );
 
+  // Safe data extraction with fallbacks
   const flows = computed(() => result.value?.flows ?? []);
 
   const sharedFlow = computed(() =>
-    flows.value.find(f => f.flow_type === 'shared')
+    flows.value.find(f => f.flow_type === 'shared') ?? null
   );
 
   const testimonialFlow = computed(() =>
     flows.value.find(f => {
       if (f.flow_type !== 'branch') return false;
-      const cond = f.branch_condition as { op?: string } | null;
+      const cond = f.branch_condition as BranchCondition | null;
       return cond?.op === '>=' || cond?.op === '>';
-    })
+    }) ?? null
   );
 
   const improvementFlow = computed(() =>
     flows.value.find(f => {
       if (f.flow_type !== 'branch') return false;
-      const cond = f.branch_condition as { op?: string } | null;
+      const cond = f.branch_condition as BranchCondition | null;
       return cond?.op === '<' || cond?.op === '<=';
-    })
+    }) ?? null
   );
 
   return {
@@ -379,6 +506,7 @@ export function useGetFlowsByFormId(formId: Ref<string | null>) {
     loading,
     error,
     refetch,
+    result,
   };
 }
 ```
@@ -448,6 +576,77 @@ export function useDeleteFlows() {
   };
 }
 ```
+
+### 3.4 Create useCreateFlows
+
+**File:** `apps/web/src/entities/flow/composables/mutations/useCreateFlows.ts`
+
+```typescript
+import { computed } from 'vue';
+import {
+  useCreateFlowsMutation,
+  type CreateFlowsMutationVariables,
+} from '@/shared/graphql/generated/operations';
+
+export function useCreateFlows() {
+  const { mutate, loading, error, onDone, onError } = useCreateFlowsMutation();
+
+  const hasError = computed(() => error.value !== null);
+
+  const createFlows = async (variables: CreateFlowsMutationVariables) => {
+    const result = await mutate(variables);
+    return result?.data?.insert_flows?.returning ?? [];
+  };
+
+  return {
+    mutate,
+    createFlows,
+    loading,
+    error,
+    hasError,
+    onDone,
+    onError,
+  };
+}
+```
+
+### 3.5 Composable Barrel Export
+
+**File:** `apps/web/src/entities/flow/composables/index.ts`
+
+```typescript
+// Queries
+export { useGetFlowsByFormId } from './queries/useGetFlowsByFormId';
+
+// Mutations
+export { useCreateFlows } from './mutations/useCreateFlows';
+export { useUpdateFlows } from './mutations/useUpdateFlows';
+export { useDeleteFlows } from './mutations/useDeleteFlows';
+```
+
+### 3.6 Query Composable Rules (CRITICAL)
+
+When creating query composables, follow these rules:
+
+1. **Variables**: Always use `computed()` - never `ref(computed.value)`
+   ```typescript
+   // ✅ CORRECT: Pass computed directly
+   const variables = computed(() => ({ formId: formId.value ?? '' }));
+
+   // ❌ WRONG: ref(computed.value) creates STATIC ref that never updates!
+   const variables = ref(computed.value);
+   ```
+
+2. **Enabled**: Always use `computed()` - enables reactive query toggling
+   ```typescript
+   const enabled = computed(() => !!formId.value);
+   ```
+
+3. **Data extraction**: Always use `computed()` with safe navigation
+   ```typescript
+   const flows = computed(() => result.value?.flows ?? []);
+   const sharedFlow = computed(() => flows.value.find(f => f.flow_type === 'shared') ?? null);
+   ```
 
 ---
 
