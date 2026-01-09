@@ -114,13 +114,13 @@ forms (1) ──────< flows (3+) ──────< form_steps (N)
 
 ```sql
 -- flows table
-┌──────────────┬─────────────┬───────────────────┬───────────┬──────────────────────────────────────────────┐
-│ id           │ form_id     │ name              │ flow_type │ branch_condition                             │
-├──────────────┼─────────────┼───────────────────┼───────────┼──────────────────────────────────────────────┤
-│ flow_shared  │ form_abc123 │ Shared Steps      │ shared    │ NULL                                         │
-│ flow_testi   │ form_abc123 │ Happy Customers   │ branch    │ {"field": "rating", "op": ">=", "value": 4}  │
-│ flow_improv  │ form_abc123 │ Needs Improvement │ branch    │ {"field": "rating", "op": "<", "value": 4}   │
-└──────────────┴─────────────┴───────────────────┴───────────┴──────────────────────────────────────────────┘
+┌──────────────┬─────────────┬───────────────────┬───────────┬────────────────────────────────────────────────────────────────────┐
+│ id           │ form_id     │ name              │ flow_type │ branch_condition                                                   │
+├──────────────┼─────────────┼───────────────────┼───────────┼────────────────────────────────────────────────────────────────────┤
+│ flow_shared  │ form_abc123 │ Shared Steps      │ shared    │ NULL                                                               │
+│ flow_testi   │ form_abc123 │ Happy Customers   │ branch    │ {"field": "rating", "op": "greater_than_or_equal_to", "value": 4}  │
+│ flow_improv  │ form_abc123 │ Needs Improvement │ branch    │ {"field": "rating", "op": "less_than", "value": 4}                 │
+└──────────────┴─────────────┴───────────────────┴───────────┴────────────────────────────────────────────────────────────────────┘
 
 -- form_steps table (updated)
 ┌──────────────┬─────────────┬────────────┬────────────┬──────────────┐
@@ -142,33 +142,51 @@ forms (1) ──────< flows (3+) ──────< form_steps (N)
 ```typescript
 interface BranchCondition {
   field: string;           // "rating", "nps", "used_feature_x"
-  op: ConditionOperator;   // ">=", "<", "=", "between"
+  op: ConditionOperator;   // "greater_than_or_equal_to", "less_than", "equals", "between"
   value: number | boolean | [number, number];  // 4, true, [7, 8]
 }
 
-type ConditionOperator = '>=' | '>' | '<' | '<=' | '=' | '!=' | 'between';
+/**
+ * Verbose operator names for clarity and self-documentation.
+ * Follows Notion/Typeform conventions for form builders.
+ */
+type ConditionOperator =
+  | 'equals'
+  | 'not_equals'
+  | 'greater_than'
+  | 'greater_than_or_equal_to'
+  | 'less_than'
+  | 'less_than_or_equal_to'
+  | 'between'
+  | 'is_one_of'    // matches any value in array (future: NPS segments)
+  | 'contains'     // future: text matching
+  | 'is_empty'     // future: optional field checks
+  ;
 ```
 
 **Examples:**
 
 ```json
 // Rating >= 4 (testimonial)
-{"field": "rating", "op": ">=", "value": 4}
+{"field": "rating", "op": "greater_than_or_equal_to", "value": 4}
 
 // Rating < 4 (improvement)
-{"field": "rating", "op": "<", "value": 4}
+{"field": "rating", "op": "less_than", "value": 4}
 
 // NPS Promoters (9-10)
-{"field": "nps", "op": ">=", "value": 9}
+{"field": "nps", "op": "greater_than_or_equal_to", "value": 9}
 
 // NPS Passives (7-8)
 {"field": "nps", "op": "between", "value": [7, 8]}
 
 // NPS Detractors (0-6)
-{"field": "nps", "op": "<=", "value": 6}
+{"field": "nps", "op": "less_than_or_equal_to", "value": 6}
 
 // Boolean branch
-{"field": "used_feature_x", "op": "=", "value": true}
+{"field": "used_feature_x", "op": "equals", "value": true}
+
+// Multi-value match (future)
+{"field": "nps", "op": "is_one_of", "value": [9, 10]}
 ```
 
 ### MVP Behavior
@@ -191,14 +209,14 @@ async function createFormFlows(formId: string): Promise<void> {
         name: 'Testimonial Flow',
         flow_type: 'branch',
         display_order: 1,
-        branch_condition: { field: 'rating', op: '>=', value: 4 }
+        branch_condition: { field: 'rating', op: 'greater_than_or_equal_to', value: 4 }
       },
       {
         form_id: formId,
         name: 'Improvement Flow',
         flow_type: 'branch',
         display_order: 2,
-        branch_condition: { field: 'rating', op: '<', value: 4 }
+        branch_condition: { field: 'rating', op: 'less_than', value: 4 }
       },
     ]
   });

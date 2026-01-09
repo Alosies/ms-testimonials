@@ -306,7 +306,23 @@ export type * from './mutations';
 
 // Utility types (custom types that don't come from GraphQL)
 export type FlowType = 'shared' | 'branch';
-export type BranchConditionOperator = '>=' | '>' | '<' | '<=' | '=' | '!=' | 'between';
+
+/**
+ * Verbose operator names for clarity and self-documentation.
+ * Follows Notion/Typeform conventions for form builders.
+ */
+export type BranchConditionOperator =
+  | 'equals'
+  | 'not_equals'
+  | 'greater_than'
+  | 'greater_than_or_equal_to'
+  | 'less_than'
+  | 'less_than_or_equal_to'
+  | 'between'
+  | 'is_one_of'    // matches any value in array (future: NPS segments)
+  | 'contains'     // future: text matching
+  | 'is_empty'     // future: optional field checks
+  ;
 
 /**
  * Branch condition stored in flows.branch_condition JSONB
@@ -361,7 +377,7 @@ export function createDefaultFlows(
       organization_id: organizationId,
       name: 'Testimonial Flow',
       flow_type: 'branch',
-      branch_condition: { field: 'rating', op: '>=', value: threshold },
+      branch_condition: { field: 'rating', op: 'greater_than_or_equal_to', value: threshold },
       display_order: 1,
     },
     {
@@ -369,7 +385,7 @@ export function createDefaultFlows(
       organization_id: organizationId,
       name: 'Improvement Flow',
       flow_type: 'branch',
-      branch_condition: { field: 'rating', op: '<', value: threshold },
+      branch_condition: { field: 'rating', op: 'less_than', value: threshold },
       display_order: 2,
     },
   ];
@@ -391,12 +407,14 @@ export function deriveFlowMembership(flow: Flow): FlowMembershipLegacy {
   if (!condition) return 'testimonial'; // Default fallback
 
   // Rating >= threshold → testimonial
-  if (condition.field === 'rating' && (condition.op === '>=' || condition.op === '>')) {
+  if (condition.field === 'rating' &&
+      (condition.op === 'greater_than_or_equal_to' || condition.op === 'greater_than')) {
     return 'testimonial';
   }
 
   // Rating < threshold → improvement
-  if (condition.field === 'rating' && (condition.op === '<' || condition.op === '<=')) {
+  if (condition.field === 'rating' &&
+      (condition.op === 'less_than' || condition.op === 'less_than_or_equal_to')) {
     return 'improvement';
   }
 
@@ -486,7 +504,7 @@ export function useGetFlowsByFormId(formId: Ref<string | null>) {
     flows.value.find(f => {
       if (f.flow_type !== 'branch') return false;
       const cond = f.branch_condition as BranchCondition | null;
-      return cond?.op === '>=' || cond?.op === '>';
+      return cond?.op === 'greater_than_or_equal_to' || cond?.op === 'greater_than';
     }) ?? null
   );
 
@@ -494,7 +512,7 @@ export function useGetFlowsByFormId(formId: Ref<string | null>) {
     flows.value.find(f => {
       if (f.flow_type !== 'branch') return false;
       const cond = f.branch_condition as BranchCondition | null;
-      return cond?.op === '<' || cond?.op === '<=';
+      return cond?.op === 'less_than' || cond?.op === 'less_than_or_equal_to';
     }) ?? null
   );
 
@@ -678,9 +696,9 @@ async function enableBranching(ratingStepId: string, threshold = 4) {
   // 2. Map flows by type
   const sharedFlow = createdFlows.find(f => f.flow_type === 'shared');
   const testimonialFlow = createdFlows.find(f => f.flow_type === 'branch' &&
-    (f.branch_condition as BranchCondition)?.op === '>=');
+    (f.branch_condition as BranchCondition)?.op === 'greater_than_or_equal_to');
   const improvementFlow = createdFlows.find(f => f.flow_type === 'branch' &&
-    (f.branch_condition as BranchCondition)?.op === '<');
+    (f.branch_condition as BranchCondition)?.op === 'less_than');
 
   // 3. Assign flowId to existing steps
   const ratingIndex = steps.value.findIndex(s => s.id === ratingStepId);
@@ -870,13 +888,13 @@ async function updateThreshold(newThreshold: number) {
         {
           where: { id: { _eq: testimonialFlow.id } },
           _set: {
-            branch_condition: { field: 'rating', op: '>=', value: newThreshold },
+            branch_condition: { field: 'rating', op: 'greater_than_or_equal_to', value: newThreshold },
           },
         },
         {
           where: { id: { _eq: improvementFlow.id } },
           _set: {
-            branch_condition: { field: 'rating', op: '<', value: newThreshold },
+            branch_condition: { field: 'rating', op: 'less_than', value: newThreshold },
           },
         },
       ],
@@ -966,9 +984,9 @@ async function migrateFormToFlows(formId: string, organizationId: string) {
     // Map flows by type
     const sharedFlow = createdFlows.find(f => f.flow_type === 'shared');
     const testimonialFlow = createdFlows.find(f =>
-      (f.branch_condition as BranchCondition)?.op === '>=');
+      (f.branch_condition as BranchCondition)?.op === 'greater_than_or_equal_to');
     const improvementFlow = createdFlows.find(f =>
-      (f.branch_condition as BranchCondition)?.op === '<');
+      (f.branch_condition as BranchCondition)?.op === 'less_than');
 
     // Update existing steps with flow_id
     const steps = await getFormSteps(formId);
@@ -1070,8 +1088,8 @@ ON public.form_steps(form_id, flow_membership);
 UPDATE public.form_steps fs
 SET flow_membership = CASE
     WHEN f.flow_type = 'shared' THEN 'shared'
-    WHEN f.branch_condition->>'op' IN ('>=', '>') THEN 'testimonial'
-    WHEN f.branch_condition->>'op' IN ('<', '<=') THEN 'improvement'
+    WHEN f.branch_condition->>'op' IN ('greater_than_or_equal_to', 'greater_than') THEN 'testimonial'
+    WHEN f.branch_condition->>'op' IN ('less_than', 'less_than_or_equal_to') THEN 'improvement'
     ELSE 'shared'
 END
 FROM public.flows f
@@ -1138,7 +1156,7 @@ SET branching_config = jsonb_build_object(
          FROM public.flows fl
          WHERE fl.form_id = f.id
            AND fl.flow_type = 'branch'
-           AND fl.branch_condition->>'op' = '>='
+           AND fl.branch_condition->>'op' = 'greater_than_or_equal_to'
          LIMIT 1),
         4
     ),
@@ -1236,8 +1254,8 @@ After dropping columns, update Hasura metadata to remove them from:
 **After (Target - flows table):**
 1. **Create 3 flows** in database via `useCreateFlows`:
    - Shared flow (`flow_type: 'shared'`, no condition)
-   - Testimonial flow (`flow_type: 'branch'`, `branch_condition: {field:'rating',op:'>=',value:threshold}`)
-   - Improvement flow (`flow_type: 'branch'`, `branch_condition: {field:'rating',op:'<',value:threshold}`)
+   - Testimonial flow (`flow_type: 'branch'`, `branch_condition: {field:'rating',op:'greater_than_or_equal_to',value:threshold}`)
+   - Improvement flow (`flow_type: 'branch'`, `branch_condition: {field:'rating',op:'less_than',value:threshold}`)
 2. **Assign `flowId`** to each existing step based on position relative to rating step
 3. **Create improvement steps** with `flowId` pointing to improvement flow
 4. On save: Upsert steps with `flow_id` (flows already created)
