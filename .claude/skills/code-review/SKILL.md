@@ -38,6 +38,7 @@ Use the output format below. Include file:line references and severity levels.
 - [ ] Types extracted from queries: `Query['field'][number]`
 - [ ] No `any` or unjustified type assertions
 - [ ] Return types on exported functions
+- [ ] **Functions with >2 args use object params** - use named interface for clarity
 
 ### GraphQL
 - [ ] Generated composables used (not raw .gql imports)
