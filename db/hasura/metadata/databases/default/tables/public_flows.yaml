@@ -2,6 +2,9 @@ table:
   name: flows
   schema: public
 object_relationships:
+  - name: branch_question
+    using:
+      foreign_key_constraint_on: branch_question_id
   - name: form
     using:
       foreign_key_constraint_on: form_id
@@ -36,22 +39,6 @@ insert_permissions:
           _eq: X-Hasura-Organization-Id
       columns: '*'
 select_permissions:
-  - role: anonymous
-    permission:
-      columns:
-        - id
-        - form_id
-        - name
-        - flow_type
-        - branch_condition
-        - display_order
-      filter:
-        form:
-          _and:
-            - is_active:
-                _eq: true
-            - status:
-                _eq: published
   - role: member
     permission:
       columns: '*'
