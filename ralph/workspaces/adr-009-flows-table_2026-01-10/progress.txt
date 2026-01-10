@@ -1,0 +1,49 @@
+# Progress Log: ADR-009 Flows Table Implementation
+# Started: 2026-01-10
+# Branch: yellow/adr-009-flows-table
+
+## Session Context
+
+### Project Overview
+- Testimonials: A testimonial collection and display tool with AI-powered smart prompts
+- Tech Stack: Vue 3 + Vite + TypeScript + Tailwind CSS, Hono.js REST API, Hasura GraphQL, PostgreSQL
+- Package Manager: pnpm
+- Reference Project: CoursePads at /Users/alosiesgeorge/CodeRepositories/Fork/Coursepads
+
+### Key Patterns Discovered
+- FSD Architecture: Types exported from models/ folders only
+- GraphQL: Always use generated types from @/shared/graphql/generated/operations
+- Entity composables: useEntity pattern for GraphQL operations (reference CoursePads)
+- Hasura migrations: db/hasura/migrations/default/
+- Hasura metadata: db/hasura/metadata/
+- Run codegen after GraphQL changes: pnpm codegen:web
+- Typecheck command: pnpm typecheck
+
+### Critical Files
+- ADR Document: docs/adr/009-flows-table-branching-architecture.md
+- Implementation Plan: docs/implementation-plans/009-flows-table-branching-architecture.md
+- Existing form_steps table: check db/hasura/migrations for schema
+- Existing form_questions table: needed for branch_question_id FK
+
+### Important Conventions
+- Primary keys use NanoID: generate_nanoid_12()
+- All tables must have: id, user_id/organization_id, created_at, updated_at
+- RLS uses organization_id for row-level security
+- Maximum 250 lines per Vue component
+- Maximum 300 lines per composable
+
+### Gotchas / Warnings
+- flow_membership column on form_steps is legacy (being replaced by flow_id)
+- Branch conditions use question_id NOT step_id (see ADR for reasoning)
+- ON DELETE RESTRICT on branch_question_id FK prevents accidental deletion
+- BranchValue JSONB has explicit type discrimination (type field required)
+
+---
+## Iteration Log
+
+### Iteration 0 - Setup (2026-01-10)
+- [x] Created ralph files: prd.json, progress.txt, ralph-once
+- [x] Analyzed ADR-009 and extracted 12 user stories
+- [x] Stories ordered by dependency (DB first, then GQL, then FE)
+- Next: Start with DB-001 (Create flows table migration)
+

@@ -1,0 +1,220 @@
+{
+  "project": "ms-testimonials",
+  "branchName": "yellow/adr-009-flows-table",
+  "description": "ADR-009: Flows Table for Branching Architecture - Implement N-way conditional branching for form experiences",
+  "prdDocument": "docs/adr/009-flows-table-branching-architecture.md",
+  "userStories": [
+    {
+      "id": "DB-001",
+      "title": "Create flows table migration",
+      "description": "As a developer, I need the flows table to store branching paths for forms with user-defined names and configurable conditions.",
+      "acceptanceCriteria": [
+        "Create migration file at db/hasura/migrations/default/",
+        "Table has: id (TEXT, nanoid_12), form_id, organization_id (denormalized for RLS)",
+        "Table has: name (TEXT), flow_type (TEXT with CHECK 'shared'|'branch')",
+        "Table has: branch_question_id (FK to form_questions with ON DELETE RESTRICT)",
+        "Table has: branch_field (TEXT with CHECK for valid response columns)",
+        "Table has: branch_operator (TEXT with CHECK for valid operators)",
+        "Table has: branch_value (JSONB for structured BranchValue)",
+        "Table has: display_order (SMALLINT), timestamps",
+        "UNIQUE constraint on (form_id, name)",
+        "CHECK constraint chk_flows_condition_completeness enforces shared vs branch rules",
+        "Indexes on form_id, organization_id, branch_question_id",
+        "updated_at trigger configured",
+        "Migration applies successfully: hasura migrate apply --database-name default",
+        "Typecheck passes: pnpm typecheck"
+      ],
+      "priority": 1,
+      "passes": false,
+      "notes": "Reference ADR schema in docs/adr/009-flows-table-branching-architecture.md lines 77-150"
+    },
+    {
+      "id": "DB-002",
+      "title": "Add flow_id column to form_steps",
+      "description": "As a developer, I need form_steps to reference flows via flow_id so steps belong to specific branching paths.",
+      "acceptanceCriteria": [
+        "Create migration to add flow_id TEXT column to form_steps",
+        "Column is nullable initially (for backfill phase)",
+        "Add index on flow_id column",
+        "Migration applies successfully",
+        "Typecheck passes"
+      ],
+      "priority": 2,
+      "passes": false,
+      "notes": "flow_id will become NOT NULL after backfill (DB-003)"
+    },
+    {
+      "id": "DB-003",
+      "title": "Create backfill migration for existing data",
+      "description": "As a developer, I need existing forms and steps migrated to the new flows structure so the system remains functional.",
+      "acceptanceCriteria": [
+        "Create flows for each existing form based on flow_membership values",
+        "Shared flow created for steps with flow_membership='shared'",
+        "Branch flows created for 'testimonial' and 'improvement' memberships",
+        "Branch conditions set based on existing behavior (rating >= 4 for testimonial, < 4 for improvement)",
+        "form_steps.flow_id updated to reference correct flow",
+        "All existing form_steps have a flow_id after migration",
+        "Migration is idempotent (safe to re-run)",
+        "Migration applies successfully",
+        "Typecheck passes"
+      ],
+      "priority": 3,
+      "passes": false,
+      "notes": "Reference Migration Strategy in ADR lines 1452-1495"
+    },
+    {
+      "id": "DB-004",
+      "title": "Make flow_id required and add FK constraint",
+      "description": "As a developer, I need flow_id to be NOT NULL with proper FK to ensure data integrity.",
+      "acceptanceCriteria": [
+        "Create migration to ALTER flow_id SET NOT NULL",
+        "Add FK constraint: REFERENCES flows(id) ON DELETE CASCADE",
+        "Migration applies successfully",
+        "Typecheck passes"
+      ],
+      "priority": 4,
+      "passes": false,
+      "notes": "Only run after DB-003 backfill completes successfully"
+    },
+    {
+      "id": "DB-005",
+      "title": "Configure Hasura relationships and permissions",
+      "description": "As a developer, I need Hasura metadata configured for flows table so GraphQL operations work correctly.",
+      "acceptanceCriteria": [
+        "Create flows table tracking in Hasura metadata",
+        "Configure object relationship: flows.form -> forms",
+        "Configure object relationship: flows.branch_question -> form_questions",
+        "Configure array relationship: flows.steps -> form_steps",
+        "Configure array relationship: forms.flows -> flows",
+        "Configure object relationship: form_steps.flow -> flows",
+        "Set up RLS permissions using organization_id for select/insert/update/delete",
+        "Permissions match existing form_steps pattern",
+        "hasura metadata apply succeeds",
+        "Run codegen: pnpm codegen:web",
+        "Typecheck passes"
+      ],
+      "priority": 5,
+      "passes": false,
+      "notes": "Follow existing permission patterns from form_steps metadata"
+    },
+    {
+      "id": "GQL-001",
+      "title": "Create GraphQL operations for flows",
+      "description": "As a developer, I need GraphQL queries and mutations for flows CRUD operations.",
+      "acceptanceCriteria": [
+        "Create GetFlowsByFormId query",
+        "Create GetFlowById query with steps relation",
+        "Create InsertFlow mutation",
+        "Create UpdateFlow mutation",
+        "Create DeleteFlow mutation",
+        "Create GetFlowsByBranchQuestionId query (for edge case detection)",
+        "All operations include proper fields from ADR schema",
+        "Run codegen: pnpm codegen:web",
+        "Generated types are correct",
+        "Typecheck passes"
+      ],
+      "priority": 6,
+      "passes": false,
+      "notes": "Use /graphql-code skill for creating operations"
+    },
+    {
+      "id": "GQL-002",
+      "title": "Create useFlow composable",
+      "description": "As a developer, I need a useFlow composable for managing flow operations in Vue components.",
+      "acceptanceCriteria": [
+        "Create useFlow composable following existing entity patterns",
+        "Export from entity models following FSD conventions",
+        "Include methods: getFlowsByFormId, getFlowById, insertFlow, updateFlow, deleteFlow",
+        "Include method: getFlowsByBranchQuestionId for branch point detection",
+        "Proper TypeScript typing using generated types",
+        "Re-export generated types from models/index.ts",
+        "Typecheck passes"
+      ],
+      "priority": 7,
+      "passes": false,
+      "notes": "Reference CoursePads for entity composable patterns"
+    },
+    {
+      "id": "TS-001",
+      "title": "Create BranchValue TypeScript types",
+      "description": "As a developer, I need TypeScript types for BranchValue JSONB schema for type-safe condition handling.",
+      "acceptanceCriteria": [
+        "Create BranchValue discriminated union type matching ADR schema",
+        "Types: NumberValue, StringValue, BooleanValue, RangeValue, ListValue, null",
+        "Create ConditionOperator type with all valid operators",
+        "Create ResponseField type with valid answer columns",
+        "Create parseBranchValue utility function",
+        "Create evaluateBranchCondition function skeleton",
+        "Export types from appropriate shared location",
+        "Typecheck passes"
+      ],
+      "priority": 8,
+      "passes": false,
+      "notes": "Reference BranchValue Schema in ADR lines 164-234"
+    },
+    {
+      "id": "BE-001",
+      "title": "Update form creation to auto-create default flows",
+      "description": "As a developer, I need new forms to automatically have default flows created so branching works out of the box.",
+      "acceptanceCriteria": [
+        "When a form is created, auto-create 3 default flows",
+        "Shared flow: name='Welcome', flow_type='shared', no branch condition",
+        "Testimonial flow: name='Share Your Story', flow_type='branch', condition for rating >= 4",
+        "Improvement flow: name='Help Us Improve', flow_type='branch', condition for rating < 4",
+        "Branch conditions reference the rating question (to be created with form)",
+        "Flows created in same transaction as form",
+        "Typecheck passes"
+      ],
+      "priority": 9,
+      "passes": false,
+      "notes": "This may require updating form creation API or Hasura event trigger"
+    },
+    {
+      "id": "FE-001",
+      "title": "Update GraphQL queries to include flow data",
+      "description": "As a developer, I need existing form queries to include flow information for the form editor.",
+      "acceptanceCriteria": [
+        "Update GetFormById query to include flows relation",
+        "Update GetFormSteps query to include flow relation on each step",
+        "Flows include: id, name, flow_type, branch_question_id, branch_field, branch_operator, branch_value, display_order",
+        "Run codegen: pnpm codegen:web",
+        "Typecheck passes"
+      ],
+      "priority": 10,
+      "passes": false,
+      "notes": "Ensure backwards compatibility with existing form editor"
+    },
+    {
+      "id": "FE-002",
+      "title": "Update form editor to use flow_id instead of flow_membership",
+      "description": "As a developer, I need the form editor to work with flow_id for step organization.",
+      "acceptanceCriteria": [
+        "Timeline component groups steps by flow_id instead of flow_membership",
+        "Step creation uses flow_id instead of flow_membership",
+        "Step movement between flows updates flow_id",
+        "Flow names displayed in UI (using flows.name)",
+        "Existing editor functionality preserved",
+        "Typecheck passes"
+      ],
+      "priority": 11,
+      "passes": false,
+      "notes": "This is a refactor of existing functionality, not new features"
+    },
+    {
+      "id": "FE-003",
+      "title": "Add branch point deletion confirmation dialog",
+      "description": "As a user, I need a confirmation dialog when deleting a step that controls branching so I understand the consequences.",
+      "acceptanceCriteria": [
+        "Detect when step's question is used in branch conditions (via getFlowsByBranchQuestionId)",
+        "Show confirmation dialog with affected flows listed",
+        "Dialog shows step counts per affected branch",
+        "Options: Keep first branch, Keep second branch, Delete all branches, Cancel",
+        "Selected option executes correct flow updates/deletions",
+        "Typecheck passes"
+      ],
+      "priority": 12,
+      "passes": false,
+      "notes": "Reference Edge Case 4 in ADR lines 807-948 for UI mockups and handling"
+    }
+  ]
+}

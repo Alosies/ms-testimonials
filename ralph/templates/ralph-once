@@ -1,0 +1,98 @@
+# Ralph-Once: Autonomous Task Execution
+
+You are executing tasks from a PRD (Product Requirements Document).
+
+## Configuration
+
+**PRD File**: `${RALPH_PRD}`
+**Progress File**: `${RALPH_PROGRESS}`
+**Completion Signal**: `${RALPH_COMPLETE:-ALL-TASKS-COMPLETE}`
+
+## Your Mission
+
+Implement the next incomplete user story from the PRD, following all acceptance criteria precisely.
+
+## Files to Read First
+
+1. **PRD (Task List)**: Read the PRD file specified above
+   - Find the first story where `passes: false` (sorted by priority)
+   - This is your current task
+
+2. **Progress Log**: Read the progress file specified above
+   - Understand accumulated learnings and patterns
+   - See what's been done and what failed before
+
+3. **Spec Document**: If PRD has `prdDocument` field, read that file for detailed requirements
+
+## Execution Steps
+
+### 1. Select Task
+- Read the PRD file
+- Find highest priority story where `passes: false`
+- Announce: "Working on [story-id]: [title]"
+
+### 2. Implement
+- Follow acceptance criteria exactly
+- Reference spec document for schema and type definitions
+- Use project conventions from CLAUDE.md
+- Use skills when appropriate:
+  - `/hasura-migrations` for database changes
+  - `/graphql-code` for GraphQL operations and composables
+
+### 3. Verify
+- Run commands specified in acceptance criteria
+- Common verifications:
+  - `pnpm typecheck` - Type checking
+  - `hasura migrate apply --database-name default` - Database migrations
+  - `hasura metadata apply` - Hasura metadata
+  - `pnpm codegen:web` - GraphQL codegen
+
+### 4. Update Progress
+If all acceptance criteria pass:
+- Update PRD file: set `passes: true` for completed story
+- Append iteration log to progress file with:
+  - What was implemented
+  - Any patterns discovered
+  - Any issues encountered and how resolved
+
+If blocked or failed:
+- Update story `notes` field with what went wrong
+- Append failure details to progress file
+- DO NOT mark as passes: true
+
+### 5. Signal Status
+
+When current story is complete and verified:
+```
+STORY COMPLETE: [story-id]
+Next story: [next-story-id] - [title]
+```
+
+When ALL stories are complete (all have passes: true):
+```
+<promise>${RALPH_COMPLETE:-ALL-TASKS-COMPLETE}</promise>
+```
+
+## Quality Gates
+
+Before marking any story complete, ALL must pass:
+- [ ] All acceptance criteria met
+- [ ] Verification commands succeed
+- [ ] Code follows project conventions (FSD, max file lengths, etc.)
+
+## Important Rules
+
+1. **One story at a time** - Complete and verify before moving to next
+2. **Read before writing** - Always read existing code before modifying
+3. **Use the spec** - Reference prdDocument for detailed requirements
+4. **Update progress file** - Future iterations need your learnings
+5. **Be precise** - Follow acceptance criteria exactly, no over-engineering
+
+## Project Context
+
+- Working directory: ms-testimonials-yellow
+- Hasura directory: db/hasura/
+- Web app: apps/web/
+- Reference project: CoursePads at /Users/alosiesgeorge/CodeRepositories/Fork/Coursepads
+
+Begin by reading the PRD and progress files, then implement the next incomplete story.

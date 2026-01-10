@@ -1,0 +1,9 @@
+{
+  "feature": "adr-009-flows-table",
+  "createdAt": "2026-01-10T08:12:00Z",
+  "createdBy": "yellow",
+  "primaryAgent": "yellow",
+  "status": "active",
+  "sourceDocument": "docs/adr/009-flows-table-branching-architecture.md",
+  "handoffs": []
+}
