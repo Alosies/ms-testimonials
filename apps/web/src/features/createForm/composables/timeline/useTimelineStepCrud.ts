@@ -40,32 +40,32 @@ export function useTimelineStepCrud(deps: StepCrudDeps): TimelineStepCrudReturn 
   const { steps, formId, formContext } = deps;
 
   function addStep(type: StepType, afterIndex?: number): FormStep {
-    return addStepAt(
-      steps.value,
+    return addStepAt({
+      steps: steps.value,
       type,
-      formId.value ?? '',
-      formContext.value,
+      formId: formId.value ?? '',
+      ctx: formContext.value,
       afterIndex,
-    );
+    });
   }
 
-  function removeStep(index: number) {
+  function removeStep(index: number): void {
     removeStepAt(steps.value, index);
   }
 
-  function updateStep(index: number, updates: Partial<FormStep>) {
-    updateStepAt(steps.value, index, updates);
+  function updateStep(index: number, updates: Partial<FormStep>): void {
+    updateStepAt({ steps: steps.value, index, updates });
   }
 
-  function updateStepContent(index: number, content: StepContent) {
+  function updateStepContent(index: number, content: StepContent): void {
     updateStep(index, { content });
   }
 
-  function updateStepTips(index: number, tips: string[]) {
+  function updateStepTips(index: number, tips: string[]): void {
     updateStep(index, { tips });
   }
 
-  function updateStepQuestion(index: number, questionUpdates: Partial<FormStep['question']>) {
+  function updateStepQuestion(index: number, questionUpdates: Partial<FormStep['question']>): void {
     const step = steps.value[index];
     if (!step || !step.question) return;
 
@@ -79,21 +79,21 @@ export function useTimelineStepCrud(deps: StepCrudDeps): TimelineStepCrudReturn 
     };
   }
 
-  function moveStep(fromIndex: number, toIndex: number) {
-    moveStepAt(steps.value, fromIndex, toIndex);
+  function moveStep(fromIndex: number, toIndex: number): void {
+    moveStepAt({ steps: steps.value, fromIndex, toIndex });
   }
 
   function duplicateStep(index: number): FormStep | null {
-    return duplicateStepAt(
-      steps.value,
+    return duplicateStepAt({
+      steps: steps.value,
       index,
-      formId.value ?? '',
-      formContext.value,
-    );
+      formId: formId.value ?? '',
+      ctx: formContext.value,
+    });
   }
 
-  function changeStepType(index: number, newType: StepType) {
-    changeStepTypeAt(steps.value, index, newType, formContext.value);
+  function changeStepType(index: number, newType: StepType): void {
+    changeStepTypeAt({ steps: steps.value, index, newType, ctx: formContext.value });
   }
 
   return {

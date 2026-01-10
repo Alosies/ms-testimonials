@@ -13,6 +13,57 @@ import {
   createDefaultRewardContent,
 } from '../../functions';
 
+// =============================================================================
+// Parameter Interfaces for functions with >2 arguments
+// =============================================================================
+
+export interface CreateStepParams {
+  type: StepType;
+  order: number;
+  formId: string;
+  flowId?: string;
+  ctx?: FormContext;
+}
+
+export interface AddStepAtParams {
+  steps: FormStep[];
+  type: StepType;
+  formId: string;
+  ctx: FormContext;
+  afterIndex?: number;
+  flowId?: string;
+}
+
+export interface UpdateStepAtParams {
+  steps: FormStep[];
+  index: number;
+  updates: Partial<FormStep>;
+}
+
+export interface MoveStepAtParams {
+  steps: FormStep[];
+  fromIndex: number;
+  toIndex: number;
+}
+
+export interface DuplicateStepAtParams {
+  steps: FormStep[];
+  index: number;
+  formId: string;
+  ctx: FormContext;
+}
+
+export interface ChangeStepTypeAtParams {
+  steps: FormStep[];
+  index: number;
+  newType: StepType;
+  ctx: FormContext;
+}
+
+// =============================================================================
+// Step Operations
+// =============================================================================
+
 /**
  * Generate a temporary ID for new steps
  */
@@ -24,13 +75,8 @@ export function generateTempId(): string {
  * Create a new step with default content based on type
  * flowId is optional during migration - will be required once FE-005+ is complete
  */
-export function createStep(
-  type: StepType,
-  order: number,
-  formId: string,
-  flowId?: string,
-  ctx: FormContext = {},
-): FormStep {
+export function createStep(params: CreateStepParams): FormStep {
+  const { type, order, formId, flowId, ctx = {} } = params;
   const baseStep: FormStep = {
     id: generateTempId(),
     formId,
@@ -85,19 +131,13 @@ export function reorderSteps(steps: FormStep[]): void {
  * Add a step at a specific position
  * flowId is optional during migration
  */
-export function addStepAt(
-  steps: FormStep[],
-  type: StepType,
-  formId: string,
-  ctx: FormContext,
-  afterIndex?: number,
-  flowId?: string,
-): FormStep {
+export function addStepAt(params: AddStepAtParams): FormStep {
+  const { steps, type, formId, ctx, afterIndex, flowId } = params;
   const insertIndex = afterIndex !== undefined
     ? afterIndex + 1
     : steps.length;
 
-  const newStep = createStep(type, insertIndex, formId, flowId, ctx);
+  const newStep = createStep({ type, order: insertIndex, formId, flowId, ctx });
   steps.splice(insertIndex, 0, newStep);
   reorderSteps(steps);
 
@@ -117,11 +157,8 @@ export function removeStepAt(steps: FormStep[], index: number): void {
 /**
  * Update a step at a specific index
  */
-export function updateStepAt(
-  steps: FormStep[],
-  index: number,
-  updates: Partial<FormStep>,
-): void {
+export function updateStepAt(params: UpdateStepAtParams): void {
+  const { steps, index, updates } = params;
   if (index >= 0 && index < steps.length) {
     steps[index] = {
       ...steps[index],
@@ -134,11 +171,8 @@ export function updateStepAt(
 /**
  * Move a step from one position to another
  */
-export function moveStepAt(
-  steps: FormStep[],
-  fromIndex: number,
-  toIndex: number,
-): void {
+export function moveStepAt(params: MoveStepAtParams): void {
+  const { steps, fromIndex, toIndex } = params;
   if (
     fromIndex >= 0 && fromIndex < steps.length &&
     toIndex >= 0 && toIndex < steps.length
@@ -152,16 +186,18 @@ export function moveStepAt(
 /**
  * Duplicate a step at a specific index
  */
-export function duplicateStepAt(
-  steps: FormStep[],
-  index: number,
-  formId: string,
-  ctx: FormContext,
-): FormStep | null {
+export function duplicateStepAt(params: DuplicateStepAtParams): FormStep | null {
+  const { steps, index, formId, ctx } = params;
   const original = steps[index];
   if (!original) return null;
 
-  const duplicate = createStep(original.stepType, index + 1, formId, original.flowId, ctx);
+  const duplicate = createStep({
+    type: original.stepType,
+    order: index + 1,
+    formId,
+    flowId: original.flowId,
+    ctx,
+  });
   duplicate.content = JSON.parse(JSON.stringify(original.content));
   duplicate.tips = [...original.tips];
   duplicate.flowMembership = original.flowMembership;
@@ -175,12 +211,8 @@ export function duplicateStepAt(
 /**
  * Change the type of a step at a specific index
  */
-export function changeStepTypeAt(
-  steps: FormStep[],
-  index: number,
-  newType: StepType,
-  ctx: FormContext,
-): void {
+export function changeStepTypeAt(params: ChangeStepTypeAtParams): void {
+  const { steps, index, newType, ctx } = params;
   const step = steps[index];
   if (!step || step.stepType === newType) return;
 
