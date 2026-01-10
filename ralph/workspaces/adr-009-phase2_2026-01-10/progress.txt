@@ -120,22 +120,44 @@ Migrate `flows.branch_condition` JSONB to flattened columns and complete fronten
   - apps/web/src/features/createForm/functions/stepTransform.ts (added flowId mapping)
   - apps/web/src/features/createForm/composables/timeline/useStepOperations.ts (updated createStep, addStepAt)
 
-### Summary - Phase 2 Session 2 - 2026-01-10
-- Stories completed: DB-001 to FE-004 (11/20)
-- Stories deferred: FE-005 to FE-012 (8/20 - require deeper refactoring)
+### Iteration 12 - Code Review Fixes - 2026-01-10
+- [x] Refactor useStepOperations.ts to use object params for functions with >2 args
+- [x] Update useTimelineStepCrud.ts callers for new signatures
+- [x] Add explicit return types to flow composables
+- [x] Fix TODO comment reference (FE-003 → FE-005)
+- [x] Add object params rule to code-review skill
+- Commits:
+  - 164c281: docs(skill): add object params rule to code-review checklist
+  - 86fa98c: refactor(createForm): use object params for step operations
+  - 83e923c: feat(flow): add explicit return types to composables
+  - 01abea1: fix(createForm): correct TODO story reference FE-003 to FE-005
+
+### Iteration 13 - FE-005 - 2026-01-10
+- [x] Update useCreateFormWithSteps to create branch flows with new schema
+- Learnings: Questions must be created BEFORE flows so branch_question_id FK can reference them.
+  Flow creation order: form → questions → flows (with branch_question_id) → steps
+- Files changed:
+  - apps/web/src/features/createForm/composables/useCreateFormWithSteps.ts
+- Notes: Wizard flow now creates proper branch flows. Editor flow deferred to FE-009.
+
+### Summary - Phase 2 Session 3 - 2026-01-10
+- Stories completed: DB-001 to FE-005 (12/20)
+- Stories deferred: FE-006 to FE-012 (7/20 - require editor flow refactoring)
 - Stories partial: TEST-001 (build/typecheck pass, functional tests pending)
+- Code review fixes: 4 commits for object params, return types, TODO fix
 - Status: pnpm typecheck ✓, pnpm build ✓
 
 ## Deferred Work (Phase 3 Candidates)
 
-FE-005 to FE-012 require:
-- Refactoring enableBranching to create actual DB flows with FK to rating question
-- Integrating useDeleteFlow into useBranchingDisable
+FE-006 to FE-012 require:
+- Integrating useDeleteFlow into useBranchingDisable for editor flow
 - Full flowId usage across timeline composables
 - Question deletion protection UI
+- Editor flow branch creation (useTimelineBranching)
 
 These are deferred because:
 1. flowId is optional during migration (backward compatible)
 2. Existing flowMembership logic still works for UI
 3. Steps from DB get flowId via stepTransform
 4. Core infrastructure (types, composables, mutations) is in place
+5. Wizard flow now creates proper branch flows (FE-005 complete)

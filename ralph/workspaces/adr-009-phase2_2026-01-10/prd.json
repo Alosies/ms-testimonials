@@ -189,8 +189,8 @@
         "pnpm typecheck passes"
       ],
       "priority": 12,
-      "passes": false,
-      "notes": "DEFERRED: Requires refactoring enableBranching to create DB flows with FK to rating question. flowId is optional for migration."
+      "passes": true,
+      "notes": "Wizard flow updated in useCreateFormWithSteps.ts: questions created first, then flows with branch_question_id FK. Editor flow (useTimelineBranching) deferred to FE-009."
     },
     {
       "id": "FE-006",
