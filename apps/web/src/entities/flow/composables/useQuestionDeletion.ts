@@ -1,30 +1,10 @@
-import { computed, type ComputedRef, type Ref } from 'vue';
+import { computed, type Ref } from 'vue';
 import { useGetFlowsByBranchQuestion } from './queries/useGetFlowsByBranchQuestion';
-import type { GetFlowsByBranchQuestionQuery } from '@/shared/graphql/generated/operations';
-
-type FlowWithForm = GetFlowsByBranchQuestionQuery['flows'][number];
-
-export interface BlockedByFlow {
-  flowId: string;
-  flowName: string;
-  formId: string;
-  formName: string;
-}
-
-export interface UseQuestionDeletionReturn {
-  /** Whether the question can be deleted (not used as branch point) */
-  canDelete: ComputedRef<boolean>;
-  /** Whether we're still checking deletion eligibility */
-  isChecking: ComputedRef<boolean>;
-  /** List of flows that block deletion (use this question for branching) */
-  blockedByFlows: ComputedRef<BlockedByFlow[]>;
-  /** Number of flows blocking deletion */
-  blockedByCount: ComputedRef<number>;
-  /** Human-readable reason why deletion is blocked */
-  blockReason: ComputedRef<string | null>;
-  /** Refresh the deletion check */
-  refetch: () => void;
-}
+import type {
+  FlowWithForm,
+  BlockedByFlow,
+  UseQuestionDeletionReturn,
+} from '../models';
 
 /**
  * Check if a question can be deleted.

@@ -5,8 +5,7 @@ import {
   type GetFlowsByBranchQuestionQueryVariables,
   type GetFlowsByBranchQuestionQuery,
 } from '@/shared/graphql/generated/operations';
-
-type FlowWithForm = GetFlowsByBranchQuestionQuery['flows'][number];
+import type { FlowWithForm } from '../../models';
 
 export interface UseGetFlowsByBranchQuestionReturn {
   flows: ComputedRef<FlowWithForm[]>;
