@@ -39,7 +39,13 @@ function generateQuestionKey(text: string): string {
     .slice(0, 50) || `custom_${Date.now()}`;
 }
 
-// Create a blank question template for add mode
+/**
+ * Create a blank question template for add mode
+ *
+ * ADR-009 Phase 2: QuestionData uses flow_membership (not flowId) because these
+ * are wizard questions. flowId is assigned when converting to form steps in
+ * useCreateFormWithSteps.buildFormSteps().
+ */
 function createBlankQuestion(displayOrder: number): QuestionData {
   return {
     question_text: '',

@@ -21,6 +21,11 @@ interface UseFormEditorOptions {
  * - Loads existing form data and enables auto-save
  * - Integrates wizard state with auto-save and publish functionality
  * - If no existingFormId, redirects to the form creation page
+ *
+ * ADR-009 Phase 2: This composable works with QuestionData (wizard questions)
+ * which use flow_membership. Actual flowId assignment happens in:
+ * - Form creation: useCreateFormWithSteps.buildFormSteps()
+ * - Form editing: useTimelineEditor with stepTransform
  */
 export function useFormEditor(options: UseFormEditorOptions = {}) {
   const { existingFormId } = options;

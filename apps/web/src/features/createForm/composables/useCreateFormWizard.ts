@@ -5,6 +5,11 @@ import type { FormData, QuestionData } from '../models';
 /**
  * Composable for managing form editor state.
  * Provides core state and question management for the single-page form builder.
+ *
+ * ADR-009 Phase 2: QuestionData uses flow_membership (not flowId) because these
+ * are wizard questions before form creation. The actual flowId assignment happens
+ * in useCreateFormWithSteps when converting wizard questions to form steps.
+ * See: useCreateFormWithSteps.buildFormSteps() for flowId assignment.
  */
 export function useCreateFormWizard() {
   // Form data
