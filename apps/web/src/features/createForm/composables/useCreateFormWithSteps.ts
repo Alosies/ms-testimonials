@@ -131,10 +131,10 @@ export function useCreateFormWithSteps() {
       }
 
       // Create a map of flow membership to flow_id
-      // TODO (FE-003): Add testimonial and improvement flows after questions are created
+      // TODO (FE-005): Add testimonial and improvement flows after questions are created
       const flowMap = new Map<string, string>();
       flowMap.set('shared', createdFlows[0].id);
-      // Temporarily map branch flows to shared flow until FE-003 is implemented
+      // Temporarily map branch flows to shared flow until FE-005 is implemented
       flowMap.set('testimonial', createdFlows[0].id);
       flowMap.set('improvement', createdFlows[0].id);
 
