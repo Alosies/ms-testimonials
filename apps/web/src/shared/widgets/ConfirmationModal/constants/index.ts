@@ -37,6 +37,14 @@ export const CONFIRMATION_MESSAGES: Record<
     warningText: 'will be permanently deleted.',
     intent: 'danger',
   },
+  delete_step_blocked: {
+    title: 'Cannot Delete Step',
+    message:
+      'This step is used as the branching point for conditional flows. To delete it, first disable branching or select a different question for branching.',
+    confirmText: 'Got it',
+    warningText: 'is used for branching.',
+    intent: 'info',
+  },
 
   // Warning actions (amber/orange)
   archive_testimonial: {

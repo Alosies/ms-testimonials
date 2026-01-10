@@ -14,6 +14,7 @@ export type ConfirmationActionType =
   | 'delete_widget'
   | 'delete_testimonial'
   | 'delete_question'
+  | 'delete_step_blocked'
   | 'archive_testimonial'
   | 'reject_testimonial'
   | 'regenerate_questions'
@@ -31,5 +32,15 @@ export interface ConfirmationOptions {
   actionType: ConfirmationActionType;
   entityName: string;
   onConfirm: () => void | Promise<void>;
+  customMessage?: Partial<ConfirmationMessage>;
+}
+
+/**
+ * Options for blocked/info-only modals.
+ * These modals don't have a confirm action - just acknowledge with "Got it".
+ */
+export interface BlockedMessageOptions {
+  actionType: ConfirmationActionType;
+  entityName: string;
   customMessage?: Partial<ConfirmationMessage>;
 }

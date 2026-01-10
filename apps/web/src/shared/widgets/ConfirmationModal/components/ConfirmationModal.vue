@@ -83,27 +83,41 @@ const iconName = computed(() => {
       </div>
 
       <DialogFooter class="mt-4 flex gap-3 sm:justify-center">
-        <Button
-          variant="outline"
-          class="flex-1"
-          :disabled="modalState.isLoading"
-          @click="handleCancel"
-        >
-          Cancel
-        </Button>
-        <Button
-          class="flex-1"
-          :class="styles.buttonClass"
-          :disabled="modalState.isLoading"
-          @click="handleConfirm"
-        >
-          <Icon
-            v-if="modalState.isLoading"
-            icon="lucide:loader-2"
-            class="mr-1.5 h-4 w-4 animate-spin"
-          />
-          {{ modalState.isLoading ? styles.loadingText : messages.confirmText }}
-        </Button>
+        <!-- Blocked state: Single acknowledge button -->
+        <template v-if="modalState.isBlocked">
+          <Button
+            class="flex-1"
+            :class="styles.buttonClass"
+            @click="handleCancel"
+          >
+            {{ messages.confirmText }}
+          </Button>
+        </template>
+
+        <!-- Normal state: Cancel + Confirm buttons -->
+        <template v-else>
+          <Button
+            variant="outline"
+            class="flex-1"
+            :disabled="modalState.isLoading"
+            @click="handleCancel"
+          >
+            Cancel
+          </Button>
+          <Button
+            class="flex-1"
+            :class="styles.buttonClass"
+            :disabled="modalState.isLoading"
+            @click="handleConfirm"
+          >
+            <Icon
+              v-if="modalState.isLoading"
+              icon="lucide:loader-2"
+              class="mr-1.5 h-4 w-4 animate-spin"
+            />
+            {{ modalState.isLoading ? styles.loadingText : messages.confirmText }}
+          </Button>
+        </template>
       </DialogFooter>
     </DialogContent>
   </Dialog>

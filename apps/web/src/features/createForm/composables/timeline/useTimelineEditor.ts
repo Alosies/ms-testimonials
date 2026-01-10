@@ -1,6 +1,7 @@
 import { ref, readonly } from 'vue';
 import { createSharedComposable } from '@vueuse/core';
 import type { FormStep, StepType, FormContext } from '@/shared/stepCards';
+import { useConfirmationModal } from '@/shared/widgets/ConfirmationModal';
 import { useStepState } from './useStepState';
 import { useTimelineSelection } from './useTimelineSelection';
 import { useTimelineStepCrud } from './useTimelineStepCrud';
@@ -31,6 +32,9 @@ export const useTimelineEditor = createSharedComposable(() => {
   const isEditorOpen = ref(false);
   const editorMode = ref<'edit' | 'add'>('edit');
   const formContext = ref<FormContext>({});
+
+  // Confirmation modal for deletion protection
+  const { showBlockedMessage } = useConfirmationModal();
 
   // ============================================
   // Composed Modules
@@ -151,6 +155,28 @@ export const useTimelineEditor = createSharedComposable(() => {
   }
 
   function handleRemoveStep(index: number) {
+    const stepToRemove = steps.value[index];
+
+    // ADR-009 Phase 2: Prevent deletion of branch point step
+    // The branch point question is referenced by flows.branch_question_id with FK RESTRICT,
+    // so we show a user-friendly message before the DB constraint would fail.
+    if (
+      branching.isBranchingEnabled.value &&
+      branching.branchPointStep.value &&
+      stepToRemove?.id === branching.branchPointStep.value.id
+    ) {
+      // Get step name from question text (for rating steps) or content title
+      const stepName =
+        stepToRemove.question?.questionText ||
+        (stepToRemove.content as { title?: string })?.title ||
+        'Rating Step';
+      showBlockedMessage({
+        actionType: 'delete_step_blocked',
+        entityName: stepName,
+      });
+      return;
+    }
+
     stepCrud.removeStep(index);
     if (selectedIndex.value >= steps.value.length) {
       selectStep(Math.max(0, steps.value.length - 1));

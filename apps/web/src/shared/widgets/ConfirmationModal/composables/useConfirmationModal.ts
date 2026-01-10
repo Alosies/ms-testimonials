@@ -1,12 +1,18 @@
 import { reactive, readonly } from 'vue';
 import { createSharedComposable } from '@vueuse/core';
-import type { ConfirmationActionType, ConfirmationMessage, ConfirmationOptions } from '../models';
+import type {
+  ConfirmationActionType,
+  ConfirmationMessage,
+  ConfirmationOptions,
+  BlockedMessageOptions,
+} from '../models';
 
 interface ConfirmationModalState {
   visible: boolean;
   actionType: ConfirmationActionType;
   entityName: string;
   isLoading: boolean;
+  isBlocked: boolean;
   onConfirm: () => void | Promise<void>;
   customMessage: Partial<ConfirmationMessage> | null;
 }
@@ -17,6 +23,7 @@ function _useConfirmationModal() {
     actionType: 'custom',
     entityName: '',
     isLoading: false,
+    isBlocked: false,
     onConfirm: () => {},
     customMessage: null,
   });
@@ -27,6 +34,21 @@ function _useConfirmationModal() {
     modalState.onConfirm = options.onConfirm;
     modalState.customMessage = options.customMessage || null;
     modalState.isLoading = false;
+    modalState.isBlocked = false;
+    modalState.visible = true;
+  };
+
+  /**
+   * Show an info-only modal for blocked actions.
+   * These modals have a single "Got it" button instead of Cancel + Confirm.
+   */
+  const showBlockedMessage = (options: BlockedMessageOptions) => {
+    modalState.actionType = options.actionType;
+    modalState.entityName = options.entityName;
+    modalState.onConfirm = () => {};
+    modalState.customMessage = options.customMessage || null;
+    modalState.isLoading = false;
+    modalState.isBlocked = true;
     modalState.visible = true;
   };
 
@@ -46,12 +68,14 @@ function _useConfirmationModal() {
   const handleCancel = () => {
     modalState.visible = false;
     modalState.isLoading = false;
+    modalState.isBlocked = false;
   };
 
   const handleUpdateVisible = (value: boolean) => {
     modalState.visible = value;
     if (!value) {
       modalState.isLoading = false;
+      modalState.isBlocked = false;
     }
   };
 
@@ -61,6 +85,7 @@ function _useConfirmationModal() {
 
     // Actions
     showConfirmation,
+    showBlockedMessage,
     handleConfirm,
     handleCancel,
     handleUpdateVisible,
