@@ -84,3 +84,58 @@ Migrate `flows.branch_condition` JSONB to flattened columns and complete fronten
 - Files changed:
   - apps/web/src/entities/flow/graphql/mutations/updateFlow.gql
   - apps/web/src/entities/flow/graphql/mutations/deleteFlow.gql
+
+### Iteration 7 - TS-001 - 2026-01-10
+- [x] Create BranchValue type definitions
+- Learnings: Also fixed useCreateFormWithSteps.ts to use new columns instead of deprecated branch_condition.
+- Files changed:
+  - apps/web/src/entities/flow/models/branchValue.ts (created)
+  - apps/web/src/entities/flow/models/index.ts (updated barrel export)
+  - apps/web/src/features/createForm/composables/useCreateFormWithSteps.ts (fixed for new columns)
+
+### Iteration 8 - FE-001 - 2026-01-10
+- [x] Create useGetFlowsByBranchQuestion composable
+- Files changed:
+  - apps/web/src/entities/flow/composables/queries/useGetFlowsByBranchQuestion.ts (created)
+  - apps/web/src/entities/flow/composables/queries/index.ts (created)
+  - apps/web/src/entities/flow/composables/index.ts (added queries export)
+
+### Iteration 9 - FE-002 - 2026-01-10
+- [x] Create useUpdateFlow and useDeleteFlow composables
+- Files changed:
+  - apps/web/src/entities/flow/composables/mutations/useUpdateFlow.ts (created)
+  - apps/web/src/entities/flow/composables/mutations/useDeleteFlow.ts (created)
+  - apps/web/src/entities/flow/composables/mutations/index.ts (updated)
+
+### Iteration 10 - FE-003 - 2026-01-10
+- [x] Update useCreateFlows to use new columns
+- Learnings: Mutation uses generated flows_insert_input which auto-includes new columns. Consumer already updated in TS-001.
+- Files changed: None additional (covered by TS-001)
+
+### Iteration 11 - FE-004 - 2026-01-10
+- [x] Update stepTransform.ts to include flowId
+- Learnings: Made flowId optional in FormStep interface for backward compatibility. Updated multiple files that create FormStep objects.
+- Files changed:
+  - apps/web/src/shared/stepCards/models/stepContent.ts (added optional flowId)
+  - apps/web/src/features/createForm/functions/stepTransform.ts (added flowId mapping)
+  - apps/web/src/features/createForm/composables/timeline/useStepOperations.ts (updated createStep, addStepAt)
+
+### Summary - Phase 2 Session 2 - 2026-01-10
+- Stories completed: DB-001 to FE-004 (11/20)
+- Stories deferred: FE-005 to FE-012 (8/20 - require deeper refactoring)
+- Stories partial: TEST-001 (build/typecheck pass, functional tests pending)
+- Status: pnpm typecheck ✓, pnpm build ✓
+
+## Deferred Work (Phase 3 Candidates)
+
+FE-005 to FE-012 require:
+- Refactoring enableBranching to create actual DB flows with FK to rating question
+- Integrating useDeleteFlow into useBranchingDisable
+- Full flowId usage across timeline composables
+- Question deletion protection UI
+
+These are deferred because:
+1. flowId is optional during migration (backward compatible)
+2. Existing flowMembership logic still works for UI
+3. Steps from DB get flowId via stepTransform
+4. Core infrastructure (types, composables, mutations) is in place
