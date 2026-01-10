@@ -3,6 +3,9 @@
  *
  * Extracted from useTimelineBranching for maintainability.
  * Detects and syncs branching state from loaded steps.
+ *
+ * Updated for ADR-009 Phase 2: Uses flowId for detection.
+ * Falls back to flowMembership for backward compatibility.
  */
 import type { Ref } from 'vue';
 import type { FormStep } from '@/shared/stepCards';
@@ -13,6 +16,41 @@ interface BranchingDetectionDeps {
   branchingConfig: Ref<BranchingConfig>;
 }
 
+/**
+ * Check if steps have multiple unique flowIds (indicates branching)
+ * Returns true if more than one unique flowId exists
+ */
+function hasMultipleFlows(steps: FormStep[]): boolean {
+  const flowIds = new Set(steps.map(s => s.flowId).filter(Boolean));
+  return flowIds.size > 1;
+}
+
+/**
+ * Check if any step has branched flow membership (legacy detection)
+ */
+function hasBranchedFlowMembership(steps: FormStep[]): boolean {
+  return steps.some(
+    s => s.flowMembership === 'testimonial' || s.flowMembership === 'improvement',
+  );
+}
+
+/**
+ * Find shared steps - those with flowMembership 'shared' or matching shared flowId
+ */
+function findSharedSteps(steps: FormStep[]): FormStep[] {
+  // If steps have flowId, find the shared flow ID first
+  const stepsWithFlowId = steps.filter(s => s.flowId);
+  if (stepsWithFlowId.length > 0) {
+    // Find shared flow ID from a step with flowMembership 'shared'
+    const sharedStep = steps.find(s => s.flowMembership === 'shared' && s.flowId);
+    if (sharedStep) {
+      return steps.filter(s => s.flowId === sharedStep.flowId);
+    }
+  }
+  // Fall back to flowMembership check
+  return steps.filter(s => s.flowMembership === 'shared');
+}
+
 export function useBranchingDetection(deps: BranchingDetectionDeps) {
   const { branchingConfig } = deps;
 
@@ -21,18 +59,18 @@ export function useBranchingDetection(deps: BranchingDetectionDeps) {
    * Called when steps are loaded from the database to ensure branching UI
    * reflects the actual state, even if branching_config wasn't loaded separately.
    *
-   * Detection logic:
-   * 1. If any step has non-shared flowMembership, branching is enabled
-   * 2. The branch point is the last 'shared' step that's a rating type
-   * 3. Uses default threshold of 4 if not already set
+   * Detection logic (ADR-009 Phase 2):
+   * 1. Check for multiple unique flowIds (primary detection)
+   * 2. Fall back to flowMembership check for backward compatibility
+   * 3. The branch point is the last shared step that's a rating type
+   * 4. Uses default threshold of 4 if not already set
    */
   function detectBranchingFromSteps(loadedSteps: FormStep[]) {
-    // Check if any step has branched flow membership
-    const hasBranchedSteps = loadedSteps.some(
-      s => s.flowMembership === 'testimonial' || s.flowMembership === 'improvement',
-    );
+    // Primary detection: Check for multiple flows by flowId
+    // Secondary detection: Check flowMembership for backward compatibility
+    const hasBranching = hasMultipleFlows(loadedSteps) || hasBranchedFlowMembership(loadedSteps);
 
-    if (!hasBranchedSteps) {
+    if (!hasBranching) {
       // No branched steps - ensure branching is disabled
       if (branchingConfig.value.enabled) {
         branchingConfig.value = { ...DEFAULT_BRANCHING_CONFIG };
@@ -51,7 +89,7 @@ export function useBranchingDetection(deps: BranchingDetectionDeps) {
 
     // Need to detect the branch point
     // Find the last shared step that's a rating type (the branch point)
-    const sharedSteps = loadedSteps.filter(s => s.flowMembership === 'shared');
+    const sharedSteps = findSharedSteps(loadedSteps);
     const ratingStep = [...sharedSteps].reverse().find(s => s.stepType === 'rating');
 
     if (ratingStep) {
