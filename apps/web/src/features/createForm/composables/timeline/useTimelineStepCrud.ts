@@ -16,7 +16,7 @@ import {
   moveStepAt,
   duplicateStepAt,
   changeStepTypeAt,
-} from './useStepOperations';
+} from '../../functions/stepOperations';
 
 interface StepCrudDeps {
   steps: Ref<FormStep[]>;

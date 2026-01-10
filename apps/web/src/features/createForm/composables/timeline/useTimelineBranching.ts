@@ -13,7 +13,7 @@ import { ref, computed, type Ref } from 'vue';
 import type { FormStep, StepType, FlowMembership } from '@/shared/stepCards';
 import type { BranchingConfig } from '@/entities/form';
 import { DEFAULT_BRANCHING_CONFIG } from '@/entities/form';
-import { generateTempId, reorderSteps } from './useStepOperations';
+import { generateTempId, reorderSteps } from '../../functions/stepOperations';
 import { useBranchingDisable } from './useBranchingDisable';
 import { useBranchingFlowFocus } from './useBranchingFlowFocus';
 import { useBranchingDetection } from './useBranchingDetection';

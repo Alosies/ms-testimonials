@@ -12,7 +12,7 @@ import type { Ref } from 'vue';
 import type { FormStep } from '@/shared/stepCards';
 import type { BranchingConfig } from '@/entities/form';
 import { DEFAULT_BRANCHING_CONFIG } from '@/entities/form';
-import { reorderSteps } from './useStepOperations';
+import { reorderSteps } from '../../functions/stepOperations';
 
 interface BranchingDisableDeps {
   steps: Ref<FormStep[]>;
