@@ -859,8 +859,16 @@ export enum Cursor_Ordering {
 /** Defines branching paths for forms. Each form has flows (shared, testimonial, improvement) that determine step visibility based on user responses like rating. See ADR-009 for architecture details. */
 export type Flows = {
   __typename?: 'flows';
-  /** JSONB branching condition: {field, op, value}. Examples: rating>=4 for testimonial, rating<4 for improvement. NULL for shared flow. */
-  branch_condition?: Maybe<Scalars['jsonb']['output']>;
+  /** Response column to evaluate. Valid values: answer_integer, answer_text, answer_boolean, answer_json. NULL for shared flows. */
+  branch_field?: Maybe<Scalars['String']['output']>;
+  /** Comparison operator. Valid values: equals, not_equals, greater_than, greater_than_or_equal_to, less_than, less_than_or_equal_to, between, is_one_of, contains, is_empty. NULL for shared flows. */
+  branch_operator?: Maybe<Scalars['String']['output']>;
+  /** An object relationship */
+  branch_question?: Maybe<Form_Questions>;
+  /** FK to form_questions (ON DELETE RESTRICT). The question whose answer determines this branch. NULL for shared flows. */
+  branch_question_id?: Maybe<Scalars['String']['output']>;
+  /** Structured comparison value as JSONB. Format: {type: "number"|"string"|"boolean"|"range"|"list", value: ...}. NULL for shared flows or is_empty operator. */
+  branch_value?: Maybe<Scalars['jsonb']['output']>;
   /** Timestamp when this flow was first created. Set automatically, never modified. */
   created_at: Scalars['timestamptz']['output'];
   /** Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...). */
@@ -889,7 +897,7 @@ export type Flows = {
 
 
 /** Defines branching paths for forms. Each form has flows (shared, testimonial, improvement) that determine step visibility based on user responses like rating. See ADR-009 for architecture details. */
-export type FlowsBranch_ConditionArgs = {
+export type FlowsBranch_ValueArgs = {
   path?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -971,8 +979,8 @@ export type Flows_Aggregate_Order_By = {
 
 /** append existing jsonb value of filtered columns with new jsonb value */
 export type Flows_Append_Input = {
-  /** JSONB branching condition: {field, op, value}. Examples: rating>=4 for testimonial, rating<4 for improvement. NULL for shared flow. */
-  branch_condition?: InputMaybe<Scalars['jsonb']['input']>;
+  /** Structured comparison value as JSONB. Format: {type: "number"|"string"|"boolean"|"range"|"list", value: ...}. NULL for shared flows or is_empty operator. */
+  branch_value?: InputMaybe<Scalars['jsonb']['input']>;
 };
 
 /** input type for inserting array relation for remote table "flows" */
@@ -1000,7 +1008,11 @@ export type Flows_Bool_Exp = {
   _and?: InputMaybe<Array<Flows_Bool_Exp>>;
   _not?: InputMaybe<Flows_Bool_Exp>;
   _or?: InputMaybe<Array<Flows_Bool_Exp>>;
-  branch_condition?: InputMaybe<Jsonb_Comparison_Exp>;
+  branch_field?: InputMaybe<String_Comparison_Exp>;
+  branch_operator?: InputMaybe<String_Comparison_Exp>;
+  branch_question?: InputMaybe<Form_Questions_Bool_Exp>;
+  branch_question_id?: InputMaybe<String_Comparison_Exp>;
+  branch_value?: InputMaybe<Jsonb_Comparison_Exp>;
   created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
   display_order?: InputMaybe<Smallint_Comparison_Exp>;
   flow_type?: InputMaybe<String_Comparison_Exp>;
@@ -1025,20 +1037,20 @@ export enum Flows_Constraint {
 
 /** delete the field or element with specified path (for JSON arrays, negative integers count from the end) */
 export type Flows_Delete_At_Path_Input = {
-  /** JSONB branching condition: {field, op, value}. Examples: rating>=4 for testimonial, rating<4 for improvement. NULL for shared flow. */
-  branch_condition?: InputMaybe<Array<Scalars['String']['input']>>;
+  /** Structured comparison value as JSONB. Format: {type: "number"|"string"|"boolean"|"range"|"list", value: ...}. NULL for shared flows or is_empty operator. */
+  branch_value?: InputMaybe<Array<Scalars['String']['input']>>;
 };
 
 /** delete the array element with specified index (negative integers count from the end). throws an error if top level container is not an array */
 export type Flows_Delete_Elem_Input = {
-  /** JSONB branching condition: {field, op, value}. Examples: rating>=4 for testimonial, rating<4 for improvement. NULL for shared flow. */
-  branch_condition?: InputMaybe<Scalars['Int']['input']>;
+  /** Structured comparison value as JSONB. Format: {type: "number"|"string"|"boolean"|"range"|"list", value: ...}. NULL for shared flows or is_empty operator. */
+  branch_value?: InputMaybe<Scalars['Int']['input']>;
 };
 
 /** delete key/value pair or string element. key/value pairs are matched based on their key value */
 export type Flows_Delete_Key_Input = {
-  /** JSONB branching condition: {field, op, value}. Examples: rating>=4 for testimonial, rating<4 for improvement. NULL for shared flow. */
-  branch_condition?: InputMaybe<Scalars['String']['input']>;
+  /** Structured comparison value as JSONB. Format: {type: "number"|"string"|"boolean"|"range"|"list", value: ...}. NULL for shared flows or is_empty operator. */
+  branch_value?: InputMaybe<Scalars['String']['input']>;
 };
 
 /** input type for incrementing numeric columns in table "flows" */
@@ -1049,8 +1061,15 @@ export type Flows_Inc_Input = {
 
 /** input type for inserting data into table "flows" */
 export type Flows_Insert_Input = {
-  /** JSONB branching condition: {field, op, value}. Examples: rating>=4 for testimonial, rating<4 for improvement. NULL for shared flow. */
-  branch_condition?: InputMaybe<Scalars['jsonb']['input']>;
+  /** Response column to evaluate. Valid values: answer_integer, answer_text, answer_boolean, answer_json. NULL for shared flows. */
+  branch_field?: InputMaybe<Scalars['String']['input']>;
+  /** Comparison operator. Valid values: equals, not_equals, greater_than, greater_than_or_equal_to, less_than, less_than_or_equal_to, between, is_one_of, contains, is_empty. NULL for shared flows. */
+  branch_operator?: InputMaybe<Scalars['String']['input']>;
+  branch_question?: InputMaybe<Form_Questions_Obj_Rel_Insert_Input>;
+  /** FK to form_questions (ON DELETE RESTRICT). The question whose answer determines this branch. NULL for shared flows. */
+  branch_question_id?: InputMaybe<Scalars['String']['input']>;
+  /** Structured comparison value as JSONB. Format: {type: "number"|"string"|"boolean"|"range"|"list", value: ...}. NULL for shared flows or is_empty operator. */
+  branch_value?: InputMaybe<Scalars['jsonb']['input']>;
   /** Timestamp when this flow was first created. Set automatically, never modified. */
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
   /** Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...). */
@@ -1075,6 +1094,12 @@ export type Flows_Insert_Input = {
 /** aggregate max on columns */
 export type Flows_Max_Fields = {
   __typename?: 'flows_max_fields';
+  /** Response column to evaluate. Valid values: answer_integer, answer_text, answer_boolean, answer_json. NULL for shared flows. */
+  branch_field?: Maybe<Scalars['String']['output']>;
+  /** Comparison operator. Valid values: equals, not_equals, greater_than, greater_than_or_equal_to, less_than, less_than_or_equal_to, between, is_one_of, contains, is_empty. NULL for shared flows. */
+  branch_operator?: Maybe<Scalars['String']['output']>;
+  /** FK to form_questions (ON DELETE RESTRICT). The question whose answer determines this branch. NULL for shared flows. */
+  branch_question_id?: Maybe<Scalars['String']['output']>;
   /** Timestamp when this flow was first created. Set automatically, never modified. */
   created_at?: Maybe<Scalars['timestamptz']['output']>;
   /** Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...). */
@@ -1095,6 +1120,12 @@ export type Flows_Max_Fields = {
 
 /** order by max() on columns of table "flows" */
 export type Flows_Max_Order_By = {
+  /** Response column to evaluate. Valid values: answer_integer, answer_text, answer_boolean, answer_json. NULL for shared flows. */
+  branch_field?: InputMaybe<Order_By>;
+  /** Comparison operator. Valid values: equals, not_equals, greater_than, greater_than_or_equal_to, less_than, less_than_or_equal_to, between, is_one_of, contains, is_empty. NULL for shared flows. */
+  branch_operator?: InputMaybe<Order_By>;
+  /** FK to form_questions (ON DELETE RESTRICT). The question whose answer determines this branch. NULL for shared flows. */
+  branch_question_id?: InputMaybe<Order_By>;
   /** Timestamp when this flow was first created. Set automatically, never modified. */
   created_at?: InputMaybe<Order_By>;
   /** Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...). */
@@ -1116,6 +1147,12 @@ export type Flows_Max_Order_By = {
 /** aggregate min on columns */
 export type Flows_Min_Fields = {
   __typename?: 'flows_min_fields';
+  /** Response column to evaluate. Valid values: answer_integer, answer_text, answer_boolean, answer_json. NULL for shared flows. */
+  branch_field?: Maybe<Scalars['String']['output']>;
+  /** Comparison operator. Valid values: equals, not_equals, greater_than, greater_than_or_equal_to, less_than, less_than_or_equal_to, between, is_one_of, contains, is_empty. NULL for shared flows. */
+  branch_operator?: Maybe<Scalars['String']['output']>;
+  /** FK to form_questions (ON DELETE RESTRICT). The question whose answer determines this branch. NULL for shared flows. */
+  branch_question_id?: Maybe<Scalars['String']['output']>;
   /** Timestamp when this flow was first created. Set automatically, never modified. */
   created_at?: Maybe<Scalars['timestamptz']['output']>;
   /** Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...). */
@@ -1136,6 +1173,12 @@ export type Flows_Min_Fields = {
 
 /** order by min() on columns of table "flows" */
 export type Flows_Min_Order_By = {
+  /** Response column to evaluate. Valid values: answer_integer, answer_text, answer_boolean, answer_json. NULL for shared flows. */
+  branch_field?: InputMaybe<Order_By>;
+  /** Comparison operator. Valid values: equals, not_equals, greater_than, greater_than_or_equal_to, less_than, less_than_or_equal_to, between, is_one_of, contains, is_empty. NULL for shared flows. */
+  branch_operator?: InputMaybe<Order_By>;
+  /** FK to form_questions (ON DELETE RESTRICT). The question whose answer determines this branch. NULL for shared flows. */
+  branch_question_id?: InputMaybe<Order_By>;
   /** Timestamp when this flow was first created. Set automatically, never modified. */
   created_at?: InputMaybe<Order_By>;
   /** Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...). */
@@ -1179,7 +1222,11 @@ export type Flows_On_Conflict = {
 
 /** Ordering options when selecting data from "flows". */
 export type Flows_Order_By = {
-  branch_condition?: InputMaybe<Order_By>;
+  branch_field?: InputMaybe<Order_By>;
+  branch_operator?: InputMaybe<Order_By>;
+  branch_question?: InputMaybe<Form_Questions_Order_By>;
+  branch_question_id?: InputMaybe<Order_By>;
+  branch_value?: InputMaybe<Order_By>;
   created_at?: InputMaybe<Order_By>;
   display_order?: InputMaybe<Order_By>;
   flow_type?: InputMaybe<Order_By>;
@@ -1201,14 +1248,20 @@ export type Flows_Pk_Columns_Input = {
 
 /** prepend existing jsonb value of filtered columns with new jsonb value */
 export type Flows_Prepend_Input = {
-  /** JSONB branching condition: {field, op, value}. Examples: rating>=4 for testimonial, rating<4 for improvement. NULL for shared flow. */
-  branch_condition?: InputMaybe<Scalars['jsonb']['input']>;
+  /** Structured comparison value as JSONB. Format: {type: "number"|"string"|"boolean"|"range"|"list", value: ...}. NULL for shared flows or is_empty operator. */
+  branch_value?: InputMaybe<Scalars['jsonb']['input']>;
 };
 
 /** select columns of table "flows" */
 export enum Flows_Select_Column {
   /** column name */
-  BranchCondition = 'branch_condition',
+  BranchField = 'branch_field',
+  /** column name */
+  BranchOperator = 'branch_operator',
+  /** column name */
+  BranchQuestionId = 'branch_question_id',
+  /** column name */
+  BranchValue = 'branch_value',
   /** column name */
   CreatedAt = 'created_at',
   /** column name */
@@ -1229,8 +1282,14 @@ export enum Flows_Select_Column {
 
 /** input type for updating data in table "flows" */
 export type Flows_Set_Input = {
-  /** JSONB branching condition: {field, op, value}. Examples: rating>=4 for testimonial, rating<4 for improvement. NULL for shared flow. */
-  branch_condition?: InputMaybe<Scalars['jsonb']['input']>;
+  /** Response column to evaluate. Valid values: answer_integer, answer_text, answer_boolean, answer_json. NULL for shared flows. */
+  branch_field?: InputMaybe<Scalars['String']['input']>;
+  /** Comparison operator. Valid values: equals, not_equals, greater_than, greater_than_or_equal_to, less_than, less_than_or_equal_to, between, is_one_of, contains, is_empty. NULL for shared flows. */
+  branch_operator?: InputMaybe<Scalars['String']['input']>;
+  /** FK to form_questions (ON DELETE RESTRICT). The question whose answer determines this branch. NULL for shared flows. */
+  branch_question_id?: InputMaybe<Scalars['String']['input']>;
+  /** Structured comparison value as JSONB. Format: {type: "number"|"string"|"boolean"|"range"|"list", value: ...}. NULL for shared flows or is_empty operator. */
+  branch_value?: InputMaybe<Scalars['jsonb']['input']>;
   /** Timestamp when this flow was first created. Set automatically, never modified. */
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
   /** Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...). */
@@ -1298,8 +1357,14 @@ export type Flows_Stream_Cursor_Input = {
 
 /** Initial value of the column from where the streaming should start */
 export type Flows_Stream_Cursor_Value_Input = {
-  /** JSONB branching condition: {field, op, value}. Examples: rating>=4 for testimonial, rating<4 for improvement. NULL for shared flow. */
-  branch_condition?: InputMaybe<Scalars['jsonb']['input']>;
+  /** Response column to evaluate. Valid values: answer_integer, answer_text, answer_boolean, answer_json. NULL for shared flows. */
+  branch_field?: InputMaybe<Scalars['String']['input']>;
+  /** Comparison operator. Valid values: equals, not_equals, greater_than, greater_than_or_equal_to, less_than, less_than_or_equal_to, between, is_one_of, contains, is_empty. NULL for shared flows. */
+  branch_operator?: InputMaybe<Scalars['String']['input']>;
+  /** FK to form_questions (ON DELETE RESTRICT). The question whose answer determines this branch. NULL for shared flows. */
+  branch_question_id?: InputMaybe<Scalars['String']['input']>;
+  /** Structured comparison value as JSONB. Format: {type: "number"|"string"|"boolean"|"range"|"list", value: ...}. NULL for shared flows or is_empty operator. */
+  branch_value?: InputMaybe<Scalars['jsonb']['input']>;
   /** Timestamp when this flow was first created. Set automatically, never modified. */
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
   /** Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...). */
@@ -1334,7 +1399,13 @@ export type Flows_Sum_Order_By = {
 /** update columns of table "flows" */
 export enum Flows_Update_Column {
   /** column name */
-  BranchCondition = 'branch_condition',
+  BranchField = 'branch_field',
+  /** column name */
+  BranchOperator = 'branch_operator',
+  /** column name */
+  BranchQuestionId = 'branch_question_id',
+  /** column name */
+  BranchValue = 'branch_value',
   /** column name */
   CreatedAt = 'created_at',
   /** column name */
@@ -3115,7 +3186,7 @@ export type Form_Steps = {
   flow: Flows;
   /** Foreign key to flows table. Links step to its parent flow (shared, testimonial, or improvement). Will be NOT NULL after backfill migration. */
   flow_id: Scalars['String']['output'];
-  /** Which flow this step belongs to: shared (all paths), testimonial (positive rating), or improvement (negative rating) */
+  /** DEPRECATED: Legacy flow membership column. Use flow_id instead. This column will be removed in a future migration. Values are no longer constrained - any string is allowed during transition. */
   flow_membership: Scalars['String']['output'];
   /** An object relationship */
   form: Forms;
@@ -3323,7 +3394,7 @@ export type Form_Steps_Insert_Input = {
   flow?: InputMaybe<Flows_Obj_Rel_Insert_Input>;
   /** Foreign key to flows table. Links step to its parent flow (shared, testimonial, or improvement). Will be NOT NULL after backfill migration. */
   flow_id?: InputMaybe<Scalars['String']['input']>;
-  /** Which flow this step belongs to: shared (all paths), testimonial (positive rating), or improvement (negative rating) */
+  /** DEPRECATED: Legacy flow membership column. Use flow_id instead. This column will be removed in a future migration. Values are no longer constrained - any string is allowed during transition. */
   flow_membership?: InputMaybe<Scalars['String']['input']>;
   form?: InputMaybe<Forms_Obj_Rel_Insert_Input>;
   /** Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed. */
@@ -3360,7 +3431,7 @@ export type Form_Steps_Max_Fields = {
   created_by?: Maybe<Scalars['String']['output']>;
   /** Foreign key to flows table. Links step to its parent flow (shared, testimonial, or improvement). Will be NOT NULL after backfill migration. */
   flow_id?: Maybe<Scalars['String']['output']>;
-  /** Which flow this step belongs to: shared (all paths), testimonial (positive rating), or improvement (negative rating) */
+  /** DEPRECATED: Legacy flow membership column. Use flow_id instead. This column will be removed in a future migration. Values are no longer constrained - any string is allowed during transition. */
   flow_membership?: Maybe<Scalars['String']['output']>;
   /** Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed. */
   form_id?: Maybe<Scalars['String']['output']>;
@@ -3390,7 +3461,7 @@ export type Form_Steps_Max_Order_By = {
   created_by?: InputMaybe<Order_By>;
   /** Foreign key to flows table. Links step to its parent flow (shared, testimonial, or improvement). Will be NOT NULL after backfill migration. */
   flow_id?: InputMaybe<Order_By>;
-  /** Which flow this step belongs to: shared (all paths), testimonial (positive rating), or improvement (negative rating) */
+  /** DEPRECATED: Legacy flow membership column. Use flow_id instead. This column will be removed in a future migration. Values are no longer constrained - any string is allowed during transition. */
   flow_membership?: InputMaybe<Order_By>;
   /** Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed. */
   form_id?: InputMaybe<Order_By>;
@@ -3421,7 +3492,7 @@ export type Form_Steps_Min_Fields = {
   created_by?: Maybe<Scalars['String']['output']>;
   /** Foreign key to flows table. Links step to its parent flow (shared, testimonial, or improvement). Will be NOT NULL after backfill migration. */
   flow_id?: Maybe<Scalars['String']['output']>;
-  /** Which flow this step belongs to: shared (all paths), testimonial (positive rating), or improvement (negative rating) */
+  /** DEPRECATED: Legacy flow membership column. Use flow_id instead. This column will be removed in a future migration. Values are no longer constrained - any string is allowed during transition. */
   flow_membership?: Maybe<Scalars['String']['output']>;
   /** Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed. */
   form_id?: Maybe<Scalars['String']['output']>;
@@ -3451,7 +3522,7 @@ export type Form_Steps_Min_Order_By = {
   created_by?: InputMaybe<Order_By>;
   /** Foreign key to flows table. Links step to its parent flow (shared, testimonial, or improvement). Will be NOT NULL after backfill migration. */
   flow_id?: InputMaybe<Order_By>;
-  /** Which flow this step belongs to: shared (all paths), testimonial (positive rating), or improvement (negative rating) */
+  /** DEPRECATED: Legacy flow membership column. Use flow_id instead. This column will be removed in a future migration. Values are no longer constrained - any string is allowed during transition. */
   flow_membership?: InputMaybe<Order_By>;
   /** Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed. */
   form_id?: InputMaybe<Order_By>;
@@ -3582,7 +3653,7 @@ export type Form_Steps_Set_Input = {
   created_by?: InputMaybe<Scalars['String']['input']>;
   /** Foreign key to flows table. Links step to its parent flow (shared, testimonial, or improvement). Will be NOT NULL after backfill migration. */
   flow_id?: InputMaybe<Scalars['String']['input']>;
-  /** Which flow this step belongs to: shared (all paths), testimonial (positive rating), or improvement (negative rating) */
+  /** DEPRECATED: Legacy flow membership column. Use flow_id instead. This column will be removed in a future migration. Values are no longer constrained - any string is allowed during transition. */
   flow_membership?: InputMaybe<Scalars['String']['input']>;
   /** Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed. */
   form_id?: InputMaybe<Scalars['String']['input']>;
@@ -3663,7 +3734,7 @@ export type Form_Steps_Stream_Cursor_Value_Input = {
   created_by?: InputMaybe<Scalars['String']['input']>;
   /** Foreign key to flows table. Links step to its parent flow (shared, testimonial, or improvement). Will be NOT NULL after backfill migration. */
   flow_id?: InputMaybe<Scalars['String']['input']>;
-  /** Which flow this step belongs to: shared (all paths), testimonial (positive rating), or improvement (negative rating) */
+  /** DEPRECATED: Legacy flow membership column. Use flow_id instead. This column will be removed in a future migration. Values are no longer constrained - any string is allowed during transition. */
   flow_membership?: InputMaybe<Scalars['String']['input']>;
   /** Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed. */
   form_id?: InputMaybe<Scalars['String']['input']>;
@@ -18304,14 +18375,36 @@ export type Widgets_Variance_Order_By = {
   max_display?: InputMaybe<Order_By>;
 };
 
-export type FlowBasicFragment = { __typename?: 'flows', id: string, form_id: string, organization_id: string, name: string, flow_type: string, branch_condition?: any | null, display_order: number, created_at: string, updated_at: string };
+export type FlowBasicFragment = { __typename?: 'flows', id: string, form_id: string, organization_id: string, name: string, flow_type: string, display_order: number, created_at: string, updated_at: string, branch_question_id?: string | null, branch_field?: string | null, branch_operator?: string | null, branch_value?: any | null };
 
 export type CreateFlowsMutationVariables = Exact<{
   inputs: Array<Flows_Insert_Input> | Flows_Insert_Input;
 }>;
 
 
-export type CreateFlowsMutation = { __typename?: 'mutation_root', insert_flows?: { __typename?: 'flows_mutation_response', returning: Array<{ __typename?: 'flows', id: string, form_id: string, organization_id: string, name: string, flow_type: string, branch_condition?: any | null, display_order: number, created_at: string, updated_at: string }> } | null };
+export type CreateFlowsMutation = { __typename?: 'mutation_root', insert_flows?: { __typename?: 'flows_mutation_response', returning: Array<{ __typename?: 'flows', id: string, form_id: string, organization_id: string, name: string, flow_type: string, display_order: number, created_at: string, updated_at: string, branch_question_id?: string | null, branch_field?: string | null, branch_operator?: string | null, branch_value?: any | null }> } | null };
+
+export type DeleteFlowMutationVariables = Exact<{
+  flowId: Scalars['String']['input'];
+}>;
+
+
+export type DeleteFlowMutation = { __typename?: 'mutation_root', delete_flows_by_pk?: { __typename?: 'flows', id: string } | null };
+
+export type UpdateFlowMutationVariables = Exact<{
+  flowId: Scalars['String']['input'];
+  _set: Flows_Set_Input;
+}>;
+
+
+export type UpdateFlowMutation = { __typename?: 'mutation_root', update_flows_by_pk?: { __typename?: 'flows', id: string, form_id: string, organization_id: string, name: string, flow_type: string, display_order: number, created_at: string, updated_at: string, branch_question_id?: string | null, branch_field?: string | null, branch_operator?: string | null, branch_value?: any | null } | null };
+
+export type GetFlowsByBranchQuestionQueryVariables = Exact<{
+  branchQuestionId: Scalars['String']['input'];
+}>;
+
+
+export type GetFlowsByBranchQuestionQuery = { __typename?: 'query_root', flows: Array<{ __typename?: 'flows', id: string, form_id: string, organization_id: string, name: string, flow_type: string, display_order: number, created_at: string, updated_at: string, branch_question_id?: string | null, branch_field?: string | null, branch_operator?: string | null, branch_value?: any | null, form: { __typename?: 'forms', id: string, name: string } }> };
 
 export type FormBasicFragment = { __typename?: 'forms', id: string, name: string, product_name: string, product_description?: string | null, settings: any, branching_config: any, status: string, is_active: boolean, organization_id: string, created_by: string, created_at: string, updated_at: string, organization: { __typename?: 'organizations', id: string, logo?: { __typename?: 'media', id: string, storage_path: string } | null } };
 
@@ -18584,10 +18677,13 @@ export const FlowBasicFragmentDoc = gql`
   organization_id
   name
   flow_type
-  branch_condition
   display_order
   created_at
   updated_at
+  branch_question_id
+  branch_field
+  branch_operator
+  branch_value
 }
     `;
 export const FormBasicFragmentDoc = gql`
@@ -18856,6 +18952,99 @@ export function useCreateFlowsMutation(options: VueApolloComposable.UseMutationO
   return VueApolloComposable.useMutation<CreateFlowsMutation, CreateFlowsMutationVariables>(CreateFlowsDocument, options);
 }
 export type CreateFlowsMutationCompositionFunctionResult = VueApolloComposable.UseMutationReturn<CreateFlowsMutation, CreateFlowsMutationVariables>;
+export const DeleteFlowDocument = gql`
+    mutation DeleteFlow($flowId: String!) {
+  delete_flows_by_pk(id: $flowId) {
+    id
+  }
+}
+    `;
+
+/**
+ * __useDeleteFlowMutation__
+ *
+ * To run a mutation, you first call `useDeleteFlowMutation` within a Vue component and pass it any options that fit your needs.
+ * When your component renders, `useDeleteFlowMutation` returns an object that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - Several other properties: https://v4.apollo.vuejs.org/api/use-mutation.html#return
+ *
+ * @param options that will be passed into the mutation, supported options are listed on: https://v4.apollo.vuejs.org/guide-composable/mutation.html#options;
+ *
+ * @example
+ * const { mutate, loading, error, onDone } = useDeleteFlowMutation({
+ *   variables: {
+ *     flowId: // value for 'flowId'
+ *   },
+ * });
+ */
+export function useDeleteFlowMutation(options: VueApolloComposable.UseMutationOptions<DeleteFlowMutation, DeleteFlowMutationVariables> | ReactiveFunction<VueApolloComposable.UseMutationOptions<DeleteFlowMutation, DeleteFlowMutationVariables>> = {}) {
+  return VueApolloComposable.useMutation<DeleteFlowMutation, DeleteFlowMutationVariables>(DeleteFlowDocument, options);
+}
+export type DeleteFlowMutationCompositionFunctionResult = VueApolloComposable.UseMutationReturn<DeleteFlowMutation, DeleteFlowMutationVariables>;
+export const UpdateFlowDocument = gql`
+    mutation UpdateFlow($flowId: String!, $_set: flows_set_input!) {
+  update_flows_by_pk(pk_columns: {id: $flowId}, _set: $_set) {
+    ...FlowBasic
+  }
+}
+    ${FlowBasicFragmentDoc}`;
+
+/**
+ * __useUpdateFlowMutation__
+ *
+ * To run a mutation, you first call `useUpdateFlowMutation` within a Vue component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateFlowMutation` returns an object that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - Several other properties: https://v4.apollo.vuejs.org/api/use-mutation.html#return
+ *
+ * @param options that will be passed into the mutation, supported options are listed on: https://v4.apollo.vuejs.org/guide-composable/mutation.html#options;
+ *
+ * @example
+ * const { mutate, loading, error, onDone } = useUpdateFlowMutation({
+ *   variables: {
+ *     flowId: // value for 'flowId'
+ *     _set: // value for '_set'
+ *   },
+ * });
+ */
+export function useUpdateFlowMutation(options: VueApolloComposable.UseMutationOptions<UpdateFlowMutation, UpdateFlowMutationVariables> | ReactiveFunction<VueApolloComposable.UseMutationOptions<UpdateFlowMutation, UpdateFlowMutationVariables>> = {}) {
+  return VueApolloComposable.useMutation<UpdateFlowMutation, UpdateFlowMutationVariables>(UpdateFlowDocument, options);
+}
+export type UpdateFlowMutationCompositionFunctionResult = VueApolloComposable.UseMutationReturn<UpdateFlowMutation, UpdateFlowMutationVariables>;
+export const GetFlowsByBranchQuestionDocument = gql`
+    query GetFlowsByBranchQuestion($branchQuestionId: String!) {
+  flows(where: {branch_question_id: {_eq: $branchQuestionId}}) {
+    ...FlowBasic
+    form {
+      id
+      name
+    }
+  }
+}
+    ${FlowBasicFragmentDoc}`;
+
+/**
+ * __useGetFlowsByBranchQuestionQuery__
+ *
+ * To run a query within a Vue component, call `useGetFlowsByBranchQuestionQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetFlowsByBranchQuestionQuery` returns an object from Apollo Client that contains result, loading and error properties
+ * you can use to render your UI.
+ *
+ * @param variables that will be passed into the query
+ * @param options that will be passed into the query, supported options are listed on: https://v4.apollo.vuejs.org/guide-composable/query.html#options;
+ *
+ * @example
+ * const { result, loading, error } = useGetFlowsByBranchQuestionQuery({
+ *   branchQuestionId: // value for 'branchQuestionId'
+ * });
+ */
+export function useGetFlowsByBranchQuestionQuery(variables: GetFlowsByBranchQuestionQueryVariables | VueCompositionApi.Ref<GetFlowsByBranchQuestionQueryVariables> | ReactiveFunction<GetFlowsByBranchQuestionQueryVariables>, options: VueApolloComposable.UseQueryOptions<GetFlowsByBranchQuestionQuery, GetFlowsByBranchQuestionQueryVariables> | VueCompositionApi.Ref<VueApolloComposable.UseQueryOptions<GetFlowsByBranchQuestionQuery, GetFlowsByBranchQuestionQueryVariables>> | ReactiveFunction<VueApolloComposable.UseQueryOptions<GetFlowsByBranchQuestionQuery, GetFlowsByBranchQuestionQueryVariables>> = {}) {
+  return VueApolloComposable.useQuery<GetFlowsByBranchQuestionQuery, GetFlowsByBranchQuestionQueryVariables>(GetFlowsByBranchQuestionDocument, variables, options);
+}
+export function useGetFlowsByBranchQuestionLazyQuery(variables?: GetFlowsByBranchQuestionQueryVariables | VueCompositionApi.Ref<GetFlowsByBranchQuestionQueryVariables> | ReactiveFunction<GetFlowsByBranchQuestionQueryVariables>, options: VueApolloComposable.UseQueryOptions<GetFlowsByBranchQuestionQuery, GetFlowsByBranchQuestionQueryVariables> | VueCompositionApi.Ref<VueApolloComposable.UseQueryOptions<GetFlowsByBranchQuestionQuery, GetFlowsByBranchQuestionQueryVariables>> | ReactiveFunction<VueApolloComposable.UseQueryOptions<GetFlowsByBranchQuestionQuery, GetFlowsByBranchQuestionQueryVariables>> = {}) {
+  return VueApolloComposable.useLazyQuery<GetFlowsByBranchQuestionQuery, GetFlowsByBranchQuestionQueryVariables>(GetFlowsByBranchQuestionDocument, variables, options);
+}
+export type GetFlowsByBranchQuestionQueryCompositionFunctionResult = VueApolloComposable.UseQueryReturn<GetFlowsByBranchQuestionQuery, GetFlowsByBranchQuestionQueryVariables>;
 export const CreateFormDocument = gql`
     mutation CreateForm($form: forms_insert_input!) {
   insert_forms_one(object: $form) {

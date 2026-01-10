@@ -1,0 +1,11 @@
+#import "../fragments/FlowBasic.gql"
+
+query GetFlowsByBranchQuestion($branchQuestionId: String!) {
+  flows(where: { branch_question_id: { _eq: $branchQuestionId } }) {
+    ...FlowBasic
+    form {
+      id
+      name
+    }
+  }
+}

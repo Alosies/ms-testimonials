@@ -6257,8 +6257,56 @@
         "isOneOf": null,
         "fields": [
           {
-            "name": "branch_condition",
-            "description": "JSONB branching condition: {field, op, value}. Examples: rating>=4 for testimonial, rating<4 for improvement. NULL for shared flow.",
+            "name": "branch_field",
+            "description": "Response column to evaluate. Valid values: answer_integer, answer_text, answer_boolean, answer_json. NULL for shared flows.",
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "branch_operator",
+            "description": "Comparison operator. Valid values: equals, not_equals, greater_than, greater_than_or_equal_to, less_than, less_than_or_equal_to, between, is_one_of, contains, is_empty. NULL for shared flows.",
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "branch_question",
+            "description": "An object relationship",
+            "args": [],
+            "type": {
+              "kind": "OBJECT",
+              "name": "form_questions",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "branch_question_id",
+            "description": "FK to form_questions (ON DELETE RESTRICT). The question whose answer determines this branch. NULL for shared flows.",
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "branch_value",
+            "description": "Structured comparison value as JSONB. Format: {type: \"number\"|\"string\"|\"boolean\"|\"range\"|\"list\", value: ...}. NULL for shared flows or is_empty operator.",
             "args": [
               {
                 "name": "path",
@@ -7118,8 +7166,8 @@
         "fields": null,
         "inputFields": [
           {
-            "name": "branch_condition",
-            "description": "JSONB branching condition: {field, op, value}. Examples: rating>=4 for testimonial, rating<4 for improvement. NULL for shared flow.",
+            "name": "branch_value",
+            "description": "Structured comparison value as JSONB. Format: {type: \"number\"|\"string\"|\"boolean\"|\"range\"|\"list\", value: ...}. NULL for shared flows or is_empty operator.",
             "type": {
               "kind": "SCALAR",
               "name": "jsonb",
@@ -7290,7 +7338,55 @@
             "deprecationReason": null
           },
           {
-            "name": "branch_condition",
+            "name": "branch_field",
+            "description": null,
+            "type": {
+              "kind": "INPUT_OBJECT",
+              "name": "String_comparison_exp",
+              "ofType": null
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "branch_operator",
+            "description": null,
+            "type": {
+              "kind": "INPUT_OBJECT",
+              "name": "String_comparison_exp",
+              "ofType": null
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "branch_question",
+            "description": null,
+            "type": {
+              "kind": "INPUT_OBJECT",
+              "name": "form_questions_bool_exp",
+              "ofType": null
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "branch_question_id",
+            "description": null,
+            "type": {
+              "kind": "INPUT_OBJECT",
+              "name": "String_comparison_exp",
+              "ofType": null
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "branch_value",
             "description": null,
             "type": {
               "kind": "INPUT_OBJECT",
@@ -7482,8 +7578,8 @@
         "fields": null,
         "inputFields": [
           {
-            "name": "branch_condition",
-            "description": "JSONB branching condition: {field, op, value}. Examples: rating>=4 for testimonial, rating<4 for improvement. NULL for shared flow.",
+            "name": "branch_value",
+            "description": "Structured comparison value as JSONB. Format: {type: \"number\"|\"string\"|\"boolean\"|\"range\"|\"list\", value: ...}. NULL for shared flows or is_empty operator.",
             "type": {
               "kind": "LIST",
               "name": null,
@@ -7514,8 +7610,8 @@
         "fields": null,
         "inputFields": [
           {
-            "name": "branch_condition",
-            "description": "JSONB branching condition: {field, op, value}. Examples: rating>=4 for testimonial, rating<4 for improvement. NULL for shared flow.",
+            "name": "branch_value",
+            "description": "Structured comparison value as JSONB. Format: {type: \"number\"|\"string\"|\"boolean\"|\"range\"|\"list\", value: ...}. NULL for shared flows or is_empty operator.",
             "type": {
               "kind": "SCALAR",
               "name": "Int",
@@ -7538,8 +7634,8 @@
         "fields": null,
         "inputFields": [
           {
-            "name": "branch_condition",
-            "description": "JSONB branching condition: {field, op, value}. Examples: rating>=4 for testimonial, rating<4 for improvement. NULL for shared flow.",
+            "name": "branch_value",
+            "description": "Structured comparison value as JSONB. Format: {type: \"number\"|\"string\"|\"boolean\"|\"range\"|\"list\", value: ...}. NULL for shared flows or is_empty operator.",
             "type": {
               "kind": "SCALAR",
               "name": "String",
@@ -7586,8 +7682,56 @@
         "fields": null,
         "inputFields": [
           {
-            "name": "branch_condition",
-            "description": "JSONB branching condition: {field, op, value}. Examples: rating>=4 for testimonial, rating<4 for improvement. NULL for shared flow.",
+            "name": "branch_field",
+            "description": "Response column to evaluate. Valid values: answer_integer, answer_text, answer_boolean, answer_json. NULL for shared flows.",
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "branch_operator",
+            "description": "Comparison operator. Valid values: equals, not_equals, greater_than, greater_than_or_equal_to, less_than, less_than_or_equal_to, between, is_one_of, contains, is_empty. NULL for shared flows.",
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "branch_question",
+            "description": null,
+            "type": {
+              "kind": "INPUT_OBJECT",
+              "name": "form_questions_obj_rel_insert_input",
+              "ofType": null
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "branch_question_id",
+            "description": "FK to form_questions (ON DELETE RESTRICT). The question whose answer determines this branch. NULL for shared flows.",
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "branch_value",
+            "description": "Structured comparison value as JSONB. Format: {type: \"number\"|\"string\"|\"boolean\"|\"range\"|\"list\", value: ...}. NULL for shared flows or is_empty operator.",
             "type": {
               "kind": "SCALAR",
               "name": "jsonb",
@@ -7741,6 +7885,42 @@
         "isOneOf": null,
         "fields": [
           {
+            "name": "branch_field",
+            "description": "Response column to evaluate. Valid values: answer_integer, answer_text, answer_boolean, answer_json. NULL for shared flows.",
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "branch_operator",
+            "description": "Comparison operator. Valid values: equals, not_equals, greater_than, greater_than_or_equal_to, less_than, less_than_or_equal_to, between, is_one_of, contains, is_empty. NULL for shared flows.",
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "branch_question_id",
+            "description": "FK to form_questions (ON DELETE RESTRICT). The question whose answer determines this branch. NULL for shared flows.",
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "created_at",
             "description": "Timestamp when this flow was first created. Set automatically, never modified.",
             "args": [],
@@ -7850,6 +8030,42 @@
         "fields": null,
         "inputFields": [
           {
+            "name": "branch_field",
+            "description": "Response column to evaluate. Valid values: answer_integer, answer_text, answer_boolean, answer_json. NULL for shared flows.",
+            "type": {
+              "kind": "ENUM",
+              "name": "order_by",
+              "ofType": null
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "branch_operator",
+            "description": "Comparison operator. Valid values: equals, not_equals, greater_than, greater_than_or_equal_to, less_than, less_than_or_equal_to, between, is_one_of, contains, is_empty. NULL for shared flows.",
+            "type": {
+              "kind": "ENUM",
+              "name": "order_by",
+              "ofType": null
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "branch_question_id",
+            "description": "FK to form_questions (ON DELETE RESTRICT). The question whose answer determines this branch. NULL for shared flows.",
+            "type": {
+              "kind": "ENUM",
+              "name": "order_by",
+              "ofType": null
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "created_at",
             "description": "Timestamp when this flow was first created. Set automatically, never modified.",
             "type": {
@@ -7956,6 +8172,42 @@
         "description": "aggregate min on columns",
         "isOneOf": null,
         "fields": [
+          {
+            "name": "branch_field",
+            "description": "Response column to evaluate. Valid values: answer_integer, answer_text, answer_boolean, answer_json. NULL for shared flows.",
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "branch_operator",
+            "description": "Comparison operator. Valid values: equals, not_equals, greater_than, greater_than_or_equal_to, less_than, less_than_or_equal_to, between, is_one_of, contains, is_empty. NULL for shared flows.",
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "branch_question_id",
+            "description": "FK to form_questions (ON DELETE RESTRICT). The question whose answer determines this branch. NULL for shared flows.",
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
           {
             "name": "created_at",
             "description": "Timestamp when this flow was first created. Set automatically, never modified.",
@@ -8065,6 +8317,42 @@
         "isOneOf": false,
         "fields": null,
         "inputFields": [
+          {
+            "name": "branch_field",
+            "description": "Response column to evaluate. Valid values: answer_integer, answer_text, answer_boolean, answer_json. NULL for shared flows.",
+            "type": {
+              "kind": "ENUM",
+              "name": "order_by",
+              "ofType": null
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "branch_operator",
+            "description": "Comparison operator. Valid values: equals, not_equals, greater_than, greater_than_or_equal_to, less_than, less_than_or_equal_to, between, is_one_of, contains, is_empty. NULL for shared flows.",
+            "type": {
+              "kind": "ENUM",
+              "name": "order_by",
+              "ofType": null
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "branch_question_id",
+            "description": "FK to form_questions (ON DELETE RESTRICT). The question whose answer determines this branch. NULL for shared flows.",
+            "type": {
+              "kind": "ENUM",
+              "name": "order_by",
+              "ofType": null
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
           {
             "name": "created_at",
             "description": "Timestamp when this flow was first created. Set automatically, never modified.",
@@ -8330,7 +8618,55 @@
         "fields": null,
         "inputFields": [
           {
-            "name": "branch_condition",
+            "name": "branch_field",
+            "description": null,
+            "type": {
+              "kind": "ENUM",
+              "name": "order_by",
+              "ofType": null
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "branch_operator",
+            "description": null,
+            "type": {
+              "kind": "ENUM",
+              "name": "order_by",
+              "ofType": null
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "branch_question",
+            "description": null,
+            "type": {
+              "kind": "INPUT_OBJECT",
+              "name": "form_questions_order_by",
+              "ofType": null
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "branch_question_id",
+            "description": null,
+            "type": {
+              "kind": "ENUM",
+              "name": "order_by",
+              "ofType": null
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "branch_value",
             "description": null,
             "type": {
               "kind": "ENUM",
@@ -8514,8 +8850,8 @@
         "fields": null,
         "inputFields": [
           {
-            "name": "branch_condition",
-            "description": "JSONB branching condition: {field, op, value}. Examples: rating>=4 for testimonial, rating<4 for improvement. NULL for shared flow.",
+            "name": "branch_value",
+            "description": "Structured comparison value as JSONB. Format: {type: \"number\"|\"string\"|\"boolean\"|\"range\"|\"list\", value: ...}. NULL for shared flows or is_empty operator.",
             "type": {
               "kind": "SCALAR",
               "name": "jsonb",
@@ -8540,7 +8876,25 @@
         "interfaces": null,
         "enumValues": [
           {
-            "name": "branch_condition",
+            "name": "branch_field",
+            "description": "column name",
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "branch_operator",
+            "description": "column name",
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "branch_question_id",
+            "description": "column name",
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "branch_value",
             "description": "column name",
             "isDeprecated": false,
             "deprecationReason": null
@@ -8604,8 +8958,44 @@
         "fields": null,
         "inputFields": [
           {
-            "name": "branch_condition",
-            "description": "JSONB branching condition: {field, op, value}. Examples: rating>=4 for testimonial, rating<4 for improvement. NULL for shared flow.",
+            "name": "branch_field",
+            "description": "Response column to evaluate. Valid values: answer_integer, answer_text, answer_boolean, answer_json. NULL for shared flows.",
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "branch_operator",
+            "description": "Comparison operator. Valid values: equals, not_equals, greater_than, greater_than_or_equal_to, less_than, less_than_or_equal_to, between, is_one_of, contains, is_empty. NULL for shared flows.",
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "branch_question_id",
+            "description": "FK to form_questions (ON DELETE RESTRICT). The question whose answer determines this branch. NULL for shared flows.",
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "branch_value",
+            "description": "Structured comparison value as JSONB. Format: {type: \"number\"|\"string\"|\"boolean\"|\"range\"|\"list\", value: ...}. NULL for shared flows or is_empty operator.",
             "type": {
               "kind": "SCALAR",
               "name": "jsonb",
@@ -8908,8 +9298,44 @@
         "fields": null,
         "inputFields": [
           {
-            "name": "branch_condition",
-            "description": "JSONB branching condition: {field, op, value}. Examples: rating>=4 for testimonial, rating<4 for improvement. NULL for shared flow.",
+            "name": "branch_field",
+            "description": "Response column to evaluate. Valid values: answer_integer, answer_text, answer_boolean, answer_json. NULL for shared flows.",
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "branch_operator",
+            "description": "Comparison operator. Valid values: equals, not_equals, greater_than, greater_than_or_equal_to, less_than, less_than_or_equal_to, between, is_one_of, contains, is_empty. NULL for shared flows.",
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "branch_question_id",
+            "description": "FK to form_questions (ON DELETE RESTRICT). The question whose answer determines this branch. NULL for shared flows.",
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "branch_value",
+            "description": "Structured comparison value as JSONB. Format: {type: \"number\"|\"string\"|\"boolean\"|\"range\"|\"list\", value: ...}. NULL for shared flows or is_empty operator.",
             "type": {
               "kind": "SCALAR",
               "name": "jsonb",
@@ -9078,7 +9504,25 @@
         "interfaces": null,
         "enumValues": [
           {
-            "name": "branch_condition",
+            "name": "branch_field",
+            "description": "column name",
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "branch_operator",
+            "description": "column name",
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "branch_question_id",
+            "description": "column name",
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "branch_value",
             "description": "column name",
             "isDeprecated": false,
             "deprecationReason": null
@@ -19504,7 +19948,7 @@
           },
           {
             "name": "flow_membership",
-            "description": "Which flow this step belongs to: shared (all paths), testimonial (positive rating), or improvement (negative rating)",
+            "description": "DEPRECATED: Legacy flow membership column. Use flow_id instead. This column will be removed in a future migration. Values are no longer constrained - any string is allowed during transition.",
             "args": [],
             "type": {
               "kind": "NON_NULL",
@@ -21010,7 +21454,7 @@
           },
           {
             "name": "flow_membership",
-            "description": "Which flow this step belongs to: shared (all paths), testimonial (positive rating), or improvement (negative rating)",
+            "description": "DEPRECATED: Legacy flow membership column. Use flow_id instead. This column will be removed in a future migration. Values are no longer constrained - any string is allowed during transition.",
             "type": {
               "kind": "SCALAR",
               "name": "String",
@@ -21245,7 +21689,7 @@
           },
           {
             "name": "flow_membership",
-            "description": "Which flow this step belongs to: shared (all paths), testimonial (positive rating), or improvement (negative rating)",
+            "description": "DEPRECATED: Legacy flow membership column. Use flow_id instead. This column will be removed in a future migration. Values are no longer constrained - any string is allowed during transition.",
             "args": [],
             "type": {
               "kind": "SCALAR",
@@ -21422,7 +21866,7 @@
           },
           {
             "name": "flow_membership",
-            "description": "Which flow this step belongs to: shared (all paths), testimonial (positive rating), or improvement (negative rating)",
+            "description": "DEPRECATED: Legacy flow membership column. Use flow_id instead. This column will be removed in a future migration. Values are no longer constrained - any string is allowed during transition.",
             "type": {
               "kind": "ENUM",
               "name": "order_by",
@@ -21589,7 +22033,7 @@
           },
           {
             "name": "flow_membership",
-            "description": "Which flow this step belongs to: shared (all paths), testimonial (positive rating), or improvement (negative rating)",
+            "description": "DEPRECATED: Legacy flow membership column. Use flow_id instead. This column will be removed in a future migration. Values are no longer constrained - any string is allowed during transition.",
             "args": [],
             "type": {
               "kind": "SCALAR",
@@ -21766,7 +22210,7 @@
           },
           {
             "name": "flow_membership",
-            "description": "Which flow this step belongs to: shared (all paths), testimonial (positive rating), or improvement (negative rating)",
+            "description": "DEPRECATED: Legacy flow membership column. Use flow_id instead. This column will be removed in a future migration. Values are no longer constrained - any string is allowed during transition.",
             "type": {
               "kind": "ENUM",
               "name": "order_by",
@@ -22516,7 +22960,7 @@
           },
           {
             "name": "flow_membership",
-            "description": "Which flow this step belongs to: shared (all paths), testimonial (positive rating), or improvement (negative rating)",
+            "description": "DEPRECATED: Legacy flow membership column. Use flow_id instead. This column will be removed in a future migration. Values are no longer constrained - any string is allowed during transition.",
             "type": {
               "kind": "SCALAR",
               "name": "String",
@@ -22900,7 +23344,7 @@
           },
           {
             "name": "flow_membership",
-            "description": "Which flow this step belongs to: shared (all paths), testimonial (positive rating), or improvement (negative rating)",
+            "description": "DEPRECATED: Legacy flow membership column. Use flow_id instead. This column will be removed in a future migration. Values are no longer constrained - any string is allowed during transition.",
             "type": {
               "kind": "SCALAR",
               "name": "String",

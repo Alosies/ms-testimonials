@@ -1,0 +1,7 @@
+#import "../fragments/FlowBasic.gql"
+
+mutation UpdateFlow($flowId: String!, $_set: flows_set_input!) {
+  update_flows_by_pk(pk_columns: { id: $flowId }, _set: $_set) {
+    ...FlowBasic
+  }
+}

@@ -1226,9 +1226,23 @@ Defines branching paths for forms. Each form has flows (shared, testimonial, imp
 """
 type flows {
   """
-  JSONB branching condition: {field, op, value}. Examples: rating>=4 for testimonial, rating<4 for improvement. NULL for shared flow.
+  Response column to evaluate. Valid values: answer_integer, answer_text, answer_boolean, answer_json. NULL for shared flows.
   """
-  branch_condition(
+  branch_field: String
+  """
+  Comparison operator. Valid values: equals, not_equals, greater_than, greater_than_or_equal_to, less_than, less_than_or_equal_to, between, is_one_of, contains, is_empty. NULL for shared flows.
+  """
+  branch_operator: String
+  """An object relationship"""
+  branch_question: form_questions
+  """
+  FK to form_questions (ON DELETE RESTRICT). The question whose answer determines this branch. NULL for shared flows.
+  """
+  branch_question_id: String
+  """
+  Structured comparison value as JSONB. Format: {type: "number"|"string"|"boolean"|"range"|"list", value: ...}. NULL for shared flows or is_empty operator.
+  """
+  branch_value(
     """JSON select path"""
     path: String
   ): jsonb
@@ -1352,9 +1366,9 @@ input flows_aggregate_order_by {
 """append existing jsonb value of filtered columns with new jsonb value"""
 input flows_append_input {
   """
-  JSONB branching condition: {field, op, value}. Examples: rating>=4 for testimonial, rating<4 for improvement. NULL for shared flow.
+  Structured comparison value as JSONB. Format: {type: "number"|"string"|"boolean"|"range"|"list", value: ...}. NULL for shared flows or is_empty operator.
   """
-  branch_condition: jsonb
+  branch_value: jsonb
 }
 
 """
@@ -1391,7 +1405,11 @@ input flows_bool_exp {
   _and: [flows_bool_exp!]
   _not: flows_bool_exp
   _or: [flows_bool_exp!]
-  branch_condition: jsonb_comparison_exp
+  branch_field: String_comparison_exp
+  branch_operator: String_comparison_exp
+  branch_question: form_questions_bool_exp
+  branch_question_id: String_comparison_exp
+  branch_value: jsonb_comparison_exp
   created_at: timestamptz_comparison_exp
   display_order: smallint_comparison_exp
   flow_type: String_comparison_exp
@@ -1425,9 +1443,9 @@ delete the field or element with specified path (for JSON arrays, negative integ
 """
 input flows_delete_at_path_input {
   """
-  JSONB branching condition: {field, op, value}. Examples: rating>=4 for testimonial, rating<4 for improvement. NULL for shared flow.
+  Structured comparison value as JSONB. Format: {type: "number"|"string"|"boolean"|"range"|"list", value: ...}. NULL for shared flows or is_empty operator.
   """
-  branch_condition: [String!]
+  branch_value: [String!]
 }
 
 """
@@ -1435,9 +1453,9 @@ delete the array element with specified index (negative integers count from the 
 """
 input flows_delete_elem_input {
   """
-  JSONB branching condition: {field, op, value}. Examples: rating>=4 for testimonial, rating<4 for improvement. NULL for shared flow.
+  Structured comparison value as JSONB. Format: {type: "number"|"string"|"boolean"|"range"|"list", value: ...}. NULL for shared flows or is_empty operator.
   """
-  branch_condition: Int
+  branch_value: Int
 }
 
 """
@@ -1445,9 +1463,9 @@ delete key/value pair or string element. key/value pairs are matched based on th
 """
 input flows_delete_key_input {
   """
-  JSONB branching condition: {field, op, value}. Examples: rating>=4 for testimonial, rating<4 for improvement. NULL for shared flow.
+  Structured comparison value as JSONB. Format: {type: "number"|"string"|"boolean"|"range"|"list", value: ...}. NULL for shared flows or is_empty operator.
   """
-  branch_condition: String
+  branch_value: String
 }
 
 """
@@ -1465,9 +1483,22 @@ input type for inserting data into table "flows"
 """
 input flows_insert_input {
   """
-  JSONB branching condition: {field, op, value}. Examples: rating>=4 for testimonial, rating<4 for improvement. NULL for shared flow.
+  Response column to evaluate. Valid values: answer_integer, answer_text, answer_boolean, answer_json. NULL for shared flows.
   """
-  branch_condition: jsonb
+  branch_field: String
+  """
+  Comparison operator. Valid values: equals, not_equals, greater_than, greater_than_or_equal_to, less_than, less_than_or_equal_to, between, is_one_of, contains, is_empty. NULL for shared flows.
+  """
+  branch_operator: String
+  branch_question: form_questions_obj_rel_insert_input
+  """
+  FK to form_questions (ON DELETE RESTRICT). The question whose answer determines this branch. NULL for shared flows.
+  """
+  branch_question_id: String
+  """
+  Structured comparison value as JSONB. Format: {type: "number"|"string"|"boolean"|"range"|"list", value: ...}. NULL for shared flows or is_empty operator.
+  """
+  branch_value: jsonb
   """
   Timestamp when this flow was first created. Set automatically, never modified.
   """
@@ -1508,6 +1539,18 @@ input flows_insert_input {
 """aggregate max on columns"""
 type flows_max_fields {
   """
+  Response column to evaluate. Valid values: answer_integer, answer_text, answer_boolean, answer_json. NULL for shared flows.
+  """
+  branch_field: String
+  """
+  Comparison operator. Valid values: equals, not_equals, greater_than, greater_than_or_equal_to, less_than, less_than_or_equal_to, between, is_one_of, contains, is_empty. NULL for shared flows.
+  """
+  branch_operator: String
+  """
+  FK to form_questions (ON DELETE RESTRICT). The question whose answer determines this branch. NULL for shared flows.
+  """
+  branch_question_id: String
+  """
   Timestamp when this flow was first created. Set automatically, never modified.
   """
   created_at: timestamptz
@@ -1546,6 +1589,18 @@ order by max() on columns of table "flows"
 """
 input flows_max_order_by {
   """
+  Response column to evaluate. Valid values: answer_integer, answer_text, answer_boolean, answer_json. NULL for shared flows.
+  """
+  branch_field: order_by
+  """
+  Comparison operator. Valid values: equals, not_equals, greater_than, greater_than_or_equal_to, less_than, less_than_or_equal_to, between, is_one_of, contains, is_empty. NULL for shared flows.
+  """
+  branch_operator: order_by
+  """
+  FK to form_questions (ON DELETE RESTRICT). The question whose answer determines this branch. NULL for shared flows.
+  """
+  branch_question_id: order_by
+  """
   Timestamp when this flow was first created. Set automatically, never modified.
   """
   created_at: order_by
@@ -1581,6 +1636,18 @@ input flows_max_order_by {
 
 """aggregate min on columns"""
 type flows_min_fields {
+  """
+  Response column to evaluate. Valid values: answer_integer, answer_text, answer_boolean, answer_json. NULL for shared flows.
+  """
+  branch_field: String
+  """
+  Comparison operator. Valid values: equals, not_equals, greater_than, greater_than_or_equal_to, less_than, less_than_or_equal_to, between, is_one_of, contains, is_empty. NULL for shared flows.
+  """
+  branch_operator: String
+  """
+  FK to form_questions (ON DELETE RESTRICT). The question whose answer determines this branch. NULL for shared flows.
+  """
+  branch_question_id: String
   """
   Timestamp when this flow was first created. Set automatically, never modified.
   """
@@ -1619,6 +1686,18 @@ type flows_min_fields {
 order by min() on columns of table "flows"
 """
 input flows_min_order_by {
+  """
+  Response column to evaluate. Valid values: answer_integer, answer_text, answer_boolean, answer_json. NULL for shared flows.
+  """
+  branch_field: order_by
+  """
+  Comparison operator. Valid values: equals, not_equals, greater_than, greater_than_or_equal_to, less_than, less_than_or_equal_to, between, is_one_of, contains, is_empty. NULL for shared flows.
+  """
+  branch_operator: order_by
+  """
+  FK to form_questions (ON DELETE RESTRICT). The question whose answer determines this branch. NULL for shared flows.
+  """
+  branch_question_id: order_by
   """
   Timestamp when this flow was first created. Set automatically, never modified.
   """
@@ -1683,7 +1762,11 @@ input flows_on_conflict {
 
 """Ordering options when selecting data from "flows"."""
 input flows_order_by {
-  branch_condition: order_by
+  branch_field: order_by
+  branch_operator: order_by
+  branch_question: form_questions_order_by
+  branch_question_id: order_by
+  branch_value: order_by
   created_at: order_by
   display_order: order_by
   flow_type: order_by
@@ -1708,9 +1791,9 @@ input flows_pk_columns_input {
 """prepend existing jsonb value of filtered columns with new jsonb value"""
 input flows_prepend_input {
   """
-  JSONB branching condition: {field, op, value}. Examples: rating>=4 for testimonial, rating<4 for improvement. NULL for shared flow.
+  Structured comparison value as JSONB. Format: {type: "number"|"string"|"boolean"|"range"|"list", value: ...}. NULL for shared flows or is_empty operator.
   """
-  branch_condition: jsonb
+  branch_value: jsonb
 }
 
 """
@@ -1718,7 +1801,13 @@ select columns of table "flows"
 """
 enum flows_select_column {
   """column name"""
-  branch_condition
+  branch_field
+  """column name"""
+  branch_operator
+  """column name"""
+  branch_question_id
+  """column name"""
+  branch_value
   """column name"""
   created_at
   """column name"""
@@ -1742,9 +1831,21 @@ input type for updating data in table "flows"
 """
 input flows_set_input {
   """
-  JSONB branching condition: {field, op, value}. Examples: rating>=4 for testimonial, rating<4 for improvement. NULL for shared flow.
+  Response column to evaluate. Valid values: answer_integer, answer_text, answer_boolean, answer_json. NULL for shared flows.
   """
-  branch_condition: jsonb
+  branch_field: String
+  """
+  Comparison operator. Valid values: equals, not_equals, greater_than, greater_than_or_equal_to, less_than, less_than_or_equal_to, between, is_one_of, contains, is_empty. NULL for shared flows.
+  """
+  branch_operator: String
+  """
+  FK to form_questions (ON DELETE RESTRICT). The question whose answer determines this branch. NULL for shared flows.
+  """
+  branch_question_id: String
+  """
+  Structured comparison value as JSONB. Format: {type: "number"|"string"|"boolean"|"range"|"list", value: ...}. NULL for shared flows or is_empty operator.
+  """
+  branch_value: jsonb
   """
   Timestamp when this flow was first created. Set automatically, never modified.
   """
@@ -1846,9 +1947,21 @@ input flows_stream_cursor_input {
 """Initial value of the column from where the streaming should start"""
 input flows_stream_cursor_value_input {
   """
-  JSONB branching condition: {field, op, value}. Examples: rating>=4 for testimonial, rating<4 for improvement. NULL for shared flow.
+  Response column to evaluate. Valid values: answer_integer, answer_text, answer_boolean, answer_json. NULL for shared flows.
   """
-  branch_condition: jsonb
+  branch_field: String
+  """
+  Comparison operator. Valid values: equals, not_equals, greater_than, greater_than_or_equal_to, less_than, less_than_or_equal_to, between, is_one_of, contains, is_empty. NULL for shared flows.
+  """
+  branch_operator: String
+  """
+  FK to form_questions (ON DELETE RESTRICT). The question whose answer determines this branch. NULL for shared flows.
+  """
+  branch_question_id: String
+  """
+  Structured comparison value as JSONB. Format: {type: "number"|"string"|"boolean"|"range"|"list", value: ...}. NULL for shared flows or is_empty operator.
+  """
+  branch_value: jsonb
   """
   Timestamp when this flow was first created. Set automatically, never modified.
   """
@@ -1906,7 +2019,13 @@ update columns of table "flows"
 """
 enum flows_update_column {
   """column name"""
-  branch_condition
+  branch_field
+  """column name"""
+  branch_operator
+  """column name"""
+  branch_question_id
+  """column name"""
+  branch_value
   """column name"""
   created_at
   """column name"""
@@ -4148,7 +4267,7 @@ type form_steps {
   """
   flow_id: String!
   """
-  Which flow this step belongs to: shared (all paths), testimonial (positive rating), or improvement (negative rating)
+  DEPRECATED: Legacy flow membership column. Use flow_id instead. This column will be removed in a future migration. Values are no longer constrained - any string is allowed during transition.
   """
   flow_membership: String!
   """An object relationship"""
@@ -4412,7 +4531,7 @@ input form_steps_insert_input {
   """
   flow_id: String
   """
-  Which flow this step belongs to: shared (all paths), testimonial (positive rating), or improvement (negative rating)
+  DEPRECATED: Legacy flow membership column. Use flow_id instead. This column will be removed in a future migration. Values are no longer constrained - any string is allowed during transition.
   """
   flow_membership: String
   form: forms_obj_rel_insert_input
@@ -4476,7 +4595,7 @@ type form_steps_max_fields {
   """
   flow_id: String
   """
-  Which flow this step belongs to: shared (all paths), testimonial (positive rating), or improvement (negative rating)
+  DEPRECATED: Legacy flow membership column. Use flow_id instead. This column will be removed in a future migration. Values are no longer constrained - any string is allowed during transition.
   """
   flow_membership: String
   """
@@ -4534,7 +4653,7 @@ input form_steps_max_order_by {
   """
   flow_id: order_by
   """
-  Which flow this step belongs to: shared (all paths), testimonial (positive rating), or improvement (negative rating)
+  DEPRECATED: Legacy flow membership column. Use flow_id instead. This column will be removed in a future migration. Values are no longer constrained - any string is allowed during transition.
   """
   flow_membership: order_by
   """
@@ -4590,7 +4709,7 @@ type form_steps_min_fields {
   """
   flow_id: String
   """
-  Which flow this step belongs to: shared (all paths), testimonial (positive rating), or improvement (negative rating)
+  DEPRECATED: Legacy flow membership column. Use flow_id instead. This column will be removed in a future migration. Values are no longer constrained - any string is allowed during transition.
   """
   flow_membership: String
   """
@@ -4648,7 +4767,7 @@ input form_steps_min_order_by {
   """
   flow_id: order_by
   """
-  Which flow this step belongs to: shared (all paths), testimonial (positive rating), or improvement (negative rating)
+  DEPRECATED: Legacy flow membership column. Use flow_id instead. This column will be removed in a future migration. Values are no longer constrained - any string is allowed during transition.
   """
   flow_membership: order_by
   """
@@ -4822,7 +4941,7 @@ input form_steps_set_input {
   """
   flow_id: String
   """
-  Which flow this step belongs to: shared (all paths), testimonial (positive rating), or improvement (negative rating)
+  DEPRECATED: Legacy flow membership column. Use flow_id instead. This column will be removed in a future migration. Values are no longer constrained - any string is allowed during transition.
   """
   flow_membership: String
   """
@@ -4950,7 +5069,7 @@ input form_steps_stream_cursor_value_input {
   """
   flow_id: String
   """
-  Which flow this step belongs to: shared (all paths), testimonial (positive rating), or improvement (negative rating)
+  DEPRECATED: Legacy flow membership column. Use flow_id instead. This column will be removed in a future migration. Values are no longer constrained - any string is allowed during transition.
   """
   flow_membership: String
   """

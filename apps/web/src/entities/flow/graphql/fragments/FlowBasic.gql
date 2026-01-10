@@ -4,8 +4,13 @@ fragment FlowBasic on flows {
   organization_id
   name
   flow_type
-  branch_condition
   display_order
   created_at
   updated_at
+
+  # Flattened branch columns (ADR-009 Phase 2)
+  branch_question_id
+  branch_field
+  branch_operator
+  branch_value
 }

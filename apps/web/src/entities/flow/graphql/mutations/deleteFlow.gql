@@ -1,0 +1,5 @@
+mutation DeleteFlow($flowId: String!) {
+  delete_flows_by_pk(id: $flowId) {
+    id
+  }
+}
