@@ -4,7 +4,7 @@ import type { AIQuestion, StepContent, FlowMembership } from '@/shared/api';
 import type { WizardAIContext } from './useFormWizard';
 import { useCreateForm, useUpdateForm, serializeBranchingConfig } from '@/entities/form';
 import type { BranchingConfig } from '@/entities/form';
-import { useCreateFlows, type BranchCondition } from '@/entities/flow';
+import { useCreateFlows } from '@/entities/flow';
 import { useCreateFormQuestions } from '@/entities/formQuestion';
 import { useCreateFormSteps } from '@/entities/formStep';
 import { useGetQuestionTypes } from '@/entities/questionType';
@@ -107,51 +107,36 @@ export function useCreateFormWithSteps() {
         throw new Error('Failed to create form');
       }
 
-      // 2. Create flows for the form (shared, testimonial, improvement)
-      const flowInputs = [
-        {
-          form_id: form.id,
-          organization_id: currentOrganizationId.value,
-          name: 'Shared Steps',
-          flow_type: 'shared',
-          branch_condition: null,
-          display_order: 0,
-        },
-        {
-          form_id: form.id,
-          organization_id: currentOrganizationId.value,
-          name: 'Testimonial Flow',
-          flow_type: 'branch',
-          branch_condition: { field: 'rating', op: '>=', value: 4 } as BranchCondition,
-          display_order: 1,
-        },
-        {
-          form_id: form.id,
-          organization_id: currentOrganizationId.value,
-          name: 'Improvement Flow',
-          flow_type: 'branch',
-          branch_condition: { field: 'rating', op: '<', value: 4 } as BranchCondition,
-          display_order: 2,
-        },
-      ];
+      // 2. Create shared flow for the form
+      // Note: Branch flows require branch_question_id which references a question.
+      // The database constraint chk_flows_condition_completeness enforces this.
+      // For now, we only create the shared flow. FE-003 will add branch flow creation
+      // after questions are created.
+      const sharedFlowInput = {
+        form_id: form.id,
+        organization_id: currentOrganizationId.value,
+        name: 'Shared Steps',
+        flow_type: 'shared',
+        display_order: 0,
+        branch_question_id: null,
+        branch_field: null,
+        branch_operator: null,
+        branch_value: null,
+      };
 
-      const createdFlows = await createFlows({ inputs: flowInputs });
+      const createdFlows = await createFlows({ inputs: [sharedFlowInput] });
 
-      if (!createdFlows || createdFlows.length !== 3) {
-        throw new Error('Failed to create flows');
+      if (!createdFlows || createdFlows.length !== 1) {
+        throw new Error('Failed to create shared flow');
       }
 
-      // Create a map of flow_type to flow_id for easy lookup
+      // Create a map of flow membership to flow_id
+      // TODO (FE-003): Add testimonial and improvement flows after questions are created
       const flowMap = new Map<string, string>();
-      for (const flow of createdFlows) {
-        if (flow.flow_type === 'shared') {
-          flowMap.set('shared', flow.id);
-        } else if (flow.name === 'Testimonial Flow') {
-          flowMap.set('testimonial', flow.id);
-        } else if (flow.name === 'Improvement Flow') {
-          flowMap.set('improvement', flow.id);
-        }
-      }
+      flowMap.set('shared', createdFlows[0].id);
+      // Temporarily map branch flows to shared flow until FE-003 is implemented
+      flowMap.set('testimonial', createdFlows[0].id);
+      flowMap.set('improvement', createdFlows[0].id);
 
       // 3. Create form_questions
       const questionInputs = params.questions.map((q, index) => ({
