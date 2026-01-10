@@ -50,6 +50,8 @@ export function transformFormSteps(steps: GraphQLFormStep[]): FormStep[] {
       : null,
     content: (step.content as StepContent) ?? {},
     tips: (step.tips as string[]) ?? [],
+    // ADR-009: flowId from database, flowMembership for backward compatibility
+    flowId: step.flow_id,
     flowMembership: (step.flow_membership as FormStep['flowMembership']) ?? 'shared',
     isActive: step.is_active,
     isNew: false,

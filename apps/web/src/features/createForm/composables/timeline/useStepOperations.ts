@@ -22,11 +22,13 @@ export function generateTempId(): string {
 
 /**
  * Create a new step with default content based on type
+ * flowId is optional during migration - will be required once FE-005+ is complete
  */
 export function createStep(
   type: StepType,
   order: number,
   formId: string,
+  flowId?: string,
   ctx: FormContext = {},
 ): FormStep {
   const baseStep: FormStep = {
@@ -37,6 +39,7 @@ export function createStep(
     questionId: null,
     content: {},
     tips: [],
+    flowId,
     flowMembership: 'shared',
     isActive: true,
     isNew: true,
@@ -80,6 +83,7 @@ export function reorderSteps(steps: FormStep[]): void {
 
 /**
  * Add a step at a specific position
+ * flowId is optional during migration
  */
 export function addStepAt(
   steps: FormStep[],
@@ -87,12 +91,13 @@ export function addStepAt(
   formId: string,
   ctx: FormContext,
   afterIndex?: number,
+  flowId?: string,
 ): FormStep {
   const insertIndex = afterIndex !== undefined
     ? afterIndex + 1
     : steps.length;
 
-  const newStep = createStep(type, insertIndex, formId, ctx);
+  const newStep = createStep(type, insertIndex, formId, flowId, ctx);
   steps.splice(insertIndex, 0, newStep);
   reorderSteps(steps);
 
@@ -156,7 +161,7 @@ export function duplicateStepAt(
   const original = steps[index];
   if (!original) return null;
 
-  const duplicate = createStep(original.stepType, index + 1, formId, ctx);
+  const duplicate = createStep(original.stepType, index + 1, formId, original.flowId, ctx);
   duplicate.content = JSON.parse(JSON.stringify(original.content));
   duplicate.tips = [...original.tips];
   duplicate.flowMembership = original.flowMembership;

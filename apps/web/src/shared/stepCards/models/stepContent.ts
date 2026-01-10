@@ -156,7 +156,9 @@ export interface FormStep {
   content: StepContent;
   tips: string[];
   isActive: boolean;
-  // Flow membership for conditional branching
+  // Flow assignment (ADR-009) - optional during migration, required for DB persistence
+  flowId?: string;
+  // Flow membership for conditional branching (derived from flow.flow_type)
   flowMembership: FlowMembership;
   // Local UI state
   isNew?: boolean;
