@@ -7,7 +7,7 @@
  *
  * Supports expanded view for full-size editing.
  */
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { Icon } from '@testimonials/icons';
 import { Kbd, Button } from '@testimonials/ui';
 import { FLOW_METADATA } from '@/entities/form';
@@ -17,6 +17,7 @@ import type { StepType } from '@/shared/stepCards';
 import { useTimelineEditor } from '../../composables/timeline';
 import FlowStepCard from './FlowStepCard.vue';
 import TimelineConnector from './TimelineConnector.vue';
+import StepTypePicker from '../stepsSidebar/StepTypePicker.vue';
 
 const props = defineProps<{
   flowType: Exclude<FlowMembership, 'shared'>;
@@ -74,6 +75,15 @@ function handleStepRemove(step: FormStep) {
 function handleInsert(afterStep: FormStep, type: StepType) {
   const flowStepIndex = props.steps.findIndex(s => s.id === afterStep.id);
   editor.addStepToFlow(type, props.flowType, flowStepIndex);
+}
+
+// Empty state - add first step
+const emptyStatePickerOpen = ref(false);
+
+function handleAddFirstStep(type: StepType) {
+  // Add first step to this flow (no afterIndex means insert at beginning)
+  editor.addStepToFlow(type, props.flowType);
+  emptyStatePickerOpen.value = false;
 }
 
 function isStepActive(step: FormStep): boolean {
@@ -186,6 +196,18 @@ function handleCollapseClick(e: Event) {
         <p class="text-sm text-muted-foreground mt-2">
           No steps in this flow yet
         </p>
+        <!-- Add first step button -->
+        <StepTypePicker
+          v-model:open="emptyStatePickerOpen"
+          @select="handleAddFirstStep"
+        >
+          <button
+            class="mt-4 w-full p-2 border border-dashed rounded text-center hover:bg-muted/50 flex items-center justify-center gap-2 text-sm"
+          >
+            <span>Add new</span>
+            <Kbd size="sm">N</Kbd>
+          </button>
+        </StepTypePicker>
       </div>
     </div>
 

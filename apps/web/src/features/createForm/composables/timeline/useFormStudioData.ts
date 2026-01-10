@@ -34,6 +34,9 @@ export function useFormStudioData(options: UseFormStudioDataOptions) {
   // Track if design config has been loaded for current form
   const designConfigLoaded = ref(false);
 
+  // Track if initial data load has completed (even if empty)
+  const hasInitialDataLoaded = ref(false);
+
   // Form name from loaded data
   const formName = ref('Loading...');
 
@@ -41,6 +44,7 @@ export function useFormStudioData(options: UseFormStudioDataOptions) {
   watch(formId, (id) => {
     editor.setFormId(id);
     designConfigLoaded.value = false;
+    hasInitialDataLoaded.value = false;
   }, { immediate: true });
 
   // Fetch form data for context
@@ -90,18 +94,28 @@ export function useFormStudioData(options: UseFormStudioDataOptions) {
 
   const showCanvasLoading = computed(() => {
     if (isRetrying.value) return true;
-    return editor.steps.value.length === 0 && !hasError.value;
+    // Show loading only if data hasn't loaded yet AND no error
+    return !hasInitialDataLoaded.value && !hasError.value;
   });
 
   const showTimeline = computed(() => {
-    return editor.steps.value.length > 0;
+    // Show timeline once data has loaded (even if empty - will show empty state)
+    return hasInitialDataLoaded.value && !hasError.value;
   });
 
   // Transform and load steps into editor when data arrives
   watch(formSteps, (steps) => {
-    if (steps && steps.length > 0) {
-      const transformed = transformFormSteps(steps);
-      editor.setSteps(transformed);
+    // Mark data as loaded once we get a response (even if empty array)
+    if (steps !== undefined) {
+      hasInitialDataLoaded.value = true;
+
+      if (steps.length > 0) {
+        const transformed = transformFormSteps(steps);
+        editor.setSteps(transformed);
+      } else {
+        // Empty form - clear steps to show empty state
+        editor.setSteps([]);
+      }
     }
   }, { immediate: true });
 

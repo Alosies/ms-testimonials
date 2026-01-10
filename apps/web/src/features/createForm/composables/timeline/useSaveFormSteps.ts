@@ -17,6 +17,7 @@ import { useUpdateForm } from '@/entities/form';
 import { useUpsertFormSteps, useDeleteFormSteps } from '@/entities/formStep';
 import { useCreateFormQuestion } from '@/entities/formQuestion';
 import { useGetQuestionTypes } from '@/entities/questionType';
+import { useClearFlowBranchColumns } from '@/entities/flow';
 import { useTimelineEditor } from './useTimelineEditor';
 import { serializeBranchingConfig } from '@/entities/form';
 
@@ -26,6 +27,7 @@ export const useSaveFormSteps = createSharedComposable(() => {
   const { upsertFormSteps, loading: upsertLoading } = useUpsertFormSteps();
   const { deleteFormSteps, loading: deleteLoading } = useDeleteFormSteps();
   const { createFormQuestion, loading: questionLoading } = useCreateFormQuestion();
+  const { clearFlowBranchColumns, loading: clearBranchLoading } = useClearFlowBranchColumns();
   const { questionTypes } = useGetQuestionTypes();
 
   // Map question type unique_name to ID
@@ -81,7 +83,7 @@ export const useSaveFormSteps = createSharedComposable(() => {
 
   // Combined loading state
   const isLoading = computed(() =>
-    isSaving.value || formLoading.value || upsertLoading.value || deleteLoading.value || questionLoading.value,
+    isSaving.value || formLoading.value || upsertLoading.value || deleteLoading.value || questionLoading.value || clearBranchLoading.value,
   );
 
   /**
@@ -362,23 +364,30 @@ export const useSaveFormSteps = createSharedComposable(() => {
     saveError.value = null;
 
     try {
-      // 1. Delete any removed steps first
+      // 1. Clear branch columns from flows before deleting steps
+      // This prevents FK violations when deleting rating steps that are branch points
+      // ADR-009 Phase 2: branch_question_id has ON DELETE RESTRICT
+      if (deletedStepIds.value.length > 0) {
+        await clearFlowBranchColumns(formId);
+      }
+
+      // 2. Delete any removed steps
       const deleteSuccess = await deleteRemovedSteps();
       if (!deleteSuccess) {
         return false;
       }
 
-      // 2. Save branching config
+      // 3. Save branching config
       const configSuccess = await saveBranchingConfig();
       if (!configSuccess) {
         return false;
       }
 
-      // 3. Create question records for new question/rating steps
+      // 4. Create question records for new question/rating steps
       // This must happen BEFORE saving steps due to the question_id constraint
       await createQuestionRecordsForNewSteps(organizationId, userId);
 
-      // 4. Save all steps (now with questionIds populated)
+      // 5. Save all steps (now with questionIds populated)
       const stepsSuccess = await saveSteps(organizationId, userId);
       if (!stepsSuccess) {
         return false;

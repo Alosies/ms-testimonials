@@ -18377,6 +18377,13 @@ export type Widgets_Variance_Order_By = {
 
 export type FlowBasicFragment = { __typename?: 'flows', id: string, form_id: string, organization_id: string, name: string, flow_type: string, display_order: number, created_at: string, updated_at: string, branch_question_id?: string | null, branch_field?: string | null, branch_operator?: string | null, branch_value?: any | null };
 
+export type ClearFlowBranchColumnsMutationVariables = Exact<{
+  formId: Scalars['String']['input'];
+}>;
+
+
+export type ClearFlowBranchColumnsMutation = { __typename?: 'mutation_root', update_flows?: { __typename?: 'flows_mutation_response', affected_rows: number, returning: Array<{ __typename?: 'flows', id: string, form_id: string, organization_id: string, name: string, flow_type: string, display_order: number, created_at: string, updated_at: string, branch_question_id?: string | null, branch_field?: string | null, branch_operator?: string | null, branch_value?: any | null }> } | null };
+
 export type CreateFlowsMutationVariables = Exact<{
   inputs: Array<Flows_Insert_Input> | Flows_Insert_Input;
 }>;
@@ -18921,6 +18928,41 @@ export const WidgetBasicFragmentDoc = gql`
   updated_at
 }
     `;
+export const ClearFlowBranchColumnsDocument = gql`
+    mutation ClearFlowBranchColumns($formId: String!) {
+  update_flows(
+    where: {form_id: {_eq: $formId}, branch_question_id: {_is_null: false}}
+    _set: {flow_type: "shared", branch_question_id: null, branch_field: null, branch_operator: null, branch_value: null}
+  ) {
+    affected_rows
+    returning {
+      ...FlowBasic
+    }
+  }
+}
+    ${FlowBasicFragmentDoc}`;
+
+/**
+ * __useClearFlowBranchColumnsMutation__
+ *
+ * To run a mutation, you first call `useClearFlowBranchColumnsMutation` within a Vue component and pass it any options that fit your needs.
+ * When your component renders, `useClearFlowBranchColumnsMutation` returns an object that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - Several other properties: https://v4.apollo.vuejs.org/api/use-mutation.html#return
+ *
+ * @param options that will be passed into the mutation, supported options are listed on: https://v4.apollo.vuejs.org/guide-composable/mutation.html#options;
+ *
+ * @example
+ * const { mutate, loading, error, onDone } = useClearFlowBranchColumnsMutation({
+ *   variables: {
+ *     formId: // value for 'formId'
+ *   },
+ * });
+ */
+export function useClearFlowBranchColumnsMutation(options: VueApolloComposable.UseMutationOptions<ClearFlowBranchColumnsMutation, ClearFlowBranchColumnsMutationVariables> | ReactiveFunction<VueApolloComposable.UseMutationOptions<ClearFlowBranchColumnsMutation, ClearFlowBranchColumnsMutationVariables>> = {}) {
+  return VueApolloComposable.useMutation<ClearFlowBranchColumnsMutation, ClearFlowBranchColumnsMutationVariables>(ClearFlowBranchColumnsDocument, options);
+}
+export type ClearFlowBranchColumnsMutationCompositionFunctionResult = VueApolloComposable.UseMutationReturn<ClearFlowBranchColumnsMutation, ClearFlowBranchColumnsMutationVariables>;
 export const CreateFlowsDocument = gql`
     mutation CreateFlows($inputs: [flows_insert_input!]!) {
   insert_flows(objects: $inputs) {

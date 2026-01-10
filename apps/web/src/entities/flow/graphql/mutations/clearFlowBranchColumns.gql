@@ -1,0 +1,27 @@
+#import "../fragments/FlowBasic.gql"
+
+# Clear branch columns from all flows in a form and convert them to shared flows.
+# Used when disabling branching or before deleting a branch point step.
+# Sets flow_type to 'shared' and clears branch_question_id, branch_field, branch_operator, branch_value.
+# This satisfies the chk_flows_condition_completeness constraint which requires
+# shared flows to have all branch columns NULL.
+mutation ClearFlowBranchColumns($formId: String!) {
+  update_flows(
+    where: {
+      form_id: { _eq: $formId }
+      branch_question_id: { _is_null: false }
+    }
+    _set: {
+      flow_type: "shared"
+      branch_question_id: null
+      branch_field: null
+      branch_operator: null
+      branch_value: null
+    }
+  ) {
+    affected_rows
+    returning {
+      ...FlowBasic
+    }
+  }
+}
