@@ -6,6 +6,10 @@
  * Emits navigate event for parent to handle scroll navigation.
  * Shows visual indicators for flow membership (testimonial/improvement).
  *
+ * ADR-009 Phase 2: Uses step.flowMembership for flow indicators. flowMembership
+ * is derived from flowId/flow.flow_type via stepTransform when steps are loaded
+ * from the database.
+ *
  * @see FormStudioPage.vue - Handles navigate event with useScrollSnapNavigation
  */
 import { ref, computed, nextTick } from 'vue';

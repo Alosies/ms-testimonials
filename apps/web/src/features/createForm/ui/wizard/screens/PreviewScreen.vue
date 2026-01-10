@@ -9,6 +9,10 @@
  * - Thank you steps for each flow
  *
  * User can regenerate or proceed to Form Studio.
+ *
+ * ADR-009 Phase 2: Uses flow_membership from wizard questions (not flowId)
+ * because this is a preview before form creation. flowId is assigned when
+ * questions are converted to form steps in useCreateFormWithSteps.
  */
 import { inject, computed } from 'vue';
 import { Icon } from '@testimonials/icons';
