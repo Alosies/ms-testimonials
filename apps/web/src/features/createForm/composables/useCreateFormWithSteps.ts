@@ -5,6 +5,7 @@ import type { WizardAIContext } from './useFormWizard';
 import { useCreateForm, useUpdateForm, serializeBranchingConfig } from '@/entities/form';
 import type { BranchingConfig } from '@/entities/form';
 import { useCreateFlows } from '@/entities/flow';
+import type { BranchValue, ResponseField, BranchOperator } from '@/entities/flow';
 import { useCreateFormQuestions } from '@/entities/formQuestion';
 import { useCreateFormSteps } from '@/entities/formStep';
 import { useGetQuestionTypes } from '@/entities/questionType';
@@ -107,38 +108,7 @@ export function useCreateFormWithSteps() {
         throw new Error('Failed to create form');
       }
 
-      // 2. Create shared flow for the form
-      // Note: Branch flows require branch_question_id which references a question.
-      // The database constraint chk_flows_condition_completeness enforces this.
-      // For now, we only create the shared flow. FE-003 will add branch flow creation
-      // after questions are created.
-      const sharedFlowInput = {
-        form_id: form.id,
-        organization_id: currentOrganizationId.value,
-        name: 'Shared Steps',
-        flow_type: 'shared',
-        display_order: 0,
-        branch_question_id: null,
-        branch_field: null,
-        branch_operator: null,
-        branch_value: null,
-      };
-
-      const createdFlows = await createFlows({ inputs: [sharedFlowInput] });
-
-      if (!createdFlows || createdFlows.length !== 1) {
-        throw new Error('Failed to create shared flow');
-      }
-
-      // Create a map of flow membership to flow_id
-      // TODO (FE-005): Add testimonial and improvement flows after questions are created
-      const flowMap = new Map<string, string>();
-      flowMap.set('shared', createdFlows[0].id);
-      // Temporarily map branch flows to shared flow until FE-005 is implemented
-      flowMap.set('testimonial', createdFlows[0].id);
-      flowMap.set('improvement', createdFlows[0].id);
-
-      // 3. Create form_questions
+      // 2. Create form_questions FIRST (before flows, as branch flows need question FK)
       const questionInputs = params.questions.map((q, index) => ({
         form_id: form.id,
         organization_id: currentOrganizationId.value,
@@ -160,7 +130,98 @@ export function useCreateFormWithSteps() {
         throw new Error('Failed to create questions');
       }
 
-      // 4. Create form_steps with branching support
+      // 3. Find rating question for branch condition FK
+      // Rating question is identified by question_type_id starting with 'rating'
+      const ratingQuestionIndex = params.questions.findIndex(
+        q => q.question_type_id.startsWith('rating')
+      );
+      const ratingQuestion = ratingQuestionIndex >= 0
+        ? createdQuestions[ratingQuestionIndex]
+        : null;
+
+      // 4. Create flows (shared + branch flows if rating question exists)
+      const DEFAULT_THRESHOLD = 4;
+      const flowInputs: Array<{
+        form_id: string;
+        organization_id: string;
+        name: string;
+        flow_type: string;
+        display_order: number;
+        branch_question_id: string | null;
+        branch_field: ResponseField | null;
+        branch_operator: BranchOperator | null;
+        branch_value: BranchValue;
+      }> = [
+        // Shared flow (always created)
+        {
+          form_id: form.id,
+          organization_id: currentOrganizationId.value,
+          name: 'Shared Steps',
+          flow_type: 'shared',
+          display_order: 0,
+          branch_question_id: null,
+          branch_field: null,
+          branch_operator: null,
+          branch_value: null,
+        },
+      ];
+
+      // Add branch flows only if we have a rating question
+      if (ratingQuestion) {
+        flowInputs.push(
+          // Testimonial flow (rating >= threshold)
+          {
+            form_id: form.id,
+            organization_id: currentOrganizationId.value,
+            name: 'Testimonial Flow',
+            flow_type: 'branch',
+            display_order: 1,
+            branch_question_id: ratingQuestion.id,
+            branch_field: 'answer_integer',
+            branch_operator: 'greater_than_or_equal_to',
+            branch_value: { type: 'number', value: DEFAULT_THRESHOLD },
+          },
+          // Improvement flow (rating < threshold)
+          {
+            form_id: form.id,
+            organization_id: currentOrganizationId.value,
+            name: 'Improvement Flow',
+            flow_type: 'branch',
+            display_order: 2,
+            branch_question_id: ratingQuestion.id,
+            branch_field: 'answer_integer',
+            branch_operator: 'less_than',
+            branch_value: { type: 'number', value: DEFAULT_THRESHOLD },
+          }
+        );
+      }
+
+      const createdFlows = await createFlows({ inputs: flowInputs });
+
+      if (!createdFlows || createdFlows.length === 0) {
+        throw new Error('Failed to create flows');
+      }
+
+      // 5. Create flow membership to flow_id mapping
+      const flowMap = new Map<string, string>();
+      const sharedFlow = createdFlows.find(f => f.flow_type === 'shared');
+      const testimonialFlow = createdFlows.find(
+        f => f.flow_type === 'branch' && f.branch_operator === 'greater_than_or_equal_to'
+      );
+      const improvementFlow = createdFlows.find(
+        f => f.flow_type === 'branch' && f.branch_operator === 'less_than'
+      );
+
+      if (!sharedFlow) {
+        throw new Error('Shared flow not found');
+      }
+
+      flowMap.set('shared', sharedFlow.id);
+      // For branch flows, fall back to shared if not created (no rating question)
+      flowMap.set('testimonial', testimonialFlow?.id ?? sharedFlow.id);
+      flowMap.set('improvement', improvementFlow?.id ?? sharedFlow.id);
+
+      // 6. Create form_steps with branching support
       const stepInputs = buildFormSteps(
         form.id,
         currentOrganizationId.value!,
@@ -180,7 +241,7 @@ export function useCreateFormWithSteps() {
         throw new Error('Failed to create steps');
       }
 
-      // 5. Set branching_config on form with rating step ID
+      // 7. Set branching_config on form with rating step ID (for backward compatibility)
       // Find the rating step index from stepInputs
       const ratingStepIndex = stepInputs.findIndex(s => s.step_type === 'rating');
       if (ratingStepIndex >= 0) {
@@ -188,7 +249,7 @@ export function useCreateFormWithSteps() {
         if (ratingStepId) {
           const branchingConfig: BranchingConfig = {
             enabled: true,
-            threshold: 4,
+            threshold: DEFAULT_THRESHOLD,
             ratingStepId,
           };
           await updateForm({
