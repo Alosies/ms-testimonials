@@ -4,12 +4,24 @@
  */
 
 /**
+ * Flow IDs for step creation
+ * Maps flow membership to actual database flow IDs
+ */
+export interface FlowIds {
+  shared?: string;
+  testimonial?: string;
+  improvement?: string;
+}
+
+/**
  * Context for creating dynamic step content
  * Contains form-specific information for personalized defaults
  */
 export interface FormContext {
   productName?: string;
   productDescription?: string;
+  /** Flow IDs for assigning steps to flows (ADR-009) */
+  flowIds?: FlowIds;
 }
 
 /**

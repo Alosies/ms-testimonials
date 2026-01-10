@@ -18413,7 +18413,7 @@ export type GetFlowsByBranchQuestionQueryVariables = Exact<{
 
 export type GetFlowsByBranchQuestionQuery = { __typename?: 'query_root', flows: Array<{ __typename?: 'flows', id: string, form_id: string, organization_id: string, name: string, flow_type: string, display_order: number, created_at: string, updated_at: string, branch_question_id?: string | null, branch_field?: string | null, branch_operator?: string | null, branch_value?: any | null, form: { __typename?: 'forms', id: string, name: string } }> };
 
-export type FormBasicFragment = { __typename?: 'forms', id: string, name: string, product_name: string, product_description?: string | null, settings: any, branching_config: any, status: string, is_active: boolean, organization_id: string, created_by: string, created_at: string, updated_at: string, organization: { __typename?: 'organizations', id: string, logo?: { __typename?: 'media', id: string, storage_path: string } | null } };
+export type FormBasicFragment = { __typename?: 'forms', id: string, name: string, product_name: string, product_description?: string | null, settings: any, branching_config: any, status: string, is_active: boolean, organization_id: string, created_by: string, created_at: string, updated_at: string, organization: { __typename?: 'organizations', id: string, logo?: { __typename?: 'media', id: string, storage_path: string } | null }, flows: Array<{ __typename?: 'flows', id: string, flow_type: string, display_order: number }> };
 
 export type CreateFormMutationVariables = Exact<{
   form: Forms_Insert_Input;
@@ -18457,14 +18457,14 @@ export type GetFormQueryVariables = Exact<{
 }>;
 
 
-export type GetFormQuery = { __typename?: 'query_root', forms_by_pk?: { __typename?: 'forms', id: string, name: string, product_name: string, product_description?: string | null, settings: any, branching_config: any, status: string, is_active: boolean, organization_id: string, created_by: string, created_at: string, updated_at: string, organization: { __typename?: 'organizations', id: string, logo?: { __typename?: 'media', id: string, storage_path: string } | null } } | null };
+export type GetFormQuery = { __typename?: 'query_root', forms_by_pk?: { __typename?: 'forms', id: string, name: string, product_name: string, product_description?: string | null, settings: any, branching_config: any, status: string, is_active: boolean, organization_id: string, created_by: string, created_at: string, updated_at: string, organization: { __typename?: 'organizations', id: string, logo?: { __typename?: 'media', id: string, storage_path: string } | null }, flows: Array<{ __typename?: 'flows', id: string, flow_type: string, display_order: number }> } | null };
 
 export type GetFormsQueryVariables = Exact<{
   organizationId: Scalars['String']['input'];
 }>;
 
 
-export type GetFormsQuery = { __typename?: 'query_root', forms: Array<{ __typename?: 'forms', id: string, name: string, product_name: string, product_description?: string | null, settings: any, branching_config: any, status: string, is_active: boolean, organization_id: string, created_by: string, created_at: string, updated_at: string, organization: { __typename?: 'organizations', id: string, logo?: { __typename?: 'media', id: string, storage_path: string } | null } }> };
+export type GetFormsQuery = { __typename?: 'query_root', forms: Array<{ __typename?: 'forms', id: string, name: string, product_name: string, product_description?: string | null, settings: any, branching_config: any, status: string, is_active: boolean, organization_id: string, created_by: string, created_at: string, updated_at: string, organization: { __typename?: 'organizations', id: string, logo?: { __typename?: 'media', id: string, storage_path: string } | null }, flows: Array<{ __typename?: 'flows', id: string, flow_type: string, display_order: number }> }> };
 
 export type FormQuestionBasicFragment = { __typename?: 'form_questions', id: string, form_id: string, organization_id: string, question_type_id: string, question_key: string, question_text: string, placeholder?: string | null, help_text?: string | null, display_order: number, is_required: boolean, min_length?: number | null, max_length?: number | null, min_value?: number | null, max_value?: number | null, validation_pattern?: string | null, allowed_file_types?: Array<string> | null, max_file_size_kb?: number | null, is_active: boolean, created_at: string, updated_at: string, question_type: { __typename?: 'question_types', id: string, unique_name: string, name: string, category: string, input_component: string } };
 
@@ -18713,6 +18713,11 @@ export const FormBasicFragmentDoc = gql`
       id
       storage_path
     }
+  }
+  flows(order_by: {display_order: asc}) {
+    id
+    flow_type
+    display_order
   }
 }
     `;
@@ -19632,7 +19637,7 @@ export const UpsertFormStepsDocument = gql`
     mutation UpsertFormSteps($inputs: [form_steps_insert_input!]!) {
   insert_form_steps(
     objects: $inputs
-    on_conflict: {constraint: form_steps_pkey, update_columns: [step_order, content, tips, flow_membership, is_active, updated_by]}
+    on_conflict: {constraint: form_steps_pkey, update_columns: [step_order, content, tips, flow_id, flow_membership, is_active, updated_by]}
   ) {
     returning {
       ...FormStepBasic

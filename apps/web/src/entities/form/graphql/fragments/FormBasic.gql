@@ -18,4 +18,9 @@ fragment FormBasic on forms {
       storage_path
     }
   }
+  flows(order_by: { display_order: asc }) {
+    id
+    flow_type
+    display_order
+  }
 }

@@ -7,7 +7,7 @@ mutation UpsertFormSteps($inputs: [form_steps_insert_input!]!) {
     objects: $inputs
     on_conflict: {
       constraint: form_steps_pkey
-      update_columns: [step_order, content, tips, flow_membership, is_active, updated_by]
+      update_columns: [step_order, content, tips, flow_id, flow_membership, is_active, updated_by]
     }
   ) {
     returning {

@@ -14,14 +14,14 @@ import { ref, computed, watch, type Ref, type DeepReadonly } from 'vue';
 import { useGetForm, parseBranchingConfig, type BranchingConfig } from '@/entities/form';
 import { useGetFormSteps } from '@/entities/formStep';
 import { transformFormSteps } from '../../functions';
-import type { FormStep } from '@/shared/stepCards';
+import type { FormStep, FlowIds } from '@/shared/stepCards';
 
 export interface UseFormStudioDataOptions {
   formId: Ref<string>;
   editor: {
     steps: DeepReadonly<Ref<FormStep[]>>;
     setFormId: (id: string) => void;
-    setFormContext: (ctx: { productName?: string; productDescription?: string }) => void;
+    setFormContext: (ctx: { productName?: string; productDescription?: string; flowIds?: FlowIds }) => void;
     setDesignConfig: (settings: unknown, orgLogoPath: string | null) => void;
     setBranchingConfig: (config: BranchingConfig) => void;
     setSteps: (steps: FormStep[]) => void;
@@ -54,9 +54,23 @@ export function useFormStudioData(options: UseFormStudioDataOptions) {
   // Update form context when form data loads
   watch(form, (loadedForm) => {
     if (loadedForm) {
+      // Extract flow IDs from the form's flows
+      // flow_type: 'shared' at display_order 0 is the default shared flow
+      // flow_type: 'branch' flows are testimonial/improvement based on branch_operator
+      const flowIds: FlowIds = {};
+      if (loadedForm.flows) {
+        for (const flow of loadedForm.flows) {
+          if (flow.flow_type === 'shared' && flow.display_order === 0) {
+            flowIds.shared = flow.id;
+          }
+          // Branch flows will be handled when branching is enabled
+        }
+      }
+
       editor.setFormContext({
         productName: loadedForm.product_name ?? undefined,
         productDescription: loadedForm.product_description ?? undefined,
+        flowIds,
       });
       formName.value = loadedForm.name;
 
