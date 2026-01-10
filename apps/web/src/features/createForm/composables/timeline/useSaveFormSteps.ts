@@ -3,10 +3,13 @@
  *
  * This composable coordinates saving:
  * 1. Branching config to the forms table
- * 2. Form steps with flow_membership changes
+ * 2. Form steps with flow_id assignment (ADR-009 Phase 2)
  * 3. New improvement flow steps when branching is enabled
  * 4. Deletion of improvement flow steps when branching is disabled
  * 5. Creating question records for question/rating steps that need them
+ *
+ * Updated for ADR-009 Phase 2: Persists flow_id instead of flow_membership.
+ * flow_membership is derived from flow.flow_type on load.
  */
 import { ref, computed } from 'vue';
 import { createSharedComposable } from '@vueuse/core';
@@ -188,6 +191,8 @@ export const useSaveFormSteps = createSharedComposable(() => {
   /**
    * Step data required for mapping to database input
    * Explicitly typed to avoid readonly issues
+   *
+   * Updated for ADR-009 Phase 2: Includes flowId for persistence.
    */
   interface StepForMapping {
     id: string;
@@ -197,6 +202,7 @@ export const useSaveFormSteps = createSharedComposable(() => {
     questionId?: string | null;
     content: Record<string, unknown>;
     tips: string[];
+    flowId?: string;
     flowMembership: string;
     isActive: boolean;
     isNew?: boolean;
@@ -204,6 +210,9 @@ export const useSaveFormSteps = createSharedComposable(() => {
 
   /**
    * Convert FormStep to form_steps_insert_input format
+   *
+   * Updated for ADR-009 Phase 2: Includes flow_id for step-flow assignment.
+   * flow_membership is kept for backward compatibility but flow_id is the source of truth.
    */
   function mapStepToInput(step: StepForMapping, organizationId: string, userId?: string) {
     return {
@@ -215,6 +224,9 @@ export const useSaveFormSteps = createSharedComposable(() => {
       question_id: step.questionId || null,
       content: step.content || {},
       tips: step.tips || [],
+      // ADR-009 Phase 2: flow_id is the source of truth for step-flow assignment
+      flow_id: step.flowId || null,
+      // Keep flow_membership for backward compatibility during migration
       flow_membership: step.flowMembership,
       is_active: step.isActive,
       created_by: step.isNew ? userId : undefined,
@@ -260,6 +272,7 @@ export const useSaveFormSteps = createSharedComposable(() => {
     try {
       // Filter to only steps that need saving (new or modified)
       // Extract only the properties we need to avoid readonly issues
+      // ADR-009 Phase 2: Include flowId for persistence
       const stepsToSave = steps
         .filter(step => step.isNew || step.isModified)
         .map(step => ({
@@ -270,6 +283,7 @@ export const useSaveFormSteps = createSharedComposable(() => {
           questionId: step.questionId,
           content: step.content as Record<string, unknown>,
           tips: [...(step.tips || [])],
+          flowId: step.flowId,
           flowMembership: step.flowMembership,
           isActive: step.isActive,
           isNew: step.isNew,
