@@ -3,6 +3,10 @@
  *
  * Extracted from useTimelineBranching for maintainability.
  * Contains the three disable variants and legacy wrapper.
+ *
+ * Updated for ADR-009 Phase 2: Uses flowId for step assignment.
+ * Steps are reassigned to shared flow when branching is disabled.
+ * Flow deletion is handled during save (useSaveFormSteps).
  */
 import type { Ref } from 'vue';
 import type { FormStep } from '@/shared/stepCards';
@@ -18,12 +22,42 @@ interface BranchingDisableDeps {
 }
 
 /**
- * Check if a step's flowMembership changed from its original value
+ * Check if a step's flow assignment changed from its original value
+ * Checks both flowId and flowMembership for backward compatibility
  */
-function hasFlowMembershipChanged(step: FormStep, originalSteps: FormStep[]): boolean {
+function hasFlowChanged(step: FormStep, originalSteps: FormStep[]): boolean {
   const original = originalSteps.find(s => s.id === step.id);
   if (!original) return true; // New step
+
+  // Check flowId if available (ADR-009)
+  if (step.flowId !== undefined && original.flowId !== undefined) {
+    return step.flowId !== original.flowId;
+  }
+
+  // Fall back to flowMembership check
   return step.flowMembership !== original.flowMembership;
+}
+
+/**
+ * Find the shared flow ID from steps
+ * Returns the flowId of the first shared step, or undefined if not found
+ */
+function findSharedFlowId(steps: FormStep[]): string | undefined {
+  const sharedStep = steps.find(s => s.flowMembership === 'shared' && s.flowId);
+  return sharedStep?.flowId;
+}
+
+/**
+ * Reassign a step to the shared flow
+ * Updates both flowId (if available) and flowMembership
+ */
+function reassignToSharedFlow(step: FormStep, sharedFlowId: string | undefined): void {
+  if (step.flowMembership !== 'shared') {
+    step.flowMembership = 'shared';
+  }
+  if (sharedFlowId && step.flowId !== sharedFlowId) {
+    step.flowId = sharedFlowId;
+  }
 }
 
 export function useBranchingDisable(deps: BranchingDisableDeps) {
@@ -31,22 +65,26 @@ export function useBranchingDisable(deps: BranchingDisableDeps) {
 
   /**
    * Disable branching, keeping testimonial steps and removing improvement steps.
-   * Testimonial steps are converted to shared.
+   * Testimonial steps are reassigned to the shared flow.
+   *
+   * Updated for ADR-009: Uses flowId for step assignment.
+   * Flow deletion is handled during save.
    */
-  function disableBranchingKeepTestimonial() {
+  function disableBranchingKeepTestimonial(): void {
     branchingConfig.value = { ...DEFAULT_BRANCHING_CONFIG };
 
-    // Remove improvement flow steps
+    // Get the shared flow ID before filtering
+    const sharedFlowId = findSharedFlowId(steps.value);
+
+    // Remove improvement flow steps (filter by flowMembership for compatibility)
     const filtered = steps.value.filter(s => s.flowMembership !== 'improvement');
     steps.value.length = 0;
     steps.value.push(...filtered);
 
-    // Set all remaining as shared and update modification state
+    // Reassign remaining steps to shared flow
     steps.value.forEach(step => {
-      if (step.flowMembership !== 'shared') {
-        step.flowMembership = 'shared';
-      }
-      step.isModified = hasFlowMembershipChanged(step, originalSteps.value);
+      reassignToSharedFlow(step, sharedFlowId);
+      step.isModified = hasFlowChanged(step, originalSteps.value);
     });
 
     reorderSteps(steps.value);
@@ -55,22 +93,26 @@ export function useBranchingDisable(deps: BranchingDisableDeps) {
 
   /**
    * Disable branching, keeping improvement steps and removing testimonial steps.
-   * Improvement steps are converted to shared.
+   * Improvement steps are reassigned to the shared flow.
+   *
+   * Updated for ADR-009: Uses flowId for step assignment.
+   * Flow deletion is handled during save.
    */
-  function disableBranchingKeepImprovement() {
+  function disableBranchingKeepImprovement(): void {
     branchingConfig.value = { ...DEFAULT_BRANCHING_CONFIG };
 
-    // Remove testimonial flow steps
+    // Get the shared flow ID before filtering
+    const sharedFlowId = findSharedFlowId(steps.value);
+
+    // Remove testimonial flow steps (filter by flowMembership for compatibility)
     const filtered = steps.value.filter(s => s.flowMembership !== 'testimonial');
     steps.value.length = 0;
     steps.value.push(...filtered);
 
-    // Set all remaining as shared and update modification state
+    // Reassign remaining steps to shared flow
     steps.value.forEach(step => {
-      if (step.flowMembership !== 'shared') {
-        step.flowMembership = 'shared';
-      }
-      step.isModified = hasFlowMembershipChanged(step, originalSteps.value);
+      reassignToSharedFlow(step, sharedFlowId);
+      step.isModified = hasFlowChanged(step, originalSteps.value);
     });
 
     reorderSteps(steps.value);
@@ -80,8 +122,11 @@ export function useBranchingDisable(deps: BranchingDisableDeps) {
   /**
    * Disable branching, removing all branched steps (both flows).
    * Only shared steps remain.
+   *
+   * Updated for ADR-009: Uses flowId for step assignment.
+   * Flow deletion is handled during save.
    */
-  function disableBranchingDeleteAll() {
+  function disableBranchingDeleteAll(): void {
     branchingConfig.value = { ...DEFAULT_BRANCHING_CONFIG };
 
     // Remove both testimonial and improvement flow steps
@@ -93,7 +138,7 @@ export function useBranchingDisable(deps: BranchingDisableDeps) {
 
     // Update modification state for remaining shared steps
     steps.value.forEach(step => {
-      step.isModified = hasFlowMembershipChanged(step, originalSteps.value);
+      step.isModified = hasFlowChanged(step, originalSteps.value);
     });
 
     reorderSteps(steps.value);
