@@ -59,38 +59,108 @@ echo "$(date +%s)000" && TZ='Asia/Kolkata' date '+%Y_%m_%d_%H%M'
 -- Dependencies: nanoid utility-function, updated_at utility-function
 
 CREATE TABLE public.{table_name} (
-    -- Primary key (NanoID)
+    -- =========================================================================
+    -- Primary Key
+    -- =========================================================================
+    -- Unique identifier using NanoID 12-character format for URL-safe,
+    -- collision-resistant identification.
     id TEXT NOT NULL DEFAULT generate_nanoid_12(),
 
-    -- Business fields
+    -- =========================================================================
+    -- Business Fields
+    -- =========================================================================
+
+    -- Human-readable name for display in UI.
+    -- Example: "My First Form", "Customer Feedback"
     name TEXT NOT NULL,
 
-    -- User ownership
+    -- =========================================================================
+    -- Ownership
+    -- =========================================================================
+
+    -- FK to users table. Identifies the owner of this record.
+    -- Cascade deletes when user is removed.
     user_id TEXT NOT NULL,
 
+    -- =========================================================================
     -- Timestamps
+    -- =========================================================================
+
+    -- Timestamp when this record was first created.
+    -- Set automatically by DEFAULT, never modified after initial insert.
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+    -- Timestamp of last modification.
+    -- Automatically updated by database trigger on any column change.
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
     PRIMARY KEY (id)
 );
 
--- Foreign keys
+-- =========================================================================
+-- Foreign Keys
+-- =========================================================================
+
+-- Link to owner user with cascade delete.
+-- When user is deleted, their {table_name} records are removed.
 ALTER TABLE public.{table_name}
     ADD CONSTRAINT fk_{table_name}_user_id
     FOREIGN KEY (user_id) REFERENCES public.users(id)
     ON DELETE CASCADE ON UPDATE CASCADE;
 
+-- =========================================================================
 -- Indexes
+-- =========================================================================
+
+-- Index for querying all {table_name} belonging to a user.
+-- Primary access pattern: "Get all {table_name} for user X"
 CREATE INDEX idx_{table_name}_user_id ON public.{table_name}(user_id);
+
+-- Index for sorting by creation date (newest first).
+-- Used for dashboard listings and activity feeds.
 CREATE INDEX idx_{table_name}_created_at ON public.{table_name}(created_at DESC);
 
--- Trigger
+-- =========================================================================
+-- Triggers
+-- =========================================================================
+
+-- Automatically update updated_at timestamp on any modification.
 SELECT add_updated_at_trigger('{table_name}', 'public');
 
--- Documentation
-COMMENT ON TABLE public.{table_name} IS '{description}';
-COMMENT ON COLUMN public.{table_name}.id IS 'Primary key (NanoID 12-char)';
+-- =========================================================================
+-- Documentation (Database COMMENTS)
+-- =========================================================================
+
+-- Table comment
+COMMENT ON TABLE public.{table_name} IS
+  '{Full description of table purpose and relationships}';
+
+-- Column comments (REQUIRED for every column)
+COMMENT ON COLUMN public.{table_name}.id IS
+  'Primary key using NanoID 12-character format for URL-safe, collision-resistant identification.';
+
+COMMENT ON COLUMN public.{table_name}.name IS
+  'Human-readable name for display in UI. Examples: "My First Form", "Customer Feedback".';
+
+COMMENT ON COLUMN public.{table_name}.user_id IS
+  'FK to users table. Owner of this record. Cascade deletes when user is removed.';
+
+COMMENT ON COLUMN public.{table_name}.created_at IS
+  'Timestamp when this record was first created. Set automatically, never modified.';
+
+COMMENT ON COLUMN public.{table_name}.updated_at IS
+  'Timestamp of last modification. Automatically updated by database trigger on any column change.';
+
+-- Constraint comments
+COMMENT ON CONSTRAINT fk_{table_name}_user_id ON public.{table_name} IS
+  'Links record to owner user. CASCADE DELETE removes records when user is deleted.';
+
+-- Index comments (optional but recommended)
+COMMENT ON INDEX idx_{table_name}_user_id IS
+  'Supports querying all {table_name} for a specific user.';
+
+COMMENT ON INDEX idx_{table_name}_created_at IS
+  'Supports sorting by creation date (newest first) for listings.';
 ```
 
 ## Down Migration Template
@@ -232,6 +302,77 @@ Most tables need:
 user_id TEXT NOT NULL,  -- Owner reference
 ```
 
+## Documentation Requirements (CRITICAL)
+
+**Every column MUST have TWO forms of documentation:**
+
+### 1. Inline SQL Comments
+Add comments directly in the CREATE TABLE or ALTER TABLE statement:
+
+```sql
+CREATE TABLE public.flows (
+    -- Primary key using NanoID 12-character format
+    id TEXT NOT NULL DEFAULT generate_nanoid_12(),
+
+    -- FK to parent form. Cascade deletes when form is removed.
+    form_id TEXT NOT NULL,
+
+    -- User-defined flow name displayed in form editor UI
+    name TEXT NOT NULL,
+
+    -- Flow behavior: 'shared' (always shown) or 'branch' (conditional)
+    flow_type TEXT NOT NULL,
+
+    -- Timestamps
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+```
+
+### 2. Database COMMENT Statements
+Add persistent comments stored in PostgreSQL system catalog:
+
+```sql
+-- Table comment
+COMMENT ON TABLE public.flows IS
+  'Defines branching paths for forms. Each form has flows that determine step visibility.';
+
+-- Column comments (REQUIRED for every column)
+COMMENT ON COLUMN public.flows.id IS
+  'Primary key using NanoID 12-character format for URL-safe identification.';
+
+COMMENT ON COLUMN public.flows.form_id IS
+  'FK to forms table. Cascade deletes when parent form is removed.';
+
+COMMENT ON COLUMN public.flows.name IS
+  'User-defined flow name displayed in form editor (e.g., "Testimonial Flow").';
+
+COMMENT ON COLUMN public.flows.flow_type IS
+  'Flow behavior type: shared (always shown) or branch (conditional based on response).';
+
+-- Constraint comments
+COMMENT ON CONSTRAINT chk_flows_flow_type ON public.flows IS
+  'Ensures flow_type is either shared or branch.';
+
+-- Index comments (optional but recommended)
+COMMENT ON INDEX idx_flows_form_id IS
+  'Supports querying all flows for a specific form.';
+```
+
+### Why Both?
+
+| Type | Purpose | Visibility |
+|------|---------|------------|
+| **Inline comments** | Help developers reading migration files | Source code only |
+| **COMMENT ON** | Help developers using psql, Hasura console, DB tools | Database catalog |
+
+### Comment Content Guidelines
+
+- **Be specific** - Explain the business purpose, not just the data type
+- **Include constraints** - Mention CHECK constraints, valid values, defaults
+- **Document relationships** - Explain FK behavior (CASCADE, RESTRICT, etc.)
+- **Add examples** - For enum-like columns, show example values
+
 ## Troubleshooting
 
 ### Migration Failed
@@ -256,15 +397,21 @@ hasura metadata export
 
 Before applying:
 - [ ] Working directory is `db/hasura`
-- [ ] Migration name follows convention
+- [ ] Migration name follows convention: `{timestamp}_{YYYY_MM_DD_HHMM}__{table}__{action}`
 - [ ] up.sql is complete and correct
 - [ ] down.sql properly reverses changes
 - [ ] Foreign key targets exist
 - [ ] Required fields included (id, timestamps)
 - [ ] Indexes added for foreign keys
+- [ ] Inline SQL comments for every column
+- [ ] COMMENT ON statements for table, columns, constraints, indexes
 
 After applying:
-- [ ] Status shows "Present Present"
-- [ ] Table tracked in Hasura
-- [ ] GraphQL schema updated
-- [ ] Metadata exported
+- [ ] Status shows "Present Present": `hasura migrate status --database-name default`
+- [ ] Table tracked in Hasura (for new tables)
+- [ ] Permissions updated in YAML: `db/hasura/metadata/databases/default/tables/public_{table}.yaml`
+- [ ] Relationships added (object/array) for new FKs
+- [ ] Metadata applied: `hasura metadata apply`
+- [ ] Inconsistencies checked: `hasura metadata ic list`
+- [ ] Metadata exported: `hasura metadata export`
+- [ ] GraphQL schema updated (run codegen if frontend needs types)

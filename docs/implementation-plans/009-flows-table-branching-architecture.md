@@ -319,19 +319,45 @@ export type BranchConditionOperator =
   | 'less_than'
   | 'less_than_or_equal_to'
   | 'between'
-  | 'is_one_of'    // matches any value in array (future: NPS segments)
+  | 'is_one_of'    // matches any value in array (NPS segments, choices)
   | 'contains'     // future: text matching
   | 'is_empty'     // future: optional field checks
   ;
 
 /**
- * Branch condition stored in flows.branch_condition JSONB
+ * Field types for different step types
+ */
+/**
+ * Response fields map to form_question_responses columns.
+ * This creates a direct, validated reference path.
+ */
+export type ResponseField =
+  | 'answer_integer'   // Star rating (1-5), NPS (0-10), scale values
+  | 'answer_text'      // Single choice option value, short/long text
+  | 'answer_boolean'   // Consent checkbox, yes/no questions
+  | 'answer_json'      // Multiple choice selected values array
+  ;
+
+/**
+ * Self-contained branch condition stored in flows.branch_condition JSONB.
+ * KEY DESIGN: References question_id (content) not step_id (container).
+ * This prevents silent corruption when a step's question is replaced.
  */
 export interface BranchCondition {
-  field: string;           // "rating", "nps", etc.
+  question_id: string;     // form_questions.id - the question whose answer we evaluate
+  field: ResponseField;    // Column name in form_question_responses table
   op: BranchConditionOperator;
-  value: number | boolean | [number, number];  // e.g., 4, true, [7, 8]
+  value: number | boolean | string | [number, number] | (number | string)[];
 }
+
+/**
+ * Field mapping by question type:
+ * - rating question: field = 'answer_integer' (1-5 star rating)
+ * - nps question: field = 'answer_integer' (0-10 NPS score)
+ * - single choice: field = 'answer_text' (selected option value)
+ * - multiple choice: field = 'answer_json' (array of selected values)
+ * - yes/no question: field = 'answer_boolean' (true/false)
+ */
 
 /**
  * Legacy flow membership for backward compatibility
