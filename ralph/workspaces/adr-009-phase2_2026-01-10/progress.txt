@@ -1,0 +1,86 @@
+# Progress Tracker: ADR-009 Phase 2
+
+## Project Context
+
+Feature: ADR-009 Phase 2 - Flows Schema Migration & Frontend Integration
+Started: 2026-01-10
+Branch: yellow/adr-009-phase2
+Workspace: ralph/workspaces/adr-009-phase2_2026-01-10/
+
+## What We're Building
+
+Migrate `flows.branch_condition` JSONB to flattened columns and complete frontend migration from `flowMembership` to `flowId`.
+
+### Key Changes
+
+1. **Database**: Flattened branch columns with FK to form_questions
+2. **Hasura**: Updated permissions and new relationship
+3. **GraphQL**: Updated fragments, new queries/mutations
+4. **Types**: BranchValue discriminated union
+5. **Frontend**: 16+ files migrated from flowMembership to flowId
+
+## Tech Stack
+
+- Frontend: Vue 3 + Vite + TypeScript + Tailwind CSS
+- Backend: Hono.js REST API + Hasura GraphQL
+- Database: PostgreSQL
+- Package Manager: pnpm
+
+## Key Patterns
+
+- FSD architecture for frontend
+- GraphQL types from @/shared/graphql/generated/operations
+- Entity composables pattern (useEntity)
+- Hasura migrations at db/hasura/migrations/default/
+
+## Source Documents
+
+- ADR: docs/adr/009-flows-table-branching-architecture.md
+- Implementation Plan: docs/implementation-plans/009-phase-2-flows-schema-and-frontend.md
+
+## Skill References
+
+- DB-* tasks: /hasura-migrations
+- GQL-* tasks: /graphql-code
+- PERM-* tasks: /hasura-permissions
+
+---
+
+## Iteration Log
+
+### Iteration 1 - DB-001 - 2026-01-10
+- [x] Add flattened branch columns to flows table
+- Learnings: Must delete existing flows before migration due to CHECK constraint. Hasura metadata export removes stale column references.
+- Files changed:
+  - db/hasura/migrations/default/1768018541454_1768018533000_2026_01_10_0945__flows__add_branch_columns/up.sql
+  - db/hasura/migrations/default/1768018541454_1768018533000_2026_01_10_0945__flows__add_branch_columns/down.sql
+
+### Iteration 2 - DB-002 - 2026-01-10
+- [x] Add step-question cascade trigger
+- Learnings: AFTER DELETE trigger with EXECUTE FUNCTION pattern. Function checks for null question_id before deletion.
+- Files changed:
+  - db/hasura/migrations/default/1768018796784_1768018789000_2026_01_10_0949__form_steps__add_question_cascade_trigger/up.sql
+  - db/hasura/migrations/default/1768018796784_1768018789000_2026_01_10_0949__form_steps__add_question_cascade_trigger/down.sql
+
+### Iteration 3 - PERM-001 - 2026-01-10
+- [x] Update Hasura permissions for new flow columns
+- Learnings: Using columns: '*' auto-includes new columns. Just needed to add branch_question object_relationship.
+- Files changed:
+  - db/hasura/metadata/databases/default/tables/public_flows.yaml
+
+### Iteration 4 - GQL-001 - 2026-01-10
+- [x] Update FlowBasic fragment with new columns
+- Learnings: Removed deprecated branch_condition, added 4 flattened columns. Codegen updated types automatically.
+- Files changed:
+  - apps/web/src/entities/flow/graphql/fragments/FlowBasic.gql
+
+### Iteration 5 - GQL-002 - 2026-01-10
+- [x] Add GetFlowsByBranchQuestion query
+- Files changed:
+  - apps/web/src/entities/flow/graphql/queries/getFlowsByBranchQuestion.gql
+
+### Iteration 6 - GQL-003 - 2026-01-10
+- [x] Add UpdateFlow and DeleteFlow mutations
+- Files changed:
+  - apps/web/src/entities/flow/graphql/mutations/updateFlow.gql
+  - apps/web/src/entities/flow/graphql/mutations/deleteFlow.gql

@@ -1,0 +1,311 @@
+{
+  "project": "ms-testimonials",
+  "branchName": "yellow/adr-009-phase2",
+  "description": "ADR-009 Phase 2: Flows Schema Migration & Frontend Integration - Migrate branch_condition JSONB to flattened columns and complete frontend migration from flowMembership to flowId",
+  "prdDocument": "docs/implementation-plans/009-phase-2-flows-schema-and-frontend.md",
+  "userStories": [
+    {
+      "id": "DB-001",
+      "title": "Add flattened branch columns to flows table",
+      "description": "As a developer, I need the flows table to have flattened branch columns (branch_question_id, branch_field, branch_operator, branch_value) instead of the monolithic branch_condition JSONB.",
+      "acceptanceCriteria": [
+        "Delete any existing flows via tm-graph MCP before migration",
+        "Create migration file: add_branch_columns",
+        "Add columns: branch_question_id, branch_field, branch_operator, branch_value",
+        "Add CHECK constraint chk_flows_branch_field",
+        "Add CHECK constraint chk_flows_branch_operator",
+        "Add CHECK constraint chk_flows_condition_completeness",
+        "Add FK fk_flows_branch_question to form_questions (ON DELETE RESTRICT)",
+        "Add index idx_flows_branch_question_id",
+        "Drop legacy branch_condition column",
+        "Add column/constraint/index COMMENTS",
+        "hasura migrate apply --database-name default succeeds",
+        "pnpm typecheck passes"
+      ],
+      "priority": 1,
+      "passes": true,
+      "notes": "Migration 1768018541454 applied. Deleted 21 existing flows before migration. Metadata exported with ic drop to remove stale branch_condition references."
+    },
+    {
+      "id": "DB-002",
+      "title": "Add step-question cascade trigger",
+      "description": "As a developer, I need a trigger that deletes the associated question when a step is deleted, to prevent orphan questions.",
+      "acceptanceCriteria": [
+        "Create migration file: add_question_cascade_trigger",
+        "Create function delete_step_question() that deletes form_questions when step deleted",
+        "Create AFTER DELETE trigger trg_form_steps_delete_question",
+        "Trigger respects FK RESTRICT (blocked if question is branch point)",
+        "Add function and trigger COMMENTS",
+        "hasura migrate apply --database-name default succeeds",
+        "pnpm typecheck passes"
+      ],
+      "priority": 2,
+      "passes": true,
+      "notes": "Migration 1768018796784 applied. Trigger fires AFTER DELETE on form_steps and cascades to form_questions."
+    },
+    {
+      "id": "PERM-001",
+      "title": "Update Hasura permissions for new flow columns",
+      "description": "As a developer, I need Hasura permissions updated to include the new flattened branch columns and branch_question relationship.",
+      "acceptanceCriteria": [
+        "Update public_flows.yaml select_permissions with new columns",
+        "Update public_flows.yaml insert_permissions with new columns",
+        "Update public_flows.yaml update_permissions with new columns",
+        "Add branch_question object_relationship",
+        "hasura metadata apply succeeds",
+        "hasura metadata ic list shows no inconsistencies",
+        "pnpm typecheck passes"
+      ],
+      "priority": 3,
+      "passes": true,
+      "notes": "Columns auto-included via columns: '*'. Added branch_question object_relationship for FK to form_questions."
+    },
+    {
+      "id": "GQL-001",
+      "title": "Update FlowBasic fragment with new columns",
+      "description": "As a developer, I need the FlowBasic GraphQL fragment to include the new flattened branch columns.",
+      "acceptanceCriteria": [
+        "Update FlowBasic.gql to include branch_question_id, branch_field, branch_operator, branch_value",
+        "Remove branch_condition from fragment (or comment out during migration)",
+        "pnpm codegen:web succeeds",
+        "pnpm typecheck passes"
+      ],
+      "priority": 4,
+      "passes": true,
+      "notes": "Removed branch_condition, added 4 new flattened columns. Types regenerated successfully."
+    },
+    {
+      "id": "GQL-002",
+      "title": "Add GetFlowsByBranchQuestion query",
+      "description": "As a developer, I need a query to find flows that use a specific question for branching.",
+      "acceptanceCriteria": [
+        "Create getFlowsByBranchQuestion.gql query file",
+        "Query accepts branchQuestionId parameter",
+        "Query returns flows with ...FlowBasic and form { id, name }",
+        "pnpm codegen:web succeeds",
+        "pnpm typecheck passes"
+      ],
+      "priority": 5,
+      "passes": true,
+      "notes": "Created query with FlowBasic fragment and form relationship."
+    },
+    {
+      "id": "GQL-003",
+      "title": "Add UpdateFlow and DeleteFlow mutations",
+      "description": "As a developer, I need mutations to update and delete individual flows.",
+      "acceptanceCriteria": [
+        "Create updateFlow.gql mutation file",
+        "Create deleteFlow.gql mutation file",
+        "UpdateFlow uses update_flows_by_pk with _set input",
+        "DeleteFlow uses delete_flows_by_pk",
+        "pnpm codegen:web succeeds",
+        "pnpm typecheck passes"
+      ],
+      "priority": 6,
+      "passes": true,
+      "notes": "Created both mutations. UpdateFlow returns FlowBasic fragment, DeleteFlow returns just id."
+    },
+    {
+      "id": "TS-001",
+      "title": "Create BranchValue type definitions",
+      "description": "As a developer, I need TypeScript types for the structured branch_value JSONB format.",
+      "acceptanceCriteria": [
+        "Create branchValue.ts in entities/flow/models/",
+        "Define BranchValue discriminated union type",
+        "Define ResponseField type (answer_integer, answer_text, etc.)",
+        "Define BranchOperator type",
+        "Define FlowBranchCondition interface",
+        "Export from entities/flow/models/index.ts",
+        "pnpm typecheck passes"
+      ],
+      "priority": 7,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "FE-001",
+      "title": "Create useGetFlowsByBranchQuestion composable",
+      "description": "As a developer, I need a composable to fetch flows by branch question for deletion protection checks.",
+      "acceptanceCriteria": [
+        "Create composable using generated GetFlowsByBranchQuestion query",
+        "Follow entity composable pattern from /graphql-code skill",
+        "Export from entities/flow/composables/",
+        "pnpm typecheck passes"
+      ],
+      "priority": 8,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "FE-002",
+      "title": "Create useUpdateFlow and useDeleteFlow composables",
+      "description": "As a developer, I need composables for updating and deleting flows.",
+      "acceptanceCriteria": [
+        "Create useUpdateFlow composable using UpdateFlow mutation",
+        "Create useDeleteFlow composable using DeleteFlow mutation",
+        "Follow entity composable pattern",
+        "Export from entities/flow/composables/",
+        "pnpm typecheck passes"
+      ],
+      "priority": 9,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "FE-003",
+      "title": "Update useCreateFlows to use new columns",
+      "description": "As a developer, I need useCreateFlows composable updated to use the flattened branch columns instead of branch_condition JSONB.",
+      "acceptanceCriteria": [
+        "Update InsertFlows mutation input to use new columns",
+        "Set branch_question_id, branch_field, branch_operator, branch_value",
+        "Remove usage of branch_condition",
+        "pnpm typecheck passes"
+      ],
+      "priority": 10,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "FE-004",
+      "title": "Update stepTransform.ts to include flowId",
+      "description": "As a developer, I need stepTransform to work with flowId instead of flowMembership.",
+      "acceptanceCriteria": [
+        "Update stepTransform to derive flowMembership from flow relationship",
+        "Add flowId to transformed step data",
+        "Keep backward compatibility during migration",
+        "pnpm typecheck passes"
+      ],
+      "priority": 11,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "FE-005",
+      "title": "Update useTimelineBranching to create flows with new schema",
+      "description": "As a developer, I need useTimelineBranching to create flows with flattened branch columns.",
+      "acceptanceCriteria": [
+        "Update flow creation to use branch_question_id, branch_field, branch_operator, branch_value",
+        "Set proper values when enabling branching",
+        "pnpm typecheck passes"
+      ],
+      "priority": 12,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "FE-006",
+      "title": "Update useBranchingDisable to use flowId",
+      "description": "As a developer, I need useBranchingDisable to work with flowId for deleting flows and reassigning steps.",
+      "acceptanceCriteria": [
+        "Update to use flowId instead of flowMembership",
+        "Use useDeleteFlow for flow deletion",
+        "Reassign steps to shared flow by flowId",
+        "pnpm typecheck passes"
+      ],
+      "priority": 13,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "FE-007",
+      "title": "Update useBranchingDetection to use flowId",
+      "description": "As a developer, I need useBranchingDetection to detect branching based on flowId and flow relationships.",
+      "acceptanceCriteria": [
+        "Update branching detection logic to use flowId",
+        "Detect branch flows from step.flow relationship",
+        "pnpm typecheck passes"
+      ],
+      "priority": 14,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "FE-008",
+      "title": "Update useSaveFormSteps to save flow_id",
+      "description": "As a developer, I need useSaveFormSteps to persist flow_id instead of flow_membership.",
+      "acceptanceCriteria": [
+        "Update save logic to include flow_id",
+        "Remove flow_membership from save payload",
+        "pnpm typecheck passes"
+      ],
+      "priority": 15,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "FE-009",
+      "title": "Update remaining timeline composables",
+      "description": "As a developer, I need all timeline composables updated to use flowId consistently.",
+      "acceptanceCriteria": [
+        "Update useFlowNavigation to navigate by flowId",
+        "Update useStepOperations to assign flowId to new steps",
+        "Update useTimelineEditor to sync flow focus by flowId",
+        "pnpm typecheck passes"
+      ],
+      "priority": 16,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "FE-010",
+      "title": "Update useCreateFormWithSteps and wizard composables",
+      "description": "As a developer, I need form creation composables updated for the new flow schema.",
+      "acceptanceCriteria": [
+        "Update useCreateFormWithSteps to create flows and assign flowId",
+        "Update useQuestionEditorPanel for default flowId",
+        "Update useFormEditor for default flowId on new steps",
+        "Update useCreateFormWizard to set flow_id on wizard questions",
+        "pnpm typecheck passes"
+      ],
+      "priority": 17,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "FE-011",
+      "title": "Implement question deletion protection",
+      "description": "As a developer, I need to protect questions that are branch points from being deleted.",
+      "acceptanceCriteria": [
+        "Create useQuestionDeletion composable",
+        "Check if question is used as branch_question_id",
+        "Return canDelete: false with blockedBy flows info",
+        "pnpm typecheck passes"
+      ],
+      "priority": 18,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "FE-012",
+      "title": "Update wizard preview components",
+      "description": "As a developer, I need wizard preview components updated to work with flowId.",
+      "acceptanceCriteria": [
+        "Update PreviewScreen.vue to group by flowId",
+        "Update PreviewStepCard.vue to display based on flow",
+        "Update BranchingFlowPreview.vue to render by flow",
+        "Update TimelineSidebar.vue for flow indicators from flow relation",
+        "pnpm typecheck passes"
+      ],
+      "priority": 19,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "TEST-001",
+      "title": "End-to-end testing and verification",
+      "description": "As a developer, I need to verify the complete implementation works correctly.",
+      "acceptanceCriteria": [
+        "Test new form creation with branching enabled",
+        "Test existing form editing with branching",
+        "Test threshold changes update branch_value",
+        "Test step deletion triggers question cascade (non-branch point)",
+        "Test branch point question cannot be deleted",
+        "pnpm typecheck passes",
+        "pnpm build passes"
+      ],
+      "priority": 20,
+      "passes": false,
+      "notes": ""
+    }
+  ]
+}
