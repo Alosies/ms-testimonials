@@ -79,6 +79,10 @@ export const useTimelineEditor = createSharedComposable(() => {
   /**
    * Sync flow focus based on the selected step's flowMembership.
    * Called after selection to ensure branched steps properly scroll into view.
+   *
+   * ADR-009 Phase 2: flowMembership is derived from flow.flow_type via stepTransform.
+   * The flowId is the source of truth in the database, but flowMembership is used
+   * for UI rendering since it provides the semantic flow type directly.
    */
   function syncFlowFocusForSelectedStep(index: number) {
     const step = steps.value[index];
@@ -87,6 +91,7 @@ export const useTimelineEditor = createSharedComposable(() => {
       return;
     }
 
+    // flowMembership is derived from flow.flow_type by stepTransform
     const membership = step.flowMembership;
     if (membership === 'testimonial' || membership === 'improvement') {
       branching.setFlowFocus(membership);

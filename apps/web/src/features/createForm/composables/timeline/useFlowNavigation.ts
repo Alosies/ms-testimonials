@@ -4,6 +4,9 @@
  * Provides step-by-step navigation through the form flow structure.
  * Both canvas rendering and keyboard navigation use this same logic.
  *
+ * Updated for ADR-009 Phase 2: Uses flowId when available, with
+ * flowMembership fallback for backward compatibility.
+ *
  * FLOW STRUCTURE:
  * Shared Steps: Welcome → Q1 → Q2 → Q3 → Rating (branch point)
  *                                          ↓
@@ -45,6 +48,9 @@ export function useFlowNavigation(deps: FlowNavigationDeps): FlowNavigationResul
 
   /**
    * Get which flow a step belongs to
+   *
+   * ADR-009 Phase 2: flowMembership is derived from flow.flow_type via stepTransform.
+   * flowId is the source of truth for step-flow assignment in the database.
    */
   function getStepFlow(stepId: string): 'shared' | 'testimonial' | 'improvement' | null {
     const step = steps.value.find((s) => s.id === stepId);
@@ -53,6 +59,7 @@ export function useFlowNavigation(deps: FlowNavigationDeps): FlowNavigationResul
     // If branching is disabled, everything is effectively shared
     if (!isBranchingEnabled.value) return 'shared';
 
+    // flowMembership is derived from flow.flow_type by stepTransform
     const membership = step.flowMembership;
     if (membership === 'testimonial') return 'testimonial';
     if (membership === 'improvement') return 'improvement';
