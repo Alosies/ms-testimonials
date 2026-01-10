@@ -3,10 +3,15 @@ set -e
 
 # Parse arguments
 FORCE_PUSH=false
+SKIP_CONFIRM=false
 while [[ $# -gt 0 ]]; do
   case $1 in
     -f|--force-push)
       FORCE_PUSH=true
+      shift
+      ;;
+    -y|--yes)
+      SKIP_CONFIRM=true
       shift
       ;;
     -h|--help)
@@ -16,6 +21,7 @@ while [[ $# -gt 0 ]]; do
       echo ""
       echo "Options:"
       echo "  -f, --force-push    Force push all branches to remote after sync"
+      echo "  -y, --yes           Skip confirmation prompts (for non-interactive use)"
       echo "  -h, --help          Show this help message"
       exit 0
       ;;
@@ -269,16 +275,20 @@ else
 fi
 if [ "$FORCE_PUSH" = true ]; then
   log_warning "Force push enabled - will push all branches to remote"
-  echo ""
-  echo -e "${YELLOW}Are you sure you want to force push all branches?${NC}"
-  echo -e "${GRAY}(Use ↑/↓ arrows to select, Enter to confirm)${NC}"
-  echo ""
-  menu_select "Yes" "No"
-  if [ "$MENU_RESULT" -eq 0 ]; then
-    log_success "Confirmed - will force push after sync"
+  if [ "$SKIP_CONFIRM" = true ]; then
+    log_info "Skipping confirmation (--yes flag)"
   else
-    log_info "Force push cancelled - will sync without pushing"
-    FORCE_PUSH=false
+    echo ""
+    echo -e "${YELLOW}Are you sure you want to force push all branches?${NC}"
+    echo -e "${GRAY}(Use ↑/↓ arrows to select, Enter to confirm)${NC}"
+    echo ""
+    menu_select "Yes" "No"
+    if [ "$MENU_RESULT" -eq 0 ]; then
+      log_success "Confirmed - will force push after sync"
+    else
+      log_info "Force push cancelled - will sync without pushing"
+      FORCE_PUSH=false
+    fi
   fi
 fi
 

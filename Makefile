@@ -56,4 +56,4 @@ sync:
 	./scripts/sync-worktrees.sh
 
 sync-push:
-	./scripts/sync-worktrees.sh -f
+	./scripts/sync-worktrees.sh -f -y
