@@ -17,19 +17,35 @@ export const useFormInfoWatcher = () => {
   const { mark } = useDirtyTracker();
   const editor = useTimelineEditor();
 
+  // Track previous values to compare against
+  // This prevents marking dirty when unrelated formContext properties change
+  let prevProductName: string | undefined;
+  let prevProductDescription: string | undefined;
+
   // Watch formContext for product name/description changes
   // Note: formContext is set by useFormStudioData when form loads
   // This is a read-only context, so we track when it might be edited
   watch(
-    () => editor.formContext.value,
-    (curr, prev) => {
-      if (!curr || !prev) return;
-      // Only mark dirty if actual content changed (not just initial load)
+    () => ({
+      productName: editor.formContext.value.productName,
+      productDescription: editor.formContext.value.productDescription,
+    }),
+    (curr) => {
+      // Skip initial load when prev values are undefined
+      if (prevProductName === undefined && prevProductDescription === undefined) {
+        prevProductName = curr.productName;
+        prevProductDescription = curr.productDescription;
+        return;
+      }
+
+      // Only mark dirty if actual content changed
       if (
-        curr.productName !== prev.productName ||
-        curr.productDescription !== prev.productDescription
+        curr.productName !== prevProductName ||
+        curr.productDescription !== prevProductDescription
       ) {
         mark.formInfo();
+        prevProductName = curr.productName;
+        prevProductDescription = curr.productDescription;
       }
     },
     { deep: true }
@@ -71,8 +87,16 @@ export const useQuestionTextWatcher = () => {
       // When user switches steps (different question IDs), the "change" is just selection,
       // not a text edit. Without this check, switching steps would incorrectly
       // mark the new question as dirty with no actual text changes.
+      //
+      // CRITICAL: Must also compare actual field values, not just IDs!
+      // With { deep: true }, the watcher fires on ANY change to the step object.
+      // Without this comparison, unrelated changes (like isModified flag) would
+      // incorrectly mark the question dirty, causing infinite save loops.
       if (curr && prev && curr.id === prev.id) {
-        mark.question(curr.id);
+        const fieldsChanged = JSON.stringify(curr.fields) !== JSON.stringify(prev.fields);
+        if (fieldsChanged) {
+          mark.question(curr.id);
+        }
       }
     },
     { deep: true }
@@ -143,8 +167,16 @@ export const useStepTipsWatcher = () => {
     },
     (curr, prev) => {
       // Same entity check: ignore selection changes between steps
+      //
+      // CRITICAL: Must also compare actual tips values, not just IDs!
+      // With { deep: true }, the watcher fires on ANY change to the step object.
+      // Without this comparison, unrelated changes (like isModified flag after save)
+      // would incorrectly mark the step dirty, causing infinite save loops.
       if (curr && prev && curr.id === prev.id) {
-        mark.step(curr.id);
+        const tipsChanged = JSON.stringify(curr.tips) !== JSON.stringify(prev.tips);
+        if (tipsChanged) {
+          mark.step(curr.id);
+        }
       }
     },
     { deep: true }
