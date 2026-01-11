@@ -3,8 +3,7 @@ import { usePublishForm, useGetForm } from '@/entities/form';
 import { useGetFormQuestions } from '@/entities/formQuestion';
 import { useRouting } from '@/shared/routing';
 import { useCreateFormWizard } from './useCreateFormWizard';
-import { useFormAutoSave } from './useFormAutoSave';
-import type { QuestionData } from '../models';
+import type { QuestionData, SaveStatus } from '../models';
 import type { QuestionTypeId } from '@/shared/api';
 
 interface UseFormEditorOptions {
@@ -55,12 +54,14 @@ export function useFormEditor(options: UseFormEditorOptions = {}) {
   const { formQuestions: existingQuestions, loading: loadingQuestions } =
     useGetFormQuestions(formQueryVariables);
 
-  // Auto-save integration (only enabled when we have a formId)
-  const autoSave = useFormAutoSave({
-    formId: computed(() => formId.value),
-    formData,
-    debounceMs: 500,
-  });
+  // Auto-save status stubs (legacy - auto-save now handled by useAutoSaveController)
+  // This composable is only used by CreateFormFeature which is deprecated
+  const saveStatus = ref<SaveStatus>('idle');
+  const lastSavedAt = ref<Date | null>(null);
+  const saveError = ref<string | null>(null);
+  const isSaving = computed(() => false);
+  const hasPendingChanges = ref(false);
+  const retrySave = () => {};
 
   /**
    * Load existing form data into wizard state.
@@ -127,16 +128,8 @@ export function useFormEditor(options: UseFormEditorOptions = {}) {
     }
   }
 
-  // Watch for form data changes to trigger auto-save
-  watch(
-    () => [formData.name, formData.product_name, formData.product_description],
-    () => {
-      // Only auto-save if we have a form ID (not during initial creation)
-      if (formId.value) {
-        autoSave.triggerSave();
-      }
-    }
-  );
+  // Note: Auto-save is now handled by useAutoSaveController in FormStudioPage
+  // This composable is deprecated and only kept for CreateFormFeature compatibility
 
   // Load existing form when query completes (only once on initial load)
   // Using { once: true } prevents reloading after Apollo cache updates from mutations
@@ -186,13 +179,13 @@ export function useFormEditor(options: UseFormEditorOptions = {}) {
     initError,
     loadingForm: isLoadingData,
 
-    // Auto-save status
-    saveStatus: autoSave.saveStatus,
-    lastSavedAt: autoSave.lastSavedAt,
-    saveError: autoSave.saveError,
-    isSaving: autoSave.isSaving,
-    hasPendingChanges: autoSave.hasPendingChanges,
-    retrySave: autoSave.retrySave,
+    // Auto-save status (stubs - legacy compatibility)
+    saveStatus,
+    lastSavedAt,
+    saveError,
+    isSaving,
+    hasPendingChanges,
+    retrySave,
 
     // Publish
     handlePublish,

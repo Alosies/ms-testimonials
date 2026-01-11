@@ -32,6 +32,7 @@ Use the output format below. Include file:line references and severity levels.
 - [ ] Composition API used (not Options API)
 - [ ] `computed()` for derived state
 - [ ] Refs unwrapped with `.value` correctly
+- [ ] **Composables called at setup root** - NOT inside async callbacks, event handlers, or conditionals
 
 ### TypeScript
 - [ ] Generated GraphQL types from `@/shared/graphql/generated/operations`

@@ -82,6 +82,47 @@ Only the following can use a composable (`useXxx`) inside them:
 - `functions/` (pure functions)
 - `adapters/` (unless the adapter itself is a composable)
 
+### **Composable Call Location Rules (Critical)**
+
+Composables (`useXxx`) **MUST be called synchronously** at the root level of:
+1. **`<script setup>`** - at the top, before any async code
+2. **`setup()` function** - at the root, not inside callbacks
+3. **Lifecycle hooks** - `onMounted()`, `onUnmounted()`, etc.
+4. **Other composables** - at the root of the composable function
+
+**NEVER call composables inside:**
+- **Async callbacks** - `setTimeout`, `Promise.then()`, `async/await` blocks
+- **Event handlers** - `@click`, `@input` handlers
+- **Conditionals or loops** - `if/else`, `for`, `while`
+- **Regular functions** - non-composable helper functions
+
+```typescript
+// ❌ Bad: Composable called inside async callback
+const saveData = async () => {
+  const { updateForm } = useUpdateForm();  // WRONG! Called at runtime
+  await updateForm(data);
+};
+
+// ✅ Good: Composable called at setup, function used later
+const { updateForm } = useUpdateForm();  // Called during setup
+const saveData = async () => {
+  await updateForm(data);  // Function can be called anytime
+};
+
+// ✅ Good: Factory pattern for handlers that need composables
+const createHandler = (mutationFn: MutationFn) => {
+  return async (data: Data) => {
+    await mutationFn(data);  // Pre-bound function is safe
+  };
+};
+
+// In setup:
+const { updateForm } = useUpdateForm();
+const saveHandler = createHandler(updateForm);
+```
+
+**Why this matters:** Vue tracks the current component instance during setup. Composables use this to register lifecycle hooks, provide/inject dependencies, and connect to the component's reactivity system. Calling composables outside setup loses this context.
+
 ## Type Organization (Critical)
 
 ### FSD Type Rules

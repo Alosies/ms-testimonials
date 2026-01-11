@@ -1,0 +1,141 @@
+{
+  "project": "ms-testimonials",
+  "branchName": "yellow/010-auto-save-controller",
+  "description": "ADR-010: Centralized Auto-Save Controller - Replace fragmented auto-save composables with a unified controller featuring ID tracking, surgical watchers, and single debounce orchestration",
+  "prdDocument": "docs/adr/010-centralized-auto-save/adr.md",
+  "testingPlan": "ralph/workspaces/010-auto-save-controller_2026-01-11/testing-plan.md (deferred until product stabilizes)",
+  "userStories": [
+    {
+      "id": "FE-001",
+      "title": "Create useDirtyTracker composable",
+      "description": "As a developer, I need a shared dirty state tracker that uses ID tracking with Sets to prevent data loss when switching between entities within the debounce window.",
+      "acceptanceCriteria": [
+        "Create file at apps/web/src/features/createForm/composables/autoSave/useDirtyTracker.ts",
+        "Uses createSharedComposable from @vueuse/core for singleton pattern",
+        "DirtyState interface: formInfo (boolean), questions/options/steps/flows (Set<string>)",
+        "mark object with methods: formInfo(), question(id), option(id), step(id), flow(id)",
+        "snapshot() captures current state and clears atomically, returns captured state",
+        "restoreDirtyState() merges captured Sets back into dirty state",
+        "hasPendingChanges computed returns true if any dirty state exists",
+        "pnpm typecheck passes"
+      ],
+      "priority": 1,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "FE-002",
+      "title": "Create surgical watchers for text fields",
+      "description": "As a developer, I need watchers that detect text field changes and mark the correct entity ID as dirty, ignoring entity selection changes.",
+      "acceptanceCriteria": [
+        "Create file at apps/web/src/features/createForm/composables/autoSave/watchers.ts",
+        "Export 5 watchers: useFormInfoWatcher, useQuestionTextWatcher, useOptionTextWatcher, useStepTipsWatcher, useFlowNameWatcher",
+        "useFormInfoWatcher watches: form.name, form.product_name, form.product_description",
+        "useQuestionTextWatcher watches: question_text, placeholder, help_text, scale_min_label, scale_max_label",
+        "useOptionTextWatcher watches: option_label, option_value for each option",
+        "useStepTipsWatcher watches: tips array",
+        "useFlowNameWatcher watches: flow.name",
+        "Question/Step/Flow watchers include curr.id === prev.id check to ignore entity switches",
+        "Option watcher compares old vs new using ID map for correct detection",
+        "pnpm typecheck passes"
+      ],
+      "priority": 2,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "FE-003",
+      "title": "Create save handlers with ID lookup",
+      "description": "As a developer, I need save handlers that receive dirty IDs and look up current values from state to save the correct entities.",
+      "acceptanceCriteria": [
+        "Create file at apps/web/src/features/createForm/composables/autoSave/handlers.ts",
+        "Export 5 handlers: saveFormInfo, saveQuestions, saveOptions, saveSteps, saveFlows",
+        "saveFormInfo saves: name, product_name, product_description",
+        "saveQuestions filters allQuestions by dirty IDs, saves text fields only",
+        "saveOptions filters allOptions by dirty IDs, saves option_label and option_value only",
+        "saveSteps filters allSteps by dirty IDs, saves tips only",
+        "saveFlows filters allFlows by dirty IDs, saves name only",
+        "Each handler returns early if no entities to save (toSave.length === 0)",
+        "Uses existing entity mutation composables (useUpdateForm, useUpsertFormQuestions, etc.)",
+        "pnpm typecheck passes"
+      ],
+      "priority": 3,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "FE-004",
+      "title": "Create useAutoSaveController orchestrator",
+      "description": "As a developer, I need a central controller that orchestrates the auto-save system with single debounce timer and parallel handler execution.",
+      "acceptanceCriteria": [
+        "Create file at apps/web/src/features/createForm/composables/autoSave/useAutoSaveController.ts",
+        "Uses createSharedComposable for singleton pattern",
+        "Registers all 5 watchers on initialization",
+        "executeSave: captures snapshot atomically BEFORE saving",
+        "executeSave: runs all applicable handlers in parallel via Promise.all",
+        "On error: calls restoreDirtyState(toSave) to prevent data loss",
+        "saveStatus transitions: idle -> saving -> saved -> idle (or error)",
+        "Uses useDebounceFn with 500ms delay",
+        "Watch hasPendingChanges to trigger debouncedSave",
+        "Exports: saveStatus (readonly), hasPendingChanges",
+        "pnpm typecheck passes"
+      ],
+      "priority": 4,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "FE-005",
+      "title": "Create useNavigationGuard composable",
+      "description": "As a user, I want to be warned before leaving the page with unsaved changes to prevent accidental data loss.",
+      "acceptanceCriteria": [
+        "Create file at apps/web/src/features/createForm/composables/autoSave/useNavigationGuard.ts",
+        "Adds beforeunload event listener on mount, removes on unmount",
+        "Uses onBeforeRouteLeave for Vue Router navigation guard",
+        "Both guards check hasPendingChanges before warning",
+        "Browser close/refresh shows native dialog (e.returnValue = '')",
+        "Route navigation shows window.confirm dialog",
+        "pnpm typecheck passes"
+      ],
+      "priority": 5,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "FE-006",
+      "title": "Create barrel export and wire up in FormStudioPage",
+      "description": "As a developer, I need clean exports and the controller wired up in the form studio page.",
+      "acceptanceCriteria": [
+        "Create file at apps/web/src/features/createForm/composables/autoSave/index.ts",
+        "Export: useDirtyTracker, useAutoSaveController, useNavigationGuard",
+        "In FormStudioPage (apps/web/src/pages/forms/[formSlug]/studio.vue):",
+        "  - Import and call useAutoSaveController()",
+        "  - Import and call useNavigationGuard()",
+        "  - Pass autoSave.saveStatus to FormEditorHeader component",
+        "pnpm typecheck passes"
+      ],
+      "priority": 6,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "FE-007",
+      "title": "Cleanup deprecated auto-save composables",
+      "description": "As a developer, I need to remove the old fragmented auto-save composables to maintain a clean codebase.",
+      "acceptanceCriteria": [
+        "Verify new auto-save system works in manual testing first",
+        "Remove: apps/web/src/features/createForm/composables/useFormAutoSave.ts",
+        "Remove: apps/web/src/features/createForm/composables/useQuestionSave.ts",
+        "Remove: apps/web/src/features/createForm/composables/useStepSave.ts",
+        "Remove: apps/web/src/features/createForm/composables/useStepAutoSave.ts",
+        "Update any files that import the deprecated composables",
+        "Update barrel exports in composables/index.ts",
+        "pnpm typecheck passes",
+        "pnpm build passes"
+      ],
+      "priority": 7,
+      "passes": false,
+      "notes": ""
+    }
+  ]
+}

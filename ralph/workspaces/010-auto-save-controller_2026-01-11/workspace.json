@@ -1,0 +1,10 @@
+{
+  "feature": "010-auto-save-controller",
+  "createdAt": "2026-01-11T15:00:00Z",
+  "createdBy": "yellow",
+  "primaryAgent": "yellow",
+  "status": "active",
+  "sourceDocument": "docs/adr/010-centralized-auto-save/adr.md",
+  "implementationPlan": "docs/adr/010-centralized-auto-save/implementation.md",
+  "handoffs": []
+}

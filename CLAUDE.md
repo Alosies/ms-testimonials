@@ -162,6 +162,7 @@ Based on MVP spec:
 - Follow Vue 3 Composition API patterns
 - Use `defineModel()` for v-model bindings
 - Use `toRefs()` when destructuring Pinia stores
+- **Composables (`useXxx`) must be called at setup root** - NEVER inside async callbacks, event handlers, or conditionals. See `/apps/web/CLAUDE.md` for details and factory pattern workaround.
 
 ## MVP Features (for reference)
 

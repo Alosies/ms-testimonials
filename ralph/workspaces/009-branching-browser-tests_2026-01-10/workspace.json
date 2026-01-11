@@ -1,0 +1,14 @@
+{
+  "feature": "009-branching-browser-tests",
+  "createdAt": "2026-01-10T09:00:00Z",
+  "createdBy": "yellow",
+  "primaryAgent": "yellow",
+  "status": "active",
+  "sourceDocument": "docs/adr/009-flows-table-branching/testing-plan.md",
+  "referenceDocuments": [
+    "docs/adr/009-flows-table-branching/adr.md",
+    "docs/adr/009-flows-table-branching/implementation-plan.md",
+    "docs/adr/009-flows-table-branching/phase-2-implementation.md"
+  ],
+  "handoffs": []
+}

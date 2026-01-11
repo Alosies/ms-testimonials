@@ -24,6 +24,10 @@ import {
   useBranchedKeyboardNavigation,
   useFormStudioData,
 } from '../../composables/timeline';
+import {
+  useAutoSaveController,
+  useNavigationGuard,
+} from '../../composables/autoSave';
 import { useScrollSnapNavigation } from '@/shared/composables';
 import { useCurrentContextStore } from '@/shared/currentContext';
 import TimelineSidebar from './TimelineSidebar.vue';
@@ -48,8 +52,15 @@ const editor = useTimelineEditor();
 const contextStore = useCurrentContextStore();
 const { currentOrganizationId, currentUserId } = toRefs(contextStore);
 
-// Initialize save composable
+// Initialize save composable (for structural changes: step CRUD)
 const saveComposable = useSaveFormSteps();
+
+// Initialize auto-save controller (for text field changes: debounced saves)
+// This registers watchers for form info, questions, options, tips, flows
+const autoSave = useAutoSaveController();
+
+// Initialize navigation guard (warns user about unsaved changes)
+useNavigationGuard();
 
 // Initialize scroll-snap navigation (scroll detection only for linear mode)
 const navigation = useScrollSnapNavigation({
@@ -101,10 +112,24 @@ const {
 });
 
 // Computed save status based on actual state
+// Combines status from both structural saves (saveComposable) and text auto-saves (autoSave)
 const saveStatus = computed<'saved' | 'saving' | 'unsaved' | 'error'>(() => {
-  if (saveComposable.saveError.value) return 'error';
-  if (saveComposable.isSaving.value) return 'saving';
-  if (saveComposable.hasChangesToSave.value) return 'unsaved';
+  // Error takes priority
+  if (saveComposable.saveError.value || autoSave.saveStatus.value === 'error') {
+    return 'error';
+  }
+  // Saving state from either system
+  if (saveComposable.isSaving.value || autoSave.saveStatus.value === 'saving') {
+    return 'saving';
+  }
+  // Pending changes from either system
+  if (saveComposable.hasChangesToSave.value || autoSave.hasPendingChanges.value) {
+    return 'unsaved';
+  }
+  // Auto-save shows 'saved' briefly after successful save
+  if (autoSave.saveStatus.value === 'saved') {
+    return 'saved';
+  }
   return 'saved';
 });
 

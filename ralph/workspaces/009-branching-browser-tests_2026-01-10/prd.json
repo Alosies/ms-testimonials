@@ -1,0 +1,176 @@
+{
+  "project": "ms-testimonials",
+  "branchName": "yellow/default",
+  "description": "ADR-009: Playwright Browser Testing for Flows Table Branching Architecture. Execute E2E tests and fix any failures by referencing ADR and implementation plans.",
+  "prdDocument": "docs/adr/009-flows-table-branching/testing-plan.md",
+  "referenceDocuments": [
+    "docs/adr/009-flows-table-branching/adr.md",
+    "docs/adr/009-flows-table-branching/implementation-plan.md",
+    "docs/adr/009-flows-table-branching/phase-2-implementation.md"
+  ],
+  "userStories": [
+    {
+      "id": "TEST-001",
+      "title": "BE-001: Enable branching on rating step",
+      "description": "As a tester, I need to verify that branching can be enabled on a rating step via the UI toggle.",
+      "acceptanceCriteria": [
+        "Navigate to form studio with existing form",
+        "Select rating step from sidebar",
+        "Locate Branching Settings panel in properties",
+        "Toggle Enable branching switch ON",
+        "Verify threshold selector appears (default 4 stars)",
+        "Verify flow metadata icons appear (testimonial/improvement)"
+      ],
+      "priority": 1,
+      "passes": true,
+      "notes": "Tested on taskflow_VyxBhy1yBMH8. Rating step shows Conditional Branching panel with enable toggle, threshold selector (4 stars), and flow metadata (testimonial/improvement icons)."
+    },
+    {
+      "id": "TEST-002",
+      "title": "BE-002: Threshold selector displays when branching enabled",
+      "description": "As a tester, I need to verify the threshold selector appears and functions correctly.",
+      "acceptanceCriteria": [
+        "Enable branching on rating step",
+        "Verify threshold dropdown is visible",
+        "Change threshold to different value (2, 3, 4, 5 stars)",
+        "Verify flow description updates to show new threshold"
+      ],
+      "priority": 2,
+      "passes": true,
+      "notes": "Changed threshold from 4 to 3 stars. Flow descriptions updated from 'Rating ≥ 4' to 'Rating ≥ 3' across all UI locations."
+    },
+    {
+      "id": "TEST-003",
+      "title": "DP-001: Cannot delete branch point step when branching enabled",
+      "description": "As a tester, I need to verify deletion protection prevents removing the branch point step.",
+      "acceptanceCriteria": [
+        "Enable branching on rating step",
+        "Add at least one step to testimonial flow",
+        "Select rating step (branch point)",
+        "Click delete button",
+        "Verify protection modal appears with blue info styling",
+        "Verify title shows 'Cannot Delete Step'",
+        "Verify single 'Got it' button (not Cancel + Confirm)",
+        "Click 'Got it' and verify step is NOT deleted"
+      ],
+      "priority": 3,
+      "passes": true,
+      "notes": "Clicked delete on rating step (branch point). Modal appeared with title 'Cannot Delete Step', info message about branching, and single 'Got it' button. After clicking 'Got it', step remained in place."
+    },
+    {
+      "id": "TEST-004",
+      "title": "BE-004: Disable branching - keep testimonial steps",
+      "description": "As a tester, I need to verify the disable branching modal with 'Keep Testimonial' option works.",
+      "acceptanceCriteria": [
+        "Have form with branching enabled and steps in both flows",
+        "Toggle Enable branching OFF",
+        "Verify modal appears with 3 options",
+        "Click 'Keep Testimonial Steps' option",
+        "Verify modal closes",
+        "Verify testimonial steps remain",
+        "Verify improvement steps are deleted",
+        "Verify branching toggle shows disabled"
+      ],
+      "priority": 4,
+      "passes": true,
+      "notes": "Pre-state: 10 steps (5 shared + 3 testimonial + 2 improvement). Clicked Keep Testimonial Steps. Post-state: 8 steps (5 shared + 3 former testimonial merged as Unsaved). Improvement steps deleted. Toggle disabled, threshold hidden."
+    },
+    {
+      "id": "TEST-005",
+      "title": "BE-005: Disable branching - keep improvement steps",
+      "description": "As a tester, I need to verify the disable branching modal with 'Keep Improvement' option works.",
+      "acceptanceCriteria": [
+        "Have form with branching enabled and steps in both flows",
+        "Toggle Enable branching OFF",
+        "Click 'Keep Improvement Steps' option",
+        "Verify modal closes",
+        "Verify improvement steps remain",
+        "Verify testimonial steps are deleted"
+      ],
+      "priority": 5,
+      "passes": true,
+      "notes": "Pre-state: 10 steps (5 shared + 3 testimonial + 2 improvement). Clicked Keep Improvement Steps. Post-state: 7 steps (5 shared + 2 former improvement merged as Unsaved). Testimonial steps deleted. Toggle disabled."
+    },
+    {
+      "id": "TEST-006",
+      "title": "BE-006: Disable branching - delete all branched steps",
+      "description": "As a tester, I need to verify the disable branching modal with 'Delete All' option works.",
+      "acceptanceCriteria": [
+        "Have form with branching enabled and steps in both flows",
+        "Toggle Enable branching OFF",
+        "Click 'Delete All Branched Steps' option",
+        "Verify modal closes",
+        "Verify all branched steps are deleted",
+        "Verify only shared steps remain"
+      ],
+      "priority": 6,
+      "passes": true,
+      "notes": "Pre-state: 9 steps (5 shared + 2 testimonial + 2 improvement). Clicked Delete All Branched Steps. Post-state: 5 steps (only shared steps remain). All 4 branched steps deleted. Toggle disabled."
+    },
+    {
+      "id": "TEST-007",
+      "title": "BE-007: Cancel disable branching modal",
+      "description": "As a tester, I need to verify canceling the disable modal keeps branching enabled.",
+      "acceptanceCriteria": [
+        "Have form with branching enabled",
+        "Toggle Enable branching OFF",
+        "Click Cancel button on modal",
+        "Verify modal closes",
+        "Verify branching toggle still shows enabled",
+        "Verify all steps remain unchanged"
+      ],
+      "priority": 7,
+      "passes": true,
+      "notes": "Toggled OFF with steps in both flows. Modal appeared with 3 options (Keep Testimonial, Keep Improvement, Delete All) and Cancel button. Clicked Cancel - modal closed, branching still enabled, all steps unchanged."
+    },
+    {
+      "id": "TEST-008",
+      "title": "FM-001: Add step to testimonial flow",
+      "description": "As a tester, I need to verify adding steps to the testimonial flow works correctly.",
+      "acceptanceCriteria": [
+        "Enable branching on form",
+        "Click add step in testimonial flow section",
+        "Select step type (e.g., Short Answer)",
+        "Verify step appears in testimonial flow",
+        "Verify step shows green testimonial indicator",
+        "Verify sidebar step count increments"
+      ],
+      "priority": 8,
+      "passes": true,
+      "notes": "PASSED after fix: Added 'Add first step' button to FlowColumn.vue empty state. Clicked button → step type picker opened → selected Question → step added to Testimonial Flow with green flow indicator."
+    },
+    {
+      "id": "TEST-009",
+      "title": "FM-002: Add step to improvement flow",
+      "description": "As a tester, I need to verify adding steps to the improvement flow works correctly.",
+      "acceptanceCriteria": [
+        "Enable branching on form",
+        "Click add step in improvement flow section",
+        "Select step type",
+        "Verify step appears in improvement flow",
+        "Verify step shows orange improvement indicator",
+        "Verify sidebar step count increments"
+      ],
+      "priority": 9,
+      "passes": true,
+      "notes": "PASSED after fix: Same 'Add first step' button mechanism now available in Improvement Flow empty state. Button visible and functional for adding steps to improvement flow."
+    },
+    {
+      "id": "TEST-010",
+      "title": "EC-001: Branching settings hidden for non-rating steps",
+      "description": "As a tester, I need to verify branching panel only shows for rating steps.",
+      "acceptanceCriteria": [
+        "Navigate to form studio",
+        "Select Welcome step",
+        "Verify Branching Settings panel is NOT visible",
+        "Select Short Answer step",
+        "Verify Branching Settings panel is NOT visible",
+        "Select Rating step",
+        "Verify Branching Settings panel IS visible"
+      ],
+      "priority": 10,
+      "passes": true,
+      "notes": "Verified Welcome step shows no Conditional Branching section. Verified Question step shows no Conditional Branching section. Verified Rating step DOES show Conditional Branching section with enable toggle, threshold selector, and flow metadata."
+    }
+  ]
+}
