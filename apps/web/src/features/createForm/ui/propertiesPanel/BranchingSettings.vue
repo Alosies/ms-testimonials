@@ -27,9 +27,11 @@ import {
   Button,
 } from '@testimonials/ui';
 import { useTimelineEditor } from '../../composables/timeline';
+import { useSaveLock } from '../../composables';
 import { FLOW_METADATA } from '@/entities/form';
 
 const editor = useTimelineEditor();
+const { isLocked } = useSaveLock();
 
 // Local switch state - synced with editor state
 const localSwitchState = ref(false);
@@ -119,6 +121,7 @@ function handleCancelDisable() {
       <Switch
         id="branching-toggle"
         :model-value="localSwitchState"
+        :disabled="isLocked"
         @update:model-value="handleBranchingToggle"
       />
     </div>
@@ -127,7 +130,7 @@ function handleCancelDisable() {
     <div v-if="localSwitchState" class="space-y-3">
       <div class="flex items-center justify-between">
         <Label class="text-sm">Threshold</Label>
-        <Select v-model="threshold">
+        <Select v-model="threshold" :disabled="isLocked">
           <SelectTrigger class="w-24 h-8">
             <SelectValue />
           </SelectTrigger>

@@ -57,7 +57,8 @@ const expandedFlowDescription = computed(() => {
 });
 
 async function handleInsert(afterIndex: number, type: StepType) {
-  await editor.handleAddStepAsync(type, afterIndex);
+  // ADR-011: Use persisting handler for immediate save
+  await editor.handleAddStepWithPersist(type, afterIndex);
 }
 
 function handleFocusTestimonial() {
@@ -95,10 +96,11 @@ function handleExpandedStepEdit(step: FormStep) {
   }
 }
 
-function handleExpandedStepRemove(step: FormStep) {
+async function handleExpandedStepRemove(step: FormStep) {
   const mainIndex = getMainIndex(step);
   if (mainIndex !== -1) {
-    editor.handleRemoveStep(mainIndex);
+    // ADR-011: Use persisting handler for immediate save
+    await editor.handleRemoveStepWithPersist(mainIndex);
   }
 }
 
@@ -136,7 +138,7 @@ defineExpose({
           :logo-url="editor.effectiveLogo.value"
           @select="editor.selectStep"
           @edit="editor.handleEditStep"
-          @remove="editor.handleRemoveStep"
+          @remove="editor.handleRemoveStepWithPersist"
           @insert="handleInsert"
         />
       </template>

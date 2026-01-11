@@ -1,0 +1,5 @@
+mutation UpdateQuestionOption($id: String!, $changes: question_options_set_input!) {
+  update_question_options_by_pk(pk_columns: { id: $id }, _set: $changes) {
+    ...QuestionOptionBasic
+  }
+}

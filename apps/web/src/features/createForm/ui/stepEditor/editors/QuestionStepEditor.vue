@@ -15,6 +15,9 @@ import {
 import { Icon } from '@testimonials/icons';
 import type { FormStep, LinkedQuestion, QuestionOption } from '@/shared/stepCards';
 import { useOrganizationStore } from '@/entities/organization';
+import { useQuestionSettings, useQuestionOptions, useSaveLock } from '../../../composables';
+import { useCurrentContextStore } from '@/shared/currentContext';
+import { useToast } from '@testimonials/ui';
 import QuestionOptionsSection from './childComponents/QuestionOptionsSection.vue';
 import RatingScaleSection from './childComponents/RatingScaleSection.vue';
 
@@ -31,6 +34,15 @@ const emit = defineEmits<{
 // Get allowed question types from organization's plan
 const organizationStore = useOrganizationStore();
 const { questionTypeOptions: questionTypes } = toRefs(organizationStore);
+
+// ADR-011: Immediate save for discrete question settings
+const { setRequired, setQuestionType } = useQuestionSettings();
+const { addOption: addOptionToDb, removeOption: removeOptionFromDb } = useQuestionOptions();
+const { isLocked } = useSaveLock();
+const { toast } = useToast();
+
+// Get organization and user context for option operations
+const contextStore = useCurrentContextStore();
 
 // Get current question data
 const question = computed(() => props.step.question);
@@ -64,12 +76,41 @@ function updateField<K extends keyof LinkedQuestion>(field: K, value: LinkedQues
   emit('update:question', { [field]: value });
 }
 
-// Update the question type (needs special handling as it's a nested object)
-function updateQuestionType(value: unknown) {
+/**
+ * ADR-011: Handle required toggle with immediate persistence.
+ * Updates local state immediately for responsive UI, then persists to DB.
+ */
+async function handleRequiredChange(value: boolean) {
+  if (!question.value?.id) return;
+
+  // Update local state immediately for responsive UI
+  emit('update:question', { isRequired: value });
+
+  // Persist to database
+  try {
+    await setRequired(question.value.id, value);
+  } catch (error) {
+    // Revert local state on failure
+    emit('update:question', { isRequired: !value });
+    toast({ title: 'Failed to update required setting', variant: 'destructive' });
+    console.error('[QuestionStepEditor] Failed to set required:', error);
+  }
+}
+
+/**
+ * ADR-011: Update the question type with immediate persistence.
+ * Updates local state immediately for responsive UI, then persists to DB.
+ */
+async function handleQuestionTypeChange(value: unknown) {
   if (!value || typeof value !== 'string') return;
+  if (!question.value?.id) return;
+
   const typeInfo = questionTypes.value.find((t) => t.id === value);
   if (!typeInfo) return;
 
+  const previousType = question.value.questionType;
+
+  // Update local state immediately for responsive UI
   emit('update:question', {
     questionType: {
       id: value,
@@ -79,22 +120,80 @@ function updateQuestionType(value: unknown) {
       inputComponent: value,
     },
   });
+
+  // Persist to database
+  try {
+    await setQuestionType(question.value.id, value);
+  } catch (error) {
+    // Revert local state on failure
+    emit('update:question', { questionType: previousType });
+    toast({ title: 'Failed to update question type', variant: 'destructive' });
+    console.error('[QuestionStepEditor] Failed to set question type:', error);
+  }
 }
 
-// Options management - delegate to child component
-function handleAddOption() {
-  if (!question.value) return;
+/**
+ * ADR-011: Add option with immediate persistence.
+ */
+async function handleAddOption() {
+  if (!question.value?.id) return;
+
+  const organizationId = contextStore.currentOrganizationId;
+  const userId = contextStore.currentUserId;
+  if (!organizationId || !userId) {
+    toast({ title: 'Cannot add option: missing context', variant: 'destructive' });
+    return;
+  }
+
   const currentOptions = question.value.options ?? [];
-  const newOption: QuestionOption = {
+  const displayOrder = currentOptions.length + 1;
+  const optionValue = `option_${displayOrder}`;
+
+  // Create temporary option for immediate UI feedback
+  const tempOption: QuestionOption = {
     id: `temp_${Date.now()}`,
-    optionValue: `option_${currentOptions.length + 1}`,
+    optionValue,
     optionLabel: '',
-    displayOrder: currentOptions.length + 1,
+    displayOrder,
     isDefault: false,
   };
-  emit('update:question', { options: [...currentOptions, newOption] });
+
+  // Update local state immediately
+  emit('update:question', { options: [...currentOptions, tempOption] });
+
+  // Persist to database
+  try {
+    const result = await addOptionToDb({
+      questionId: question.value.id,
+      organizationId,
+      userId,
+      label: '',
+      value: optionValue,
+      displayOrder,
+    });
+
+    // Replace temp option with real one
+    if (result) {
+      const updatedOptions = [...currentOptions, {
+        id: result.id,
+        optionValue: result.option_value,
+        optionLabel: result.option_label ?? '',
+        displayOrder: result.display_order,
+        isDefault: result.is_default ?? false,
+      }];
+      emit('update:question', { options: updatedOptions });
+    }
+  } catch (error) {
+    // Remove temp option on failure
+    emit('update:question', { options: currentOptions });
+    toast({ title: 'Failed to add option', variant: 'destructive' });
+    console.error('[QuestionStepEditor] Failed to add option:', error);
+  }
 }
 
+/**
+ * Update option label/value - handled by auto-save (text input debouncing)
+ */
 function handleUpdateOption(index: number, updates: Partial<QuestionOption>) {
   if (!question.value) return;
   const currentOptions = question.value.options ?? [];
@@ -104,13 +203,36 @@ function handleUpdateOption(index: number, updates: Partial<QuestionOption>) {
   emit('update:question', { options: updatedOptions });
 }
 
-function handleRemoveOption(index: number) {
+/**
+ * ADR-011: Remove option with immediate persistence.
+ */
+async function handleRemoveOption(index: number) {
   if (!question.value) return;
   const currentOptions = question.value.options ?? [];
+  const optionToRemove = currentOptions[index];
+
+  if (!optionToRemove) return;
+
+  // Update local state immediately
   const updatedOptions = currentOptions
     .filter((_, idx) => idx !== index)
     .map((opt, idx) => ({ ...opt, displayOrder: idx + 1 }));
   emit('update:question', { options: updatedOptions.length > 0 ? updatedOptions : [] });
+
+  // Only persist if option has a real ID (not temp)
+  if (optionToRemove.id.startsWith('temp_')) {
+    return; // No need to delete from DB
+  }
+
+  // Persist to database
+  try {
+    await removeOptionFromDb(optionToRemove.id);
+  } catch (error) {
+    // Revert local state on failure
+    emit('update:question', { options: currentOptions });
+    toast({ title: 'Failed to remove option', variant: 'destructive' });
+    console.error('[QuestionStepEditor] Failed to remove option:', error);
+  }
 }
 </script>
 
@@ -135,7 +257,8 @@ function handleRemoveOption(index: number) {
         <Label class="text-sm font-medium">Question Type</Label>
         <Select
           :model-value="question.questionType?.uniqueName"
-          @update:model-value="updateQuestionType"
+          :disabled="isLocked"
+          @update:model-value="handleQuestionTypeChange"
         >
           <SelectTrigger class="mt-1.5">
             <div class="flex items-center gap-2">
@@ -162,7 +285,8 @@ function handleRemoveOption(index: number) {
         <Label class="text-sm">Required</Label>
         <Switch
           :model-value="question.isRequired"
-          @update:model-value="(v) => updateField('isRequired', v)"
+          :disabled="isLocked"
+          @update:model-value="handleRequiredChange"
         />
       </div>
     </div>
@@ -172,6 +296,7 @@ function handleRemoveOption(index: number) {
       v-if="supportsOptions"
       :options="question.options ?? []"
       :question-type-name="question.questionType?.uniqueName ?? ''"
+      :disabled="isLocked"
       @add="handleAddOption"
       @update="handleUpdateOption"
       @remove="handleRemoveOption"

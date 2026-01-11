@@ -7,6 +7,8 @@ import type { QuestionOption } from '@/shared/stepCards';
 const props = defineProps<{
   options: QuestionOption[];
   questionTypeName: string;
+  /** Whether controls are disabled (e.g., during save) */
+  disabled?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -55,7 +57,7 @@ async function handleEnterKey() {
     <div class="rounded-lg border bg-gray-50 p-4">
       <div class="mb-3 flex items-center justify-between">
         <Label class="text-sm font-medium">Answer Options</Label>
-        <Button variant="outline" size="sm" class="h-8" @click="emit('add')">
+        <Button variant="outline" size="sm" class="h-8" :disabled="disabled" @click="emit('add')">
           <Icon icon="lucide:plus" class="mr-1.5 h-3.5 w-3.5" />
           Add Option
         </Button>
@@ -67,7 +69,7 @@ async function handleEnterKey() {
       >
         <Icon icon="lucide:list" class="mx-auto h-8 w-8 text-gray-300" />
         <p class="mt-2 text-sm text-gray-500">No options added yet</p>
-        <Button variant="ghost" size="sm" class="mt-2" @click="emit('add')">
+        <Button variant="ghost" size="sm" class="mt-2" :disabled="disabled" @click="emit('add')">
           Add your first option
         </Button>
       </div>
@@ -92,6 +94,7 @@ async function handleEnterKey() {
             :model-value="option.optionLabel"
             class="flex-1"
             placeholder="Enter option text..."
+            :disabled="disabled"
             @update:model-value="(v) => handleLabelChange(optIndex, String(v))"
             @keydown.enter.prevent="handleEnterKey"
           />
@@ -100,6 +103,7 @@ async function handleEnterKey() {
             variant="ghost"
             size="icon"
             class="h-8 w-8 shrink-0 text-gray-400 hover:text-red-500"
+            :disabled="disabled"
             @click="emit('remove', optIndex)"
           >
             <Icon icon="lucide:x" class="h-4 w-4" />

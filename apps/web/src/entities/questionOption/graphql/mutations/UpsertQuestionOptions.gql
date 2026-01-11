@@ -1,0 +1,13 @@
+mutation UpsertQuestionOptions($inputs: [question_options_insert_input!]!) {
+  insert_question_options(
+    objects: $inputs
+    on_conflict: {
+      constraint: question_options_pkey
+      update_columns: [option_label, option_value, display_order, is_default, is_active]
+    }
+  ) {
+    returning {
+      ...QuestionOptionBasic
+    }
+  }
+}

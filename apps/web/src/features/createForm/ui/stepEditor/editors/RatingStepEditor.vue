@@ -11,12 +11,14 @@ import {
   SelectTrigger,
   SelectValue,
   Separator,
+  useToast,
 } from '@testimonials/ui';
 import { Icon } from '@testimonials/icons';
 import type { FormStep, LinkedQuestion } from '@/shared/stepCards';
 import { FLOW_METADATA } from '@/entities/form';
 import { useDisableBranchingModal } from '@/shared/widgets';
 import { useTimelineEditor } from '../../../composables/timeline';
+import { useQuestionSettings, useSaveLock } from '../../../composables';
 
 interface Props {
   step: FormStep;
@@ -31,6 +33,11 @@ const emit = defineEmits<{
 const editor = useTimelineEditor();
 const { showDisableBranchingModal } = useDisableBranchingModal();
 
+// ADR-011: Immediate save for discrete question settings
+const { setRequired, setValidation } = useQuestionSettings();
+const { isLocked } = useSaveLock();
+const { toast } = useToast();
+
 // Get current question data
 const question = computed(() => props.step.question);
 
@@ -38,6 +45,51 @@ const question = computed(() => props.step.question);
 function updateField<K extends keyof LinkedQuestion>(field: K, value: LinkedQuestion[K]) {
   if (!question.value) return;
   emit('update:question', { [field]: value });
+}
+
+/**
+ * ADR-011: Handle required toggle with immediate persistence.
+ */
+async function handleRequiredChange(value: boolean) {
+  if (!question.value?.id) return;
+
+  // Update local state immediately for responsive UI
+  emit('update:question', { isRequired: value });
+
+  // Persist to database
+  try {
+    await setRequired(question.value.id, value);
+  } catch (error) {
+    // Revert local state on failure
+    emit('update:question', { isRequired: !value });
+    toast({ title: 'Failed to update required setting', variant: 'destructive' });
+    console.error('[RatingStepEditor] Failed to set required:', error);
+  }
+}
+
+/**
+ * ADR-011: Handle scale value changes with immediate persistence.
+ */
+async function handleScaleValueChange(field: 'minValue' | 'maxValue', value: number) {
+  if (!question.value?.id) return;
+
+  const previousValue = question.value[field];
+
+  // Update local state immediately for responsive UI
+  emit('update:question', { [field]: value });
+
+  // Persist to database
+  try {
+    const validation = field === 'minValue'
+      ? { min_value: value }
+      : { max_value: value };
+    await setValidation(question.value.id, validation);
+  } catch (error) {
+    // Revert local state on failure
+    emit('update:question', { [field]: previousValue });
+    toast({ title: 'Failed to update scale settings', variant: 'destructive' });
+    console.error('[RatingStepEditor] Failed to set scale value:', error);
+  }
 }
 
 // Branching state
@@ -121,7 +173,8 @@ function handleThresholdChange(value: unknown) {
           <Label class="text-xs text-gray-500">Start Value</Label>
           <Select
             :model-value="String(question.minValue ?? 1)"
-            @update:model-value="(v) => updateField('minValue', Number(v))"
+            :disabled="isLocked"
+            @update:model-value="(v) => handleScaleValueChange('minValue', Number(v))"
           >
             <SelectTrigger class="mt-1">
               <SelectValue />
@@ -136,7 +189,8 @@ function handleThresholdChange(value: unknown) {
           <Label class="text-xs text-gray-500">End Value</Label>
           <Select
             :model-value="String(question.maxValue ?? 5)"
-            @update:model-value="(v) => updateField('maxValue', Number(v))"
+            :disabled="isLocked"
+            @update:model-value="(v) => handleScaleValueChange('maxValue', Number(v))"
           >
             <SelectTrigger class="mt-1">
               <SelectValue />
@@ -184,7 +238,8 @@ function handleThresholdChange(value: unknown) {
       </div>
       <Switch
         :model-value="question.isRequired"
-        @update:model-value="(v) => updateField('isRequired', v)"
+        :disabled="isLocked"
+        @update:model-value="handleRequiredChange"
       />
     </div>
 
@@ -218,7 +273,7 @@ function handleThresholdChange(value: unknown) {
         </div>
         <Switch
           :model-value="isBranchingEnabled && isThisStepBranchPoint"
-          :disabled="isBranchingEnabled && !isThisStepBranchPoint"
+          :disabled="isLocked || (isBranchingEnabled && !isThisStepBranchPoint)"
           @update:model-value="handleBranchingToggle"
         />
       </div>
@@ -246,6 +301,7 @@ function handleThresholdChange(value: unknown) {
           </p>
           <Select
             :model-value="String(threshold)"
+            :disabled="isLocked"
             @update:model-value="handleThresholdChange"
           >
             <SelectTrigger class="w-full">

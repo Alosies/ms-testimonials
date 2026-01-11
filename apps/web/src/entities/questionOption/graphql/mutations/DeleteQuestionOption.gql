@@ -1,0 +1,5 @@
+mutation DeleteQuestionOption($id: String!) {
+  delete_question_options_by_pk(id: $id) {
+    id
+  }
+}

@@ -1,5 +1,5 @@
 #import "./FormQuestionBasic.gql"
-#import "./QuestionOptionBasic.gql"
+#import "../../../questionOption/graphql/fragments/QuestionOptionBasic.gql"
 
 fragment FormQuestionWithOptions on form_questions {
   ...FormQuestionBasic

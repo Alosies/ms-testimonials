@@ -1,0 +1,5 @@
+mutation CreateQuestionOption($input: question_options_insert_input!) {
+  insert_question_options_one(object: $input) {
+    ...QuestionOptionBasic
+  }
+}

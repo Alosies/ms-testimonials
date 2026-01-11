@@ -13,3 +13,11 @@ export { useCreateFormWithSteps, type CreateFormWithStepsParams, type CreateForm
 
 // Timeline editor
 export * from './timeline';
+
+// ADR-011: Immediate save composables
+export { useQuestionSettings } from './useQuestionSettings';
+export { useQuestionOptions } from './useQuestionOptions';
+export { useFlowSettings } from './useFlowSettings';
+
+// Auto-save infrastructure
+export * from './autoSave';

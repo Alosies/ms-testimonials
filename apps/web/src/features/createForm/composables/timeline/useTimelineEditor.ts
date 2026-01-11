@@ -204,6 +204,69 @@ export const useTimelineEditor = createSharedComposable(() => {
   }
 
   // ============================================
+  // ADR-011: Persistence Handlers
+  // ============================================
+
+  /**
+   * Add step with immediate persistence to database.
+   * Coordinates local state + selection with DB persistence.
+   */
+  async function handleAddStepWithPersist(type: StepType, afterIndex?: number): Promise<number> {
+    const newStep = await stepCrud.addStepWithPersist(type, afterIndex);
+    const newIndex = steps.value.indexOf(newStep);
+    selectStep(newIndex);
+    return newIndex;
+  }
+
+  /**
+   * Remove step with immediate persistence to database.
+   * Same branch point protection as handleRemoveStep.
+   */
+  async function handleRemoveStepWithPersist(index: number): Promise<void> {
+    const stepToRemove = steps.value[index];
+
+    // ADR-009 Phase 2: Prevent deletion of branch point step
+    if (
+      branching.isBranchingEnabled.value &&
+      branching.branchPointStep.value &&
+      stepToRemove?.id === branching.branchPointStep.value.id
+    ) {
+      const stepName =
+        stepToRemove.question?.questionText ||
+        (stepToRemove.content as { title?: string })?.title ||
+        'Rating Step';
+      showBlockedMessage({
+        actionType: 'delete_step_blocked',
+        entityName: stepName,
+      });
+      return;
+    }
+
+    await stepCrud.removeStepWithPersist(index);
+    if (selectedIndex.value >= steps.value.length) {
+      selectStep(Math.max(0, steps.value.length - 1));
+    }
+  }
+
+  /**
+   * Reorder steps with immediate persistence to database.
+   */
+  async function handleReorderStepsWithPersist(fromIndex: number, toIndex: number): Promise<void> {
+    await stepCrud.reorderStepsWithPersist(fromIndex, toIndex);
+  }
+
+  /**
+   * Duplicate step with immediate persistence to database.
+   */
+  async function handleDuplicateStepWithPersist(index: number): Promise<number | null> {
+    const newStep = await stepCrud.duplicateStepWithPersist(index);
+    if (!newStep) return null;
+    const newIndex = steps.value.indexOf(newStep);
+    selectStep(newIndex);
+    return newIndex;
+  }
+
+  // ============================================
   // Return API
   // ============================================
   return {
@@ -249,12 +312,24 @@ export const useTimelineEditor = createSharedComposable(() => {
     duplicateStep: stepCrud.duplicateStep,
     changeStepType: stepCrud.changeStepType,
 
-    // Coordinated Actions
+    // Coordinated Actions (local-only, for compatibility)
     handleAddStep,
     handleAddStepAsync,
     handleEditStep,
     handleRemoveStep,
     handleCloseEditor,
+
+    // ADR-011: Persistence Actions (immediate save)
+    handleAddStepWithPersist,
+    handleRemoveStepWithPersist,
+    handleReorderStepsWithPersist,
+    handleDuplicateStepWithPersist,
+
+    // Raw persist methods from stepCrud
+    addStepWithPersist: stepCrud.addStepWithPersist,
+    removeStepWithPersist: stepCrud.removeStepWithPersist,
+    reorderStepsWithPersist: stepCrud.reorderStepsWithPersist,
+    duplicateStepWithPersist: stepCrud.duplicateStepWithPersist,
 
     // Branching State
     branchingConfig: readonly(branching.branchingConfig),

@@ -18470,8 +18470,6 @@ export type FormQuestionBasicFragment = { __typename?: 'form_questions', id: str
 
 export type FormQuestionWithOptionsFragment = { __typename?: 'form_questions', scale_min_label?: string | null, scale_max_label?: string | null, id: string, form_id: string, organization_id: string, question_type_id: string, question_key: string, question_text: string, placeholder?: string | null, help_text?: string | null, display_order: number, is_required: boolean, min_length?: number | null, max_length?: number | null, min_value?: number | null, max_value?: number | null, validation_pattern?: string | null, allowed_file_types?: Array<string> | null, max_file_size_kb?: number | null, is_active: boolean, created_at: string, updated_at: string, options: Array<{ __typename?: 'question_options', id: string, question_id: string, option_value: string, option_label: string, display_order: number, is_default: boolean, is_active: boolean }>, question_type: { __typename?: 'question_types', id: string, unique_name: string, name: string, category: string, input_component: string } };
 
-export type QuestionOptionBasicFragment = { __typename?: 'question_options', id: string, question_id: string, option_value: string, option_label: string, display_order: number, is_default: boolean, is_active: boolean };
-
 export type CreateFormQuestionMutationVariables = Exact<{
   input: Form_Questions_Insert_Input;
 }>;
@@ -18621,6 +18619,37 @@ export type GetPlansQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type GetPlansQuery = { __typename?: 'query_root', plans: Array<{ __typename?: 'plans', id: string, unique_name: string, name: string, description?: string | null, max_forms: number, max_members: number, max_testimonials: number, max_widgets: number, show_branding: boolean, is_active: boolean, created_at: string, updated_at: string }> };
+
+export type QuestionOptionBasicFragment = { __typename?: 'question_options', id: string, question_id: string, option_value: string, option_label: string, display_order: number, is_default: boolean, is_active: boolean };
+
+export type CreateQuestionOptionMutationVariables = Exact<{
+  input: Question_Options_Insert_Input;
+}>;
+
+
+export type CreateQuestionOptionMutation = { __typename?: 'mutation_root', insert_question_options_one?: { __typename?: 'question_options', id: string, question_id: string, option_value: string, option_label: string, display_order: number, is_default: boolean, is_active: boolean } | null };
+
+export type DeleteQuestionOptionMutationVariables = Exact<{
+  id: Scalars['String']['input'];
+}>;
+
+
+export type DeleteQuestionOptionMutation = { __typename?: 'mutation_root', delete_question_options_by_pk?: { __typename?: 'question_options', id: string } | null };
+
+export type UpdateQuestionOptionMutationVariables = Exact<{
+  id: Scalars['String']['input'];
+  changes: Question_Options_Set_Input;
+}>;
+
+
+export type UpdateQuestionOptionMutation = { __typename?: 'mutation_root', update_question_options_by_pk?: { __typename?: 'question_options', id: string, question_id: string, option_value: string, option_label: string, display_order: number, is_default: boolean, is_active: boolean } | null };
+
+export type UpsertQuestionOptionsMutationVariables = Exact<{
+  inputs: Array<Question_Options_Insert_Input> | Question_Options_Insert_Input;
+}>;
+
+
+export type UpsertQuestionOptionsMutation = { __typename?: 'mutation_root', insert_question_options?: { __typename?: 'question_options_mutation_response', returning: Array<{ __typename?: 'question_options', id: string, question_id: string, option_value: string, option_label: string, display_order: number, is_default: boolean, is_active: boolean }> } | null };
 
 export type QuestionTypeBasicFragment = { __typename?: 'question_types', id: string, unique_name: string, name: string, description?: string | null, category: string, input_component: string, answer_data_type: string, display_order: number, is_active: boolean, supports_min_length: boolean, supports_max_length: boolean, supports_min_value: boolean, supports_max_value: boolean, supports_options: boolean, supports_pattern: boolean, supports_file_types: boolean, supports_max_file_size: boolean, default_min_value?: number | null, default_max_value?: number | null };
 
@@ -19997,6 +20026,128 @@ export function useGetPlansLazyQuery(options: VueApolloComposable.UseQueryOption
   return VueApolloComposable.useLazyQuery<GetPlansQuery, GetPlansQueryVariables>(GetPlansDocument, {}, options);
 }
 export type GetPlansQueryCompositionFunctionResult = VueApolloComposable.UseQueryReturn<GetPlansQuery, GetPlansQueryVariables>;
+export const CreateQuestionOptionDocument = gql`
+    mutation CreateQuestionOption($input: question_options_insert_input!) {
+  insert_question_options_one(object: $input) {
+    ...QuestionOptionBasic
+  }
+}
+    ${QuestionOptionBasicFragmentDoc}`;
+
+/**
+ * __useCreateQuestionOptionMutation__
+ *
+ * To run a mutation, you first call `useCreateQuestionOptionMutation` within a Vue component and pass it any options that fit your needs.
+ * When your component renders, `useCreateQuestionOptionMutation` returns an object that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - Several other properties: https://v4.apollo.vuejs.org/api/use-mutation.html#return
+ *
+ * @param options that will be passed into the mutation, supported options are listed on: https://v4.apollo.vuejs.org/guide-composable/mutation.html#options;
+ *
+ * @example
+ * const { mutate, loading, error, onDone } = useCreateQuestionOptionMutation({
+ *   variables: {
+ *     input: // value for 'input'
+ *   },
+ * });
+ */
+export function useCreateQuestionOptionMutation(options: VueApolloComposable.UseMutationOptions<CreateQuestionOptionMutation, CreateQuestionOptionMutationVariables> | ReactiveFunction<VueApolloComposable.UseMutationOptions<CreateQuestionOptionMutation, CreateQuestionOptionMutationVariables>> = {}) {
+  return VueApolloComposable.useMutation<CreateQuestionOptionMutation, CreateQuestionOptionMutationVariables>(CreateQuestionOptionDocument, options);
+}
+export type CreateQuestionOptionMutationCompositionFunctionResult = VueApolloComposable.UseMutationReturn<CreateQuestionOptionMutation, CreateQuestionOptionMutationVariables>;
+export const DeleteQuestionOptionDocument = gql`
+    mutation DeleteQuestionOption($id: String!) {
+  delete_question_options_by_pk(id: $id) {
+    id
+  }
+}
+    `;
+
+/**
+ * __useDeleteQuestionOptionMutation__
+ *
+ * To run a mutation, you first call `useDeleteQuestionOptionMutation` within a Vue component and pass it any options that fit your needs.
+ * When your component renders, `useDeleteQuestionOptionMutation` returns an object that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - Several other properties: https://v4.apollo.vuejs.org/api/use-mutation.html#return
+ *
+ * @param options that will be passed into the mutation, supported options are listed on: https://v4.apollo.vuejs.org/guide-composable/mutation.html#options;
+ *
+ * @example
+ * const { mutate, loading, error, onDone } = useDeleteQuestionOptionMutation({
+ *   variables: {
+ *     id: // value for 'id'
+ *   },
+ * });
+ */
+export function useDeleteQuestionOptionMutation(options: VueApolloComposable.UseMutationOptions<DeleteQuestionOptionMutation, DeleteQuestionOptionMutationVariables> | ReactiveFunction<VueApolloComposable.UseMutationOptions<DeleteQuestionOptionMutation, DeleteQuestionOptionMutationVariables>> = {}) {
+  return VueApolloComposable.useMutation<DeleteQuestionOptionMutation, DeleteQuestionOptionMutationVariables>(DeleteQuestionOptionDocument, options);
+}
+export type DeleteQuestionOptionMutationCompositionFunctionResult = VueApolloComposable.UseMutationReturn<DeleteQuestionOptionMutation, DeleteQuestionOptionMutationVariables>;
+export const UpdateQuestionOptionDocument = gql`
+    mutation UpdateQuestionOption($id: String!, $changes: question_options_set_input!) {
+  update_question_options_by_pk(pk_columns: {id: $id}, _set: $changes) {
+    ...QuestionOptionBasic
+  }
+}
+    ${QuestionOptionBasicFragmentDoc}`;
+
+/**
+ * __useUpdateQuestionOptionMutation__
+ *
+ * To run a mutation, you first call `useUpdateQuestionOptionMutation` within a Vue component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateQuestionOptionMutation` returns an object that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - Several other properties: https://v4.apollo.vuejs.org/api/use-mutation.html#return
+ *
+ * @param options that will be passed into the mutation, supported options are listed on: https://v4.apollo.vuejs.org/guide-composable/mutation.html#options;
+ *
+ * @example
+ * const { mutate, loading, error, onDone } = useUpdateQuestionOptionMutation({
+ *   variables: {
+ *     id: // value for 'id'
+ *     changes: // value for 'changes'
+ *   },
+ * });
+ */
+export function useUpdateQuestionOptionMutation(options: VueApolloComposable.UseMutationOptions<UpdateQuestionOptionMutation, UpdateQuestionOptionMutationVariables> | ReactiveFunction<VueApolloComposable.UseMutationOptions<UpdateQuestionOptionMutation, UpdateQuestionOptionMutationVariables>> = {}) {
+  return VueApolloComposable.useMutation<UpdateQuestionOptionMutation, UpdateQuestionOptionMutationVariables>(UpdateQuestionOptionDocument, options);
+}
+export type UpdateQuestionOptionMutationCompositionFunctionResult = VueApolloComposable.UseMutationReturn<UpdateQuestionOptionMutation, UpdateQuestionOptionMutationVariables>;
+export const UpsertQuestionOptionsDocument = gql`
+    mutation UpsertQuestionOptions($inputs: [question_options_insert_input!]!) {
+  insert_question_options(
+    objects: $inputs
+    on_conflict: {constraint: question_options_pkey, update_columns: [option_label, option_value, display_order, is_default, is_active]}
+  ) {
+    returning {
+      ...QuestionOptionBasic
+    }
+  }
+}
+    ${QuestionOptionBasicFragmentDoc}`;
+
+/**
+ * __useUpsertQuestionOptionsMutation__
+ *
+ * To run a mutation, you first call `useUpsertQuestionOptionsMutation` within a Vue component and pass it any options that fit your needs.
+ * When your component renders, `useUpsertQuestionOptionsMutation` returns an object that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - Several other properties: https://v4.apollo.vuejs.org/api/use-mutation.html#return
+ *
+ * @param options that will be passed into the mutation, supported options are listed on: https://v4.apollo.vuejs.org/guide-composable/mutation.html#options;
+ *
+ * @example
+ * const { mutate, loading, error, onDone } = useUpsertQuestionOptionsMutation({
+ *   variables: {
+ *     inputs: // value for 'inputs'
+ *   },
+ * });
+ */
+export function useUpsertQuestionOptionsMutation(options: VueApolloComposable.UseMutationOptions<UpsertQuestionOptionsMutation, UpsertQuestionOptionsMutationVariables> | ReactiveFunction<VueApolloComposable.UseMutationOptions<UpsertQuestionOptionsMutation, UpsertQuestionOptionsMutationVariables>> = {}) {
+  return VueApolloComposable.useMutation<UpsertQuestionOptionsMutation, UpsertQuestionOptionsMutationVariables>(UpsertQuestionOptionsDocument, options);
+}
+export type UpsertQuestionOptionsMutationCompositionFunctionResult = VueApolloComposable.UseMutationReturn<UpsertQuestionOptionsMutation, UpsertQuestionOptionsMutationVariables>;
 export const GetQuestionTypesDocument = gql`
     query GetQuestionTypes {
   question_types(where: {is_active: {_eq: true}}, order_by: {display_order: asc}) {

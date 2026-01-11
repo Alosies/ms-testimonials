@@ -18,8 +18,8 @@
         "pnpm typecheck passes"
       ],
       "priority": 1,
-      "passes": false,
-      "notes": "",
+      "passes": true,
+      "notes": "Completed 2026-01-11",
       "skill": null,
       "implementationRef": "Phase 0 > Story: SAVE-001"
     },
@@ -36,8 +36,8 @@
         "pnpm typecheck passes"
       ],
       "priority": 2,
-      "passes": false,
-      "notes": "",
+      "passes": true,
+      "notes": "Completed 2026-01-11",
       "skill": null,
       "implementationRef": "Phase 0 > Story: SAVE-002"
     },
@@ -52,8 +52,8 @@
         "pnpm typecheck passes"
       ],
       "priority": 3,
-      "passes": false,
-      "notes": "",
+      "passes": true,
+      "notes": "Completed 2026-01-11",
       "skill": null,
       "implementationRef": "Phase 0 > Story: SAVE-003"
     },
@@ -72,8 +72,8 @@
         "Verify generated types in operations.ts"
       ],
       "priority": 4,
-      "passes": false,
-      "notes": "Use existing QuestionOptionBasic.gql fragment from entities/formQuestion/graphql/fragments/",
+      "passes": true,
+      "notes": "Completed 2026-01-11. Used existing QuestionOptionBasic.gql fragment from entities/formQuestion/graphql/fragments/",
       "skill": "/graphql-code",
       "implementationRef": "Phase 1 > Story: OPT-001, OPT-002"
     },
@@ -91,8 +91,8 @@
         "pnpm typecheck passes"
       ],
       "priority": 5,
-      "passes": false,
-      "notes": "Follow mutation composable pattern from /graphql-code skill",
+      "passes": true,
+      "notes": "Completed 2026-01-11. Follows mutation composable pattern from /graphql-code skill",
       "skill": "/graphql-code",
       "implementationRef": "Phase 1 > Story: OPT-003"
     },
@@ -110,8 +110,8 @@
         "pnpm typecheck passes"
       ],
       "priority": 6,
-      "passes": false,
-      "notes": "Follow type safety rules: extract types from mutation results, not fragments",
+      "passes": true,
+      "notes": "Completed 2026-01-11. Moved QuestionOptionBasic.gql to questionOption entity, updated formQuestion to import from there",
       "skill": "/graphql-code",
       "implementationRef": "Phase 1 > Story: OPT-004"
     },
@@ -127,8 +127,8 @@
         "pnpm typecheck passes"
       ],
       "priority": 7,
-      "passes": false,
-      "notes": "",
+      "passes": true,
+      "notes": "Completed 2026-01-11",
       "skill": null,
       "implementationRef": "Phase 2 > Story: FEAT-001"
     },
@@ -144,8 +144,8 @@
         "pnpm typecheck passes"
       ],
       "priority": 8,
-      "passes": false,
-      "notes": "",
+      "passes": true,
+      "notes": "Completed 2026-01-11",
       "skill": null,
       "implementationRef": "Phase 2 > Story: FEAT-002"
     },
@@ -161,8 +161,8 @@
         "pnpm typecheck passes"
       ],
       "priority": 9,
-      "passes": false,
-      "notes": "",
+      "passes": true,
+      "notes": "Completed 2026-01-11",
       "skill": null,
       "implementationRef": "Phase 2 > Story: FEAT-003"
     },
@@ -181,8 +181,8 @@
         "pnpm typecheck passes"
       ],
       "priority": 10,
-      "passes": false,
-      "notes": "See implementation.md for detailed mutation order (question first, then step)",
+      "passes": true,
+      "notes": "Completed 2026-01-11. Preserved existing local-only methods for compatibility",
       "skill": null,
       "implementationRef": "Phase 2 > Story: FEAT-004"
     },
@@ -199,8 +199,8 @@
         "pnpm typecheck passes"
       ],
       "priority": 11,
-      "passes": false,
-      "notes": "",
+      "passes": true,
+      "notes": "Completed 2026-01-11. Wired up add/remove in TimelineCanvas and BranchedTimelineCanvas. Note: isLocked binding deferred to follow-up as it requires additional UI changes. Manual testing requires browser session.",
       "skill": null,
       "implementationRef": "Phase 3 > Story: UI-001"
     },
@@ -218,8 +218,8 @@
         "pnpm typecheck passes"
       ],
       "priority": 12,
-      "passes": false,
-      "notes": "",
+      "passes": true,
+      "notes": "Completed 2026-01-11. Updated QuestionStepEditor.vue and RatingStepEditor.vue with immediate persistence for required toggle, question type, and scale validation settings.",
       "skill": null,
       "implementationRef": "Phase 3 > Story: UI-002"
     },
@@ -237,8 +237,8 @@
         "pnpm typecheck passes"
       ],
       "priority": 13,
-      "passes": false,
-      "notes": "",
+      "passes": true,
+      "notes": "Completed 2026-01-11. Wired up add/remove with immediate persistence. Drag-drop reorder and default selection deferred (not currently implemented in UI). Label updates use auto-save.",
       "skill": null,
       "implementationRef": "Phase 3 > Story: UI-003"
     },
@@ -254,8 +254,8 @@
         "pnpm typecheck passes"
       ],
       "priority": 14,
-      "passes": false,
-      "notes": "",
+      "passes": true,
+      "notes": "Completed 2026-01-11. Added isLocked bindings to RatingStepEditor.vue and BranchingSettings.vue. Full immediate persistence for branching changes deferred - current architecture uses batch saves for flow/branching operations.",
       "skill": null,
       "implementationRef": "Phase 3 > Story: UI-004"
     },

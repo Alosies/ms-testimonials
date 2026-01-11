@@ -18,6 +18,7 @@
 import { ref, readonly, toRefs, nextTick } from 'vue';
 import { createSharedComposable, useIdle, whenever } from '@vueuse/core';
 import { useDirtyTracker } from './useDirtyTracker';
+import { useSaveLock } from './useSaveLock';
 import { useTimelineEditor } from '../timeline/useTimelineEditor';
 import { useCurrentContextStore } from '@/shared/currentContext';
 import { useUpdateFormAutoSave } from '@/entities/form';
@@ -43,6 +44,7 @@ export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
 export const useAutoSaveController = createSharedComposable(() => {
   const { snapshot, restoreDirtyState, hasPendingChanges } = useDirtyTracker();
+  const { isLocked, acquireLock, releaseLock } = useSaveLock();
   const editor = useTimelineEditor();
   const contextStore = useCurrentContextStore();
   const { currentOrganizationId } = toRefs(contextStore);
@@ -95,12 +97,21 @@ export const useAutoSaveController = createSharedComposable(() => {
    * Execute save for all dirty entities.
    *
    * Critical flow:
-   * 1. Capture dirty state snapshot ATOMICALLY (before clearing)
-   * 2. Clear dirty state immediately (prevents duplicate saves)
-   * 3. Run all applicable handlers in PARALLEL
-   * 4. On error: restore dirty state so retry is possible
+   * 1. Check if lock is held (immediate save in progress) - skip if so
+   * 2. Try to acquire lock - skip if unavailable
+   * 3. Capture dirty state snapshot ATOMICALLY (before clearing)
+   * 4. Clear dirty state immediately (prevents duplicate saves)
+   * 5. Run all applicable handlers in PARALLEL
+   * 6. On error: restore dirty state so retry is possible
+   * 7. Release lock in finally block
    */
   const executeSave = async () => {
+    // Skip if already locked (immediate save in progress)
+    if (isLocked.value) {
+      console.log('[AutoSave] Skipped - immediate save in progress');
+      return;
+    }
+
     if (!hasPendingChanges.value) return;
 
     const formId = editor.currentFormId.value;
@@ -111,53 +122,63 @@ export const useAutoSaveController = createSharedComposable(() => {
       return;
     }
 
-    // Transition to saving state
-    saveStatus.value = 'saving';
-    lastError.value = null;
-
-    // ATOMIC: Capture current dirty state and clear it
-    // This prevents race conditions where new changes during save
-    // would be lost when clearing after save completes
-    const toSave = snapshot();
+    // Try to acquire lock - skip if unavailable (dirty state preserved)
+    if (!acquireLock('auto-save')) {
+      console.log('[AutoSave] Could not acquire lock');
+      return;
+    }
 
     try {
-      const promises: Promise<void>[] = [];
+      // Transition to saving state
+      saveStatus.value = 'saving';
+      lastError.value = null;
 
-      // Queue applicable handlers for parallel execution
-      if (toSave.formInfo) {
-        promises.push(saveFormInfo(formId));
-      }
-      if (toSave.questions.size > 0) {
-        promises.push(saveQuestions(toSave.questions));
-      }
-      if (toSave.options.size > 0) {
-        promises.push(saveOptions(toSave.options));
-      }
-      if (toSave.steps.size > 0) {
-        promises.push(saveSteps(toSave.steps));
-      }
-      if (toSave.flows.size > 0) {
-        promises.push(saveFlows(toSave.flows));
-      }
+      // ATOMIC: Capture current dirty state and clear it
+      // This prevents race conditions where new changes during save
+      // would be lost when clearing after save completes
+      const toSave = snapshot();
 
-      // Execute all saves in parallel
-      await Promise.all(promises);
+      try {
+        const promises: Promise<void>[] = [];
 
-      // Transition: saving → saved → idle
-      saveStatus.value = 'saved';
-      await nextTick();
-      saveStatus.value = 'idle';
+        // Queue applicable handlers for parallel execution
+        if (toSave.formInfo) {
+          promises.push(saveFormInfo(formId));
+        }
+        if (toSave.questions.size > 0) {
+          promises.push(saveQuestions(toSave.questions));
+        }
+        if (toSave.options.size > 0) {
+          promises.push(saveOptions(toSave.options));
+        }
+        if (toSave.steps.size > 0) {
+          promises.push(saveSteps(toSave.steps));
+        }
+        if (toSave.flows.size > 0) {
+          promises.push(saveFlows(toSave.flows));
+        }
 
-    } catch (error) {
-      // ERROR: Restore dirty state so user can retry
-      // This prevents data loss when save fails
-      saveStatus.value = 'error';
-      lastError.value = error instanceof Error ? error : new Error(String(error));
-      console.error('[AutoSave] Save failed:', error);
+        // Execute all saves in parallel
+        await Promise.all(promises);
 
-      // CRITICAL: Restore the captured dirty state
-      // Without this, changes would be lost on error
-      restoreDirtyState(toSave);
+        // Transition: saving → saved → idle
+        saveStatus.value = 'saved';
+        await nextTick();
+        saveStatus.value = 'idle';
+
+      } catch (error) {
+        // ERROR: Restore dirty state so user can retry
+        // This prevents data loss when save fails
+        saveStatus.value = 'error';
+        lastError.value = error instanceof Error ? error : new Error(String(error));
+        console.error('[AutoSave] Save failed:', error);
+
+        // CRITICAL: Restore the captured dirty state
+        // Without this, changes would be lost on error
+        restoreDirtyState(toSave);
+      }
+    } finally {
+      releaseLock();
     }
   };
 

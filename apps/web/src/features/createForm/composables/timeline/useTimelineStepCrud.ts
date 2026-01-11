@@ -7,8 +7,8 @@
  * These are wrapper functions that delegate to pure functions in useStepOperations
  * while providing access to the shared form context.
  *
- * NOTE: Auto-save will be implemented via ADR-010 Centralized Auto-Save Controller.
- * This composable only handles state mutations, not persistence triggering.
+ * ADR-011: Adds *WithPersist methods for immediate save of discrete actions.
+ * These methods use the save lock to coordinate with auto-save.
  */
 import type { Ref } from 'vue';
 import type { FormStep, StepType, StepContent, FormContext, LinkedQuestion } from '@/shared/stepCards';
@@ -21,6 +21,10 @@ import {
   changeStepTypeAt,
 } from '../../functions/stepOperations';
 import { useStepQuestionService } from './useStepQuestionService';
+import { useSaveLock } from '../autoSave';
+import { useCreateFormSteps, useDeleteFormSteps, useUpsertFormSteps } from '@/entities/formStep/composables';
+import { useCurrentContextStore } from '@/shared/currentContext';
+import { toRefs } from 'vue';
 
 interface StepCrudDeps {
   steps: Ref<FormStep[]>;
@@ -29,6 +33,7 @@ interface StepCrudDeps {
 }
 
 export interface TimelineStepCrudReturn {
+  // Local-only methods (for compatibility)
   addStep: (type: StepType, afterIndex?: number) => FormStep;
   addStepAsync: (type: StepType, afterIndex?: number) => Promise<FormStep>;
   removeStep: (index: number) => void;
@@ -39,11 +44,25 @@ export interface TimelineStepCrudReturn {
   moveStep: (fromIndex: number, toIndex: number) => void;
   duplicateStep: (index: number) => FormStep | null;
   changeStepType: (index: number, newType: StepType) => void;
+
+  // ADR-011: Persisting methods (immediate save with lock)
+  addStepWithPersist: (type: StepType, afterIndex?: number) => Promise<FormStep>;
+  removeStepWithPersist: (index: number) => Promise<void>;
+  reorderStepsWithPersist: (fromIndex: number, toIndex: number) => Promise<void>;
+  duplicateStepWithPersist: (index: number) => Promise<FormStep | null>;
 }
 
 export function useTimelineStepCrud(deps: StepCrudDeps): TimelineStepCrudReturn {
   const { steps, formId, formContext } = deps;
   const questionService = useStepQuestionService();
+
+  // ADR-011: Initialize persistence composables
+  const { withLock } = useSaveLock();
+  const { createFormSteps } = useCreateFormSteps();
+  const { deleteFormSteps } = useDeleteFormSteps();
+  const { upsertFormSteps } = useUpsertFormSteps();
+  const contextStore = useCurrentContextStore();
+  const { currentOrganizationId } = toRefs(contextStore);
 
   function addStep(type: StepType, afterIndex?: number): FormStep {
     return addStepAt({
@@ -167,7 +186,171 @@ export function useTimelineStepCrud(deps: StepCrudDeps): TimelineStepCrudReturn 
     changeStepTypeAt({ steps: steps.value, index, newType, ctx: formContext.value });
   }
 
+  // ============================================
+  // ADR-011: Persistence Methods
+  // ============================================
+
+  /**
+   * Add a step with immediate persistence.
+   * Creates question first (if needed), then persists the step.
+   */
+  async function addStepWithPersist(type: StepType, afterIndex?: number): Promise<FormStep> {
+    return withLock('add-step', async () => {
+      const currentFormId = formId.value;
+      const orgId = currentOrganizationId.value;
+
+      if (!currentFormId || !orgId) {
+        throw new Error('Cannot add step: missing formId or organizationId');
+      }
+
+      // Create step locally first (with question if needed)
+      const newStep = await addStepAsync(type, afterIndex);
+
+      // Persist the step to database
+      await createFormSteps({
+        inputs: [{
+          id: newStep.id,
+          form_id: currentFormId,
+          organization_id: orgId,
+          step_type: newStep.stepType,
+          step_order: newStep.stepOrder,
+          question_id: newStep.questionId ?? null,
+          flow_id: newStep.flowId ?? null,
+          flow_membership: newStep.flowMembership ?? 'shared',
+          tips: newStep.tips ?? [],
+          content: newStep.content ?? {},
+          is_active: true,
+        }],
+      });
+
+      return newStep;
+    });
+  }
+
+  /**
+   * Remove a step with immediate persistence.
+   * FK CASCADE handles question/option cleanup.
+   */
+  async function removeStepWithPersist(index: number): Promise<void> {
+    return withLock('remove-step', async () => {
+      const step = steps.value[index];
+      if (!step) return;
+
+      // Delete from database first (FK CASCADE handles related entities)
+      await deleteFormSteps({ ids: [step.id] });
+
+      // Update local state
+      removeStep(index);
+    });
+  }
+
+  /**
+   * Reorder steps with immediate persistence.
+   * Updates display_order for all affected steps.
+   */
+  async function reorderStepsWithPersist(fromIndex: number, toIndex: number): Promise<void> {
+    return withLock('reorder-steps', async () => {
+      // Update local state first
+      moveStep(fromIndex, toIndex);
+
+      // Batch update step_order values
+      const updates = steps.value.map((step, idx) => ({
+        id: step.id,
+        step_order: idx,
+      }));
+
+      await upsertFormSteps({ inputs: updates });
+    });
+  }
+
+  /**
+   * Duplicate a step with immediate persistence.
+   * Creates question copy first (if needed), then persists the new step.
+   */
+  async function duplicateStepWithPersist(index: number): Promise<FormStep | null> {
+    return withLock('duplicate-step', async () => {
+      const currentFormId = formId.value;
+      const orgId = currentOrganizationId.value;
+
+      if (!currentFormId || !orgId) {
+        throw new Error('Cannot duplicate step: missing formId or organizationId');
+      }
+
+      const sourceStep = steps.value[index];
+      if (!sourceStep) return null;
+
+      // Create the duplicate locally
+      const newStep = duplicateStep(index);
+      if (!newStep) return null;
+
+      // If source has a question, create a new question for the duplicate
+      if (questionService.requiresQuestion(newStep.stepType)) {
+        const result = await questionService.createQuestionForStep({
+          formId: currentFormId,
+          stepType: newStep.stepType,
+          stepOrder: newStep.stepOrder,
+          flowMembership: newStep.flowMembership,
+        });
+
+        if (result) {
+          // Update the step with the new questionId
+          const stepIndex = steps.value.findIndex(s => s.id === newStep.id);
+          if (stepIndex >= 0) {
+            const linkedQuestion: LinkedQuestion = {
+              id: result.questionId,
+              questionText: result.questionText,
+              placeholder: sourceStep.question?.placeholder ?? null,
+              helpText: sourceStep.question?.helpText ?? null,
+              isRequired: sourceStep.question?.isRequired ?? false,
+              minValue: sourceStep.question?.minValue ?? null,
+              maxValue: sourceStep.question?.maxValue ?? null,
+              minLength: sourceStep.question?.minLength ?? null,
+              maxLength: sourceStep.question?.maxLength ?? null,
+              scaleMinLabel: sourceStep.question?.scaleMinLabel ?? null,
+              scaleMaxLabel: sourceStep.question?.scaleMaxLabel ?? null,
+              questionType: sourceStep.question?.questionType ?? {
+                id: '',
+                uniqueName: 'text_long',
+                name: 'Long Text',
+                category: 'text',
+                inputComponent: 'TextArea',
+              },
+              options: [], // Options would need separate duplication
+            };
+
+            steps.value[stepIndex] = {
+              ...steps.value[stepIndex],
+              questionId: result.questionId,
+              question: linkedQuestion,
+            };
+            newStep.questionId = result.questionId;
+          }
+        }
+      }
+
+      // Persist the new step
+      await createFormSteps({
+        inputs: [{
+          id: newStep.id,
+          form_id: currentFormId,
+          organization_id: orgId,
+          step_type: newStep.stepType,
+          step_order: newStep.stepOrder,
+          question_id: newStep.questionId ?? null,
+          flow_id: newStep.flowId ?? null,
+          flow_membership: newStep.flowMembership ?? 'shared',
+          tips: newStep.tips ?? [],
+          content: newStep.content ?? {},
+          is_active: true,
+        }],
+      });
+
+      return newStep;
+    });
+  }
+
   return {
+    // Local-only methods (for compatibility)
     addStep,
     addStepAsync,
     removeStep,
@@ -178,5 +361,11 @@ export function useTimelineStepCrud(deps: StepCrudDeps): TimelineStepCrudReturn 
     moveStep,
     duplicateStep,
     changeStepType,
+
+    // ADR-011: Persisting methods
+    addStepWithPersist,
+    removeStepWithPersist,
+    reorderStepsWithPersist,
+    duplicateStepWithPersist,
   };
 }

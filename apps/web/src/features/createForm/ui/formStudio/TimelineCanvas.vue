@@ -27,7 +27,8 @@ const cardContentStyles = computed(() => {
 });
 
 async function handleInsert(afterIndex: number, type: StepType) {
-  await editor.handleAddStepAsync(type, afterIndex);
+  // ADR-011: Use persisting handler for immediate save
+  await editor.handleAddStepWithPersist(type, afterIndex);
 }
 </script>
 
@@ -50,7 +51,7 @@ async function handleInsert(afterIndex: number, type: StepType) {
       :logo-url="editor.effectiveLogo.value"
       @select="editor.selectStep"
       @edit="editor.handleEditStep"
-      @remove="editor.handleRemoveStep"
+      @remove="editor.handleRemoveStepWithPersist"
       @insert="handleInsert"
     />
 
@@ -58,7 +59,7 @@ async function handleInsert(afterIndex: number, type: StepType) {
 
     <TimelineEmptyState
       v-if="editor.steps.value.length === 0"
-      @add-step="editor.handleAddStepAsync"
+      @add-step="editor.handleAddStepWithPersist"
     />
   </div>
 </template>
