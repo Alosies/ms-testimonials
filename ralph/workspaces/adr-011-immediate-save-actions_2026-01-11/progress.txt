@@ -1,0 +1,61 @@
+# Progress Log: adr-011-immediate-save-actions
+# Started: 2026-01-11
+# Branch: yellow/011-immediate-save-actions
+# Workspace: ralph/workspaces/adr-011-immediate-save-actions_2026-01-11/
+
+## Session Context
+
+### Project Overview
+- Testimonials: Testimonial collection and display tool
+- Tech Stack: Vue 3 + TypeScript + Tailwind, Hono.js API, Hasura GraphQL, PostgreSQL
+- Package Manager: pnpm
+
+### Key Patterns
+- FSD Architecture: Types exported from models/ folders only
+- GraphQL: Use generated types from @/shared/graphql/generated/operations
+- Hasura: db/hasura/migrations/default/, db/hasura/metadata/
+- Codegen: pnpm codegen:web
+- Typecheck: pnpm typecheck
+- Composables: Call at setup root only, never in async callbacks
+
+### Critical Files
+- docs/adr/011-immediate-save-actions/adr.md: Source ADR document
+- docs/adr/011-immediate-save-actions/implementation.md: Detailed implementation plan
+- apps/web/src/features/createForm/composables/autoSave/: ADR-010 auto-save infrastructure
+- apps/web/src/features/createForm/composables/timeline/useTimelineStepCrud.ts: Step CRUD (local only)
+- apps/web/src/entities/formQuestion/graphql/fragments/QuestionOptionBasic.gql: Existing fragment
+
+### Gotchas / Warnings
+- ADR-010 is already complete - auto-save controller exists
+- questionOption entity does NOT exist yet - must create
+- useTimelineStepCrud only handles local state - needs persistence
+- Fragment types should NOT be re-exported - extract from mutations instead
+- GraphQL mutations exist in Hasura schema for question_options (generated types available)
+
+### Dependencies (Already Complete)
+- ADR-010: Centralized Auto-Save Controller (implemented)
+- Entity mutations: formStep, formQuestion, flow (all exist)
+
+### Skills to Use
+- GQL-* stories: Use `/graphql-code` skill
+- Before any commit: Use `/code-review` skill
+- See each story's "skill" field in prd.json
+
+### Source Document
+docs/adr/011-immediate-save-actions/adr.md
+
+---
+## Iteration Log
+
+### Iteration 0 - Setup (2026-01-11)
+- [x] Workspace created
+- [x] PRD generated with 15 stories
+- Next: TS-001 (Create useSaveLock composable)
+
+Sun 11 Jan 2026 18:05:06 IST: Starting iteration 1
+Sun 11 Jan 2026 18:06:54 IST: Starting iteration 1
+Sun 11 Jan 2026 18:09:53 IST: Starting iteration 1
+Sun 11 Jan 2026 18:10:30 IST: Starting iteration 1
+Sun 11 Jan 2026 18:11:45 IST: Starting iteration 1
+Sun 11 Jan 2026 18:13:16 IST: Starting iteration 1
+Sun 11 Jan 2026 18:14:40 IST: Starting iteration 2

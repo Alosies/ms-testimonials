@@ -1,0 +1,287 @@
+{
+  "project": "ms-testimonials",
+  "branchName": "yellow/011-immediate-save-actions",
+  "description": "ADR-011: Implement immediate save mutations for discrete user actions (buttons, toggles, dropdowns, drag-drop) in the form studio",
+  "prdDocument": "docs/adr/011-immediate-save-actions/adr.md",
+  "implementationDocument": "docs/adr/011-immediate-save-actions/implementation.md",
+  "userStories": [
+    {
+      "id": "TS-001",
+      "title": "Create useSaveLock composable",
+      "description": "As a developer, I need a shared save lock to coordinate immediate and debounced saves, preventing race conditions.",
+      "acceptanceCriteria": [
+        "Create apps/web/src/features/createForm/composables/autoSave/useSaveLock.ts",
+        "Uses createSharedComposable for singleton pattern",
+        "Exports: isLocked, lockReason, withLock, acquireLock, releaseLock",
+        "withLock throws if lock cannot be acquired",
+        "Lock released in finally block (even on error)",
+        "pnpm typecheck passes"
+      ],
+      "priority": 1,
+      "passes": false,
+      "notes": "",
+      "skill": null,
+      "implementationRef": "Phase 0 > Story: SAVE-001"
+    },
+    {
+      "id": "TS-002",
+      "title": "Integrate lock with useAutoSaveController",
+      "description": "As a developer, I need the auto-save controller to respect the save lock so immediate saves aren't overwritten.",
+      "acceptanceCriteria": [
+        "Update apps/web/src/features/createForm/composables/autoSave/useAutoSaveController.ts",
+        "Import and use useSaveLock",
+        "Check isLocked before attempting save",
+        "Acquire lock before saving, release in finally",
+        "Skip save gracefully if lock unavailable (dirty state preserved)",
+        "pnpm typecheck passes"
+      ],
+      "priority": 2,
+      "passes": false,
+      "notes": "",
+      "skill": null,
+      "implementationRef": "Phase 0 > Story: SAVE-002"
+    },
+    {
+      "id": "TS-003",
+      "title": "Export useSaveLock from autoSave index",
+      "description": "As a developer, I need useSaveLock exported for use by immediate save composables.",
+      "acceptanceCriteria": [
+        "Update apps/web/src/features/createForm/composables/autoSave/index.ts",
+        "Add: export { useSaveLock } from './useSaveLock'",
+        "Can import useSaveLock from @/features/createForm/composables/autoSave",
+        "pnpm typecheck passes"
+      ],
+      "priority": 3,
+      "passes": false,
+      "notes": "",
+      "skill": null,
+      "implementationRef": "Phase 0 > Story: SAVE-003"
+    },
+    {
+      "id": "GQL-001",
+      "title": "Create questionOption entity structure and GraphQL mutations",
+      "description": "As a developer, I need the questionOption entity with GraphQL mutations for option CRUD.",
+      "acceptanceCriteria": [
+        "Validate schema: mcp__tm-graph__get-type-info({ type_name: 'question_options' })",
+        "Create entities/questionOption/graphql/mutations/ directory",
+        "Create CreateQuestionOption.gql with #import for QuestionOptionBasic fragment",
+        "Create DeleteQuestionOption.gql",
+        "Create UpdateQuestionOption.gql with #import",
+        "Create UpsertQuestionOptions.gql with #import and on_conflict clause",
+        "pnpm codegen:web succeeds",
+        "Verify generated types in operations.ts"
+      ],
+      "priority": 4,
+      "passes": false,
+      "notes": "Use existing QuestionOptionBasic.gql fragment from entities/formQuestion/graphql/fragments/",
+      "skill": "/graphql-code",
+      "implementationRef": "Phase 1 > Story: OPT-001, OPT-002"
+    },
+    {
+      "id": "GQL-002",
+      "title": "Create questionOption mutation composables",
+      "description": "As a developer, I need Vue composables for question option mutations.",
+      "acceptanceCriteria": [
+        "Create entities/questionOption/composables/mutations/useCreateQuestionOption.ts",
+        "Create entities/questionOption/composables/mutations/useDeleteQuestionOption.ts",
+        "Create entities/questionOption/composables/mutations/useUpdateQuestionOption.ts",
+        "Create entities/questionOption/composables/mutations/useUpsertQuestionOptions.ts",
+        "Each returns: mutate, named function, loading, error, hasError, onDone, onError",
+        "Create entities/questionOption/composables/mutations/index.ts barrel export",
+        "pnpm typecheck passes"
+      ],
+      "priority": 5,
+      "passes": false,
+      "notes": "Follow mutation composable pattern from /graphql-code skill",
+      "skill": "/graphql-code",
+      "implementationRef": "Phase 1 > Story: OPT-003"
+    },
+    {
+      "id": "GQL-003",
+      "title": "Create questionOption models and entity exports",
+      "description": "As a developer, I need type exports for the questionOption entity.",
+      "acceptanceCriteria": [
+        "Create entities/questionOption/models/mutations.ts with extracted types",
+        "Create entities/questionOption/models/index.ts barrel export",
+        "DO NOT re-export fragment types - extract from mutations instead",
+        "Create entities/questionOption/composables/index.ts",
+        "Create entities/questionOption/index.ts",
+        "Can import from @/entities/questionOption",
+        "pnpm typecheck passes"
+      ],
+      "priority": 6,
+      "passes": false,
+      "notes": "Follow type safety rules: extract types from mutation results, not fragments",
+      "skill": "/graphql-code",
+      "implementationRef": "Phase 1 > Story: OPT-004"
+    },
+    {
+      "id": "FE-001",
+      "title": "Create useQuestionSettings composable",
+      "description": "As a developer, I need a composable for immediate save of question settings changes.",
+      "acceptanceCriteria": [
+        "Create apps/web/src/features/createForm/composables/useQuestionSettings.ts",
+        "Exports: setRequired, setQuestionType, setValidation",
+        "All methods use withLock from useSaveLock",
+        "Uses useUpdateFormQuestion for mutations",
+        "pnpm typecheck passes"
+      ],
+      "priority": 7,
+      "passes": false,
+      "notes": "",
+      "skill": null,
+      "implementationRef": "Phase 2 > Story: FEAT-001"
+    },
+    {
+      "id": "FE-002",
+      "title": "Create useQuestionOptions composable",
+      "description": "As a developer, I need a composable for immediate save of question option CRUD.",
+      "acceptanceCriteria": [
+        "Create apps/web/src/features/createForm/composables/useQuestionOptions.ts",
+        "Exports: addOption, removeOption, reorderOptions, setDefaultOption",
+        "All methods use withLock from useSaveLock",
+        "Uses questionOption entity composables",
+        "pnpm typecheck passes"
+      ],
+      "priority": 8,
+      "passes": false,
+      "notes": "",
+      "skill": null,
+      "implementationRef": "Phase 2 > Story: FEAT-002"
+    },
+    {
+      "id": "FE-003",
+      "title": "Create useFlowSettings composable",
+      "description": "As a developer, I need a composable for immediate save of flow settings changes.",
+      "acceptanceCriteria": [
+        "Create apps/web/src/features/createForm/composables/useFlowSettings.ts",
+        "Exports: updateFlowSettings, clearBranching",
+        "All methods use withLock from useSaveLock",
+        "Uses existing useUpdateFlow and useClearFlowBranchColumns",
+        "pnpm typecheck passes"
+      ],
+      "priority": 9,
+      "passes": false,
+      "notes": "",
+      "skill": null,
+      "implementationRef": "Phase 2 > Story: FEAT-003"
+    },
+    {
+      "id": "FE-004",
+      "title": "Enhance useTimelineStepCrud with persistence",
+      "description": "As a developer, I need step CRUD operations to persist immediately.",
+      "acceptanceCriteria": [
+        "Update apps/web/src/features/createForm/composables/timeline/useTimelineStepCrud.ts",
+        "Add: addStepWithPersist (creates question first, then step)",
+        "Add: removeStepWithPersist (deletes step, FK cascade handles rest)",
+        "Add: reorderStepsWithPersist (batch updates display_order)",
+        "Add: duplicateStepWithPersist (creates question copy first)",
+        "All *WithPersist methods use withLock",
+        "Keep existing local-only methods for compatibility",
+        "pnpm typecheck passes"
+      ],
+      "priority": 10,
+      "passes": false,
+      "notes": "See implementation.md for detailed mutation order (question first, then step)",
+      "skill": null,
+      "implementationRef": "Phase 2 > Story: FEAT-004"
+    },
+    {
+      "id": "FE-005",
+      "title": "Wire up step operations in UI",
+      "description": "As a user, I need step add/delete/reorder/duplicate to save immediately.",
+      "acceptanceCriteria": [
+        "Update TimelineStepCard.vue - delete uses removeStepWithPersist",
+        "Update BranchedTimelineCanvas.vue - add/reorder/duplicate use *WithPersist methods",
+        "All controls have :disabled=\"isLocked\" binding",
+        "Manual test: Add step persists to database",
+        "Manual test: Delete step removes from database",
+        "pnpm typecheck passes"
+      ],
+      "priority": 11,
+      "passes": false,
+      "notes": "",
+      "skill": null,
+      "implementationRef": "Phase 3 > Story: UI-001"
+    },
+    {
+      "id": "FE-006",
+      "title": "Wire up question settings in UI",
+      "description": "As a user, I need question settings toggles/dropdowns to save immediately.",
+      "acceptanceCriteria": [
+        "Update question settings panel component",
+        "Required toggle uses setRequired",
+        "Question type dropdown uses setQuestionType",
+        "Validation inputs use setValidation",
+        "All controls have :disabled=\"isLocked\" binding",
+        "Error toast on failure",
+        "pnpm typecheck passes"
+      ],
+      "priority": 12,
+      "passes": false,
+      "notes": "",
+      "skill": null,
+      "implementationRef": "Phase 3 > Story: UI-002"
+    },
+    {
+      "id": "FE-007",
+      "title": "Wire up option management in UI",
+      "description": "As a user, I need option add/delete/reorder to save immediately.",
+      "acceptanceCriteria": [
+        "Update option list component",
+        "Add option uses addOption",
+        "Delete option uses removeOption",
+        "Drag-drop reorder uses reorderOptions",
+        "Default selection uses setDefaultOption",
+        "All controls have :disabled=\"isLocked\" binding",
+        "pnpm typecheck passes"
+      ],
+      "priority": 13,
+      "passes": false,
+      "notes": "",
+      "skill": null,
+      "implementationRef": "Phase 3 > Story: UI-003"
+    },
+    {
+      "id": "FE-008",
+      "title": "Wire up flow settings in UI",
+      "description": "As a user, I need flow condition changes to save immediately.",
+      "acceptanceCriteria": [
+        "Update flow panel component",
+        "Condition changes use updateFlowSettings",
+        "Clear branching uses clearBranching",
+        "All controls have :disabled=\"isLocked\" binding",
+        "pnpm typecheck passes"
+      ],
+      "priority": 14,
+      "passes": false,
+      "notes": "",
+      "skill": null,
+      "implementationRef": "Phase 3 > Story: UI-004"
+    },
+    {
+      "id": "TEST-001",
+      "title": "Manual testing checklist",
+      "description": "As a developer, I need to verify all immediate save functionality works correctly.",
+      "acceptanceCriteria": [
+        "Add step -> persisted to database",
+        "Delete step -> removed from database",
+        "Reorder steps (drag-drop) -> display_order updated",
+        "Duplicate step -> new step with copied data",
+        "Toggle required -> saved immediately",
+        "Change question type -> saved immediately",
+        "Add option -> persisted",
+        "Delete option -> removed",
+        "Reorder options -> display_order updated",
+        "Type in field, immediately toggle -> no race condition",
+        "Network error -> shows error toast, no data loss",
+        "Refresh after changes -> data persisted correctly"
+      ],
+      "priority": 15,
+      "passes": false,
+      "notes": "Run with dev server: pnpm dev",
+      "skill": null,
+      "implementationRef": "Phase 4 > Story: TEST-004"
+    }
+  ]
+}

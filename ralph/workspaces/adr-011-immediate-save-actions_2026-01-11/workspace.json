@@ -1,0 +1,10 @@
+{
+  "feature": "adr-011-immediate-save-actions",
+  "createdAt": "2026-01-11T15:00:00Z",
+  "createdBy": "yellow",
+  "primaryAgent": "yellow",
+  "status": "active",
+  "sourceDocument": "docs/adr/011-immediate-save-actions/adr.md",
+  "implementationDoc": "docs/adr/011-immediate-save-actions/implementation.md",
+  "handoffs": []
+}
