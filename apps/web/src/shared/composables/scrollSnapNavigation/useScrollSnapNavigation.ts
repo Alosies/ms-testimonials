@@ -68,6 +68,7 @@ export function useScrollSnapNavigation(
     itemCount,
     selectedIndex,
     onSelect,
+    onSelectById,
     enableKeyboard = true,
     enableScrollDetection = true,
     scrollDebounceMs = 50,
@@ -80,6 +81,7 @@ export function useScrollSnapNavigation(
     itemCount,
     selectedIndex,
     onSelect,
+    onSelectById,
   };
 
   // ============================================
@@ -146,6 +148,32 @@ export function useScrollSnapNavigation(
   }
 
   /**
+   * Suppress scroll detection temporarily.
+   * Use this before programmatic actions that will trigger scroll
+   * but shouldn't update selection (e.g., keyboard branch switching).
+   *
+   * This sets isProgrammaticScroll to true for the specified duration,
+   * preventing scroll detection from overriding the selection.
+   */
+  let suppressionTimeout: ReturnType<typeof setTimeout> | null = null;
+
+  function suppressDetection(durationMs: number = 500): void {
+    // Clear any existing timeout
+    if (suppressionTimeout) {
+      clearTimeout(suppressionTimeout);
+    }
+
+    // Set programmatic scroll flag
+    programmaticScroll.isProgrammaticScroll.value = true;
+
+    // Auto-clear after duration
+    suppressionTimeout = setTimeout(() => {
+      programmaticScroll.markScrollComplete();
+      suppressionTimeout = null;
+    }, durationMs);
+  }
+
+  /**
    * Find the index of the item closest to viewport center.
    * Exposed for debugging and manual use.
    */
@@ -186,6 +214,10 @@ export function useScrollSnapNavigation(
   function cleanup(): void {
     scrollDetection?.cleanup();
     programmaticScroll.cleanup();
+    if (suppressionTimeout) {
+      clearTimeout(suppressionTimeout);
+      suppressionTimeout = null;
+    }
   }
 
   // Auto-initialize on mount
@@ -222,6 +254,7 @@ export function useScrollSnapNavigation(
     navigateNext,
     navigatePrev,
     selectWithoutScroll,
+    suppressDetection,
 
     // Manual control
     initialize,

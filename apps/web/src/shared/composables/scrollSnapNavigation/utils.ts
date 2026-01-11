@@ -92,6 +92,57 @@ export function findCenteredItemIndex(
 }
 
 /**
+ * Find the ID of the item closest to the center of the scroll container's viewport.
+ *
+ * Similar to findCenteredItemIndex but returns the item's ID instead of index.
+ * This is more robust for branched views where the same step may have different
+ * indices in different contexts (flow-local vs main array).
+ *
+ * @param container - The scroll container element
+ * @param itemSelector - CSS selector for navigable items
+ * @returns The ID of the centered item, or null if none found
+ *
+ * @example
+ * ```ts
+ * const container = document.querySelector('.timeline-scroll');
+ * const centeredId = findCenteredItemId(container, '[data-step-id]');
+ * if (centeredId) {
+ *   editor.selectStepById(centeredId);
+ * }
+ * ```
+ */
+export function findCenteredItemId(
+  container: HTMLElement | null,
+  itemSelector: string
+): string | null {
+  if (!container) return null;
+
+  const containerRect = container.getBoundingClientRect();
+  const containerCenter = containerRect.top + containerRect.height / 2;
+
+  const items = container.querySelectorAll(itemSelector);
+  let closestId: string | null = null;
+  let closestDistance = Infinity;
+
+  items.forEach((item) => {
+    const rect = item.getBoundingClientRect();
+    const itemCenter = rect.top + rect.height / 2;
+    const distance = Math.abs(itemCenter - containerCenter);
+
+    if (distance < closestDistance) {
+      closestDistance = distance;
+      // Get ID from data attribute
+      const idAttr = item.getAttribute('data-step-id');
+      if (idAttr !== null) {
+        closestId = idAttr;
+      }
+    }
+  });
+
+  return closestId;
+}
+
+/**
  * Check if the currently focused element is an input.
  *
  * Used to disable keyboard navigation when user is typing.

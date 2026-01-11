@@ -22,8 +22,8 @@ export interface ScrollSnapNavigationOptions {
   /**
    * CSS selector for navigable items.
    * Items should have scroll-snap-align set.
-   * Use data attributes like [data-step-index] for reliable selection.
-   * @example '[data-step-index]'
+   * Use data attributes like [data-step-id] for reliable selection.
+   * @example '[data-step-id]'
    */
   itemSelector: string;
 
@@ -43,6 +43,13 @@ export interface ScrollSnapNavigationOptions {
    * Callback when selection changes (from keyboard or scroll detection).
    */
   onSelect: (index: number) => void;
+
+  /**
+   * Callback when selection changes by ID (from scroll detection only).
+   * When provided, scroll detection will use this instead of onSelect.
+   * This is more robust for branched views where indices may differ.
+   */
+  onSelectById?: (id: string) => void;
 
   /**
    * Enable keyboard navigation (ArrowUp/Down, j/k).
@@ -73,6 +80,7 @@ export interface ScrollNavContext {
   itemCount: () => number;
   selectedIndex: Ref<number>;
   onSelect: (index: number) => void;
+  onSelectById?: (id: string) => void;
 }
 
 /**
@@ -145,6 +153,14 @@ export interface ScrollSnapNavigation {
 
   /** Select an item without triggering scroll */
   selectWithoutScroll: (index: number) => void;
+
+  /**
+   * Suppress scroll detection temporarily.
+   * Use this before programmatic actions that will trigger scroll
+   * but shouldn't update selection (e.g., keyboard branch switching).
+   * @param durationMs - How long to suppress detection (default: 500ms)
+   */
+  suppressDetection: (durationMs?: number) => void;
 
   /** Manually initialize the navigation system */
   initialize: () => void;

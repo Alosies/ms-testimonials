@@ -1,6 +1,6 @@
-import type { Ref } from 'vue';
+import { watch, type Ref } from 'vue';
 import type { ScrollNavContext, ScrollDetectionState } from './types';
-import { getContainer, findCenteredItemIndex, supportsScrollEndEvent } from './utils';
+import { getContainer, findCenteredItemIndex, findCenteredItemId, supportsScrollEndEvent } from './utils';
 
 /**
  * Scroll Detection Composable
@@ -43,16 +43,42 @@ export function useScrollDetection(
 ): ScrollDetectionState {
   let container: HTMLElement | null = null;
   let scrollDebounceTimeout: ReturnType<typeof setTimeout> | null = null;
+  let lastSelectionTime = 0;
+  const SELECTION_COOLDOWN_MS = 500; // Ignore scroll detection for 500ms after selection
 
   const hasScrollEndSupport = supportsScrollEndEvent();
+
+  // Track when selection changes to avoid detection conflicts
+  watch(
+    () => ctx.selectedIndex.value,
+    () => {
+      lastSelectionTime = Date.now();
+    }
+  );
 
   /**
    * Detect and select the item closest to the viewport center.
    * Only runs when scroll is not programmatic.
+   *
+   * If onSelectById is provided, uses ID-based selection which is more robust
+   * for branched views where the same step may have different indices.
    */
   function detectCenteredItem(): void {
     if (isProgrammaticScroll.value) return;
 
+    // Skip detection if a selection was made recently (prevents overriding keyboard/click selections)
+    if (Date.now() - lastSelectionTime < SELECTION_COOLDOWN_MS) return;
+
+    // Prefer ID-based selection when available (more robust for branched views)
+    if (ctx.onSelectById) {
+      const centeredId = findCenteredItemId(container, ctx.itemSelector);
+      if (centeredId !== null) {
+        ctx.onSelectById(centeredId);
+      }
+      return;
+    }
+
+    // Fall back to index-based selection
     const centeredIndex = findCenteredItemIndex(container, ctx.itemSelector);
     if (centeredIndex !== -1 && centeredIndex !== ctx.selectedIndex.value) {
       ctx.onSelect(centeredIndex);

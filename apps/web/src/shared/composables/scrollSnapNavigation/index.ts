@@ -30,10 +30,11 @@
  *
  * const navigation = useScrollSnapNavigation({
  *   containerSelector: '.timeline-scroll',
- *   itemSelector: '[data-step-index]',
+ *   itemSelector: '[data-step-id]',
  *   itemCount: () => steps.value.length,
  *   selectedIndex: editor.selectedIndex,
  *   onSelect: (index) => editor.selectStep(index),
+ *   onSelectById: (id) => editor.selectStepById(id), // For scroll detection
  * });
  * ```
  *
@@ -44,7 +45,7 @@
  *
  * Items:
  *   scroll-snap-align: center;
- *   data-step-index="0" (or 1, 2, etc.)
+ *   data-step-id="<step-id>" (unique ID for each step)
  *
  * @see FormEditorLayout.vue - Example container CSS
  * @see TimelineStepCard.vue - Example item CSS
@@ -69,6 +70,7 @@ export {
   getContainer,
   getItemByIndex,
   findCenteredItemIndex,
+  findCenteredItemId,
   isInputFocused,
   supportsScrollEndEvent,
 } from './utils';
