@@ -37,4 +37,6 @@ Each ADR follows this structure:
 | [ADR-006](./006-timeline-form-editor.md) | Timeline Form Editor Layout | Accepted | 2026-01-03 |
 | [ADR-007](./007-form-editor-data-fetching.md) | Form Editor Data Fetching | Accepted | 2026-01-03 |
 | ADR-008 | *(Reserved)* | In Progress | 2026-01-06 |
-| [ADR-009](./009-flows-table-branching-architecture.md) | Flows Table for Branching Architecture | Accepted | 2026-01-06 |
+| [ADR-009](./009-flows-table-branching/adr.md) | Flows Table for Branching Architecture | Accepted | 2026-01-06 |
+| [ADR-010](./010-centralized-auto-save/adr.md) | Centralized Auto-Save Controller | Proposed | 2026-01-11 |
+| [ADR-011](./011-immediate-save-actions/adr.md) | Immediate Save Actions | Proposed | 2026-01-11 |
