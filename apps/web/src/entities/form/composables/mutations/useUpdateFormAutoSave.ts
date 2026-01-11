@@ -7,15 +7,17 @@ import {
 /**
  * Auto-save mutation for form product info.
  *
- * IMPORTANT: This mutation returns only metadata fields (id, status, updated_at).
- * This prevents Apollo from overwriting product_name/product_description in cache,
- * which would cause UI flicker during auto-save.
+ * CRITICAL: Uses fetchPolicy: 'no-cache' to completely bypass Apollo cache.
+ * This prevents the mutation response from triggering cache normalization,
+ * which would otherwise overwrite local editing state.
  *
- * See ADR-003: Form Auto-Save Pattern
+ * Returns ONLY id + updated_at (not written to cache).
+ * See ADR-003 and ADR-010 for rationale.
  */
 export function useUpdateFormAutoSave() {
-  const { mutate, loading, error, onDone, onError } =
-    useUpdateFormAutoSaveMutation();
+  const { mutate, loading, error, onDone, onError } = useUpdateFormAutoSaveMutation({
+    fetchPolicy: 'no-cache',
+  });
 
   const hasError = computed(() => error.value !== null);
 
