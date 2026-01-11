@@ -1,8 +1,12 @@
-.PHONY: install dev dev-web dev-api build db-up db-down hasura-console hasura-migrate hasura-metadata sync sync-push
+.PHONY: install restart dev dev-web dev-api build db-up db-down hasura-console hasura-migrate hasura-metadata sync sync-push
 
 # Install dependencies
 install:
 	pnpm install
+
+# Full restart - clear all caches and reinstall
+restart:
+	./scripts/restart.sh
 
 # Development
 dev:
