@@ -119,16 +119,17 @@ function handleBranchingToggle(enabled: boolean) {
         testimonialStepCount: testimonialCount,
         improvementStepCount: improvementCount,
       },
-      onChoice: (choice) => {
+      // ADR-011: Use async persistence methods for immediate save
+      onChoice: async (choice) => {
         switch (choice) {
           case 'keep-testimonial':
-            editor.disableBranchingKeepTestimonial();
+            await editor.disableBranchingKeepTestimonialWithPersist();
             break;
           case 'keep-improvement':
-            editor.disableBranchingKeepImprovement();
+            await editor.disableBranchingKeepImprovementWithPersist();
             break;
           case 'delete-all':
-            editor.disableBranchingDeleteAll();
+            await editor.disableBranchingDeleteAllWithPersist();
             break;
           case 'cancel':
             // Do nothing

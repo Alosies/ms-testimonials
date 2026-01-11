@@ -80,19 +80,22 @@ function handleBranchingToggle(enabled: boolean) {
   }
 }
 
-function handleKeepTestimonial() {
-  editor.disableBranchingKeepTestimonial();
+async function handleKeepTestimonial() {
   showDisableModal.value = false;
+  // ADR-011: Use persistence method for immediate save
+  await editor.disableBranchingKeepTestimonialWithPersist();
 }
 
-function handleKeepImprovement() {
-  editor.disableBranchingKeepImprovement();
+async function handleKeepImprovement() {
   showDisableModal.value = false;
+  // ADR-011: Use persistence method for immediate save
+  await editor.disableBranchingKeepImprovementWithPersist();
 }
 
-function handleDeleteAll() {
-  editor.disableBranchingDeleteAll();
+async function handleDeleteAll() {
   showDisableModal.value = false;
+  // ADR-011: Use persistence method for immediate save
+  await editor.disableBranchingDeleteAllWithPersist();
 }
 
 function handleCancelDisable() {

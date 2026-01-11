@@ -13,10 +13,13 @@ import { ref, computed, type Ref } from 'vue';
 import type { FormStep, StepType, FlowMembership } from '@/shared/stepCards';
 import type { BranchingConfig } from '@/entities/form';
 import { DEFAULT_BRANCHING_CONFIG } from '@/entities/form';
+import { useClearFlowBranchColumns, useDeleteFlow } from '@/entities/flow';
+import { useDeleteFormSteps } from '@/entities/formStep';
 import { generateTempId, reorderSteps } from '../../functions/stepOperations';
 import { useBranchingDisable } from './useBranchingDisable';
 import { useBranchingFlowFocus } from './useBranchingFlowFocus';
 import { useBranchingDetection } from './useBranchingDetection';
+import { useSaveLock } from '../autoSave';
 
 interface BranchingDeps {
   steps: Ref<FormStep[]>;
@@ -99,6 +102,12 @@ export function useTimelineBranching(deps: BranchingDeps) {
   const detection = useBranchingDetection({
     branchingConfig,
   });
+
+  // ADR-011: Persistence composables for immediate save
+  const { withLock } = useSaveLock();
+  const { clearFlowBranchColumns } = useClearFlowBranchColumns();
+  const { deleteFormSteps } = useDeleteFormSteps();
+  const { deleteFlow } = useDeleteFlow();
 
   // ============================================
   // Operations
@@ -218,6 +227,155 @@ export function useTimelineBranching(deps: BranchingDeps) {
     return newStep;
   }
 
+  // ============================================
+  // ADR-011: Persistence Methods for Immediate Save
+  // ============================================
+
+  /**
+   * Helper to get step IDs to delete based on flow membership filter.
+   * Only returns IDs for steps that exist in the database (non-temp).
+   */
+  function getStepIdsToDelete(filter: (s: FormStep) => boolean): string[] {
+    return steps.value
+      .filter(filter)
+      .filter(s => !s.id.startsWith('temp_'))
+      .map(s => s.id);
+  }
+
+  /**
+   * Helper to get flow IDs to delete based on flow type.
+   * Returns unique flow IDs for steps that match the filter.
+   */
+  function getFlowIdsToDelete(flowMemberships: FlowMembership[]): string[] {
+    const flowIds = new Set<string>();
+    steps.value.forEach(s => {
+      if (flowMemberships.includes(s.flowMembership) && s.flowId) {
+        flowIds.add(s.flowId);
+      }
+    });
+    return [...flowIds];
+  }
+
+  /**
+   * Disable branching and delete all branched steps with immediate persistence.
+   * ADR-011: Immediate save for discrete actions.
+   *
+   * Steps:
+   * 1. Clear branch_question_id on flows (prevents FK violation)
+   * 2. Delete branched steps from database
+   * 3. Delete empty flows (testimonial and improvement)
+   * 4. Update local state
+   */
+  async function disableBranchingDeleteAllWithPersist(): Promise<void> {
+    return withLock('disable-branching', async () => {
+      const currentFormId = formId.value;
+      if (!currentFormId) {
+        throw new Error('Cannot disable branching: missing formId');
+      }
+
+      // Get IDs before modifying local state
+      const stepIdsToDelete = getStepIdsToDelete(
+        s => s.flowMembership === 'testimonial' || s.flowMembership === 'improvement',
+      );
+      const flowIdsToDelete = getFlowIdsToDelete(['testimonial', 'improvement']);
+
+      // 1. Clear branch columns from all flows (prevents FK violation)
+      await clearFlowBranchColumns(currentFormId);
+
+      // 2. Delete branched steps from database
+      if (stepIdsToDelete.length > 0) {
+        await deleteFormSteps({ ids: stepIdsToDelete });
+      }
+
+      // 3. Delete empty flows (testimonial and improvement)
+      for (const flowId of flowIdsToDelete) {
+        try {
+          await deleteFlow({ flowId });
+        } catch (err) {
+          // Log but continue - flow deletion is not critical
+          console.error('Failed to delete flow:', flowId, err);
+        }
+      }
+
+      // 4. Update local state
+      disableOps.disableBranchingDeleteAll();
+    });
+  }
+
+  /**
+   * Disable branching, keep testimonial steps with immediate persistence.
+   * ADR-011: Immediate save for discrete actions.
+   */
+  async function disableBranchingKeepTestimonialWithPersist(): Promise<void> {
+    return withLock('disable-branching', async () => {
+      const currentFormId = formId.value;
+      if (!currentFormId) {
+        throw new Error('Cannot disable branching: missing formId');
+      }
+
+      // Get improvement step IDs and flow IDs before modifying local state
+      const stepIdsToDelete = getStepIdsToDelete(s => s.flowMembership === 'improvement');
+      const flowIdsToDelete = getFlowIdsToDelete(['improvement']);
+
+      // 1. Clear branch columns from all flows
+      await clearFlowBranchColumns(currentFormId);
+
+      // 2. Delete improvement steps from database
+      if (stepIdsToDelete.length > 0) {
+        await deleteFormSteps({ ids: stepIdsToDelete });
+      }
+
+      // 3. Delete improvement flow
+      for (const flowId of flowIdsToDelete) {
+        try {
+          await deleteFlow({ flowId });
+        } catch (err) {
+          console.error('Failed to delete flow:', flowId, err);
+        }
+      }
+
+      // 4. Update local state
+      disableOps.disableBranchingKeepTestimonial();
+    });
+  }
+
+  /**
+   * Disable branching, keep improvement steps with immediate persistence.
+   * ADR-011: Immediate save for discrete actions.
+   */
+  async function disableBranchingKeepImprovementWithPersist(): Promise<void> {
+    return withLock('disable-branching', async () => {
+      const currentFormId = formId.value;
+      if (!currentFormId) {
+        throw new Error('Cannot disable branching: missing formId');
+      }
+
+      // Get testimonial step IDs and flow IDs before modifying local state
+      const stepIdsToDelete = getStepIdsToDelete(s => s.flowMembership === 'testimonial');
+      const flowIdsToDelete = getFlowIdsToDelete(['testimonial']);
+
+      // 1. Clear branch columns from all flows
+      await clearFlowBranchColumns(currentFormId);
+
+      // 2. Delete testimonial steps from database
+      if (stepIdsToDelete.length > 0) {
+        await deleteFormSteps({ ids: stepIdsToDelete });
+      }
+
+      // 3. Delete testimonial flow
+      for (const flowId of flowIdsToDelete) {
+        try {
+          await deleteFlow({ flowId });
+        } catch (err) {
+          console.error('Failed to delete flow:', flowId, err);
+        }
+      }
+
+      // 4. Update local state
+      disableOps.disableBranchingKeepImprovement();
+    });
+  }
+
   return {
     // State
     branchingConfig,
@@ -240,6 +398,10 @@ export function useTimelineBranching(deps: BranchingDeps) {
     disableBranchingKeepTestimonial: disableOps.disableBranchingKeepTestimonial,
     disableBranchingKeepImprovement: disableOps.disableBranchingKeepImprovement,
     disableBranchingDeleteAll: disableOps.disableBranchingDeleteAll,
+    // ADR-011: Persistence methods for immediate save
+    disableBranchingDeleteAllWithPersist,
+    disableBranchingKeepTestimonialWithPersist,
+    disableBranchingKeepImprovementWithPersist,
     setBranchingThreshold,
     addStepToFlow,
     focusFlow: flowFocus.focusFlow,

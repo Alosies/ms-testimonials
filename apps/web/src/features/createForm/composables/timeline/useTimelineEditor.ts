@@ -350,6 +350,10 @@ export const useTimelineEditor = createSharedComposable(() => {
     disableBranchingKeepTestimonial: branching.disableBranchingKeepTestimonial,
     disableBranchingKeepImprovement: branching.disableBranchingKeepImprovement,
     disableBranchingDeleteAll: branching.disableBranchingDeleteAll,
+    // ADR-011: Persistence methods for immediate save
+    disableBranchingDeleteAllWithPersist: branching.disableBranchingDeleteAllWithPersist,
+    disableBranchingKeepTestimonialWithPersist: branching.disableBranchingKeepTestimonialWithPersist,
+    disableBranchingKeepImprovementWithPersist: branching.disableBranchingKeepImprovementWithPersist,
     setBranchingThreshold: branching.setBranchingThreshold,
     addStepToFlow: branching.addStepToFlow,
     focusFlow: branching.focusFlow,
