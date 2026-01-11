@@ -23,9 +23,9 @@ function handleAddAtEnd() {
   pickerOpen.value = true;
 }
 
-function handleSelectType(type: StepType) {
-  editor.handleAddStep(type, insertAfterIndex.value ?? undefined);
+async function handleSelectType(type: StepType) {
   pickerOpen.value = false;
+  await editor.handleAddStepAsync(type, insertAfterIndex.value ?? undefined);
 }
 </script>
 

@@ -17,7 +17,7 @@ import { useUpdateForm } from '@/entities/form';
 import { useUpsertFormSteps, useDeleteFormSteps } from '@/entities/formStep';
 import { useCreateFormQuestion } from '@/entities/formQuestion';
 import { useGetQuestionTypes } from '@/entities/questionType';
-import { useClearFlowBranchColumns } from '@/entities/flow';
+import { useClearFlowBranchColumns, useDeleteFlow } from '@/entities/flow';
 import { useTimelineEditor } from './useTimelineEditor';
 import { serializeBranchingConfig } from '@/entities/form';
 
@@ -28,6 +28,7 @@ export const useSaveFormSteps = createSharedComposable(() => {
   const { deleteFormSteps, loading: deleteLoading } = useDeleteFormSteps();
   const { createFormQuestion, loading: questionLoading } = useCreateFormQuestion();
   const { clearFlowBranchColumns, loading: clearBranchLoading } = useClearFlowBranchColumns();
+  const { deleteFlow, loading: deleteFlowLoading } = useDeleteFlow();
   const { questionTypes } = useGetQuestionTypes();
 
   // Map question type unique_name to ID
@@ -83,7 +84,7 @@ export const useSaveFormSteps = createSharedComposable(() => {
 
   // Combined loading state
   const isLoading = computed(() =>
-    isSaving.value || formLoading.value || upsertLoading.value || deleteLoading.value || questionLoading.value || clearBranchLoading.value,
+    isSaving.value || formLoading.value || upsertLoading.value || deleteLoading.value || questionLoading.value || clearBranchLoading.value || deleteFlowLoading.value,
   );
 
   /**
@@ -351,6 +352,59 @@ export const useSaveFormSteps = createSharedComposable(() => {
   }
 
   /**
+   * Delete flows that have become empty after step deletions.
+   * Only deletes branch flows (display_order > 0), never the shared flow (display_order 0).
+   *
+   * Logic:
+   * 1. Find all unique flowIds that had steps in originalSteps
+   * 2. Find all unique flowIds that have steps in current steps
+   * 3. Flows that existed in original but not in current are now empty
+   * 4. Delete those empty flows (except the shared flow)
+   */
+  async function deleteEmptyFlows(): Promise<boolean> {
+    // Get the shared flow ID from context (this should never be deleted)
+    const sharedFlowId = editor.formContext.value.flowIds?.shared;
+
+    // Get all unique flowIds from original steps (steps that existed in DB)
+    const originalFlowIds = new Set(
+      editor.originalSteps.value
+        .filter(s => s.flowId && !s.id.startsWith('temp_'))
+        .map(s => s.flowId as string),
+    );
+
+    // Get all unique flowIds from current steps
+    const currentFlowIds = new Set(
+      editor.steps.value
+        .filter(s => s.flowId)
+        .map(s => s.flowId as string),
+    );
+
+    // Find flowIds that existed before but have no steps now
+    const emptyFlowIds = [...originalFlowIds].filter(flowId => {
+      // Skip the shared flow - never delete it
+      if (flowId === sharedFlowId) return false;
+      // Include if this flow no longer has any steps
+      return !currentFlowIds.has(flowId);
+    });
+
+    if (emptyFlowIds.length === 0) {
+      return true;
+    }
+
+    // Delete each empty flow
+    try {
+      for (const flowId of emptyFlowIds) {
+        await deleteFlow({ flowId });
+      }
+      return true;
+    } catch (err) {
+      // Log but don't fail the save - empty flow cleanup is not critical
+      console.error('Failed to delete empty flows:', err);
+      return true; // Continue with save even if flow deletion fails
+    }
+  }
+
+  /**
    * Save everything - branching config and all steps
    */
   async function saveAll(organizationId: string, userId?: string): Promise<boolean> {
@@ -377,17 +431,21 @@ export const useSaveFormSteps = createSharedComposable(() => {
         return false;
       }
 
-      // 3. Save branching config
+      // 3. Delete empty flows (flows with no remaining steps, except shared flow)
+      // This must happen after step deletion to correctly identify empty flows
+      await deleteEmptyFlows();
+
+      // 4. Save branching config
       const configSuccess = await saveBranchingConfig();
       if (!configSuccess) {
         return false;
       }
 
-      // 4. Create question records for new question/rating steps
+      // 5. Create question records for new question/rating steps
       // This must happen BEFORE saving steps due to the question_id constraint
       await createQuestionRecordsForNewSteps(organizationId, userId);
 
-      // 5. Save all steps (now with questionIds populated)
+      // 6. Save all steps (now with questionIds populated)
       const stepsSuccess = await saveSteps(organizationId, userId);
       if (!stepsSuccess) {
         return false;

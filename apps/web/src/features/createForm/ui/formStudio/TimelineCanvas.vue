@@ -26,8 +26,8 @@ const cardContentStyles = computed(() => {
   };
 });
 
-function handleInsert(afterIndex: number, type: StepType) {
-  editor.handleAddStep(type, afterIndex);
+async function handleInsert(afterIndex: number, type: StepType) {
+  await editor.handleAddStepAsync(type, afterIndex);
 }
 </script>
 
@@ -58,7 +58,7 @@ function handleInsert(afterIndex: number, type: StepType) {
 
     <TimelineEmptyState
       v-if="editor.steps.value.length === 0"
-      @add-step="editor.handleAddStep"
+      @add-step="editor.handleAddStepAsync"
     />
   </div>
 </template>

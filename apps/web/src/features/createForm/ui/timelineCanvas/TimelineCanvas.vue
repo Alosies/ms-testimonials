@@ -27,9 +27,9 @@ function handleInsert(afterIndex: number) {
   pickerOpen.value = true;
 }
 
-function handleSelectType(type: StepType) {
-  editor.handleAddStep(type, insertAfterIndex.value ?? undefined);
+async function handleSelectType(type: StepType) {
   pickerOpen.value = false;
+  await editor.handleAddStepAsync(type, insertAfterIndex.value ?? undefined);
 }
 
 function handleReorder(index: number, direction: 'up' | 'down') {

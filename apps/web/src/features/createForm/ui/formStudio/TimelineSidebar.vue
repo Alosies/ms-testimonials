@@ -47,16 +47,16 @@ function handleStepClick(index: number) {
   emit('navigate', index);
 }
 
-function handleInsertAt(afterIndex: number, type: StepType) {
-  const newIndex = editor.handleAddStep(type, afterIndex);
+async function handleInsertAt(afterIndex: number, type: StepType) {
   openPickerIndex.value = null;
+  const newIndex = await editor.handleAddStepAsync(type, afterIndex);
   // Scroll to new step after DOM updates
   nextTick(() => emit('navigate', newIndex));
 }
 
-function handleAddAtEnd(type: StepType) {
-  const newIndex = editor.handleAddStep(type);
+async function handleAddAtEnd(type: StepType) {
   addAtEndPickerOpen.value = false;
+  const newIndex = await editor.handleAddStepAsync(type);
   // Scroll to new step after DOM updates
   nextTick(() => emit('navigate', newIndex));
 }

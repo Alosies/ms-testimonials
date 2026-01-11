@@ -56,8 +56,8 @@ const expandedFlowDescription = computed(() => {
   return '';
 });
 
-function handleInsert(afterIndex: number, type: StepType) {
-  editor.handleAddStep(type, afterIndex);
+async function handleInsert(afterIndex: number, type: StepType) {
+  await editor.handleAddStepAsync(type, afterIndex);
 }
 
 function handleFocusTestimonial() {

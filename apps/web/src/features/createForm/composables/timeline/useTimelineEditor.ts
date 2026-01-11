@@ -141,8 +141,24 @@ export const useTimelineEditor = createSharedComposable(() => {
   // ============================================
   // Coordinated Actions
   // ============================================
+
+  /**
+   * Synchronous step addition - used for non-question step types.
+   * For question/rating steps, use handleAddStepAsync instead.
+   */
   function handleAddStep(type: StepType, afterIndex?: number): number {
     const newStep = stepCrud.addStep(type, afterIndex);
+    const newIndex = steps.value.indexOf(newStep);
+    selectStep(newIndex);
+    return newIndex;
+  }
+
+  /**
+   * Async step addition - creates form_question for question/rating steps.
+   * This should be the primary method for adding steps from UI.
+   */
+  async function handleAddStepAsync(type: StepType, afterIndex?: number): Promise<number> {
+    const newStep = await stepCrud.addStepAsync(type, afterIndex);
     const newIndex = steps.value.indexOf(newStep);
     selectStep(newIndex);
     return newIndex;
@@ -223,6 +239,7 @@ export const useTimelineEditor = createSharedComposable(() => {
 
     // Step CRUD Operations
     addStep: stepCrud.addStep,
+    addStepAsync: stepCrud.addStepAsync,
     removeStep: stepCrud.removeStep,
     updateStep: stepCrud.updateStep,
     updateStepContent: stepCrud.updateStepContent,
@@ -234,6 +251,7 @@ export const useTimelineEditor = createSharedComposable(() => {
 
     // Coordinated Actions
     handleAddStep,
+    handleAddStepAsync,
     handleEditStep,
     handleRemoveStep,
     handleCloseEditor,
