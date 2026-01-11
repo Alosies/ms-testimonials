@@ -721,7 +721,7 @@ If issues are discovered:
 
 ## Notes
 
-- **Immediate saves for non-text controls** are handled by existing composables (`useTimelineStepCrud`, `useQuestionSettings`, etc.) - no changes needed
+- **Immediate saves for non-text controls** are addressed in ADR-011. Existing composables need enhancement to persist immediately.
 - **Design config saves** (color, logo) use immediate mutations - not part of auto-save
-- **Step CRUD operations** (add/delete/reorder) use immediate mutations - not part of auto-save
+- **Step CRUD operations** (add/delete/reorder) use immediate mutations - see ADR-011 for implementation
 - Only text field typing benefits from debounced auto-save
