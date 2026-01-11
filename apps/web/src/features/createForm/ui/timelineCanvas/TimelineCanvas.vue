@@ -33,10 +33,11 @@ async function handleSelectType(type: StepType) {
   await editor.handleAddStepWithPersist(type, insertAfterIndex.value ?? undefined);
 }
 
-function handleReorder(index: number, direction: 'up' | 'down') {
+async function handleReorder(index: number, direction: 'up' | 'down') {
   const toIndex = direction === 'up' ? index - 1 : index + 1;
   if (toIndex >= 0 && toIndex < editor.steps.value.length) {
-    editor.moveStep(index, toIndex);
+    // ADR-011: Use persistence method for immediate save
+    await editor.reorderStepsWithPersist(index, toIndex);
   }
 }
 
