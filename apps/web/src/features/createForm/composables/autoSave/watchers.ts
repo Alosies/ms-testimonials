@@ -1,4 +1,4 @@
-import { watch } from 'vue';
+import { ref, watch } from 'vue';
 import { useDirtyTracker } from './useDirtyTracker';
 import { useTimelineEditor } from '../timeline/useTimelineEditor';
 
@@ -17,14 +17,12 @@ export const useFormInfoWatcher = () => {
   const { mark } = useDirtyTracker();
   const editor = useTimelineEditor();
 
-  // Track previous values to compare against
-  // This prevents marking dirty when unrelated formContext properties change
-  let prevProductName: string | undefined;
-  let prevProductDescription: string | undefined;
+  // Track previous values using refs
+  const prevProductName = ref<string | undefined>(undefined);
+  const prevProductDescription = ref<string | undefined>(undefined);
 
   // Watch formContext for product name/description changes
   // Note: formContext is set by useFormStudioData when form loads
-  // This is a read-only context, so we track when it might be edited
   watch(
     () => ({
       productName: editor.formContext.value.productName,
@@ -32,20 +30,20 @@ export const useFormInfoWatcher = () => {
     }),
     (curr) => {
       // Skip initial load when prev values are undefined
-      if (prevProductName === undefined && prevProductDescription === undefined) {
-        prevProductName = curr.productName;
-        prevProductDescription = curr.productDescription;
+      if (prevProductName.value === undefined && prevProductDescription.value === undefined) {
+        prevProductName.value = curr.productName;
+        prevProductDescription.value = curr.productDescription;
         return;
       }
 
       // Only mark dirty if actual content changed
       if (
-        curr.productName !== prevProductName ||
-        curr.productDescription !== prevProductDescription
+        curr.productName !== prevProductName.value ||
+        curr.productDescription !== prevProductDescription.value
       ) {
         mark.formInfo();
-        prevProductName = curr.productName;
-        prevProductDescription = curr.productDescription;
+        prevProductName.value = curr.productName;
+        prevProductDescription.value = curr.productDescription;
       }
     },
     { deep: true }
@@ -177,6 +175,74 @@ export const useStepTipsWatcher = () => {
         if (tipsChanged) {
           mark.step(curr.id);
         }
+      }
+    },
+    { deep: true }
+  );
+};
+
+/**
+ * Step Content Watcher
+ *
+ * Watches content object for all non-question step types:
+ * - welcome: title, subtitle, buttonText
+ * - thank_you: title, message, socialShareMessage, redirectUrl
+ * - consent: title, description, options.public/private labels/descriptions
+ * - contact_info: title, subtitle
+ * - reward: title, description, couponCode, couponDescription, downloadUrl, etc.
+ *
+ * Question and Rating steps use the question watcher instead (they have no content).
+ *
+ * Tracks previous values using refs to handle step selection changes properly.
+ * When the user switches to a new content step, we store its initial hash
+ * and only mark dirty on subsequent edits.
+ */
+export const useStepContentWatcher = () => {
+  const { mark } = useDirtyTracker();
+  const editor = useTimelineEditor();
+
+  // Track previous step ID and content hash using refs
+  const prevStepId = ref<string | null>(null);
+  const prevContentHash = ref<string | null>(null);
+
+  const stepTypesWithContent = ['welcome', 'thank_you', 'consent', 'contact_info', 'reward'];
+
+  watch(
+    () => {
+      const step = editor.selectedStep.value;
+      if (!step) return null;
+
+      // Question and Rating steps don't have content - they use form_questions
+      if (!stepTypesWithContent.includes(step.stepType)) return null;
+
+      // Watch the entire content object (all text fields within)
+      const content = step.content as Record<string, unknown> | undefined;
+      if (!content) return null;
+
+      return {
+        id: step.id,
+        contentHash: JSON.stringify(content),
+      };
+    },
+    (curr) => {
+      // No content step selected
+      if (!curr) {
+        prevStepId.value = null;
+        prevContentHash.value = null;
+        return;
+      }
+
+      // Step changed - store new baseline and don't mark dirty
+      if (curr.id !== prevStepId.value) {
+        prevStepId.value = curr.id;
+        prevContentHash.value = curr.contentHash;
+        return;
+      }
+
+      // Same step - check if content actually changed
+      if (curr.contentHash !== prevContentHash.value) {
+        mark.step(curr.id);
+        prevContentHash.value = curr.contentHash;
       }
     },
     { deep: true }
