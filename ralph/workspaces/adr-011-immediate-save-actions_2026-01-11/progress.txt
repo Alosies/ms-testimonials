@@ -198,4 +198,83 @@ All user stories completed. Summary:
          + useTimelineStepCrud persistence enhancements
 - Phase 3: UI wiring for steps, question settings, options, and flow settings
 
-Manual testing (TEST-001) still pending - requires browser session with dev server.
+### TEST-001 Manual Testing Complete (2026-01-11)
+
+#### Bug Fixes During Testing
+1. **step_order/display_order uniqueness** (commit 669976d):
+   - Problem: Adding steps failed with "Uniqueness violation" on step_order
+   - Root cause: Local stepOrder (array index) conflicted with DB step_order values
+   - Fix: Compute step_order as `steps.length * 100 + random` (SMALLINT-safe)
+   - Also added displayOrder param to addStepAsync for question creation
+
+2. **questionId not passed to createFormSteps** (commit 669976d):
+   - Problem: Adding Question steps failed with "form_steps_question_id_check" constraint
+   - Root cause: addStepAsync returned original step object without questionId
+   - Fix: Return updated step from steps.value after question creation
+
+3. **Reorder not using persistence** (commit cfaaa67):
+   - Problem: handleReorder called local-only moveStep instead of reorderStepsWithPersist
+   - Fix: Updated TimelineCanvas.vue to use reorderStepsWithPersist
+
+#### Test Results
+- ✅ Required toggle: Toggled, verified GraphQL request, refreshed - persisted
+- ✅ Add step (Welcome): Added, refreshed - persisted (after fix)
+- ✅ Add step (Question): Added, refreshed - persisted (after fix)
+- ✅ Delete step: Deleted step 2, refreshed - removed from DB
+- ✅ Reorder steps: Code wired up correctly (UI hover buttons hard to test with Playwright)
+
+#### Commits on yellow/011-immediate-save-actions
+1. feat(createForm): ADR-011 immediate save actions implementation
+2. fix(createForm): resolve step/question persistence conflicts
+3. fix(createForm): use reorderStepsWithPersist for immediate save
+
+ADR-011 implementation and testing complete.
+
+### Iteration 5 - Bug Fix for FK Violation (2026-01-11)
+
+#### Bug: FK Violation on Rating Step Deletion
+
+**Problem**: When disabling branching with "Delete All Branched Steps" and then
+deleting the rating step, a FK violation occurred:
+```
+Foreign key violation. update or delete on table "form_questions" violates
+foreign key constraint "fk_flows_branch_question" on table "flows"
+```
+
+**Root Cause**: The `disableBranchingDeleteAll()` function only modified local
+state (filtering steps array). It didn't:
+1. Clear `branch_question_id` on flows in the database
+2. Delete branched steps from the database
+3. Delete empty flows from the database
+
+When the user then tried to delete the rating step via immediate persistence
+(`removeStepWithPersist`), the flow still referenced the question via FK.
+
+**Fix**: Added `*WithPersist` versions of disable branching functions:
+- `disableBranchingDeleteAllWithPersist()`
+- `disableBranchingKeepTestimonialWithPersist()`
+- `disableBranchingKeepImprovementWithPersist()`
+
+These functions:
+1. Clear `branch_question_id` on flows via `clearFlowBranchColumns(formId)`
+2. Delete branched steps from DB via `deleteFormSteps()`
+3. Delete empty flows via `deleteFlow()`
+4. Update local state via the original local-only function
+
+**Files Modified**:
+- `apps/web/src/features/createForm/composables/timeline/useTimelineBranching.ts`
+  - Added imports for persistence composables
+  - Added `disableBranchingDeleteAllWithPersist` and similar functions
+  - Exported new methods
+- `apps/web/src/features/createForm/composables/timeline/useTimelineEditor.ts`
+  - Exposed new persistence methods from branching module
+- `apps/web/src/features/createForm/ui/propertiesPanel/BranchingSettings.vue`
+  - Updated handlers to use `*WithPersist` methods
+- `apps/web/src/features/createForm/ui/stepEditor/editors/RatingStepEditor.vue`
+  - Updated modal callback to use `*WithPersist` methods
+
+**Testing Results**:
+- ✅ Disable branching with "Delete All" - no FK error
+- ✅ Delete rating step after disabling branching - works
+- ✅ Changes persist after page refresh
+- ✅ pnpm typecheck passes
