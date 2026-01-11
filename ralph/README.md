@@ -4,13 +4,21 @@ Ralph Loop automates multi-step implementations from ADRs, specs, or PRD documen
 
 ## Quick Start
 
-### Recommended: Official Plugin + Workspace Skill
+### Recommended: Use /ralph-manager (One Command)
 
 ```bash
-# Step 1: Create workspace from ADR/spec (in Claude Code)
+# Create workspace and auto-start loop (in Claude Code)
 /ralph-manager docs/adr/010-auto-save.md --name auto-save
 
-# Step 2: Run the official plugin (in Claude Code)
+# → Creates workspace
+# → Asks: "Start plugin loop?"
+# → Select yes → automatically invokes /ralph-loop
+```
+
+### Manual: Official Plugin Directly
+
+```bash
+# If you already have a workspace, run the plugin directly
 /ralph-loop "Read ralph/workspaces/auto-save_2026-01-11/prd.json and implement tasks. Output <promise>ALL-TASKS-COMPLETE</promise> when done." --max-iterations 20 --completion-promise "ALL-TASKS-COMPLETE"
 ```
 
@@ -155,7 +163,16 @@ Use the `/ralph-manager` skill to create workspaces from ADRs or specs:
 /ralph-manager --continue ralph/workspaces/auto-save_2026-01-11/
 ```
 
-The skill will output the exact command to run after workspace creation.
+After creating the workspace, `/ralph-manager` will ask what to do next:
+
+| Option | Description |
+|--------|-------------|
+| **Start plugin loop** | Automatically invokes `/ralph-loop` to begin execution |
+| **Show AFK command** | Displays `make ralph-afk` command to copy |
+| **Review PRD** | Shows generated prd.json before running |
+| **Cancel** | Exit without running |
+
+Selecting "Start plugin loop" will directly invoke the `/ralph-loop` plugin - no copy/paste needed.
 
 ### Manual Creation
 
