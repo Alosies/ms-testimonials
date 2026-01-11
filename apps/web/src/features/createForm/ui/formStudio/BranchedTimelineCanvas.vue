@@ -76,11 +76,6 @@ function handleCollapseFlow() {
   editor.collapseFlow();
 }
 
-// Get index of a flow step in the expanded view (for display numbering)
-function getFlowStepIndex(step: FormStep): number {
-  return expandedFlowSteps.value.findIndex(s => s.id === step.id);
-}
-
 // Get main array index for operations
 function getMainIndex(step: FormStep): number {
   return editor.steps.value.findIndex(s => s.id === step.id);
@@ -239,7 +234,7 @@ defineExpose({
         <template v-for="(step, index) in expandedFlowSteps" :key="step.id">
           <TimelineStepCard
             :step="(step as FormStep)"
-            :index="getFlowStepIndex(step)"
+            :index="index"
             :is-active="isExpandedStepActive(step)"
             :is-last="index === expandedFlowSteps.length - 1"
             :content-styles="cardContentStyles"

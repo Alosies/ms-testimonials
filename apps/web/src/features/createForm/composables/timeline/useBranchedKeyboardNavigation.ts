@@ -38,6 +38,7 @@ export function useBranchedKeyboardNavigation(deps: BranchedNavigationDeps): Bra
     setFlowFocus,
     onEditStep,
     onRemoveStep,
+    suppressScrollDetection,
   } = deps;
 
   // Initialize flow navigation - single source of truth
@@ -138,6 +139,9 @@ export function useBranchedKeyboardNavigation(deps: BranchedNavigationDeps): Bra
 
     e.preventDefault();
 
+    // Suppress scroll detection to prevent it from overriding our selection
+    suppressScrollDetection?.();
+
     // At branch point: enter testimonial
     if (isAtBranchPoint.value) {
       const entryId = flowNav.getBranchEntryStepId('testimonial');
@@ -170,6 +174,9 @@ export function useBranchedKeyboardNavigation(deps: BranchedNavigationDeps): Bra
     if (!isInBranch.value && !isAtBranchPoint.value) return;
 
     e.preventDefault();
+
+    // Suppress scroll detection to prevent it from overriding our selection
+    suppressScrollDetection?.();
 
     // At branch point: enter improvement
     if (isAtBranchPoint.value) {

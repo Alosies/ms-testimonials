@@ -89,6 +89,13 @@ export interface BranchedNavigationDeps {
   onEditStep?: (index: number) => void;
   /** Called when D or Backspace key is pressed on selected step */
   onRemoveStep?: (index: number) => void;
+
+  /**
+   * Called to suppress scroll detection temporarily.
+   * Used when switching branches to prevent scroll detection
+   * from overriding the keyboard selection.
+   */
+  suppressScrollDetection?: () => void;
 }
 
 /**

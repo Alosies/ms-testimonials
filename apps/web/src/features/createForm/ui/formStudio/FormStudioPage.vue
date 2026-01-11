@@ -62,15 +62,17 @@ const autoSave = useAutoSaveController();
 // Initialize navigation guard (warns user about unsaved changes)
 useNavigationGuard();
 
-// Initialize scroll-snap navigation (scroll detection only for linear mode)
+// Initialize scroll-snap navigation (updates selection when user scrolls to a step)
+// Uses ID-based selection for robustness in branched views
 const navigation = useScrollSnapNavigation({
   containerSelector: '.timeline-scroll',
-  itemSelector: '[data-step-index]',
+  itemSelector: '[data-step-id]',
   itemCount: () => editor.steps.value.length,
   selectedIndex: editor.selectedIndex,
   onSelect: (index) => editor.selectStep(index),
-  enableKeyboard: false,
-  enableScrollDetection: false,
+  onSelectById: (id) => editor.selectStepById(id),
+  enableKeyboard: false, // Keyboard handled by useBranchedKeyboardNavigation
+  enableScrollDetection: true,
 });
 
 // Selected step ID for keyboard navigation
@@ -89,6 +91,7 @@ useBranchedKeyboardNavigation({
   setFlowFocus: editor.setFlowFocus,
   onEditStep: editor.handleEditStep,
   onRemoveStep: editor.handleRemoveStep,
+  suppressScrollDetection: navigation.suppressDetection,
 });
 
 // Form data loading and canvas state (extracted to composable)
