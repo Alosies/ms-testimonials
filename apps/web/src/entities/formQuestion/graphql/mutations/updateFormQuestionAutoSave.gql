@@ -1,0 +1,14 @@
+# Auto-save mutation with minimal response
+# Returns ONLY id + updated_at to prevent Apollo cache from overwriting local state
+# See ADR-003 and ADR-010 for rationale
+#
+# Use this mutation for auto-saving text fields (question_text, placeholder, help_text, scale labels)
+# DO NOT use updateFormQuestion for auto-save
+mutation UpdateFormQuestionAutoSave($id: String!, $changes: form_questions_set_input!) {
+  update_form_questions_by_pk(pk_columns: { id: $id }, _set: $changes) {
+    id
+    updated_at
+    # DO NOT add: question_text, placeholder, help_text, scale_min_label, scale_max_label, etc.
+    # Apollo will overwrite those in cache, causing UI flicker
+  }
+}

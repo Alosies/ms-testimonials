@@ -18515,6 +18515,14 @@ export type UpdateFormQuestionMutationVariables = Exact<{
 
 export type UpdateFormQuestionMutation = { __typename?: 'mutation_root', update_form_questions_by_pk?: { __typename?: 'form_questions', id: string, form_id: string, organization_id: string, question_type_id: string, question_key: string, question_text: string, placeholder?: string | null, help_text?: string | null, display_order: number, is_required: boolean, min_length?: number | null, max_length?: number | null, min_value?: number | null, max_value?: number | null, validation_pattern?: string | null, allowed_file_types?: Array<string> | null, max_file_size_kb?: number | null, is_active: boolean, created_at: string, updated_at: string, question_type: { __typename?: 'question_types', id: string, unique_name: string, name: string, category: string, input_component: string } } | null };
 
+export type UpdateFormQuestionAutoSaveMutationVariables = Exact<{
+  id: Scalars['String']['input'];
+  changes: Form_Questions_Set_Input;
+}>;
+
+
+export type UpdateFormQuestionAutoSaveMutation = { __typename?: 'mutation_root', update_form_questions_by_pk?: { __typename?: 'form_questions', id: string, updated_at: string } | null };
+
 export type GetFormQuestionsQueryVariables = Exact<{
   formId: Scalars['String']['input'];
 }>;
@@ -18545,6 +18553,14 @@ export type UpdateFormStepMutationVariables = Exact<{
 
 
 export type UpdateFormStepMutation = { __typename?: 'mutation_root', update_form_steps_by_pk?: { __typename?: 'form_steps', id: string, flow_membership: string, step_order: number, content: any, tips?: Array<string> | null, updated_at: string } | null };
+
+export type UpdateFormStepAutoSaveMutationVariables = Exact<{
+  id: Scalars['String']['input'];
+  changes: Form_Steps_Set_Input;
+}>;
+
+
+export type UpdateFormStepAutoSaveMutation = { __typename?: 'mutation_root', update_form_steps_by_pk?: { __typename?: 'form_steps', id: string, updated_at: string } | null };
 
 export type UpsertFormStepsMutationVariables = Exact<{
   inputs: Array<Form_Steps_Insert_Input> | Form_Steps_Insert_Input;
@@ -19502,6 +19518,37 @@ export function useUpdateFormQuestionMutation(options: VueApolloComposable.UseMu
   return VueApolloComposable.useMutation<UpdateFormQuestionMutation, UpdateFormQuestionMutationVariables>(UpdateFormQuestionDocument, options);
 }
 export type UpdateFormQuestionMutationCompositionFunctionResult = VueApolloComposable.UseMutationReturn<UpdateFormQuestionMutation, UpdateFormQuestionMutationVariables>;
+export const UpdateFormQuestionAutoSaveDocument = gql`
+    mutation UpdateFormQuestionAutoSave($id: String!, $changes: form_questions_set_input!) {
+  update_form_questions_by_pk(pk_columns: {id: $id}, _set: $changes) {
+    id
+    updated_at
+  }
+}
+    `;
+
+/**
+ * __useUpdateFormQuestionAutoSaveMutation__
+ *
+ * To run a mutation, you first call `useUpdateFormQuestionAutoSaveMutation` within a Vue component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateFormQuestionAutoSaveMutation` returns an object that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - Several other properties: https://v4.apollo.vuejs.org/api/use-mutation.html#return
+ *
+ * @param options that will be passed into the mutation, supported options are listed on: https://v4.apollo.vuejs.org/guide-composable/mutation.html#options;
+ *
+ * @example
+ * const { mutate, loading, error, onDone } = useUpdateFormQuestionAutoSaveMutation({
+ *   variables: {
+ *     id: // value for 'id'
+ *     changes: // value for 'changes'
+ *   },
+ * });
+ */
+export function useUpdateFormQuestionAutoSaveMutation(options: VueApolloComposable.UseMutationOptions<UpdateFormQuestionAutoSaveMutation, UpdateFormQuestionAutoSaveMutationVariables> | ReactiveFunction<VueApolloComposable.UseMutationOptions<UpdateFormQuestionAutoSaveMutation, UpdateFormQuestionAutoSaveMutationVariables>> = {}) {
+  return VueApolloComposable.useMutation<UpdateFormQuestionAutoSaveMutation, UpdateFormQuestionAutoSaveMutationVariables>(UpdateFormQuestionAutoSaveDocument, options);
+}
+export type UpdateFormQuestionAutoSaveMutationCompositionFunctionResult = VueApolloComposable.UseMutationReturn<UpdateFormQuestionAutoSaveMutation, UpdateFormQuestionAutoSaveMutationVariables>;
 export const GetFormQuestionsDocument = gql`
     query GetFormQuestions($formId: String!) {
   form_questions(
@@ -19633,6 +19680,37 @@ export function useUpdateFormStepMutation(options: VueApolloComposable.UseMutati
   return VueApolloComposable.useMutation<UpdateFormStepMutation, UpdateFormStepMutationVariables>(UpdateFormStepDocument, options);
 }
 export type UpdateFormStepMutationCompositionFunctionResult = VueApolloComposable.UseMutationReturn<UpdateFormStepMutation, UpdateFormStepMutationVariables>;
+export const UpdateFormStepAutoSaveDocument = gql`
+    mutation UpdateFormStepAutoSave($id: String!, $changes: form_steps_set_input!) {
+  update_form_steps_by_pk(pk_columns: {id: $id}, _set: $changes) {
+    id
+    updated_at
+  }
+}
+    `;
+
+/**
+ * __useUpdateFormStepAutoSaveMutation__
+ *
+ * To run a mutation, you first call `useUpdateFormStepAutoSaveMutation` within a Vue component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateFormStepAutoSaveMutation` returns an object that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - Several other properties: https://v4.apollo.vuejs.org/api/use-mutation.html#return
+ *
+ * @param options that will be passed into the mutation, supported options are listed on: https://v4.apollo.vuejs.org/guide-composable/mutation.html#options;
+ *
+ * @example
+ * const { mutate, loading, error, onDone } = useUpdateFormStepAutoSaveMutation({
+ *   variables: {
+ *     id: // value for 'id'
+ *     changes: // value for 'changes'
+ *   },
+ * });
+ */
+export function useUpdateFormStepAutoSaveMutation(options: VueApolloComposable.UseMutationOptions<UpdateFormStepAutoSaveMutation, UpdateFormStepAutoSaveMutationVariables> | ReactiveFunction<VueApolloComposable.UseMutationOptions<UpdateFormStepAutoSaveMutation, UpdateFormStepAutoSaveMutationVariables>> = {}) {
+  return VueApolloComposable.useMutation<UpdateFormStepAutoSaveMutation, UpdateFormStepAutoSaveMutationVariables>(UpdateFormStepAutoSaveDocument, options);
+}
+export type UpdateFormStepAutoSaveMutationCompositionFunctionResult = VueApolloComposable.UseMutationReturn<UpdateFormStepAutoSaveMutation, UpdateFormStepAutoSaveMutationVariables>;
 export const UpsertFormStepsDocument = gql`
     mutation UpsertFormSteps($inputs: [form_steps_insert_input!]!) {
   insert_form_steps(

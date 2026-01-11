@@ -1,0 +1,14 @@
+# Auto-save mutation with minimal response
+# Returns ONLY id + updated_at to prevent Apollo cache from overwriting local state
+# See ADR-003 and ADR-010 for rationale
+#
+# Use this mutation for auto-saving text content (tips, content fields)
+# DO NOT use upsertFormSteps or updateFormStep for auto-save
+mutation UpdateFormStepAutoSave($id: String!, $changes: form_steps_set_input!) {
+  update_form_steps_by_pk(pk_columns: { id: $id }, _set: $changes) {
+    id
+    updated_at
+    # DO NOT add: content, tips, step_type, step_order, etc.
+    # Apollo will overwrite those in cache, causing UI flicker
+  }
+}
