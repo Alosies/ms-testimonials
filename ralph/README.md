@@ -44,8 +44,20 @@ Fully autonomous execution that runs outside Claude Code, spawning new Claude se
 
 ### Prerequisites
 
-- `claude` CLI installed and in PATH
+- Claude Code CLI installed and in PATH (default: `claude`)
 - `envsubst` available (`brew install gettext` on macOS)
+
+### Custom CLI Command
+
+If your Claude CLI has a different name, set the `CLAUDE_CMD` environment variable:
+
+```bash
+# One-time usage
+CLAUDE_CMD=cc make ralph-afk PRD=ralph/workspaces/my-feature/prd.json
+
+# Or export in your shell profile (~/.zshrc)
+export CLAUDE_CMD=cc
+```
 
 ### Usage
 
@@ -243,9 +255,13 @@ brew install gettext
 apt-get install gettext
 ```
 
-### Shell script says "claude CLI not found"
+### Shell script says "Claude CLI not found"
 
-Install Claude Code CLI. The `claude` command must be in your PATH.
+Install Claude Code CLI. The default command is `claude`. If you use a different name (like `cc`), set the `CLAUDE_CMD` environment variable:
+
+```bash
+export CLAUDE_CMD=cc
+```
 
 ### Stories not being marked complete
 

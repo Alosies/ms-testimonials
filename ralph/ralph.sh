@@ -136,11 +136,14 @@ else
     echo "$(date): Starting iteration $ITERATION" >> "$RALPH_PROGRESS"
 
     # Run Claude with the prompt
-    # Note: This requires claude CLI to be available
-    if command -v claude &> /dev/null; then
-      envsubst < "$SCRIPT_DIR/templates/ralph-once" | claude -p -
+    # Use CLAUDE_CMD env var, or default to 'claude'
+    CLAUDE_CMD="${CLAUDE_CMD:-claude}"
+    if command -v "$CLAUDE_CMD" &> /dev/null; then
+      envsubst < "$SCRIPT_DIR/templates/ralph-once" | "$CLAUDE_CMD" -p -
     else
-      echo "Error: 'claude' CLI not found. Install Claude Code CLI or use --once mode."
+      echo "Error: Claude CLI '$CLAUDE_CMD' not found."
+      echo "Set CLAUDE_CMD env var if using a different command name."
+      echo "Example: CLAUDE_CMD=cc make ralph-afk PRD=..."
       exit 1
     fi
 
