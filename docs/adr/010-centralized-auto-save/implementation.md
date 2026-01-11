@@ -3,8 +3,9 @@
 > Replace fragmented auto-save composables with a centralized controller for the form studio.
 
 **ADR:** `docs/adr/010-centralized-auto-save/adr.md`
-**Status:** Not Started
+**Status:** Completed (Phase 1)
 **Created:** January 11, 2026
+**Completed:** January 11, 2026
 
 ---
 
@@ -33,23 +34,24 @@ The form studio currently has 6 different auto-save composables with circular de
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
-### Target State (Centralized)
+### Target State (Centralized) - IMPLEMENTED
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
 │ SINGLE AUTO-SAVE CONTROLLER                                             │
 │ ─────────────────────────────                                           │
 │ • useDirtyTracker.ts      - ID tracking with Sets + restore             │
-│ • watchers.ts             - 5 surgical watchers for text fields         │
+│ • watchers.ts             - 6 surgical watchers for text fields         │
 │ • handlers.ts             - 5 save functions with ID lookup             │
-│ • useAutoSaveController.ts - Single 500ms debounce orchestrator         │
-│ • useNavigationGuard.ts   - beforeunload + route guard                  │
+│ • useAutoSaveController.ts - useIdle(500ms) + whenever orchestrator     │
+│ • useNavigationGuard.ts   - beforeunload + route guard (TODO)           │
 │                                                                         │
 │ Benefits:                                                               │
 │ • No circular dependencies                                              │
-│ • Single debounce timer                                                 │
+│ • Idle-based trigger (better UX than debounce)                          │
 │ • Predictable save behavior                                             │
 │ • Clear mental model                                                    │
+│ • UX timing separated to SaveStatusPill component                       │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -101,7 +103,7 @@ apps/web/src/features/createForm/composables/autoSave/
 
 ---
 
-## Phase 1: Dirty Tracker
+## Phase 1: Dirty Tracker (COMPLETED)
 
 Create the shared dirty state tracker with ID tracking using Sets.
 
@@ -191,9 +193,17 @@ export const useDirtyTracker = createSharedComposable(() => {
 
 ---
 
-## Phase 2: Surgical Watchers
+## Phase 2: Surgical Watchers (COMPLETED)
 
 Create watchers that track text field changes and mark dirty state with entity IDs.
+
+**6 Watchers Implemented:**
+1. `useFormInfoWatcher` - form name, product_name, product_description
+2. `useQuestionTextWatcher` - question_text, placeholder, help_text, scale labels
+3. `useOptionTextWatcher` - option_label, option_value
+4. `useStepTipsWatcher` - tips array
+5. `useStepContentWatcher` - welcome/thank_you/consent/contact_info/reward content
+6. `useFlowNameWatcher` - flow name
 
 ### 2.1 Create watchers.ts
 
@@ -318,7 +328,7 @@ export const useFlowNameWatcher = () => {
 
 ---
 
-## Phase 3: Save Handlers
+## Phase 3: Save Handlers (COMPLETED)
 
 Create save handlers that receive dirty IDs and look up current values from state.
 
@@ -414,17 +424,19 @@ export const saveFlows = async (flowIds: Set<string>, allFlows: Flow[]) => {
 
 ---
 
-## Phase 4: Central Controller
+## Phase 4: Central Controller (COMPLETED)
 
-Create the orchestrator that coordinates dirty tracking, debouncing, and save execution.
+Create the orchestrator that coordinates dirty tracking, idle detection, and save execution.
 
 ### 4.1 Create useAutoSaveController.ts
 
 **File:** `apps/web/src/features/createForm/composables/autoSave/useAutoSaveController.ts`
 
+**Key Implementation Decision:** Uses `useIdle` + `whenever` instead of debounce for better UX.
+
 ```typescript
-import { ref, readonly, watch } from 'vue';
-import { createSharedComposable, useDebounceFn } from '@vueuse/core';
+import { ref, readonly, nextTick } from 'vue';
+import { createSharedComposable, useIdle, whenever } from '@vueuse/core';
 import { useDirtyTracker } from './useDirtyTracker';
 import { useFormEditor } from '../useFormEditor';
 import {
@@ -432,6 +444,7 @@ import {
   useQuestionTextWatcher,
   useOptionTextWatcher,
   useStepTipsWatcher,
+  useStepContentWatcher,  // 6th watcher for content steps
   useFlowNameWatcher,
 } from './watchers';
 import {
@@ -445,13 +458,18 @@ import {
 export const useAutoSaveController = createSharedComposable(() => {
   const { snapshot, restoreDirtyState, hasPendingChanges } = useDirtyTracker();
   const { form, allQuestions, allOptions, allSteps, allFlows } = useFormEditor();
+
+  // useIdle detects when user stops all interaction for 500ms
+  const { idle } = useIdle(500);
+
   const saveStatus = ref<'idle' | 'saving' | 'saved' | 'error'>('idle');
 
-  // Register watchers
+  // Register watchers (6 total)
   useFormInfoWatcher();
   useQuestionTextWatcher();
   useOptionTextWatcher();
   useStepTipsWatcher();
+  useStepContentWatcher();
   useFlowNameWatcher();
 
   const executeSave = async () => {
@@ -480,10 +498,11 @@ export const useAutoSaveController = createSharedComposable(() => {
       }
 
       await Promise.all(promises);
+
+      // Transition immediately: UI component (SaveStatusPill) handles display timing
       saveStatus.value = 'saved';
-      setTimeout(() => {
-        if (saveStatus.value === 'saved') saveStatus.value = 'idle';
-      }, 2000);
+      await nextTick();
+      saveStatus.value = 'idle';
 
     } catch (error) {
       saveStatus.value = 'error';
@@ -492,15 +511,20 @@ export const useAutoSaveController = createSharedComposable(() => {
     }
   };
 
-  const debouncedSave = useDebounceFn(executeSave, 500);
-
-  watch(hasPendingChanges, (pending) => {
-    if (pending) debouncedSave();
-  });
+  // Save when user becomes idle AND has pending changes
+  whenever(
+    () => idle.value && hasPendingChanges.value,
+    () => executeSave()
+  );
 
   return { saveStatus: readonly(saveStatus), hasPendingChanges };
 });
 ```
+
+**Why useIdle + whenever instead of useDebounceFn:**
+- `useIdle` detects actual user inactivity (mousemove, keydown, etc.)
+- Saves only when user stops interacting, not just after a delay
+- `whenever` fires when condition becomes true (handles edge cases)
 
 ### Acceptance Criteria
 

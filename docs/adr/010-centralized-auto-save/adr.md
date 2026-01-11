@@ -16,7 +16,7 @@
 
 ## Status
 
-**Proposed** - 2026-01-11
+**Implemented** - 2026-01-11
 
 ## Context
 
@@ -96,20 +96,20 @@ Based on the actual GraphQL schema, these are the text fields that require debou
 │                         MODULAR DETECTION                               │
 │                    (Surgical Watchers per Entity)                       │
 │                                                                         │
-│  ┌────────────┐ ┌────────────┐ ┌────────────┐ ┌────────────┐ ┌────────────┐│
-│  │ formInfo   │ │questionText│ │ optionText │ │ stepTips   │ │ flowName   ││
-│  │ Watcher    │ │ Watcher    │ │ Watcher    │ │ Watcher    │ │ Watcher    ││
-│  │            │ │            │ │            │ │            │ │            ││
-│  │ • name     │ │• question_ │ │• option_   │ │ • tips     │ │ • name     ││
-│  │ • product_ │ │  text      │ │  label     │ │            │ │            ││
-│  │   name     │ │• placeholder│ │• option_   │ │            │ │            ││
-│  │ • product_ │ │• help_text │ │  value     │ │            │ │            ││
-│  │   desc     │ │• scale_*_  │ │            │ │            │ │            ││
-│  │            │ │  label     │ │            │ │            │ │            ││
-│  └─────┬──────┘ └─────┬──────┘ └─────┬──────┘ └─────┬──────┘ └─────┬──────┘│
-│        │              │              │              │              │       │
-│        ▼              ▼              ▼              ▼              ▼       │
-│   dirty.formInfo dirty.questions dirty.options dirty.steps  dirty.flows   │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐│
+│  │ formInfo │ │question  │ │ option   │ │ stepTips │ │stepContent│ │ flowName ││
+│  │ Watcher  │ │Text      │ │ Text     │ │ Watcher  │ │ Watcher   │ │ Watcher  ││
+│  │          │ │Watcher   │ │ Watcher  │ │          │ │           │ │          ││
+│  │• name    │ │• question│ │• option_ │ │ • tips   │ │• welcome  │ │ • name   ││
+│  │• product_│ │  _text   │ │  label   │ │          │ │• thank_you│ │          ││
+│  │  name    │ │• place   │ │• option_ │ │          │ │• consent  │ │          ││
+│  │• product_│ │  holder  │ │  value   │ │          │ │• contact  │ │          ││
+│  │  desc    │ │• help_   │ │          │ │          │ │• reward   │ │          ││
+│  │          │ │  text    │ │          │ │          │ │           │ │          ││
+│  └────┬─────┘ └────┬─────┘ └────┬─────┘ └────┬─────┘ └─────┬─────┘ └────┬─────┘│
+│       │            │            │            │             │            │      │
+│       ▼            ▼            ▼            ▼             ▼            ▼      │
+│   dirty.formInfo  dirty.questions dirty.options  dirty.steps      dirty.flows │
 │                                                                         │
 └─────────────────────────────────────────────────────────────────────────┘
                                     │
@@ -307,6 +307,14 @@ export const useDirtyTracker = createSharedComposable(() => {
 
 Watchers only track **text field changes**. Non-text controls (toggles, dropdowns, etc.) trigger immediate mutations in their respective composables.
 
+**6 Watchers Total:**
+1. `useFormInfoWatcher` - form name, product_name, product_description
+2. `useQuestionTextWatcher` - question_text, placeholder, help_text, scale labels
+3. `useOptionTextWatcher` - option_label, option_value
+4. `useStepTipsWatcher` - tips array
+5. `useStepContentWatcher` - welcome/thank_you/consent/contact_info/reward content
+6. `useFlowNameWatcher` - flow name
+
 ```typescript
 // watchers/useQuestionTextWatcher.ts
 // Watches: question_text, placeholder, help_text, scale_min_label, scale_max_label
@@ -409,89 +417,212 @@ export const useStepTipsWatcher = () => {
 };
 ```
 
-#### 6. Save Handlers (With ID Lookup)
+#### 6. Minimal Response Mutation Pattern (CRITICAL)
+
+**This is a critical architectural decision documented in ADR-003 that MUST be followed.**
+
+Auto-save mutations must use the **Minimal Response Pattern** to prevent UI flicker and cache corruption:
+
+| Rule | Requirement | Why |
+|------|-------------|-----|
+| **Use UPDATE, not UPSERT** | Explicit updates for existing entities | Upserts are for creating new records |
+| **Return ONLY `id`** | Plus optionally `status`, `updated_at` | Never return content fields being saved |
+| **Never return fragments** | Fragments include content fields | Would overwrite Apollo cache with stale data |
+
+**The Problem:**
+
+When a mutation returns the same fields being edited, Apollo automatically updates its cache with the response. This causes:
+
+1. **Stale data overwrite**: User types "abc", save fires, user types "d", response with "abc" overwrites cache
+2. **UI flicker**: Screen flashes with old values as cache updates
+3. **Lost changes**: New keystrokes during save are lost when response arrives
+
+**The Solution:**
+
+Create dedicated auto-save mutations that return only metadata:
+
+```graphql
+# ✅ CORRECT: Return only id and metadata
+mutation UpdateFormAutoSave($id: String!, $changes: forms_set_input!) {
+  update_forms_by_pk(pk_columns: { id: $id }, _set: $changes) {
+    id          # Required for cache normalization
+    updated_at  # Metadata we want cached
+    # DO NOT include: product_name, product_description
+  }
+}
+
+# ❌ WRONG: Returns fragments with content fields
+mutation UpdateForm($id: String!, $changes: forms_set_input!) {
+  update_forms_by_pk(pk_columns: { id: $id }, _set: $changes) {
+    ...FormBasic  # Includes product_name, product_description - WILL CAUSE FLICKER
+  }
+}
+```
+
+**Why this works:**
+
+1. We send `product_name`, `product_description` to the server
+2. Server saves them and returns only `id`, `updated_at`
+3. Apollo normalizes by `id` and merges into cache
+4. Only `updated_at` gets overwritten in cache
+5. `product_name`, `product_description` stay untouched in cache
+6. Local reactive state (from composable) is never affected
+
+**Required mutations for auto-save:**
+
+| Entity | Mutation | Returns |
+|--------|----------|---------|
+| Forms | `UpdateFormAutoSave` | `id`, `updated_at` |
+| Questions | `UpdateFormQuestionAutoSave` | `id`, `updated_at` |
+| Options | `UpdateQuestionOptionAutoSave` | `id`, `updated_at` |
+| Steps | `UpdateFormStepAutoSave` | `id`, `updated_at` |
+| Flows | `UpdateFlowAutoSave` | `id`, `updated_at` |
+
+**Cache Bypass with `fetchPolicy: 'no-cache'`:**
+
+Even with minimal response, Apollo's cache normalization can still trigger reactivity when a mutation returns data. The mutation response (even just `id`) causes Apollo to:
+1. Trigger cache watchers/subscriptions
+2. Potentially cause re-renders that pull cached values
+3. Create a loop where local edits get overwritten
+
+**Solution:** Use `fetchPolicy: 'no-cache'` on all auto-save mutation composables:
+
+```typescript
+// useUpdateFormStepAutoSave.ts
+export function useUpdateFormStepAutoSave() {
+  const { mutate, loading, error, onDone, onError } = useUpdateFormStepAutoSaveMutation({
+    fetchPolicy: 'no-cache',  // CRITICAL: Completely bypass Apollo cache
+  });
+  // ...
+}
+```
+
+**What `fetchPolicy: 'no-cache'` does:**
+- Executes the mutation normally (saves to database)
+- **Completely skips writing the response to Apollo cache**
+- Local reactive state (Vue refs) remains completely untouched
+- No cache normalization, no watchers triggered
+
+**Why this is safe for auto-save:**
+- Auto-save is silent background persistence
+- We don't need the response to update any UI
+- The local state is the source of truth during editing
+- Fresh data is loaded on page reload anyway
+
+**Reference:** See ADR-003 for detailed analysis of why this pattern is necessary.
+
+#### 7. Save Handlers (With ID Lookup)
 
 Handlers receive **dirty IDs** and look up current values from state. This ensures we save the entity that was modified, not just whatever is currently active.
 
+**IMPORTANT:** All handlers MUST use UPDATE mutations with minimal response (see section 6).
+
 ```typescript
 // handlers.ts
-// All handlers receive dirty IDs and look up current state
+// All handlers use UPDATE mutations that return only id + updated_at
 
-export const saveFormInfo = async (form: Form) => {
-  // Form is a boolean flag - just save the current form
-  await updateFormMutation({
-    id: form.id,
+export const saveFormInfo = async (formId: string, form: Form) => {
+  // Use dedicated auto-save mutation with minimal response
+  await updateFormAutoSave({
+    id: formId,
     changes: {
-      name: form.name,
       product_name: form.product_name,
       product_description: form.product_description,
     },
   });
+  // Returns only { id, updated_at } - no content fields
 };
 
 export const saveQuestions = async (questionIds: Set<string>, allQuestions: FormQuestion[]) => {
-  // Look up the dirty questions by ID from current state
   const toSave = allQuestions.filter(q => questionIds.has(q.id));
   if (toSave.length === 0) return;
 
-  await upsertFormQuestions({
-    inputs: toSave.map(q => ({
-      id: q.id,
-      question_text: q.question_text,
-      placeholder: q.placeholder,
-      help_text: q.help_text,
-      scale_min_label: q.scale_min_label,
-      scale_max_label: q.scale_max_label,
-    })),
-  });
+  // Use UPDATE (not UPSERT) for each question
+  await Promise.all(
+    toSave.map(q =>
+      updateFormQuestionAutoSave({
+        id: q.id,
+        changes: {
+          question_text: q.question_text,
+          placeholder: q.placeholder,
+          help_text: q.help_text,
+          scale_min_label: q.scale_min_label,
+          scale_max_label: q.scale_max_label,
+        },
+      })
+    )
+  );
+  // Each returns only { id, updated_at }
 };
 
 export const saveOptions = async (optionIds: Set<string>, allOptions: QuestionOption[]) => {
   const toSave = allOptions.filter(o => optionIds.has(o.id));
   if (toSave.length === 0) return;
 
-  await upsertQuestionOptions({
-    inputs: toSave.map(o => ({
-      id: o.id,
-      option_label: o.option_label,
-      option_value: o.option_value,
-    })),
-  });
+  await Promise.all(
+    toSave.map(o =>
+      updateQuestionOptionAutoSave({
+        id: o.id,
+        changes: {
+          option_label: o.option_label,
+          option_value: o.option_value,
+        },
+      })
+    )
+  );
 };
 
 export const saveSteps = async (stepIds: Set<string>, allSteps: FormStep[]) => {
   const toSave = allSteps.filter(s => stepIds.has(s.id));
   if (toSave.length === 0) return;
 
-  await upsertFormSteps({
-    inputs: toSave.map(s => ({ id: s.id, tips: s.tips })),
-  });
+  await Promise.all(
+    toSave.map(s =>
+      updateFormStepAutoSave({
+        id: s.id,
+        changes: { tips: s.tips, content: s.content },
+      })
+    )
+  );
 };
 
 export const saveFlows = async (flowIds: Set<string>, allFlows: Flow[]) => {
   const toSave = allFlows.filter(f => flowIds.has(f.id));
   if (toSave.length === 0) return;
 
-  await upsertFlows({
-    inputs: toSave.map(f => ({ id: f.id, name: f.name })),
-  });
+  await Promise.all(
+    toSave.map(f =>
+      updateFlowAutoSave({
+        id: f.id,
+        changes: { name: f.name },
+      })
+    )
+  );
 };
 ```
 
-#### 7. Central Controller (With Snapshot)
+#### 8. Central Controller (With Snapshot and Idle-Based Trigger)
+
+The controller uses `useIdle` from VueUse to detect when the user stops interacting, combined with `whenever` to trigger saves only when both idle AND there are pending changes.
 
 ```typescript
 // useAutoSaveController.ts
 export const useAutoSaveController = createSharedComposable(() => {
   const { snapshot, restoreDirtyState, hasPendingChanges } = useDirtyTracker();
   const { form, allQuestions, allOptions, allSteps, allFlows } = useFormEditor();
+
+  // useIdle detects when user stops all interaction for 500ms
+  // Events tracked: mousemove, mousedown, resize, keydown, touchstart, wheel
+  const { idle } = useIdle(500);
+
   const saveStatus = ref<'idle' | 'saving' | 'saved' | 'error'>('idle');
 
-  // Register watchers
+  // Register watchers (6 total)
   useFormInfoWatcher();
   useQuestionTextWatcher();
   useOptionTextWatcher();
   useStepTipsWatcher();
+  useStepContentWatcher();  // Welcome, ThankYou, Consent step content
   useFlowNameWatcher();
 
   const executeSave = async () => {
@@ -520,24 +651,33 @@ export const useAutoSaveController = createSharedComposable(() => {
       }
 
       await Promise.all(promises);
+
+      // Transition: saving → saved → idle
+      // UI component (SaveStatusPill) handles display timing
       saveStatus.value = 'saved';
-      setTimeout(() => { if (saveStatus.value === 'saved') saveStatus.value = 'idle'; }, 2000);
+      await nextTick();
+      saveStatus.value = 'idle';
 
     } catch (error) {
       saveStatus.value = 'error';
       console.error('[AutoSave] Save failed:', error);
 
       // CRITICAL: Restore dirty state on failure to prevent data loss
-      // User's changes are still in local state, we just failed to persist them
       restoreDirtyState(toSave);
     }
   };
 
-  const debouncedSave = useDebounceFn(executeSave, 500);
-
-  watch(hasPendingChanges, (pending) => {
-    if (pending) debouncedSave();
-  });
+  // Save when BOTH conditions are true:
+  // 1. User has been idle for 500ms (no keyboard/mouse activity)
+  // 2. There are pending changes to save
+  //
+  // Using `whenever` instead of debounce because:
+  // - It fires when the condition BECOMES true
+  // - Handles edge case where user is already idle when changes are made
+  whenever(
+    () => idle.value && hasPendingChanges.value,
+    () => executeSave()
+  );
 
   return { saveStatus: readonly(saveStatus), hasPendingChanges };
 });
@@ -755,12 +895,12 @@ if (lastError.value?.handler === 'steps') {
 
 ## Implementation Checklist
 
-### Phase 1: Core Auto-Save (~290 lines total)
+### Phase 1: Core Auto-Save (~320 lines total)
 
-- [ ] Create `useDirtyTracker.ts` - ID tracking with Sets + snapshot + restore (~60 lines)
-- [ ] Create `watchers.ts` - 5 watchers that track entity IDs (~80 lines)
-- [ ] Create `handlers.ts` - 5 save functions with ID lookup (~60 lines)
-- [ ] Create `useAutoSaveController.ts` - Orchestration with snapshot (~60 lines)
+- [x] Create `useDirtyTracker.ts` - ID tracking with Sets + snapshot + restore (~60 lines)
+- [x] Create `watchers.ts` - 6 watchers that track entity IDs (~100 lines)
+- [x] Create `handlers.ts` - 5 save functions with ID lookup (~60 lines)
+- [x] Create `useAutoSaveController.ts` - Orchestration with useIdle + whenever (~70 lines)
 - [ ] Create `useNavigationGuard.ts` - beforeunload + route guard (~30 lines)
 
 ### Phase 2: Ensure Immediate Mutations Exist
@@ -849,14 +989,29 @@ const dirtyState = computed(() => computeDirtyState(currentState, snapshot.value
 ```
 composables/autoSave/
 ├── index.ts                      # Public exports
-├── useAutoSaveController.ts      # ~60 lines - orchestration
+├── useAutoSaveController.ts      # ~70 lines - orchestration with useIdle
 ├── useDirtyTracker.ts            # ~60 lines - ID tracking with Sets + restore
 ├── useNavigationGuard.ts         # ~30 lines - beforeunload + route guard
-├── watchers.ts                   # ~80 lines - 5 watchers with ID tracking
+├── watchers.ts                   # ~100 lines - 6 watchers with ID tracking
 └── handlers.ts                   # ~60 lines - 5 save functions with ID lookup
 ```
 
-**Total: ~290 lines** for the entire auto-save system (ID tracking adds necessary complexity).
+**Total: ~320 lines** for the entire auto-save system.
+
+### UX Timing Architecture (Separation of Concerns)
+
+The auto-save controller reports **actual data state** only. All **display timing** is handled by the UI component (SaveStatusPill):
+
+| Layer | Responsibility |
+|-------|----------------|
+| **Controller** | Reports state: `idle` → `saving` → `saved` → `idle` (immediately via nextTick) |
+| **SaveStatusPill** | Handles display timing: min 800ms for "Saving...", 2500ms display for "Saved" |
+
+**Why this split:**
+- Data layer shouldn't know about UX requirements
+- UI timing can be adjusted without touching business logic
+- Controller is easier to test (no artificial delays)
+- Display timing is configurable via props on SaveStatusPill
 
 **Immediate mutation composables (existing, not part of auto-save):**
 ```
