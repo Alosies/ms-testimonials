@@ -39,9 +39,42 @@ export function useStepState(): StepStateReturn {
   // ============================================
   // Computed
   // ============================================
-  const isDirty = computed(() =>
-    JSON.stringify(steps.value) !== JSON.stringify(originalSteps.value),
-  );
+
+  /**
+   * Extract structural fields from a step for dirty comparison.
+   * Only compares fields that represent structural changes:
+   * - Step presence (id)
+   * - Step order (stepOrder)
+   * - Flow assignment (flowId, flowMembership)
+   * - Step type (stepType)
+   *
+   * Content fields (content, tips, question text) are NOT compared here.
+   * They are tracked via step.isModified and handled by auto-save.
+   */
+  function getStructuralFields(step: FormStep) {
+    return {
+      id: step.id,
+      stepOrder: step.stepOrder,
+      flowId: step.flowId,
+      flowMembership: step.flowMembership,
+      stepType: step.stepType,
+      questionId: step.questionId,
+      isActive: step.isActive,
+    };
+  }
+
+  /**
+   * Tracks structural changes only (step additions, deletions, reordering, flow changes).
+   * Content changes are tracked separately via step.isModified and handled by auto-save.
+   */
+  const isDirty = computed(() => {
+    if (steps.value.length !== originalSteps.value.length) return true;
+
+    const currentStructure = steps.value.map(getStructuralFields);
+    const originalStructure = originalSteps.value.map(getStructuralFields);
+
+    return JSON.stringify(currentStructure) !== JSON.stringify(originalStructure);
+  });
 
   const hasSteps = computed(() => steps.value.length > 0);
 
