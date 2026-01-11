@@ -65,12 +65,13 @@ sync-push:
 # Ralph Loop - Autonomous development
 # Usage: make ralph-afk PRD=ralph/workspaces/my-feature_2026-01-10/prd.json
 # Usage: make ralph-afk PRD=ralph/workspaces/my-feature_2026-01-10/prd.json MAX=20
+# Usage: make ralph-afk PRD=... CLAUDE_CMD=cc (custom CLI command)
 ralph-afk:
 	@if [ -z "$(PRD)" ]; then \
 		echo "Error: PRD required. Usage: make ralph-afk PRD=path/to/prd.json"; \
 		exit 1; \
 	fi
-	./ralph/ralph.sh --max $(or $(MAX),5) --prd $(PRD)
+	CLAUDE_CMD="$(or $(CLAUDE_CMD),claude)" ./ralph/ralph.sh --max $(or $(MAX),5) --prd $(PRD)
 
 # Usage: make ralph-once PRD=ralph/workspaces/my-feature_2026-01-10/prd.json
 ralph-once:
@@ -78,4 +79,4 @@ ralph-once:
 		echo "Error: PRD required. Usage: make ralph-once PRD=path/to/prd.json"; \
 		exit 1; \
 	fi
-	./ralph/ralph.sh --once --prd $(PRD)
+	CLAUDE_CMD="$(or $(CLAUDE_CMD),claude)" ./ralph/ralph.sh --once --prd $(PRD)

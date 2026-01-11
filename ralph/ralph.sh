@@ -136,16 +136,20 @@ else
     echo "$(date): Starting iteration $ITERATION" >> "$RALPH_PROGRESS"
 
     # Run Claude with the prompt
-    # Use CLAUDE_CMD env var, or default to 'claude'
-    CLAUDE_CMD="${CLAUDE_CMD:-claude}"
-    if command -v "$CLAUDE_CMD" &> /dev/null; then
-      envsubst < "$SCRIPT_DIR/templates/ralph-once" | "$CLAUDE_CMD" -p -
+    # Use CLAUDE_CMD env var, or find claude in common locations
+    if [[ -n "$CLAUDE_CMD" ]] && command -v "$CLAUDE_CMD" &> /dev/null; then
+      CLAUDE_BIN="$CLAUDE_CMD"
+    elif command -v claude &> /dev/null; then
+      CLAUDE_BIN="claude"
+    elif [[ -x "$HOME/.claude/local/claude" ]]; then
+      CLAUDE_BIN="$HOME/.claude/local/claude"
     else
-      echo "Error: Claude CLI '$CLAUDE_CMD' not found."
-      echo "Set CLAUDE_CMD env var if using a different command name."
-      echo "Example: CLAUDE_CMD=cc make ralph-afk PRD=..."
+      echo "Error: Claude CLI not found."
+      echo "Checked: CLAUDE_CMD env var, 'claude' in PATH, ~/.claude/local/claude"
+      echo "Set CLAUDE_CMD env var to specify location."
       exit 1
     fi
+    envsubst < "$SCRIPT_DIR/templates/ralph-once" | "$CLAUDE_BIN" -p -
 
     # Check for completion signal in output or progress
     if grep -q "<promise>$RALPH_COMPLETE</promise>" "$RALPH_PROGRESS" 2>/dev/null; then
