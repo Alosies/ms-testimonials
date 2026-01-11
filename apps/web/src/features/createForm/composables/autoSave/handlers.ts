@@ -5,6 +5,9 @@
  * This pattern is required because GraphQL composables must be called during
  * Vue component setup, not inside async callbacks.
  *
+ * IMPORTANT: All handlers use UPDATE mutations with minimal response (id + updated_at only)
+ * to prevent Apollo cache from overwriting local state. See ADR-003 and ADR-010.
+ *
  * Usage:
  * - Call create*Handler() during setup to get a handler function
  * - The returned handler can be called anytime with dirty entity IDs
@@ -13,19 +16,24 @@
  */
 
 import type { useUpdateFormAutoSave } from '@/entities/form';
-import type { useUpdateFormQuestion } from '@/entities/formQuestion';
-import type { useUpsertFormSteps } from '@/entities/formStep';
+import type { useUpdateFormQuestionAutoSave } from '@/entities/formQuestion';
+import type { useUpdateFormStepAutoSave } from '@/entities/formStep';
 import { useTimelineEditor } from '../timeline/useTimelineEditor';
 
-// Type aliases for mutation functions
+// Type aliases for mutation functions (all use minimal response pattern)
 type UpdateFormAutoSaveFn = ReturnType<typeof useUpdateFormAutoSave>['updateFormAutoSave'];
-type UpdateFormQuestionFn = ReturnType<typeof useUpdateFormQuestion>['updateFormQuestion'];
-type UpsertFormStepsFn = ReturnType<typeof useUpsertFormSteps>['upsertFormSteps'];
+type UpdateFormQuestionAutoSaveFn = ReturnType<
+  typeof useUpdateFormQuestionAutoSave
+>['updateFormQuestionAutoSave'];
+type UpdateFormStepAutoSaveFn = ReturnType<
+  typeof useUpdateFormStepAutoSave
+>['updateFormStepAutoSave'];
 
 /**
  * Create form info save handler
  *
  * Saves: name, product_name, product_description
+ * Uses: UpdateFormAutoSave (minimal response)
  *
  * Note: Currently uses formContext which is read-only.
  * The form name is managed separately in useFormStudioData.
@@ -55,36 +63,50 @@ export const createFormInfoHandler = (updateFormAutoSave: UpdateFormAutoSaveFn) 
  * Create question text fields save handler
  *
  * Saves: question_text, placeholder, help_text, scale_min_label, scale_max_label
+ * Uses: UpdateFormQuestionAutoSave (minimal response)
  *
  * Looks up questions from all steps in the timeline editor.
  */
-export const createQuestionsHandler = (updateFormQuestion: UpdateFormQuestionFn) => {
+export const createQuestionsHandler = (
+  updateFormQuestionAutoSave: UpdateFormQuestionAutoSaveFn
+) => {
   const editor = useTimelineEditor();
 
   return async (questionIds: Set<string>) => {
     if (questionIds.size === 0) return;
 
-    // Get all questions from steps
-    const allQuestions = editor.steps.value
-      .filter((step) => step.question)
-      .map((step) => step.question!);
+    // Build save entries: pairs of (stepId, question) for steps with dirty questions
+    const saveEntries = editor.steps.value
+      .filter((step) => step.question && questionIds.has(step.question.id))
+      .map((step) => ({
+        stepId: step.id,
+        question: step.question, // Already filtered to ensure question exists
+      }))
+      .filter((entry): entry is { stepId: string; question: NonNullable<typeof entry.question> } =>
+        entry.question !== undefined
+      );
 
-    // Filter to only dirty questions
-    const toSave = allQuestions.filter((q) => questionIds.has(q.id));
-    if (toSave.length === 0) return;
+    if (saveEntries.length === 0) return;
 
-    // Save each question's text fields
-    for (const question of toSave) {
-      await updateFormQuestion({
-        id: question.id,
-        input: {
-          question_text: question.questionText,
-          placeholder: question.placeholder,
-          help_text: question.helpText,
-          scale_min_label: question.scaleMinLabel,
-          scale_max_label: question.scaleMaxLabel,
-        },
-      });
+    // Save each question's text fields using minimal response mutation
+    await Promise.all(
+      saveEntries.map(({ question }) =>
+        updateFormQuestionAutoSave({
+          id: question.id,
+          changes: {
+            question_text: question.questionText,
+            placeholder: question.placeholder,
+            help_text: question.helpText,
+            scale_min_label: question.scaleMinLabel,
+            scale_max_label: question.scaleMaxLabel,
+          },
+        })
+      )
+    );
+
+    // Mark parent steps as saved to clear isModified flag
+    for (const { stepId } of saveEntries) {
+      editor.markStepSaved(stepId);
     }
   };
 };
@@ -96,57 +118,53 @@ export const createQuestionsHandler = (updateFormQuestion: UpdateFormQuestionFn)
  *
  * TODO: Currently no mutation composable exists for question_options.
  * The GraphQL schema has update_question_options mutations.
- * A useUpdateQuestionOptions composable needs to be created in the questionOption entity.
+ * A useUpdateQuestionOptionAutoSave composable needs to be created.
  *
  * For now, this handler logs a warning and skips saving.
- * Options are currently saved as part of the step save process.
  */
 export const createOptionsHandler = () => {
   return async (optionIds: Set<string>) => {
     if (optionIds.size === 0) return;
 
-    // TODO: Implement when useUpdateQuestionOptions composable is created
+    // TODO: Implement when useUpdateQuestionOptionAutoSave composable is created
     console.warn(
-      '[AutoSave] Option saving not yet implemented. Options will be saved with next step save.',
+      '[AutoSave] Option saving not yet implemented.',
       `Dirty option IDs: ${[...optionIds].join(', ')}`
     );
   };
 };
 
 /**
- * Create step tips save handler
+ * Create step content save handler
  *
- * Saves: tips (string array)
+ * Saves: tips (array), content (JSONB for welcome/thank_you/consent/etc.)
+ * Uses: UpdateFormStepAutoSave (minimal response)
  *
- * Uses the existing useUpsertFormSteps mutation which handles
- * updating step data including tips.
+ * IMPORTANT: Uses UPDATE mutation with minimal response, NOT upsert.
+ * The upsert mutation returns fragments which would overwrite Apollo cache.
  */
-export const createStepsHandler = (upsertFormSteps: UpsertFormStepsFn) => {
+export const createStepsHandler = (updateFormStepAutoSave: UpdateFormStepAutoSaveFn) => {
   const editor = useTimelineEditor();
 
-  return async (stepIds: Set<string>, organizationId: string) => {
+  return async (stepIds: Set<string>) => {
     if (stepIds.size === 0) return;
 
     // Filter to only dirty steps
     const toSave = editor.steps.value.filter((s) => stepIds.has(s.id));
     if (toSave.length === 0) return;
 
-    // Build inputs for upsert - only include tips field for auto-save
-    const inputs = toSave.map((step) => ({
-      id: step.id,
-      form_id: step.formId,
-      organization_id: organizationId,
-      step_type: step.stepType,
-      step_order: step.stepOrder,
-      question_id: step.questionId ?? null,
-      content: step.content as Record<string, unknown>,
-      tips: [...step.tips],
-      flow_id: step.flowId ?? null,
-      flow_membership: step.flowMembership,
-      is_active: step.isActive,
-    }));
-
-    await upsertFormSteps({ inputs });
+    // Save each step's content using minimal response mutation
+    await Promise.all(
+      toSave.map((step) =>
+        updateFormStepAutoSave({
+          id: step.id,
+          changes: {
+            tips: [...step.tips],
+            content: step.content as Record<string, unknown>,
+          },
+        })
+      )
+    );
 
     // Mark steps as saved
     for (const step of toSave) {
@@ -168,9 +186,10 @@ export const createFlowsHandler = () => {
     if (flowIds.size === 0) return;
 
     // TODO: When flow name editing is added, implement:
-    // 1. Get flow data from shared flow state
-    // 2. Filter to dirty flow IDs
-    // 3. Call updateFlow for each
+    // 1. Create UpdateFlowAutoSave.gql with minimal response
+    // 2. Get flow data from shared flow state
+    // 3. Filter to dirty flow IDs
+    // 4. Call updateFlowAutoSave for each
     //
     // For now, flows are not editable in the studio UI
 
