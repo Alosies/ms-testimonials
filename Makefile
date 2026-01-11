@@ -1,4 +1,4 @@
-.PHONY: install restart dev dev-web dev-api build db-up db-down hasura-console hasura-migrate hasura-metadata sync sync-push
+.PHONY: install restart dev dev-web dev-api build db-up db-down hasura-console hasura-migrate hasura-metadata sync sync-push ralph-afk ralph-once
 
 # Install dependencies
 install:
@@ -61,3 +61,21 @@ sync:
 
 sync-push:
 	./scripts/sync-worktrees.sh -f -y
+
+# Ralph Loop - Autonomous development
+# Usage: make ralph-afk PRD=ralph/workspaces/my-feature_2026-01-10/prd.json
+# Usage: make ralph-afk PRD=ralph/workspaces/my-feature_2026-01-10/prd.json MAX=20
+ralph-afk:
+	@if [ -z "$(PRD)" ]; then \
+		echo "Error: PRD required. Usage: make ralph-afk PRD=path/to/prd.json"; \
+		exit 1; \
+	fi
+	./ralph/ralph.sh --max $(or $(MAX),5) --prd $(PRD)
+
+# Usage: make ralph-once PRD=ralph/workspaces/my-feature_2026-01-10/prd.json
+ralph-once:
+	@if [ -z "$(PRD)" ]; then \
+		echo "Error: PRD required. Usage: make ralph-once PRD=path/to/prd.json"; \
+		exit 1; \
+	fi
+	./ralph/ralph.sh --once --prd $(PRD)

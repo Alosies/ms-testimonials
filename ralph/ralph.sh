@@ -23,6 +23,13 @@
 
 set -e
 
+# Check for envsubst (needed for AFK mode)
+if ! command -v envsubst &> /dev/null; then
+  echo "Error: 'envsubst' not found. Install gettext package."
+  echo "  macOS: brew install gettext"
+  exit 1
+fi
+
 # Default values
 RALPH_PRD=""
 RALPH_PROGRESS=""
@@ -85,7 +92,7 @@ fi
 # Export for ralph-once to use
 export RALPH_PRD
 export RALPH_PROGRESS
-export RALPH_COMPLETE
+export RALPH_COMPLETE="${RALPH_COMPLETE:-ALL-TASKS-COMPLETE}"
 
 # Create progress file if it doesn't exist
 if [[ ! -f "$RALPH_PROGRESS" ]]; then
@@ -131,7 +138,7 @@ else
     # Run Claude with the prompt
     # Note: This requires claude CLI to be available
     if command -v claude &> /dev/null; then
-      cat "$SCRIPT_DIR/templates/ralph-once" | claude
+      envsubst < "$SCRIPT_DIR/templates/ralph-once" | claude -p -
     else
       echo "Error: 'claude' CLI not found. Install Claude Code CLI or use --once mode."
       exit 1
