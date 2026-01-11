@@ -149,7 +149,12 @@ else
       echo "Set CLAUDE_CMD env var to specify location."
       exit 1
     fi
-    envsubst < "$SCRIPT_DIR/templates/ralph-once" | "$CLAUDE_BIN" -p -
+
+    # Generate prompt and run Claude with streaming output
+    PROMPT_FILE=$(mktemp)
+    envsubst < "$SCRIPT_DIR/templates/ralph-once" > "$PROMPT_FILE"
+    "$CLAUDE_BIN" -p --dangerously-skip-permissions --output-format stream-json "$(cat "$PROMPT_FILE")"
+    rm -f "$PROMPT_FILE"
 
     # Check for completion signal in output or progress
     if grep -q "<promise>$RALPH_COMPLETE</promise>" "$RALPH_PROGRESS" 2>/dev/null; then

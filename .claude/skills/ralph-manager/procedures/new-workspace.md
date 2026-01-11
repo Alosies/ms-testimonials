@@ -10,8 +10,8 @@ Extract from user input:
 
 **Argument patterns:**
 ```
-/ralph-loop <source-file>
-/ralph-loop <source-file> --name <feature-name>
+/ralph-manager <source-file>
+/ralph-manager <source-file> --name <feature-name>
 ```
 
 **Derive feature name from filename:**
@@ -129,7 +129,7 @@ Generate `progress.txt` with project context including:
 
 ## Step 7: Confirm with User
 
-Before starting, show workspace summary and ask for confirmation:
+Show workspace summary and ask what to do next:
 
 ```
 === Ralph Workspace Created ===
@@ -145,26 +145,67 @@ Story Overview:
   2. [DB-002] Add flow_id column to form_steps
   3. [GQL-001] Create GraphQL operations
   ...
-
----
-AFK Mode Command (run in terminal for autonomous execution):
-
-  make ralph-afk PRD=ralph/workspaces/{folder-name}/prd.json
-
-Or with more iterations:
-
-  make ralph-afk PRD=ralph/workspaces/{folder-name}/prd.json MAX=10
----
-
-Ready to start the loop?
 ```
 
 **Use AskUserQuestion tool:**
+
+```json
+{
+  "questions": [{
+    "question": "What would you like to do next?",
+    "header": "Action",
+    "multiSelect": false,
+    "options": [
+      {
+        "label": "Start plugin loop (Recommended)",
+        "description": "Invoke /ralph-loop to begin autonomous execution inside Claude Code"
+      },
+      {
+        "label": "Show AFK command",
+        "description": "Display terminal command for background execution"
+      },
+      {
+        "label": "Review PRD",
+        "description": "Show the generated prd.json before running"
+      },
+      {
+        "label": "Cancel",
+        "description": "Exit without running"
+      }
+    ]
+  }]
+}
 ```
-Options:
-- Start loop (begin with first story)
-- Run AFK mode (show command and exit)
-- Review PRD (show full prd.json)
-- Edit stories (modify before starting)
-- Cancel
+
+---
+
+## Step 8: Execute Based on Selection
+
+### If "Start plugin loop" selected:
+
+Use the **Skill tool** to invoke `/ralph-loop`:
+
+```json
+{
+  "skill": "ralph-loop",
+  "args": "\"Read ralph/workspaces/{folder-name}/prd.json and implement the next task where passes:false. Follow acceptance criteria exactly. Run pnpm typecheck to verify. Update prd.json (set passes:true) and progress.txt when complete. Output <promise>ALL-TASKS-COMPLETE</promise> when all tasks pass.\" --max-iterations 20 --completion-promise \"ALL-TASKS-COMPLETE\""
+}
 ```
+
+### If "Show AFK command" selected:
+
+Display the command for the user to copy:
+
+```
+Run this in your terminal for autonomous execution:
+
+make ralph-afk PRD=ralph/workspaces/{folder-name}/prd.json MAX=10
+```
+
+### If "Review PRD" selected:
+
+Read and display the contents of `ralph/workspaces/{folder-name}/prd.json`, then return to Step 7 to ask again.
+
+### If "Cancel" selected:
+
+Exit the skill with message: "Workspace created but not started. Run `/ralph-manager --continue ralph/workspaces/{folder-name}/` to continue later."

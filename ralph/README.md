@@ -1,63 +1,91 @@
 # Ralph Loop - Autonomous Development Workflows
 
-Ralph Loop automates multi-step implementations from ADRs, specs, or PRD documents. Two workflow options are available depending on your needs.
+Ralph Loop automates multi-step implementations from ADRs, specs, or PRD documents. Three workflow options are available.
 
 ## Quick Start
 
-### New Feature (Two-Step Process)
+### Recommended: Official Plugin + Workspace Skill
 
 ```bash
 # Step 1: Create workspace from ADR/spec (in Claude Code)
-/ralph-loop docs/adr/010-auto-save.md --name auto-save
+/ralph-manager docs/adr/010-auto-save.md --name auto-save
 
-# Step 2: Run AFK mode (in terminal, after workspace exists)
-./ralph/ralph.sh --max 20 --prd ralph/workspaces/auto-save_2026-01-11/prd.json
+# Step 2: Run the official plugin (in Claude Code)
+/ralph-loop "Read ralph/workspaces/auto-save_2026-01-11/prd.json and implement tasks. Output <promise>ALL-TASKS-COMPLETE</promise> when done." --max-iterations 20 --completion-promise "ALL-TASKS-COMPLETE"
 ```
 
-### Continue Existing Workspace
+### Alternative: AFK Mode (Terminal)
 
 ```bash
-# Option A: AFK Mode (terminal) - using make
-make ralph-afk PRD=ralph/workspaces/my-feature_2026-01-10/prd.json MAX=20
-
-# Option B: Interactive (Claude Code)
-/ralph-loop --continue ralph/workspaces/my-feature_2026-01-10/
+# After workspace is created, run in terminal for fully autonomous execution
+make ralph-afk PRD=ralph/workspaces/auto-save_2026-01-11/prd.json MAX=20
 ```
-
-> **Note**: The shell script requires an existing workspace with `prd.json`. Use the skill first to create workspaces from ADRs/specs, or create them manually.
-
-## Workflow Comparison
-
-| Aspect | Shell Script (AFK) | Skill (Interactive) |
-|--------|-------------------|---------------------|
-| Command | `./ralph/ralph.sh` | `/ralph-loop` |
-| Runs where | Terminal | Claude Code session |
-| Autonomy | Fully autonomous | Story-by-story with prompts |
-| Context | Fresh each iteration | Maintains conversation |
-| Best for | Long-running tasks, overnight | Quick iterations, debugging |
 
 ---
 
-## Workflow 1: Shell Script (AFK Mode)
+## Workflow Comparison
 
-Fully autonomous execution that runs outside Claude Code, spawning new Claude sessions for each iteration.
+| Aspect | Official Plugin | Shell Script (AFK) |
+|--------|-----------------|-------------------|
+| Command | `/ralph-loop` | `make ralph-afk` |
+| Runs where | Inside Claude Code | Terminal (external) |
+| Output | Live in session | Stream JSON |
+| Context | Persists across iterations | Fresh each iteration |
+| Best for | Interactive monitoring | Overnight/background |
+
+---
+
+## Workflow 1: Official Plugin (Recommended)
+
+The `ralph-wiggum` plugin runs loops inside Claude Code with live output and persistent context.
 
 ### Prerequisites
 
-- Claude Code CLI installed and in PATH (default: `claude`)
-- `envsubst` available (`brew install gettext` on macOS)
+Install the plugin (one-time):
+```bash
+claude plugin marketplace add anthropics/claude-code
+claude plugin install ralph-wiggum
+```
 
-### Custom CLI Command
-
-If your Claude CLI has a different name, set the `CLAUDE_CMD` environment variable:
+### Usage
 
 ```bash
-# One-time usage
-CLAUDE_CMD=cc make ralph-afk PRD=ralph/workspaces/my-feature/prd.json
+# Start a loop
+/ralph-loop "<prompt>" --max-iterations <n> --completion-promise "<text>"
 
-# Or export in your shell profile (~/.zshrc)
-export CLAUDE_CMD=cc
+# Cancel active loop
+/cancel-ralph
 ```
+
+### Example Commands
+
+After creating a workspace with `/ralph-manager`:
+
+```bash
+# Basic loop
+/ralph-loop "Read ralph/workspaces/my-feature_2026-01-11/prd.json and implement the next incomplete task. Update progress.txt with learnings. Output <promise>ALL-TASKS-COMPLETE</promise> when all tasks pass." --max-iterations 20 --completion-promise "ALL-TASKS-COMPLETE"
+
+# With specific instructions
+/ralph-loop "Read ralph/workspaces/my-feature_2026-01-11/prd.json. For each task: implement, run pnpm typecheck, mark passes:true if successful. Output <promise>DONE</promise> when complete." --max-iterations 30 --completion-promise "DONE"
+```
+
+### When to Use
+
+- Interactive development with live feedback
+- When you want to monitor progress
+- Debugging and iterative refinement
+- When context between iterations matters
+
+---
+
+## Workflow 2: Shell Script (AFK Mode)
+
+Fully autonomous execution in terminal, spawning new Claude sessions for each iteration.
+
+### Prerequisites
+
+- Claude Code CLI installed at `~/.claude/local/claude`
+- `envsubst` available (`brew install gettext` on macOS)
 
 ### Usage
 
@@ -71,7 +99,6 @@ make ralph-once PRD=ralph/workspaces/my-feature_2026-01-10/prd.json
 
 # Direct script usage
 ./ralph/ralph.sh --max 20 --prd ralph/workspaces/my-feature_2026-01-10/prd.json
-./ralph/ralph.sh --once --prd ralph/workspaces/my-feature_2026-01-10/prd.json
 ```
 
 ### Make Commands
@@ -92,96 +119,45 @@ make ralph-once PRD=ralph/workspaces/my-feature_2026-01-10/prd.json
 | `-m, --max N` | Maximum iterations | 10 |
 | `-o, --once` | Single iteration (HITL) | false |
 
-### How It Works
+### Custom CLI Command
 
-1. Reads PRD and progress files
-2. Substitutes variables into `templates/ralph-once`
-3. Pipes prompt to `claude -p -` (non-interactive mode)
-4. Checks for completion signal in progress file
-5. Repeats until complete or max iterations reached
+If your Claude CLI has a different name:
+
+```bash
+# One-time usage
+CLAUDE_CMD=cc make ralph-afk PRD=ralph/workspaces/my-feature/prd.json
+
+# Or export in your shell profile (~/.zshrc)
+export CLAUDE_CMD=cc
+```
 
 ### When to Use
 
 - Overnight or long-running tasks
-- When you don't want to monitor progress
-- Batch processing multiple stories
+- Background processing
 - CI/CD integration
+- When you don't need to monitor
 
 ---
 
-## Workflow 2: Skill Mode (Interactive)
+## Creating Workspaces
 
-Runs inside your Claude Code session with full conversation context.
-
-### Usage
+Use the `/ralph-manager` skill to create workspaces from ADRs or specs:
 
 ```bash
-# Continue existing workspace
-/ralph-loop --continue ralph/workspaces/my-feature_2026-01-10/
-
-# Create new workspace from spec
-/ralph-loop docs/adr/009-flows-table.md
+# Create new workspace from ADR/spec
+/ralph-manager docs/adr/010-auto-save.md
 
 # Create with custom name
-/ralph-loop docs/adr/009-flows-table.md --name flows-table
+/ralph-manager docs/adr/010-auto-save.md --name auto-save
+
+# Check/continue existing workspace
+/ralph-manager --continue ralph/workspaces/auto-save_2026-01-11/
 ```
 
-### How It Works
+The skill will output the exact command to run after workspace creation.
 
-1. Reads workspace files (prd.json, progress.txt)
-2. Finds next incomplete story (`passes: false`)
-3. Implements and verifies the story
-4. Updates progress and marks complete
-5. Signals status and waits for "continue"
-
-### When to Use
-
-- Debugging complex implementations
-- When you want to review each step
-- When context between stories matters
-- Interactive problem-solving
-
-### Continuing the Loop
-
-After each story completes, say:
-- "continue" - proceed to next story
-- "stop" - pause the loop
-- Ask questions about the implementation
-
----
-
-## Directory Structure
-
-```
-ralph/
-├── README.md              # This file
-├── ralph.sh               # Shell script for AFK mode
-├── templates/
-│   └── ralph-once         # Iteration prompt template
-└── workspaces/
-    └── {feature}_{date}/
-        ├── workspace.json # Agent metadata, handoffs
-        ├── prd.json       # Task list with passes field
-        └── progress.txt   # Session log
-```
-
----
-
-## Creating a Workspace
-
-### Option A: Using the Skill
-
-```bash
-/ralph-loop docs/adr/010-auto-save.md --name auto-save
-```
-
-This will:
-1. Parse the ADR/spec document
-2. Generate a PRD with user stories
-3. Create workspace folder with all files
-4. Start executing the first story
-
-### Option B: Manual Creation
+### Manual Creation
 
 1. Create workspace folder:
    ```bash
@@ -205,12 +181,27 @@ This will:
    }
    ```
 
-3. Create empty `progress.txt`:
+3. Create `progress.txt`:
    ```bash
    echo "# Progress Log" > ralph/workspaces/my-feature_*/progress.txt
    ```
 
-4. Run with shell script or skill
+---
+
+## Directory Structure
+
+```
+ralph/
+├── README.md              # This file
+├── ralph.sh               # Shell script for AFK mode
+├── templates/
+│   └── ralph-once         # Iteration prompt template (AFK mode)
+└── workspaces/
+    └── {feature}_{date}/
+        ├── workspace.json # Agent metadata, handoffs
+        ├── prd.json       # Task list with passes field
+        └── progress.txt   # Session log
+```
 
 ---
 
@@ -226,7 +217,7 @@ git push
 
 # Other agent picks up
 git pull
-/ralph-loop --continue ralph/workspaces/my-feature_2026-01-10/
+/ralph-manager --continue ralph/workspaces/my-feature_2026-01-10/
 ```
 
 ---
@@ -239,11 +230,17 @@ Both workflows use the same completion signal. When all stories have `passes: tr
 <promise>ALL-TASKS-COMPLETE</promise>
 ```
 
-The shell script checks for this in `progress.txt` to exit the loop.
-
 ---
 
 ## Troubleshooting
+
+### Plugin not found
+
+```bash
+# Add Anthropic marketplace and install
+claude plugin marketplace add anthropics/claude-code
+claude plugin install ralph-wiggum
+```
 
 ### Shell script says "envsubst not found"
 
@@ -257,21 +254,14 @@ apt-get install gettext
 
 ### Shell script says "Claude CLI not found"
 
-Install Claude Code CLI. The default command is `claude`. If you use a different name (like `cc`), set the `CLAUDE_CMD` environment variable:
+The script checks: `CLAUDE_CMD` env var → `claude` in PATH → `~/.claude/local/claude`
 
 ```bash
-export CLAUDE_CMD=cc
+export CLAUDE_CMD=cc  # if using alias
 ```
-
-### Stories not being marked complete
-
-Check that verification commands pass:
-- `pnpm typecheck`
-- `hasura migrate apply --database-name default`
-- `pnpm codegen:web`
 
 ### Loop stops unexpectedly
 
 1. Check `progress.txt` for errors
 2. Check PRD `notes` field for blocker details
-3. Run in HITL mode (`--once`) to debug interactively
+3. Run with `--max-iterations 1` to debug single iteration
