@@ -90,12 +90,7 @@ async function handleAddAtEnd(type: StepType) {
           :class="getFlowIndicator(step.flowMembership)?.colorClass"
           :title="getFlowIndicator(step.flowMembership)?.label"
         />
-        <!-- Unsaved indicator dot (only if not a flow step) -->
-        <span
-          v-else-if="step.isModified"
-          class="h-2 w-2 rounded-full bg-amber-400 animate-pulse shrink-0"
-          title="Unsaved changes"
-        />
+        <!-- Auto-save handles saving - no unsaved dot needed -->
       </div>
 
       <!-- Insert button between steps (not after last step) -->

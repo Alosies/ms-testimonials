@@ -10,7 +10,6 @@
 import { type CSSProperties, type Component, ref, watch, nextTick } from 'vue';
 import { Icon } from '@testimonials/icons';
 import { Kbd } from '@testimonials/ui';
-import { useStepSave } from '../../composables/timeline';
 import type { FormStep } from '../../models';
 import {
   type StepType,
@@ -43,8 +42,6 @@ const emit = defineEmits<{
   insert: [afterIndex: number, type: StepType];
 }>();
 
-const stepSave = useStepSave();
-
 const cardRef = ref<HTMLElement | null>(null);
 
 // Scroll into view when this card becomes active (keyboard navigation)
@@ -72,11 +69,6 @@ const stepCardComponents: Record<StepType, Component> = {
   reward: RewardStepCard,
   thank_you: ThankYouStepCard,
 };
-
-// Handle save when clicking the unsaved chip
-async function handleSaveClick() {
-  await stepSave.saveStepQuestion(props.index);
-}
 
 function handleInsert(type: StepType) {
   emit('insert', props.index, type);
@@ -110,25 +102,13 @@ function handleInsert(type: StepType) {
         </span>
       </div>
 
-      <!-- Unsaved indicator badge - clickable to save -->
-      <button
-        v-if="step.isModified"
-        class="flex items-center gap-1 px-2.5 py-1 text-xs font-medium bg-amber-100 text-amber-700 rounded-full border border-amber-200 hover:bg-amber-200 transition-colors cursor-pointer shadow-sm"
-        title="Click to save changes"
-        :disabled="stepSave.isSaving.value"
-        @click.stop="handleSaveClick"
-      >
-        <span v-if="stepSave.isSaving.value" class="h-1.5 w-1.5 rounded-full bg-amber-500 animate-spin" />
-        <span v-else class="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
-        <span>{{ stepSave.isSaving.value ? 'Saving...' : 'Unsaved' }}</span>
-      </button>
+      <!-- Auto-save handles saving - no unsaved badge needed -->
     </div>
 
     <div
       class="step-card group"
       :class="{
         'ring-2 ring-primary ring-offset-4': isActive,
-        'border-amber-400': step.isModified,
       }"
       @click="emit('select', index)"
     >

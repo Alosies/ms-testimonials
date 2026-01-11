@@ -113,7 +113,8 @@ const {
 
 // Computed save status based on actual state
 // Combines status from both structural saves (saveComposable) and text auto-saves (autoSave)
-const saveStatus = computed<'saved' | 'saving' | 'unsaved' | 'error'>(() => {
+// Note: With auto-save, we don't show 'unsaved' - changes are saved automatically
+const saveStatus = computed<'saved' | 'saving' | 'unsaved' | 'error' | 'idle'>(() => {
   // Error takes priority
   if (saveComposable.saveError.value || autoSave.saveStatus.value === 'error') {
     return 'error';
@@ -122,15 +123,12 @@ const saveStatus = computed<'saved' | 'saving' | 'unsaved' | 'error'>(() => {
   if (saveComposable.isSaving.value || autoSave.saveStatus.value === 'saving') {
     return 'saving';
   }
-  // Pending changes from either system
-  if (saveComposable.hasChangesToSave.value || autoSave.hasPendingChanges.value) {
-    return 'unsaved';
-  }
   // Auto-save shows 'saved' briefly after successful save
   if (autoSave.saveStatus.value === 'saved') {
     return 'saved';
   }
-  return 'saved';
+  // With auto-save, don't show 'unsaved' - just stay idle, system handles it
+  return 'idle';
 });
 
 // Header handlers

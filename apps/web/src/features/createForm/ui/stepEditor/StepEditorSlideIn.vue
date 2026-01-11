@@ -7,7 +7,7 @@
  *
  * @see FormStudioPage.vue - Handles navigate events
  */
-import { computed, onMounted, onUnmounted, toRef, type Component } from 'vue';
+import { computed, onMounted, onUnmounted, type Component } from 'vue';
 import {
   Sheet,
   SheetContent,
@@ -29,8 +29,9 @@ import ConsentStepEditor from './editors/ConsentStepEditor.vue';
 import ContactInfoStepEditor from './editors/ContactInfoStepEditor.vue';
 import RewardStepEditor from './editors/RewardStepEditor.vue';
 import ThankYouStepEditor from './editors/ThankYouStepEditor.vue';
-import { useTimelineEditor, useStepSave } from '../../composables/timeline';
-import { SaveStatusPill, useSaveStatus } from '@/shared/widgets';
+import { useTimelineEditor } from '../../composables/timeline';
+import { useAutoSaveController } from '../../composables/autoSave';
+import { SaveStatusPill, type SaveStatus } from '@/shared/widgets';
 import type { StepContent, StepType, LinkedQuestion } from '@/shared/stepCards';
 import { getStepLabel } from '../../functions';
 import { STEP_TYPE_OPTIONS, STEP_TYPE_CONFIGS } from '../../constants';
@@ -42,7 +43,7 @@ const emit = defineEmits<{
 
 // Direct import - fully typed, no inject needed
 const editor = useTimelineEditor();
-const stepSave = useStepSave();
+const autoSave = useAutoSaveController();
 
 const selectedStep = computed(() => editor.selectedStep.value);
 const stepLabel = computed(() => selectedStep.value ? getStepLabel(selectedStep.value) : '');
@@ -69,21 +70,21 @@ const needsWiderPanel = computed(() => {
   return stepType === 'question' || stepType === 'rating';
 });
 
-// Check if current step has unsaved changes
-const isCurrentStepDirty = computed(() => {
-  if (!selectedStep.value) return false;
-  return selectedStep.value.isModified ?? false;
+// Map auto-save status to SaveStatusPill format
+// Auto-save: 'idle' | 'saving' | 'saved' | 'error'
+// Pill expects: 'idle' | 'unsaved' | 'saving' | 'saved' | 'error'
+const saveStatus = computed<SaveStatus>(() => {
+  const status = autoSave.saveStatus.value;
+  // With auto-save, we never show 'unsaved' - it's handled automatically
+  if (status === 'idle' && autoSave.hasPendingChanges.value) {
+    return 'idle'; // Don't show unsaved, auto-save will handle it
+  }
+  return status;
 });
 
-// Use the save status composable for state transitions
-const { status: saveStatus } = useSaveStatus({
-  isDirty: isCurrentStepDirty,
-  isSaving: toRef(() => stepSave.isSaving.value),
-});
-
-// Handle save
+// Handle manual save (triggered by keyboard shortcut)
 async function handleSave() {
-  await stepSave.saveCurrentStep();
+  await autoSave.saveNow();
 }
 
 function handleContentUpdate(content: StepContent) {
