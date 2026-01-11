@@ -26,6 +26,7 @@ import TimelineConnector from './TimelineConnector.vue';
 
 const props = defineProps<{
   step: FormStep;
+  /** Display index (shown in step number badge) */
   index: number;
   isActive: boolean;
   isLast: boolean;
@@ -78,7 +79,7 @@ function handleInsert(type: StepType) {
 <template>
   <div
     ref="cardRef"
-    :data-step-index="index"
+    :data-step-id="step.id"
     class="timeline-step"
     :class="{
       'timeline-step-active': isActive,

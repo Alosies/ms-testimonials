@@ -70,6 +70,7 @@ function getStepDescription(): string {
 <template>
   <div
     ref="cardRef"
+    :data-step-id="step.id"
     class="flow-step-card group"
     :class="{
       'flow-step-card-active': isActive && isFocusedFlow,
