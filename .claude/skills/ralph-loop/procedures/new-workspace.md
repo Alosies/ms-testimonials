@@ -146,6 +146,16 @@ Story Overview:
   3. [GQL-001] Create GraphQL operations
   ...
 
+---
+AFK Mode Command (run in terminal for autonomous execution):
+
+  make ralph-afk PRD=ralph/workspaces/{folder-name}/prd.json
+
+Or with more iterations:
+
+  make ralph-afk PRD=ralph/workspaces/{folder-name}/prd.json MAX=10
+---
+
 Ready to start the loop?
 ```
 
@@ -153,6 +163,7 @@ Ready to start the loop?
 ```
 Options:
 - Start loop (begin with first story)
+- Run AFK mode (show command and exit)
 - Review PRD (show full prd.json)
 - Edit stories (modify before starting)
 - Cancel

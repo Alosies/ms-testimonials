@@ -11,14 +11,18 @@ Autonomous development loops with workspace setup and cross-agent handoffs.
 ## Quick Reference
 
 ```bash
-# New workspace from ADR/spec
+# New workspace from ADR/spec (interactive)
 /ralph-loop docs/adr/009-flows-table.md
 
 # New workspace with custom name
 /ralph-loop docs/adr/009-flows-table.md --name flows-table
 
-# Continue existing workspace
+# Continue existing workspace (interactive)
 /ralph-loop --continue ralph/workspaces/flows-table_2026-01-10/
+
+# AFK mode - run in terminal for autonomous execution
+make ralph-afk PRD=ralph/workspaces/flows-table_2026-01-10/prd.json
+make ralph-afk PRD=ralph/workspaces/flows-table_2026-01-10/prd.json MAX=10
 ```
 
 ## Directory Structure
