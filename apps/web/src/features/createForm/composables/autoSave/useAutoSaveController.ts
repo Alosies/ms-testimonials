@@ -15,19 +15,20 @@
  * to satisfy Apollo's requirement that composables be called during Vue component setup.
  */
 
-import { ref, readonly, watch, toRefs } from 'vue';
-import { createSharedComposable, useDebounceFn } from '@vueuse/core';
+import { ref, readonly, toRefs, nextTick } from 'vue';
+import { createSharedComposable, useIdle, whenever } from '@vueuse/core';
 import { useDirtyTracker } from './useDirtyTracker';
 import { useTimelineEditor } from '../timeline/useTimelineEditor';
 import { useCurrentContextStore } from '@/shared/currentContext';
 import { useUpdateFormAutoSave } from '@/entities/form';
-import { useUpdateFormQuestion } from '@/entities/formQuestion';
-import { useUpsertFormSteps } from '@/entities/formStep';
+import { useUpdateFormQuestionAutoSave } from '@/entities/formQuestion';
+import { useUpdateFormStepAutoSave } from '@/entities/formStep';
 import {
   useFormInfoWatcher,
   useQuestionTextWatcher,
   useOptionTextWatcher,
   useStepTipsWatcher,
+  useStepContentWatcher,
   useFlowNameWatcher,
 } from './watchers';
 import {
@@ -46,6 +47,10 @@ export const useAutoSaveController = createSharedComposable(() => {
   const contextStore = useCurrentContextStore();
   const { currentOrganizationId } = toRefs(contextStore);
 
+  // useIdle detects when user stops all interaction for 500ms
+  // Events tracked: mousemove, mousedown, resize, keydown, touchstart, wheel
+  const { idle } = useIdle(500);
+
   const saveStatus = ref<SaveStatus>('idle');
   const lastError = ref<Error | null>(null);
 
@@ -54,18 +59,21 @@ export const useAutoSaveController = createSharedComposable(() => {
   // ============================================
   // Apollo requires composables to be called during Vue component setup,
   // not inside async callbacks. We extract the mutation functions here.
+  //
+  // IMPORTANT: All composables use minimal response pattern (id + updated_at only)
+  // to prevent Apollo cache from overwriting local state. See ADR-003 and ADR-010.
   const { updateFormAutoSave } = useUpdateFormAutoSave();
-  const { updateFormQuestion } = useUpdateFormQuestion();
-  const { upsertFormSteps } = useUpsertFormSteps();
+  const { updateFormQuestionAutoSave } = useUpdateFormQuestionAutoSave();
+  const { updateFormStepAutoSave } = useUpdateFormStepAutoSave();
 
   // ============================================
   // Create Handler Functions (during setup)
   // ============================================
   // Handler factories create closures with mutation functions pre-bound
   const saveFormInfo = createFormInfoHandler(updateFormAutoSave);
-  const saveQuestions = createQuestionsHandler(updateFormQuestion);
+  const saveQuestions = createQuestionsHandler(updateFormQuestionAutoSave);
   const saveOptions = createOptionsHandler();
-  const saveSteps = createStepsHandler(upsertFormSteps);
+  const saveSteps = createStepsHandler(updateFormStepAutoSave);
   const saveFlows = createFlowsHandler();
 
   // ============================================
@@ -76,6 +84,7 @@ export const useAutoSaveController = createSharedComposable(() => {
   useQuestionTextWatcher();
   useOptionTextWatcher();
   useStepTipsWatcher();
+  useStepContentWatcher(); // Welcome, ThankYou, Consent step content
   useFlowNameWatcher();
 
   // ============================================
@@ -125,7 +134,7 @@ export const useAutoSaveController = createSharedComposable(() => {
         promises.push(saveOptions(toSave.options));
       }
       if (toSave.steps.size > 0) {
-        promises.push(saveSteps(toSave.steps, organizationId));
+        promises.push(saveSteps(toSave.steps));
       }
       if (toSave.flows.size > 0) {
         promises.push(saveFlows(toSave.flows));
@@ -134,15 +143,10 @@ export const useAutoSaveController = createSharedComposable(() => {
       // Execute all saves in parallel
       await Promise.all(promises);
 
-      // SUCCESS: Transition to saved state
+      // Transition: saving → saved → idle
       saveStatus.value = 'saved';
-
-      // Auto-reset to idle after 2 seconds
-      setTimeout(() => {
-        if (saveStatus.value === 'saved') {
-          saveStatus.value = 'idle';
-        }
-      }, 2000);
+      await nextTick();
+      saveStatus.value = 'idle';
 
     } catch (error) {
       // ERROR: Restore dirty state so user can retry
@@ -158,18 +162,21 @@ export const useAutoSaveController = createSharedComposable(() => {
   };
 
   // ============================================
-  // Debounced Save Trigger
+  // Idle-Based Save Trigger
   // ============================================
 
-  // 500ms debounce for batching rapid typing
-  const debouncedSave = useDebounceFn(executeSave, 500);
-
-  // Watch for pending changes and trigger debounced save
-  watch(hasPendingChanges, (pending) => {
-    if (pending) {
-      debouncedSave();
-    }
-  });
+  // Save when BOTH conditions are true:
+  // 1. User has been idle for 500ms (no keyboard/mouse activity)
+  // 2. There are pending changes to save
+  //
+  // Using `whenever` instead of `watch` because:
+  // - It fires when the condition BECOMES true (not just on transitions)
+  // - Handles edge case where user is already idle when changes are made
+  // - Prevents multiple saves during rapid typing
+  whenever(
+    () => idle.value && hasPendingChanges.value,
+    () => executeSave()
+  );
 
   // ============================================
   // Manual Save (for immediate save needs)
