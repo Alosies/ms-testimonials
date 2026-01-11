@@ -20,6 +20,11 @@ export interface CreateQuestionParams {
   stepType: StepType;
   stepOrder: number;
   flowMembership: FlowMembership;
+  /**
+   * Optional explicit display_order. If not provided, uses stepOrder.
+   * Use this when stepOrder (array index) might conflict with existing DB values.
+   */
+  displayOrder?: number;
 }
 
 export interface CreateQuestionResult {
@@ -86,7 +91,7 @@ export const useStepQuestionService = createSharedComposable(() => {
   async function createQuestionForStep(
     params: CreateQuestionParams,
   ): Promise<CreateQuestionResult | null> {
-    const { formId, stepType, stepOrder, flowMembership } = params;
+    const { formId, stepType, stepOrder, flowMembership, displayOrder } = params;
 
     // Only create questions for question/rating step types
     if (!requiresQuestion(stepType)) {
@@ -118,7 +123,7 @@ export const useStepQuestionService = createSharedComposable(() => {
           question_type_id: questionTypeId,
           question_key: `${config.questionKeyPrefix}_${Date.now()}`,
           question_text: config.questionText,
-          display_order: stepOrder,
+          display_order: displayOrder ?? stepOrder, // Use explicit order if provided
           is_required: false,
           is_active: true,
         },

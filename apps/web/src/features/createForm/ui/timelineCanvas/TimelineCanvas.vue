@@ -29,7 +29,8 @@ function handleInsert(afterIndex: number) {
 
 async function handleSelectType(type: StepType) {
   pickerOpen.value = false;
-  await editor.handleAddStepAsync(type, insertAfterIndex.value ?? undefined);
+  // ADR-011: Use persistence method for immediate save
+  await editor.handleAddStepWithPersist(type, insertAfterIndex.value ?? undefined);
 }
 
 function handleReorder(index: number, direction: 'up' | 'down') {

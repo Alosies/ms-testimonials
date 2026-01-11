@@ -77,8 +77,17 @@ export function useTimelineStepCrud(deps: StepCrudDeps): TimelineStepCrudReturn 
   /**
    * Async version of addStep that creates a form_question for question/rating steps.
    * The question is created first, then the step is added with the questionId.
+   *
+   * @param type - The step type to create
+   * @param afterIndex - Optional index after which to insert
+   * @param displayOrder - Optional explicit display_order for question creation
+   *                       (avoids uniqueness conflicts when local array index differs from DB order)
    */
-  async function addStepAsync(type: StepType, afterIndex?: number): Promise<FormStep> {
+  async function addStepAsync(
+    type: StepType,
+    afterIndex?: number,
+    displayOrder?: number,
+  ): Promise<FormStep> {
     const currentFormId = formId.value ?? '';
     const ctx = formContext.value;
 
@@ -98,6 +107,7 @@ export function useTimelineStepCrud(deps: StepCrudDeps): TimelineStepCrudReturn 
         stepType: type,
         stepOrder: newStep.stepOrder,
         flowMembership: newStep.flowMembership,
+        displayOrder, // Pass explicit order if provided
       });
 
       if (result) {
@@ -132,6 +142,9 @@ export function useTimelineStepCrud(deps: StepCrudDeps): TimelineStepCrudReturn 
             questionId: result.questionId,
             question: linkedQuestion,
           };
+
+          // Return the updated step (with questionId) instead of the original
+          return steps.value[stepIndex];
         }
       }
     }
@@ -193,6 +206,9 @@ export function useTimelineStepCrud(deps: StepCrudDeps): TimelineStepCrudReturn 
   /**
    * Add a step with immediate persistence.
    * Creates question first (if needed), then persists the step.
+   *
+   * Note: Uses computed next step_order to avoid uniqueness conflicts.
+   * The local stepOrder (array index) may differ from database step_order.
    */
   async function addStepWithPersist(type: StepType, afterIndex?: number): Promise<FormStep> {
     return withLock('add-step', async () => {
@@ -203,17 +219,26 @@ export function useTimelineStepCrud(deps: StepCrudDeps): TimelineStepCrudReturn 
         throw new Error('Cannot add step: missing formId or organizationId');
       }
 
-      // Create step locally first (with question if needed)
-      const newStep = await addStepAsync(type, afterIndex);
+      // Compute a unique step_order that fits within SMALLINT (max 32767)
+      // Use (steps.length * 100 + random offset) to create a gap between existing orders
+      // This ensures new steps get placed after all existing ones
+      // Auto-save will normalize the orders later when it syncs all step_orders
+      const baseOrder = steps.value.length * 100;
+      const randomOffset = Math.floor(Math.random() * 99) + 1;
+      const nextStepOrder = Math.min(baseOrder + randomOffset, 32000); // Stay within SMALLINT
 
-      // Persist the step to database
+      // Create step locally first (with question if needed)
+      // Note: addStepAsync will reorder local array, but we'll use nextStepOrder for DB
+      const newStep = await addStepAsync(type, afterIndex, nextStepOrder);
+
+      // Persist the step to database with computed step_order
       await createFormSteps({
         inputs: [{
           id: newStep.id,
           form_id: currentFormId,
           organization_id: orgId,
           step_type: newStep.stepType,
-          step_order: newStep.stepOrder,
+          step_order: nextStepOrder, // Use computed order, not local array index
           question_id: newStep.questionId ?? null,
           flow_id: newStep.flowId ?? null,
           flow_membership: newStep.flowMembership ?? 'shared',

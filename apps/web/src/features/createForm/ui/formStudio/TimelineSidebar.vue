@@ -49,14 +49,16 @@ function handleStepClick(index: number) {
 
 async function handleInsertAt(afterIndex: number, type: StepType) {
   openPickerIndex.value = null;
-  const newIndex = await editor.handleAddStepAsync(type, afterIndex);
+  // ADR-011: Use persistence method for immediate save
+  const newIndex = await editor.handleAddStepWithPersist(type, afterIndex);
   // Scroll to new step after DOM updates
   nextTick(() => emit('navigate', newIndex));
 }
 
 async function handleAddAtEnd(type: StepType) {
   addAtEndPickerOpen.value = false;
-  const newIndex = await editor.handleAddStepAsync(type);
+  // ADR-011: Use persistence method for immediate save
+  const newIndex = await editor.handleAddStepWithPersist(type);
   // Scroll to new step after DOM updates
   nextTick(() => emit('navigate', newIndex));
 }
