@@ -16,7 +16,7 @@
  */
 import { inject, computed } from 'vue';
 import { Icon } from '@testimonials/icons';
-import type { FormWizardContext } from '../../../composables/useFormWizard';
+import type { FormWizardContext } from '../../../composables/wizard/useFormWizard';
 import type { FlowMembership } from '@/entities/form';
 import { getDefaultWelcomeContent, getDefaultThankYouContent } from '../../../constants/wizardConfig';
 import PreviewStepCard from '../components/PreviewStepCard.vue';

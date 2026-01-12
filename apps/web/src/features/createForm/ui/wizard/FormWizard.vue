@@ -7,8 +7,8 @@
  * and creates the form with steps.
  */
 import { provide, onUnmounted, ref } from 'vue';
-import { useFormWizard, type FormWizardContext } from '../../composables/useFormWizard';
-import { useCreateFormWithSteps, type CreateFormWithStepsParams } from '../../composables/useCreateFormWithSteps';
+import { useFormWizard, type FormWizardContext } from '../../composables/wizard/useFormWizard';
+import { useCreateFormWithSteps, type CreateFormWithStepsParams } from '../../composables/wizard/useCreateFormWithSteps';
 import { useRouting } from '@/shared/routing';
 import WizardLayout from './WizardLayout.vue';
 import ConceptTypeScreen from './screens/ConceptTypeScreen.vue';

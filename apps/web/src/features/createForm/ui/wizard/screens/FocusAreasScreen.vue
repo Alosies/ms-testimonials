@@ -7,7 +7,7 @@
  */
 import { inject, computed } from 'vue';
 import { Icon } from '@testimonials/icons';
-import type { FormWizardContext } from '../../../composables/useFormWizard';
+import type { FormWizardContext } from '../../../composables/wizard/useFormWizard';
 import { FOCUS_AREAS_BY_TYPE, WIZARD_VALIDATION } from '../../../constants/wizardConfig';
 import FocusAreaTag from '../components/FocusAreaTag.vue';
 

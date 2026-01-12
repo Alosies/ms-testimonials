@@ -11,7 +11,7 @@
  */
 import { inject, computed } from 'vue';
 import { Icon } from '@testimonials/icons';
-import type { FormWizardContext, ConceptType } from '../../../composables/useFormWizard';
+import type { FormWizardContext, ConceptType } from '../../../composables/wizard/useFormWizard';
 import {
   CONCEPT_TYPE_CONFIG,
   CONCEPT_TYPES,

@@ -7,7 +7,7 @@
  */
 import { inject } from 'vue';
 import { Icon } from '@testimonials/icons';
-import type { FormWizardContext } from '../../../composables/useFormWizard';
+import type { FormWizardContext } from '../../../composables/wizard/useFormWizard';
 import AIThinkingLoader from '../../aiLoader/AIThinkingLoader.vue';
 
 const wizard = inject<FormWizardContext>('wizardContext')!;

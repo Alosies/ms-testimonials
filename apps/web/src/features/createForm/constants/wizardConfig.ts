@@ -1,4 +1,4 @@
-import type { ConceptType } from '../composables/useFormWizard';
+import type { ConceptType } from '../composables/wizard/useFormWizard';
 
 // ============================================================================
 // Concept Type Configuration

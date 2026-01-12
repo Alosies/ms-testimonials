@@ -7,7 +7,7 @@
  */
 import { inject, computed } from 'vue';
 import { Icon } from '@testimonials/icons';
-import type { FormWizardContext } from '../../../composables/useFormWizard';
+import type { FormWizardContext } from '../../../composables/wizard/useFormWizard';
 import { CONCEPT_TYPE_CONFIG, WIZARD_VALIDATION } from '../../../constants/wizardConfig';
 
 const wizard = inject<FormWizardContext>('wizardContext')!;

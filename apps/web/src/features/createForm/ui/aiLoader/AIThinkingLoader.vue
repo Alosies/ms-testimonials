@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, computed } from 'vue';
 import { Icon } from '@testimonials/icons';
-import { useTypingEffect, type TypingStage } from '../../composables/useTypingEffect';
+import { useTypingEffect, type TypingStage } from '../../composables/wizard/useTypingEffect';
 import GlassmorphicBackground from './childComponents/GlassmorphicBackground.vue';
 import SkeletonQuestionCard from './childComponents/SkeletonQuestionCard.vue';
 

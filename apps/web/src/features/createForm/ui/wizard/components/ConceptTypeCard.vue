@@ -5,7 +5,7 @@
  * Selectable card for choosing between Product/Service/Event.
  */
 import { Icon } from '@testimonials/icons';
-import type { ConceptType } from '../../../composables/useFormWizard';
+import type { ConceptType } from '../../../composables/wizard/useFormWizard';
 import type { ConceptTypeConfig } from '../../../constants/wizardConfig';
 
 defineProps<{

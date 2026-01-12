@@ -7,7 +7,7 @@
  */
 import { onMounted, onUnmounted } from 'vue';
 import { Kbd } from '@testimonials/ui';
-import type { WizardScreen } from '../../composables/useFormWizard';
+import type { WizardScreen } from '../../composables/wizard/useFormWizard';
 import WizardProgress from './WizardProgress.vue';
 
 defineProps<{

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, nextTick, watch, onUnmounted } from 'vue';
-import { useFormEditor } from './composables/useFormEditor';
-import { useFormSections } from './composables/useFormSections';
-import { useQuestionGeneration } from './composables/useQuestionGeneration';
+import { useFormEditor } from './composables/_legacy/useFormEditor';
+import { useFormSections } from './composables/_legacy/useFormSections';
+import { useQuestionGeneration } from './composables/wizard/useQuestionGeneration';
 import { useConfirmationModal } from '@/shared/widgets';
 import {
   ProductInfoSection,
