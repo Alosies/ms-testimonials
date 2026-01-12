@@ -860,16 +860,33 @@ We will refactor the schema to establish clean ownership with **minimal denormal
 
 ## Part 6: Changes Required
 
+### Key Principle: Remove Redundant Denormalizations
+
+The ownership hierarchy (`form → flow → step → question → options`) is sufficient. **All denormalized `form_id` columns on child tables are being removed** because:
+
+1. They don't enhance any query - form can always be derived via joins
+2. They create ownership confusion (dual parentage)
+3. They add maintenance overhead (keeping them in sync)
+
+**What We Keep:** Only `organization_id` remains denormalized on all tables - this is **intentional** for Hasura row-level security (RLS) to avoid expensive joins on every query.
+
+---
+
 ### Database Schema Changes
 
 | Table | Change | Details |
 |-------|--------|---------|
 | **flows** | ADD `is_primary` | Boolean, partial unique constraint per form |
-| **form_steps** | DROP `form_id` | Remove column entirely, steps belong to flows only |
+| **form_steps** | **DROP `form_id`** | ❌ Remove entirely - derive via `step.flow.form_id` |
 | **form_steps** | DROP `question_id` | Remove column, questions reference steps (inverted) |
 | **form_questions** | ADD `step_id` | New FK to form_steps (CASCADE), **nullable** |
-| **form_questions** | DROP `form_id` | Remove column entirely, questions belong to steps only |
+| **form_questions** | **DROP `form_id`** | ❌ Remove entirely - derive via `question.step.flow.form_id` |
 | **form_steps** | DROP trigger | Remove `trg_form_steps_delete_question` (FK handles it) |
+
+**Summary of Denormalization Changes:**
+- ✅ `organization_id` **KEEP** on all tables (RLS requirement)
+- ❌ `form_id` on `form_steps` **REMOVE** (redundant, derive via flow)
+- ❌ `form_id` on `form_questions` **REMOVE** (redundant, derive via step.flow)
 
 **Note on `step_id` nullability:** Steps can exist without questions (welcome, thank_you, consent steps). Questions have optional `step_id` to support this 0:1 relationship.
 
