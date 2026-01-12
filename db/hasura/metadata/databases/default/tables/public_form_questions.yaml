@@ -2,15 +2,15 @@ table:
   name: form_questions
   schema: public
 object_relationships:
-  - name: form
-    using:
-      foreign_key_constraint_on: form_id
   - name: organization
     using:
       foreign_key_constraint_on: organization_id
   - name: question_type
     using:
       foreign_key_constraint_on: question_type_id
+  - name: step
+    using:
+      foreign_key_constraint_on: step_id
   - name: updater
     using:
       foreign_key_constraint_on: updated_by
@@ -53,7 +53,7 @@ select_permissions:
     permission:
       columns:
         - id
-        - form_id
+        - step_id
         - question_type_id
         - question_key
         - question_text
@@ -69,9 +69,11 @@ select_permissions:
         _and:
           - is_active:
               _eq: true
-          - form:
-              is_active:
-                _eq: true
+          - step:
+              flow:
+                form:
+                  status:
+                    _eq: published
   - role: member
     permission:
       columns: '*'

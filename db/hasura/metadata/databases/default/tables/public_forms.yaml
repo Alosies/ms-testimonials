@@ -26,20 +26,6 @@ array_relationships:
         table:
           name: flows
           schema: public
-  - name: questions
-    using:
-      foreign_key_constraint_on:
-        column: form_id
-        table:
-          name: form_questions
-          schema: public
-  - name: steps
-    using:
-      foreign_key_constraint_on:
-        column: form_id
-        table:
-          name: form_steps
-          schema: public
   - name: submissions
     using:
       foreign_key_constraint_on:

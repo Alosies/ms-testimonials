@@ -8,18 +8,20 @@ object_relationships:
   - name: flow
     using:
       foreign_key_constraint_on: flow_id
-  - name: form
-    using:
-      foreign_key_constraint_on: form_id
   - name: organization
     using:
       foreign_key_constraint_on: organization_id
-  - name: question
-    using:
-      foreign_key_constraint_on: question_id
   - name: updater
     using:
       foreign_key_constraint_on: updated_by
+array_relationships:
+  - name: questions
+    using:
+      foreign_key_constraint_on:
+        column: step_id
+        table:
+          name: form_questions
+          schema: public
 insert_permissions:
   - role: member
     permission:
@@ -44,11 +46,9 @@ select_permissions:
     permission:
       columns:
         - id
-        - form_id
         - flow_id
         - step_type
         - step_order
-        - question_id
         - content
         - tips
         - flow_membership
@@ -56,12 +56,10 @@ select_permissions:
         _and:
           - is_active:
               _eq: true
-          - form:
-              is_active:
-                _eq: true
-          - form:
-              status:
-                _eq: published
+          - flow:
+              form:
+                status:
+                  _eq: published
   - role: member
     permission:
       columns: '*'
