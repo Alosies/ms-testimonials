@@ -1,23 +1,33 @@
-export { useCreateFormWizard } from './useCreateFormWizard';
-export { useQuestionEditor } from './useQuestionEditor';
-export { useQuestionEditorPanel, type PanelMode } from './useQuestionEditorPanel';
-export { useQuestionPanelUrl, type PanelUrlMode } from './useQuestionPanelUrl';
-export { useFormEditor } from './useFormEditor';
-export { useFormSections } from './useFormSections';
-export { useQuestionGeneration } from './useQuestionGeneration';
-export { useQuestionSave } from './useQuestionSave';
+/**
+ * CreateForm Feature Composables
+ *
+ * Organized into logical subfolders:
+ * - wizard/         Form creation wizard (AI generation flow)
+ * - questionPanel/  Question editor side panel
+ * - immediateSave/  ADR-011 immediate save actions
+ * - timeline/       Form Studio timeline editor
+ * - autoSave/       Auto-save infrastructure (ADR-010)
+ * - stepEditor/     Step editor panel
+ * - _legacy/        Deprecated composables (pending removal)
+ */
 
 // Form Creation Wizard
-export { useFormWizard, type FormWizardContext, type ConceptType, type WizardScreen } from './useFormWizard';
-export { useCreateFormWithSteps, type CreateFormWithStepsParams, type CreateFormWithStepsResult } from './useCreateFormWithSteps';
+export * from './wizard';
 
-// Timeline editor
+// Question Editor Panel
+export * from './questionPanel';
+
+// Immediate Save Actions (ADR-011)
+export * from './immediateSave';
+
+// Timeline Editor (Form Studio)
 export * from './timeline';
 
-// ADR-011: Immediate save composables
-export { useQuestionSettings } from './useQuestionSettings';
-export { useQuestionOptions } from './useQuestionOptions';
-export { useFlowSettings } from './useFlowSettings';
-
-// Auto-save infrastructure
+// Auto-save Infrastructure (ADR-010)
 export * from './autoSave';
+
+// Step Editor
+export * from './stepEditor';
+
+// Legacy (deprecated, will be removed)
+export * from './_legacy';
