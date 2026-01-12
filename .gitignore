@@ -36,3 +36,6 @@ postgres_data
 
 # Playwright
 .playwright-mcp/
+
+# Claude Code MCP config (worktree-specific)
+.mcp.json
