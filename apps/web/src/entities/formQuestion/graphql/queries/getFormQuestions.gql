@@ -1,6 +1,9 @@
+#import "../fragments/FormQuestionBasic.gql"
+
 query GetFormQuestions($formId: String!) {
   form_questions(
-    where: { form_id: { _eq: $formId }, is_active: { _eq: true } }
+    # ADR-013: Query via step->flow relationship (form_id removed from form_questions)
+    where: { step: { flow: { form_id: { _eq: $formId } } }, is_active: { _eq: true } }
     order_by: { display_order: asc }
   ) {
     ...FormQuestionBasic

@@ -1,14 +1,19 @@
+#import "../../../formQuestion/graphql/fragments/FormQuestionWithOptions.gql"
+
 fragment FormStepBasic on form_steps {
   id
-  form_id
   flow_id
   step_type
   step_order
-  question_id
   content
   tips
   flow_membership
   is_active
   created_at
   updated_at
+  # ADR-013: Relationship inverted - question now references step via step_id
+  # Array relationship (0:1 in practice) - access as questions[0]
+  questions {
+    ...FormQuestionWithOptions
+  }
 }

@@ -1269,6 +1269,10 @@ type flows {
   """
   id: String!
   """
+  Boolean flag marking the primary flow. Each form has exactly one primary flow (enforced by partial unique index). Primary flows are always shown; branch flows are conditional.
+  """
+  is_primary: Boolean!
+  """
   Human-readable flow name displayed in form editor (e.g., "Shared Steps", "Testimonial Flow", "Improvement Flow").
   """
   name: String!
@@ -1319,7 +1323,23 @@ type flows_aggregate {
 }
 
 input flows_aggregate_bool_exp {
+  bool_and: flows_aggregate_bool_exp_bool_and
+  bool_or: flows_aggregate_bool_exp_bool_or
   count: flows_aggregate_bool_exp_count
+}
+
+input flows_aggregate_bool_exp_bool_and {
+  arguments: flows_select_column_flows_aggregate_bool_exp_bool_and_arguments_columns!
+  distinct: Boolean
+  filter: flows_bool_exp
+  predicate: Boolean_comparison_exp!
+}
+
+input flows_aggregate_bool_exp_bool_or {
+  arguments: flows_select_column_flows_aggregate_bool_exp_bool_or_arguments_columns!
+  distinct: Boolean
+  filter: flows_bool_exp
+  predicate: Boolean_comparison_exp!
 }
 
 input flows_aggregate_bool_exp_count {
@@ -1416,6 +1436,7 @@ input flows_bool_exp {
   form: forms_bool_exp
   form_id: String_comparison_exp
   id: String_comparison_exp
+  is_primary: Boolean_comparison_exp
   name: String_comparison_exp
   organization: organizations_bool_exp
   organization_id: String_comparison_exp
@@ -1436,6 +1457,10 @@ enum flows_constraint {
   unique or primary key constraint on columns "id"
   """
   flows_pkey
+  """
+  unique or primary key constraint on columns "form_id"
+  """
+  idx_flows_primary_per_form
 }
 
 """
@@ -1520,6 +1545,10 @@ input flows_insert_input {
   Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification.
   """
   id: String
+  """
+  Boolean flag marking the primary flow. Each form has exactly one primary flow (enforced by partial unique index). Primary flows are always shown; branch flows are conditional.
+  """
+  is_primary: Boolean
   """
   Human-readable flow name displayed in form editor (e.g., "Shared Steps", "Testimonial Flow", "Improvement Flow").
   """
@@ -1773,6 +1802,7 @@ input flows_order_by {
   form: forms_order_by
   form_id: order_by
   id: order_by
+  is_primary: order_by
   name: order_by
   organization: organizations_order_by
   organization_id: order_by
@@ -1819,11 +1849,29 @@ enum flows_select_column {
   """column name"""
   id
   """column name"""
+  is_primary
+  """column name"""
   name
   """column name"""
   organization_id
   """column name"""
   updated_at
+}
+
+"""
+select "flows_aggregate_bool_exp_bool_and_arguments_columns" columns of table "flows"
+"""
+enum flows_select_column_flows_aggregate_bool_exp_bool_and_arguments_columns {
+  """column name"""
+  is_primary
+}
+
+"""
+select "flows_aggregate_bool_exp_bool_or_arguments_columns" columns of table "flows"
+"""
+enum flows_select_column_flows_aggregate_bool_exp_bool_or_arguments_columns {
+  """column name"""
+  is_primary
 }
 
 """
@@ -1866,6 +1914,10 @@ input flows_set_input {
   Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification.
   """
   id: String
+  """
+  Boolean flag marking the primary flow. Each form has exactly one primary flow (enforced by partial unique index). Primary flows are always shown; branch flows are conditional.
+  """
+  is_primary: Boolean
   """
   Human-readable flow name displayed in form editor (e.g., "Shared Steps", "Testimonial Flow", "Improvement Flow").
   """
@@ -1983,6 +2035,10 @@ input flows_stream_cursor_value_input {
   """
   id: String
   """
+  Boolean flag marking the primary flow. Each form has exactly one primary flow (enforced by partial unique index). Primary flows are always shown; branch flows are conditional.
+  """
+  is_primary: Boolean
+  """
   Human-readable flow name displayed in form editor (e.g., "Shared Steps", "Testimonial Flow", "Improvement Flow").
   """
   name: String
@@ -2036,6 +2092,8 @@ enum flows_update_column {
   form_id
   """column name"""
   id
+  """column name"""
+  is_primary
   """column name"""
   name
   """column name"""
@@ -2841,7 +2899,9 @@ input form_question_responses_variance_order_by {
   answer_integer: order_by
 }
 
-"""Form questions with typed validation - explicit columns, not JSONB"""
+"""
+Form questions belong to steps. Derive form via question.step.flow.form_id. Clean ownership: step → question.
+"""
 type form_questions {
   """Array of allowed MIME types for file uploads. Post-MVP"""
   allowed_file_types: [String!]
@@ -2849,10 +2909,6 @@ type form_questions {
   created_at: timestamptz!
   """Order in which question appears on form. Unique per form, starts at 1"""
   display_order: smallint!
-  """An object relationship"""
-  form: forms!
-  """FK to forms - parent form this question belongs to"""
-  form_id: String!
   """Tooltip help text explaining what kind of answer is expected"""
   help_text: String
   """Primary key - NanoID 12-char unique identifier"""
@@ -2961,6 +3017,12 @@ type form_questions {
   Custom label for minimum value on Linear Scale (e.g., "Low", "Strongly disagree"). NULL uses default "Low"
   """
   scale_min_label: String
+  """An object relationship"""
+  step: form_steps
+  """
+  FK to form_steps. The step that owns this question. Nullable for steps without questions (welcome, thank_you, consent). CASCADE delete removes question when step is deleted.
+  """
+  step_id: String
   """Timestamp of last modification. Auto-updated by trigger"""
   updated_at: timestamptz!
   """FK to users - who last modified. NULL until first update"""
@@ -3111,8 +3173,6 @@ input form_questions_bool_exp {
   allowed_file_types: String_array_comparison_exp
   created_at: timestamptz_comparison_exp
   display_order: smallint_comparison_exp
-  form: forms_bool_exp
-  form_id: String_comparison_exp
   help_text: String_comparison_exp
   id: String_comparison_exp
   is_active: Boolean_comparison_exp
@@ -3135,6 +3195,8 @@ input form_questions_bool_exp {
   responses_aggregate: form_question_responses_aggregate_bool_exp
   scale_max_label: String_comparison_exp
   scale_min_label: String_comparison_exp
+  step: form_steps_bool_exp
+  step_id: String_comparison_exp
   updated_at: timestamptz_comparison_exp
   updated_by: String_comparison_exp
   updater: users_bool_exp
@@ -3146,17 +3208,13 @@ unique or primary key constraints on table "form_questions"
 """
 enum form_questions_constraint {
   """
-  unique or primary key constraint on columns "form_id", "question_key"
-  """
-  form_questions_key_per_form_unique
-  """
-  unique or primary key constraint on columns "form_id", "display_order"
-  """
-  form_questions_order_per_form_unique
-  """
   unique or primary key constraint on columns "id"
   """
   form_questions_pkey
+  """
+  unique or primary key constraint on columns "step_id"
+  """
+  idx_form_questions_step_id_unique
 }
 
 """
@@ -3195,9 +3253,6 @@ input form_questions_insert_input {
   created_at: timestamptz
   """Order in which question appears on form. Unique per form, starts at 1"""
   display_order: smallint
-  form: forms_obj_rel_insert_input
-  """FK to forms - parent form this question belongs to"""
-  form_id: String
   """Tooltip help text explaining what kind of answer is expected"""
   help_text: String
   """Primary key - NanoID 12-char unique identifier"""
@@ -3254,6 +3309,11 @@ input form_questions_insert_input {
   Custom label for minimum value on Linear Scale (e.g., "Low", "Strongly disagree"). NULL uses default "Low"
   """
   scale_min_label: String
+  step: form_steps_obj_rel_insert_input
+  """
+  FK to form_steps. The step that owns this question. Nullable for steps without questions (welcome, thank_you, consent). CASCADE delete removes question when step is deleted.
+  """
+  step_id: String
   """Timestamp of last modification. Auto-updated by trigger"""
   updated_at: timestamptz
   """FK to users - who last modified. NULL until first update"""
@@ -3273,8 +3333,6 @@ type form_questions_max_fields {
   created_at: timestamptz
   """Order in which question appears on form. Unique per form, starts at 1"""
   display_order: smallint
-  """FK to forms - parent form this question belongs to"""
-  form_id: String
   """Tooltip help text explaining what kind of answer is expected"""
   help_text: String
   """Primary key - NanoID 12-char unique identifier"""
@@ -3321,6 +3379,10 @@ type form_questions_max_fields {
   Custom label for minimum value on Linear Scale (e.g., "Low", "Strongly disagree"). NULL uses default "Low"
   """
   scale_min_label: String
+  """
+  FK to form_steps. The step that owns this question. Nullable for steps without questions (welcome, thank_you, consent). CASCADE delete removes question when step is deleted.
+  """
+  step_id: String
   """Timestamp of last modification. Auto-updated by trigger"""
   updated_at: timestamptz
   """FK to users - who last modified. NULL until first update"""
@@ -3341,8 +3403,6 @@ input form_questions_max_order_by {
   created_at: order_by
   """Order in which question appears on form. Unique per form, starts at 1"""
   display_order: order_by
-  """FK to forms - parent form this question belongs to"""
-  form_id: order_by
   """Tooltip help text explaining what kind of answer is expected"""
   help_text: order_by
   """Primary key - NanoID 12-char unique identifier"""
@@ -3389,6 +3449,10 @@ input form_questions_max_order_by {
   Custom label for minimum value on Linear Scale (e.g., "Low", "Strongly disagree"). NULL uses default "Low"
   """
   scale_min_label: order_by
+  """
+  FK to form_steps. The step that owns this question. Nullable for steps without questions (welcome, thank_you, consent). CASCADE delete removes question when step is deleted.
+  """
+  step_id: order_by
   """Timestamp of last modification. Auto-updated by trigger"""
   updated_at: order_by
   """FK to users - who last modified. NULL until first update"""
@@ -3407,8 +3471,6 @@ type form_questions_min_fields {
   created_at: timestamptz
   """Order in which question appears on form. Unique per form, starts at 1"""
   display_order: smallint
-  """FK to forms - parent form this question belongs to"""
-  form_id: String
   """Tooltip help text explaining what kind of answer is expected"""
   help_text: String
   """Primary key - NanoID 12-char unique identifier"""
@@ -3455,6 +3517,10 @@ type form_questions_min_fields {
   Custom label for minimum value on Linear Scale (e.g., "Low", "Strongly disagree"). NULL uses default "Low"
   """
   scale_min_label: String
+  """
+  FK to form_steps. The step that owns this question. Nullable for steps without questions (welcome, thank_you, consent). CASCADE delete removes question when step is deleted.
+  """
+  step_id: String
   """Timestamp of last modification. Auto-updated by trigger"""
   updated_at: timestamptz
   """FK to users - who last modified. NULL until first update"""
@@ -3475,8 +3541,6 @@ input form_questions_min_order_by {
   created_at: order_by
   """Order in which question appears on form. Unique per form, starts at 1"""
   display_order: order_by
-  """FK to forms - parent form this question belongs to"""
-  form_id: order_by
   """Tooltip help text explaining what kind of answer is expected"""
   help_text: order_by
   """Primary key - NanoID 12-char unique identifier"""
@@ -3523,6 +3587,10 @@ input form_questions_min_order_by {
   Custom label for minimum value on Linear Scale (e.g., "Low", "Strongly disagree"). NULL uses default "Low"
   """
   scale_min_label: order_by
+  """
+  FK to form_steps. The step that owns this question. Nullable for steps without questions (welcome, thank_you, consent). CASCADE delete removes question when step is deleted.
+  """
+  step_id: order_by
   """Timestamp of last modification. Auto-updated by trigger"""
   updated_at: order_by
   """FK to users - who last modified. NULL until first update"""
@@ -3566,8 +3634,6 @@ input form_questions_order_by {
   allowed_file_types: order_by
   created_at: order_by
   display_order: order_by
-  form: forms_order_by
-  form_id: order_by
   help_text: order_by
   id: order_by
   is_active: order_by
@@ -3588,6 +3654,8 @@ input form_questions_order_by {
   responses_aggregate: form_question_responses_aggregate_order_by
   scale_max_label: order_by
   scale_min_label: order_by
+  step: form_steps_order_by
+  step_id: order_by
   updated_at: order_by
   updated_by: order_by
   updater: users_order_by
@@ -3610,8 +3678,6 @@ enum form_questions_select_column {
   created_at
   """column name"""
   display_order
-  """column name"""
-  form_id
   """column name"""
   help_text
   """column name"""
@@ -3644,6 +3710,8 @@ enum form_questions_select_column {
   scale_max_label
   """column name"""
   scale_min_label
+  """column name"""
+  step_id
   """column name"""
   updated_at
   """column name"""
@@ -3682,8 +3750,6 @@ input form_questions_set_input {
   created_at: timestamptz
   """Order in which question appears on form. Unique per form, starts at 1"""
   display_order: smallint
-  """FK to forms - parent form this question belongs to"""
-  form_id: String
   """Tooltip help text explaining what kind of answer is expected"""
   help_text: String
   """Primary key - NanoID 12-char unique identifier"""
@@ -3736,6 +3802,10 @@ input form_questions_set_input {
   Custom label for minimum value on Linear Scale (e.g., "Low", "Strongly disagree"). NULL uses default "Low"
   """
   scale_min_label: String
+  """
+  FK to form_steps. The step that owns this question. Nullable for steps without questions (welcome, thank_you, consent). CASCADE delete removes question when step is deleted.
+  """
+  step_id: String
   """Timestamp of last modification. Auto-updated by trigger"""
   updated_at: timestamptz
   """FK to users - who last modified. NULL until first update"""
@@ -3914,8 +3984,6 @@ input form_questions_stream_cursor_value_input {
   created_at: timestamptz
   """Order in which question appears on form. Unique per form, starts at 1"""
   display_order: smallint
-  """FK to forms - parent form this question belongs to"""
-  form_id: String
   """Tooltip help text explaining what kind of answer is expected"""
   help_text: String
   """Primary key - NanoID 12-char unique identifier"""
@@ -3968,6 +4036,10 @@ input form_questions_stream_cursor_value_input {
   Custom label for minimum value on Linear Scale (e.g., "Low", "Strongly disagree"). NULL uses default "Low"
   """
   scale_min_label: String
+  """
+  FK to form_steps. The step that owns this question. Nullable for steps without questions (welcome, thank_you, consent). CASCADE delete removes question when step is deleted.
+  """
+  step_id: String
   """Timestamp of last modification. Auto-updated by trigger"""
   updated_at: timestamptz
   """FK to users - who last modified. NULL until first update"""
@@ -4039,8 +4111,6 @@ enum form_questions_update_column {
   """column name"""
   display_order
   """column name"""
-  form_id
-  """column name"""
   help_text
   """column name"""
   id
@@ -4072,6 +4142,8 @@ enum form_questions_update_column {
   scale_max_label
   """column name"""
   scale_min_label
+  """column name"""
+  step_id
   """column name"""
   updated_at
   """column name"""
@@ -4240,7 +4312,7 @@ input form_questions_variance_order_by {
 }
 
 """
-Stores step configuration per form for the timeline editor. Each step represents a screen in the testimonial collection flow (welcome, questions, consent, contact info, reward, thank you).
+Form steps belong to flows. Question deletion handled by FK cascade on form_questions.step_id.
 """
 type form_steps {
   """
@@ -4270,12 +4342,6 @@ type form_steps {
   DEPRECATED: Legacy flow membership column. Use flow_id instead. This column will be removed in a future migration. Values are no longer constrained - any string is allowed during transition.
   """
   flow_membership: String!
-  """An object relationship"""
-  form: forms!
-  """
-  Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed.
-  """
-  form_id: String!
   """
   Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification.
   """
@@ -4290,12 +4356,32 @@ type form_steps {
   Foreign key to organizations table. Denormalized from form for efficient row-level security queries. Must match form.organization_id.
   """
   organization_id: String!
-  """An object relationship"""
-  question: form_questions
-  """
-  Foreign key to form_questions table. Required for question/rating step types to link validation config. Must be NULL for non-question types.
-  """
-  question_id: String
+  """An array relationship"""
+  questions(
+    """distinct select on columns"""
+    distinct_on: [form_questions_select_column!]
+    """limit the number of rows returned"""
+    limit: Int
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+    """sort the rows by one or more columns"""
+    order_by: [form_questions_order_by!]
+    """filter the rows returned"""
+    where: form_questions_bool_exp
+  ): [form_questions!]!
+  """An aggregate relationship"""
+  questions_aggregate(
+    """distinct select on columns"""
+    distinct_on: [form_questions_select_column!]
+    """limit the number of rows returned"""
+    limit: Int
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+    """sort the rows by one or more columns"""
+    order_by: [form_questions_order_by!]
+    """filter the rows returned"""
+    where: form_questions_bool_exp
+  ): form_questions_aggregate!
   """
   Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form.
   """
@@ -4438,14 +4524,12 @@ input form_steps_bool_exp {
   flow: flows_bool_exp
   flow_id: String_comparison_exp
   flow_membership: String_comparison_exp
-  form: forms_bool_exp
-  form_id: String_comparison_exp
   id: String_comparison_exp
   is_active: Boolean_comparison_exp
   organization: organizations_bool_exp
   organization_id: String_comparison_exp
-  question: form_questions_bool_exp
-  question_id: String_comparison_exp
+  questions: form_questions_bool_exp
+  questions_aggregate: form_questions_aggregate_bool_exp
   step_order: smallint_comparison_exp
   step_type: String_comparison_exp
   tips: String_array_comparison_exp
@@ -4459,7 +4543,7 @@ unique or primary key constraints on table "form_steps"
 """
 enum form_steps_constraint {
   """
-  unique or primary key constraint on columns "flow_id", "step_order", "form_id"
+  unique or primary key constraint on columns "flow_id", "step_order"
   """
   form_steps_flow_order_unique
   """
@@ -4534,11 +4618,6 @@ input form_steps_insert_input {
   DEPRECATED: Legacy flow membership column. Use flow_id instead. This column will be removed in a future migration. Values are no longer constrained - any string is allowed during transition.
   """
   flow_membership: String
-  form: forms_obj_rel_insert_input
-  """
-  Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed.
-  """
-  form_id: String
   """
   Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification.
   """
@@ -4552,11 +4631,7 @@ input form_steps_insert_input {
   Foreign key to organizations table. Denormalized from form for efficient row-level security queries. Must match form.organization_id.
   """
   organization_id: String
-  question: form_questions_obj_rel_insert_input
-  """
-  Foreign key to form_questions table. Required for question/rating step types to link validation config. Must be NULL for non-question types.
-  """
-  question_id: String
+  questions: form_questions_arr_rel_insert_input
   """
   Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form.
   """
@@ -4599,10 +4674,6 @@ type form_steps_max_fields {
   """
   flow_membership: String
   """
-  Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed.
-  """
-  form_id: String
-  """
   Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification.
   """
   id: String
@@ -4610,10 +4681,6 @@ type form_steps_max_fields {
   Foreign key to organizations table. Denormalized from form for efficient row-level security queries. Must match form.organization_id.
   """
   organization_id: String
-  """
-  Foreign key to form_questions table. Required for question/rating step types to link validation config. Must be NULL for non-question types.
-  """
-  question_id: String
   """
   Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form.
   """
@@ -4657,10 +4724,6 @@ input form_steps_max_order_by {
   """
   flow_membership: order_by
   """
-  Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed.
-  """
-  form_id: order_by
-  """
   Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification.
   """
   id: order_by
@@ -4668,10 +4731,6 @@ input form_steps_max_order_by {
   Foreign key to organizations table. Denormalized from form for efficient row-level security queries. Must match form.organization_id.
   """
   organization_id: order_by
-  """
-  Foreign key to form_questions table. Required for question/rating step types to link validation config. Must be NULL for non-question types.
-  """
-  question_id: order_by
   """
   Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form.
   """
@@ -4713,10 +4772,6 @@ type form_steps_min_fields {
   """
   flow_membership: String
   """
-  Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed.
-  """
-  form_id: String
-  """
   Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification.
   """
   id: String
@@ -4724,10 +4779,6 @@ type form_steps_min_fields {
   Foreign key to organizations table. Denormalized from form for efficient row-level security queries. Must match form.organization_id.
   """
   organization_id: String
-  """
-  Foreign key to form_questions table. Required for question/rating step types to link validation config. Must be NULL for non-question types.
-  """
-  question_id: String
   """
   Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form.
   """
@@ -4771,10 +4822,6 @@ input form_steps_min_order_by {
   """
   flow_membership: order_by
   """
-  Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed.
-  """
-  form_id: order_by
-  """
   Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification.
   """
   id: order_by
@@ -4782,10 +4829,6 @@ input form_steps_min_order_by {
   Foreign key to organizations table. Denormalized from form for efficient row-level security queries. Must match form.organization_id.
   """
   organization_id: order_by
-  """
-  Foreign key to form_questions table. Required for question/rating step types to link validation config. Must be NULL for non-question types.
-  """
-  question_id: order_by
   """
   Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form.
   """
@@ -4819,6 +4862,15 @@ type form_steps_mutation_response {
 }
 
 """
+input type for inserting object relation for remote table "form_steps"
+"""
+input form_steps_obj_rel_insert_input {
+  data: form_steps_insert_input!
+  """upsert condition"""
+  on_conflict: form_steps_on_conflict
+}
+
+"""
 on_conflict condition type for table "form_steps"
 """
 input form_steps_on_conflict {
@@ -4836,14 +4888,11 @@ input form_steps_order_by {
   flow: flows_order_by
   flow_id: order_by
   flow_membership: order_by
-  form: forms_order_by
-  form_id: order_by
   id: order_by
   is_active: order_by
   organization: organizations_order_by
   organization_id: order_by
-  question: form_questions_order_by
-  question_id: order_by
+  questions_aggregate: form_questions_aggregate_order_by
   step_order: order_by
   step_type: order_by
   tips: order_by
@@ -4883,15 +4932,11 @@ enum form_steps_select_column {
   """column name"""
   flow_membership
   """column name"""
-  form_id
-  """column name"""
   id
   """column name"""
   is_active
   """column name"""
   organization_id
-  """column name"""
-  question_id
   """column name"""
   step_order
   """column name"""
@@ -4945,10 +4990,6 @@ input form_steps_set_input {
   """
   flow_membership: String
   """
-  Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed.
-  """
-  form_id: String
-  """
   Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification.
   """
   id: String
@@ -4960,10 +5001,6 @@ input form_steps_set_input {
   Foreign key to organizations table. Denormalized from form for efficient row-level security queries. Must match form.organization_id.
   """
   organization_id: String
-  """
-  Foreign key to form_questions table. Required for question/rating step types to link validation config. Must be NULL for non-question types.
-  """
-  question_id: String
   """
   Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form.
   """
@@ -5073,10 +5110,6 @@ input form_steps_stream_cursor_value_input {
   """
   flow_membership: String
   """
-  Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed.
-  """
-  form_id: String
-  """
   Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification.
   """
   id: String
@@ -5088,10 +5121,6 @@ input form_steps_stream_cursor_value_input {
   Foreign key to organizations table. Denormalized from form for efficient row-level security queries. Must match form.organization_id.
   """
   organization_id: String
-  """
-  Foreign key to form_questions table. Required for question/rating step types to link validation config. Must be NULL for non-question types.
-  """
-  question_id: String
   """
   Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form.
   """
@@ -5147,15 +5176,11 @@ enum form_steps_update_column {
   """column name"""
   flow_membership
   """column name"""
-  form_id
-  """column name"""
   id
   """column name"""
   is_active
   """column name"""
   organization_id
-  """column name"""
-  question_id
   """column name"""
   step_order
   """column name"""
@@ -5780,32 +5805,6 @@ type forms {
   Name of product being reviewed - used in question templates (e.g., "How did {product} help?")
   """
   product_name: String!
-  """An array relationship"""
-  questions(
-    """distinct select on columns"""
-    distinct_on: [form_questions_select_column!]
-    """limit the number of rows returned"""
-    limit: Int
-    """skip the first n rows. Use only with order_by"""
-    offset: Int
-    """sort the rows by one or more columns"""
-    order_by: [form_questions_order_by!]
-    """filter the rows returned"""
-    where: form_questions_bool_exp
-  ): [form_questions!]!
-  """An aggregate relationship"""
-  questions_aggregate(
-    """distinct select on columns"""
-    distinct_on: [form_questions_select_column!]
-    """limit the number of rows returned"""
-    limit: Int
-    """skip the first n rows. Use only with order_by"""
-    offset: Int
-    """sort the rows by one or more columns"""
-    order_by: [form_questions_order_by!]
-    """filter the rows returned"""
-    where: form_questions_bool_exp
-  ): form_questions_aggregate!
   """
   UI preferences only (theme colors, branding) - NOT business logic. JSONB appropriate here
   """
@@ -5817,32 +5816,6 @@ type forms {
   Form lifecycle status: draft (editing), published (public), archived (hidden)
   """
   status: String!
-  """An array relationship"""
-  steps(
-    """distinct select on columns"""
-    distinct_on: [form_steps_select_column!]
-    """limit the number of rows returned"""
-    limit: Int
-    """skip the first n rows. Use only with order_by"""
-    offset: Int
-    """sort the rows by one or more columns"""
-    order_by: [form_steps_order_by!]
-    """filter the rows returned"""
-    where: form_steps_bool_exp
-  ): [form_steps!]!
-  """An aggregate relationship"""
-  steps_aggregate(
-    """distinct select on columns"""
-    distinct_on: [form_steps_select_column!]
-    """limit the number of rows returned"""
-    limit: Int
-    """skip the first n rows. Use only with order_by"""
-    offset: Int
-    """sort the rows by one or more columns"""
-    order_by: [form_steps_order_by!]
-    """filter the rows returned"""
-    where: form_steps_bool_exp
-  ): form_steps_aggregate!
   """An array relationship"""
   submissions(
     """distinct select on columns"""
@@ -5973,12 +5946,8 @@ input forms_bool_exp {
   organization_id: String_comparison_exp
   product_description: String_comparison_exp
   product_name: String_comparison_exp
-  questions: form_questions_bool_exp
-  questions_aggregate: form_questions_aggregate_bool_exp
   settings: jsonb_comparison_exp
   status: String_comparison_exp
-  steps: form_steps_bool_exp
-  steps_aggregate: form_steps_aggregate_bool_exp
   submissions: form_submissions_bool_exp
   submissions_aggregate: form_submissions_aggregate_bool_exp
   updated_at: timestamptz_comparison_exp
@@ -6070,7 +6039,6 @@ input forms_insert_input {
   Name of product being reviewed - used in question templates (e.g., "How did {product} help?")
   """
   product_name: String
-  questions: form_questions_arr_rel_insert_input
   """
   UI preferences only (theme colors, branding) - NOT business logic. JSONB appropriate here
   """
@@ -6079,7 +6047,6 @@ input forms_insert_input {
   Form lifecycle status: draft (editing), published (public), archived (hidden)
   """
   status: String
-  steps: form_steps_arr_rel_insert_input
   submissions: form_submissions_arr_rel_insert_input
   """Timestamp of last modification. Auto-updated by trigger"""
   updated_at: timestamptz
@@ -6255,10 +6222,8 @@ input forms_order_by {
   organization_id: order_by
   product_description: order_by
   product_name: order_by
-  questions_aggregate: form_questions_aggregate_order_by
   settings: order_by
   status: order_by
-  steps_aggregate: form_steps_aggregate_order_by
   submissions_aggregate: form_submissions_aggregate_order_by
   updated_at: order_by
   updated_by: order_by

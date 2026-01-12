@@ -1,3 +1,5 @@
+#import "../fragments/FormQuestionBasic.gql"
+
 mutation CreateFormQuestion($input: form_questions_insert_input!) {
   insert_form_questions_one(object: $input) {
     ...FormQuestionBasic

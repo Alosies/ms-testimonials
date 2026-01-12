@@ -881,6 +881,8 @@ export type Flows = {
   form_id: Scalars['String']['output'];
   /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
   id: Scalars['String']['output'];
+  /** Boolean flag marking the primary flow. Each form has exactly one primary flow (enforced by partial unique index). Primary flows are always shown; branch flows are conditional. */
+  is_primary: Scalars['Boolean']['output'];
   /** Human-readable flow name displayed in form editor (e.g., "Shared Steps", "Testimonial Flow", "Improvement Flow"). */
   name: Scalars['String']['output'];
   /** An object relationship */
@@ -929,7 +931,23 @@ export type Flows_Aggregate = {
 };
 
 export type Flows_Aggregate_Bool_Exp = {
+  bool_and?: InputMaybe<Flows_Aggregate_Bool_Exp_Bool_And>;
+  bool_or?: InputMaybe<Flows_Aggregate_Bool_Exp_Bool_Or>;
   count?: InputMaybe<Flows_Aggregate_Bool_Exp_Count>;
+};
+
+export type Flows_Aggregate_Bool_Exp_Bool_And = {
+  arguments: Flows_Select_Column_Flows_Aggregate_Bool_Exp_Bool_And_Arguments_Columns;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+  filter?: InputMaybe<Flows_Bool_Exp>;
+  predicate: Boolean_Comparison_Exp;
+};
+
+export type Flows_Aggregate_Bool_Exp_Bool_Or = {
+  arguments: Flows_Select_Column_Flows_Aggregate_Bool_Exp_Bool_Or_Arguments_Columns;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+  filter?: InputMaybe<Flows_Bool_Exp>;
+  predicate: Boolean_Comparison_Exp;
 };
 
 export type Flows_Aggregate_Bool_Exp_Count = {
@@ -1019,6 +1037,7 @@ export type Flows_Bool_Exp = {
   form?: InputMaybe<Forms_Bool_Exp>;
   form_id?: InputMaybe<String_Comparison_Exp>;
   id?: InputMaybe<String_Comparison_Exp>;
+  is_primary?: InputMaybe<Boolean_Comparison_Exp>;
   name?: InputMaybe<String_Comparison_Exp>;
   organization?: InputMaybe<Organizations_Bool_Exp>;
   organization_id?: InputMaybe<String_Comparison_Exp>;
@@ -1032,7 +1051,9 @@ export enum Flows_Constraint {
   /** unique or primary key constraint on columns "form_id", "name" */
   FlowsFormNameUnique = 'flows_form_name_unique',
   /** unique or primary key constraint on columns "id" */
-  FlowsPkey = 'flows_pkey'
+  FlowsPkey = 'flows_pkey',
+  /** unique or primary key constraint on columns "form_id" */
+  IdxFlowsPrimaryPerForm = 'idx_flows_primary_per_form'
 }
 
 /** delete the field or element with specified path (for JSON arrays, negative integers count from the end) */
@@ -1081,6 +1102,8 @@ export type Flows_Insert_Input = {
   form_id?: InputMaybe<Scalars['String']['input']>;
   /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
   id?: InputMaybe<Scalars['String']['input']>;
+  /** Boolean flag marking the primary flow. Each form has exactly one primary flow (enforced by partial unique index). Primary flows are always shown; branch flows are conditional. */
+  is_primary?: InputMaybe<Scalars['Boolean']['input']>;
   /** Human-readable flow name displayed in form editor (e.g., "Shared Steps", "Testimonial Flow", "Improvement Flow"). */
   name?: InputMaybe<Scalars['String']['input']>;
   organization?: InputMaybe<Organizations_Obj_Rel_Insert_Input>;
@@ -1233,6 +1256,7 @@ export type Flows_Order_By = {
   form?: InputMaybe<Forms_Order_By>;
   form_id?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
+  is_primary?: InputMaybe<Order_By>;
   name?: InputMaybe<Order_By>;
   organization?: InputMaybe<Organizations_Order_By>;
   organization_id?: InputMaybe<Order_By>;
@@ -1273,11 +1297,25 @@ export enum Flows_Select_Column {
   /** column name */
   Id = 'id',
   /** column name */
+  IsPrimary = 'is_primary',
+  /** column name */
   Name = 'name',
   /** column name */
   OrganizationId = 'organization_id',
   /** column name */
   UpdatedAt = 'updated_at'
+}
+
+/** select "flows_aggregate_bool_exp_bool_and_arguments_columns" columns of table "flows" */
+export enum Flows_Select_Column_Flows_Aggregate_Bool_Exp_Bool_And_Arguments_Columns {
+  /** column name */
+  IsPrimary = 'is_primary'
+}
+
+/** select "flows_aggregate_bool_exp_bool_or_arguments_columns" columns of table "flows" */
+export enum Flows_Select_Column_Flows_Aggregate_Bool_Exp_Bool_Or_Arguments_Columns {
+  /** column name */
+  IsPrimary = 'is_primary'
 }
 
 /** input type for updating data in table "flows" */
@@ -1300,6 +1338,8 @@ export type Flows_Set_Input = {
   form_id?: InputMaybe<Scalars['String']['input']>;
   /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
   id?: InputMaybe<Scalars['String']['input']>;
+  /** Boolean flag marking the primary flow. Each form has exactly one primary flow (enforced by partial unique index). Primary flows are always shown; branch flows are conditional. */
+  is_primary?: InputMaybe<Scalars['Boolean']['input']>;
   /** Human-readable flow name displayed in form editor (e.g., "Shared Steps", "Testimonial Flow", "Improvement Flow"). */
   name?: InputMaybe<Scalars['String']['input']>;
   /** Foreign key to organizations for row-level security. Denormalized from form for efficient permission queries. */
@@ -1375,6 +1415,8 @@ export type Flows_Stream_Cursor_Value_Input = {
   form_id?: InputMaybe<Scalars['String']['input']>;
   /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
   id?: InputMaybe<Scalars['String']['input']>;
+  /** Boolean flag marking the primary flow. Each form has exactly one primary flow (enforced by partial unique index). Primary flows are always shown; branch flows are conditional. */
+  is_primary?: InputMaybe<Scalars['Boolean']['input']>;
   /** Human-readable flow name displayed in form editor (e.g., "Shared Steps", "Testimonial Flow", "Improvement Flow"). */
   name?: InputMaybe<Scalars['String']['input']>;
   /** Foreign key to organizations for row-level security. Denormalized from form for efficient permission queries. */
@@ -1416,6 +1458,8 @@ export enum Flows_Update_Column {
   FormId = 'form_id',
   /** column name */
   Id = 'id',
+  /** column name */
+  IsPrimary = 'is_primary',
   /** column name */
   Name = 'name',
   /** column name */
@@ -2120,7 +2164,7 @@ export type Form_Question_Responses_Variance_Order_By = {
   answer_integer?: InputMaybe<Order_By>;
 };
 
-/** Form questions with typed validation - explicit columns, not JSONB */
+/** Form questions belong to steps. Derive form via question.step.flow.form_id. Clean ownership: step → question. */
 export type Form_Questions = {
   __typename?: 'form_questions';
   /** Array of allowed MIME types for file uploads. Post-MVP */
@@ -2129,10 +2173,6 @@ export type Form_Questions = {
   created_at: Scalars['timestamptz']['output'];
   /** Order in which question appears on form. Unique per form, starts at 1 */
   display_order: Scalars['smallint']['output'];
-  /** An object relationship */
-  form: Forms;
-  /** FK to forms - parent form this question belongs to */
-  form_id: Scalars['String']['output'];
   /** Tooltip help text explaining what kind of answer is expected */
   help_text?: Maybe<Scalars['String']['output']>;
   /** Primary key - NanoID 12-char unique identifier */
@@ -2177,6 +2217,10 @@ export type Form_Questions = {
   scale_max_label?: Maybe<Scalars['String']['output']>;
   /** Custom label for minimum value on Linear Scale (e.g., "Low", "Strongly disagree"). NULL uses default "Low" */
   scale_min_label?: Maybe<Scalars['String']['output']>;
+  /** An object relationship */
+  step?: Maybe<Form_Steps>;
+  /** FK to form_steps. The step that owns this question. Nullable for steps without questions (welcome, thank_you, consent). CASCADE delete removes question when step is deleted. */
+  step_id?: Maybe<Scalars['String']['output']>;
   /** Timestamp of last modification. Auto-updated by trigger */
   updated_at: Scalars['timestamptz']['output'];
   /** FK to users - who last modified. NULL until first update */
@@ -2188,7 +2232,7 @@ export type Form_Questions = {
 };
 
 
-/** Form questions with typed validation - explicit columns, not JSONB */
+/** Form questions belong to steps. Derive form via question.step.flow.form_id. Clean ownership: step → question. */
 export type Form_QuestionsOptionsArgs = {
   distinct_on?: InputMaybe<Array<Question_Options_Select_Column>>;
   limit?: InputMaybe<Scalars['Int']['input']>;
@@ -2198,7 +2242,7 @@ export type Form_QuestionsOptionsArgs = {
 };
 
 
-/** Form questions with typed validation - explicit columns, not JSONB */
+/** Form questions belong to steps. Derive form via question.step.flow.form_id. Clean ownership: step → question. */
 export type Form_QuestionsOptions_AggregateArgs = {
   distinct_on?: InputMaybe<Array<Question_Options_Select_Column>>;
   limit?: InputMaybe<Scalars['Int']['input']>;
@@ -2208,7 +2252,7 @@ export type Form_QuestionsOptions_AggregateArgs = {
 };
 
 
-/** Form questions with typed validation - explicit columns, not JSONB */
+/** Form questions belong to steps. Derive form via question.step.flow.form_id. Clean ownership: step → question. */
 export type Form_QuestionsResponsesArgs = {
   distinct_on?: InputMaybe<Array<Form_Question_Responses_Select_Column>>;
   limit?: InputMaybe<Scalars['Int']['input']>;
@@ -2218,7 +2262,7 @@ export type Form_QuestionsResponsesArgs = {
 };
 
 
-/** Form questions with typed validation - explicit columns, not JSONB */
+/** Form questions belong to steps. Derive form via question.step.flow.form_id. Clean ownership: step → question. */
 export type Form_QuestionsResponses_AggregateArgs = {
   distinct_on?: InputMaybe<Array<Form_Question_Responses_Select_Column>>;
   limit?: InputMaybe<Scalars['Int']['input']>;
@@ -2347,8 +2391,6 @@ export type Form_Questions_Bool_Exp = {
   allowed_file_types?: InputMaybe<String_Array_Comparison_Exp>;
   created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
   display_order?: InputMaybe<Smallint_Comparison_Exp>;
-  form?: InputMaybe<Forms_Bool_Exp>;
-  form_id?: InputMaybe<String_Comparison_Exp>;
   help_text?: InputMaybe<String_Comparison_Exp>;
   id?: InputMaybe<String_Comparison_Exp>;
   is_active?: InputMaybe<Boolean_Comparison_Exp>;
@@ -2371,6 +2413,8 @@ export type Form_Questions_Bool_Exp = {
   responses_aggregate?: InputMaybe<Form_Question_Responses_Aggregate_Bool_Exp>;
   scale_max_label?: InputMaybe<String_Comparison_Exp>;
   scale_min_label?: InputMaybe<String_Comparison_Exp>;
+  step?: InputMaybe<Form_Steps_Bool_Exp>;
+  step_id?: InputMaybe<String_Comparison_Exp>;
   updated_at?: InputMaybe<Timestamptz_Comparison_Exp>;
   updated_by?: InputMaybe<String_Comparison_Exp>;
   updater?: InputMaybe<Users_Bool_Exp>;
@@ -2379,12 +2423,10 @@ export type Form_Questions_Bool_Exp = {
 
 /** unique or primary key constraints on table "form_questions" */
 export enum Form_Questions_Constraint {
-  /** unique or primary key constraint on columns "form_id", "question_key" */
-  FormQuestionsKeyPerFormUnique = 'form_questions_key_per_form_unique',
-  /** unique or primary key constraint on columns "form_id", "display_order" */
-  FormQuestionsOrderPerFormUnique = 'form_questions_order_per_form_unique',
   /** unique or primary key constraint on columns "id" */
-  FormQuestionsPkey = 'form_questions_pkey'
+  FormQuestionsPkey = 'form_questions_pkey',
+  /** unique or primary key constraint on columns "step_id" */
+  IdxFormQuestionsStepIdUnique = 'idx_form_questions_step_id_unique'
 }
 
 /** input type for incrementing numeric columns in table "form_questions" */
@@ -2411,9 +2453,6 @@ export type Form_Questions_Insert_Input = {
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
   /** Order in which question appears on form. Unique per form, starts at 1 */
   display_order?: InputMaybe<Scalars['smallint']['input']>;
-  form?: InputMaybe<Forms_Obj_Rel_Insert_Input>;
-  /** FK to forms - parent form this question belongs to */
-  form_id?: InputMaybe<Scalars['String']['input']>;
   /** Tooltip help text explaining what kind of answer is expected */
   help_text?: InputMaybe<Scalars['String']['input']>;
   /** Primary key - NanoID 12-char unique identifier */
@@ -2450,6 +2489,9 @@ export type Form_Questions_Insert_Input = {
   scale_max_label?: InputMaybe<Scalars['String']['input']>;
   /** Custom label for minimum value on Linear Scale (e.g., "Low", "Strongly disagree"). NULL uses default "Low" */
   scale_min_label?: InputMaybe<Scalars['String']['input']>;
+  step?: InputMaybe<Form_Steps_Obj_Rel_Insert_Input>;
+  /** FK to form_steps. The step that owns this question. Nullable for steps without questions (welcome, thank_you, consent). CASCADE delete removes question when step is deleted. */
+  step_id?: InputMaybe<Scalars['String']['input']>;
   /** Timestamp of last modification. Auto-updated by trigger */
   updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
   /** FK to users - who last modified. NULL until first update */
@@ -2468,8 +2510,6 @@ export type Form_Questions_Max_Fields = {
   created_at?: Maybe<Scalars['timestamptz']['output']>;
   /** Order in which question appears on form. Unique per form, starts at 1 */
   display_order?: Maybe<Scalars['smallint']['output']>;
-  /** FK to forms - parent form this question belongs to */
-  form_id?: Maybe<Scalars['String']['output']>;
   /** Tooltip help text explaining what kind of answer is expected */
   help_text?: Maybe<Scalars['String']['output']>;
   /** Primary key - NanoID 12-char unique identifier */
@@ -2498,6 +2538,8 @@ export type Form_Questions_Max_Fields = {
   scale_max_label?: Maybe<Scalars['String']['output']>;
   /** Custom label for minimum value on Linear Scale (e.g., "Low", "Strongly disagree"). NULL uses default "Low" */
   scale_min_label?: Maybe<Scalars['String']['output']>;
+  /** FK to form_steps. The step that owns this question. Nullable for steps without questions (welcome, thank_you, consent). CASCADE delete removes question when step is deleted. */
+  step_id?: Maybe<Scalars['String']['output']>;
   /** Timestamp of last modification. Auto-updated by trigger */
   updated_at?: Maybe<Scalars['timestamptz']['output']>;
   /** FK to users - who last modified. NULL until first update */
@@ -2514,8 +2556,6 @@ export type Form_Questions_Max_Order_By = {
   created_at?: InputMaybe<Order_By>;
   /** Order in which question appears on form. Unique per form, starts at 1 */
   display_order?: InputMaybe<Order_By>;
-  /** FK to forms - parent form this question belongs to */
-  form_id?: InputMaybe<Order_By>;
   /** Tooltip help text explaining what kind of answer is expected */
   help_text?: InputMaybe<Order_By>;
   /** Primary key - NanoID 12-char unique identifier */
@@ -2544,6 +2584,8 @@ export type Form_Questions_Max_Order_By = {
   scale_max_label?: InputMaybe<Order_By>;
   /** Custom label for minimum value on Linear Scale (e.g., "Low", "Strongly disagree"). NULL uses default "Low" */
   scale_min_label?: InputMaybe<Order_By>;
+  /** FK to form_steps. The step that owns this question. Nullable for steps without questions (welcome, thank_you, consent). CASCADE delete removes question when step is deleted. */
+  step_id?: InputMaybe<Order_By>;
   /** Timestamp of last modification. Auto-updated by trigger */
   updated_at?: InputMaybe<Order_By>;
   /** FK to users - who last modified. NULL until first update */
@@ -2561,8 +2603,6 @@ export type Form_Questions_Min_Fields = {
   created_at?: Maybe<Scalars['timestamptz']['output']>;
   /** Order in which question appears on form. Unique per form, starts at 1 */
   display_order?: Maybe<Scalars['smallint']['output']>;
-  /** FK to forms - parent form this question belongs to */
-  form_id?: Maybe<Scalars['String']['output']>;
   /** Tooltip help text explaining what kind of answer is expected */
   help_text?: Maybe<Scalars['String']['output']>;
   /** Primary key - NanoID 12-char unique identifier */
@@ -2591,6 +2631,8 @@ export type Form_Questions_Min_Fields = {
   scale_max_label?: Maybe<Scalars['String']['output']>;
   /** Custom label for minimum value on Linear Scale (e.g., "Low", "Strongly disagree"). NULL uses default "Low" */
   scale_min_label?: Maybe<Scalars['String']['output']>;
+  /** FK to form_steps. The step that owns this question. Nullable for steps without questions (welcome, thank_you, consent). CASCADE delete removes question when step is deleted. */
+  step_id?: Maybe<Scalars['String']['output']>;
   /** Timestamp of last modification. Auto-updated by trigger */
   updated_at?: Maybe<Scalars['timestamptz']['output']>;
   /** FK to users - who last modified. NULL until first update */
@@ -2607,8 +2649,6 @@ export type Form_Questions_Min_Order_By = {
   created_at?: InputMaybe<Order_By>;
   /** Order in which question appears on form. Unique per form, starts at 1 */
   display_order?: InputMaybe<Order_By>;
-  /** FK to forms - parent form this question belongs to */
-  form_id?: InputMaybe<Order_By>;
   /** Tooltip help text explaining what kind of answer is expected */
   help_text?: InputMaybe<Order_By>;
   /** Primary key - NanoID 12-char unique identifier */
@@ -2637,6 +2677,8 @@ export type Form_Questions_Min_Order_By = {
   scale_max_label?: InputMaybe<Order_By>;
   /** Custom label for minimum value on Linear Scale (e.g., "Low", "Strongly disagree"). NULL uses default "Low" */
   scale_min_label?: InputMaybe<Order_By>;
+  /** FK to form_steps. The step that owns this question. Nullable for steps without questions (welcome, thank_you, consent). CASCADE delete removes question when step is deleted. */
+  step_id?: InputMaybe<Order_By>;
   /** Timestamp of last modification. Auto-updated by trigger */
   updated_at?: InputMaybe<Order_By>;
   /** FK to users - who last modified. NULL until first update */
@@ -2673,8 +2715,6 @@ export type Form_Questions_Order_By = {
   allowed_file_types?: InputMaybe<Order_By>;
   created_at?: InputMaybe<Order_By>;
   display_order?: InputMaybe<Order_By>;
-  form?: InputMaybe<Forms_Order_By>;
-  form_id?: InputMaybe<Order_By>;
   help_text?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
   is_active?: InputMaybe<Order_By>;
@@ -2695,6 +2735,8 @@ export type Form_Questions_Order_By = {
   responses_aggregate?: InputMaybe<Form_Question_Responses_Aggregate_Order_By>;
   scale_max_label?: InputMaybe<Order_By>;
   scale_min_label?: InputMaybe<Order_By>;
+  step?: InputMaybe<Form_Steps_Order_By>;
+  step_id?: InputMaybe<Order_By>;
   updated_at?: InputMaybe<Order_By>;
   updated_by?: InputMaybe<Order_By>;
   updater?: InputMaybe<Users_Order_By>;
@@ -2715,8 +2757,6 @@ export enum Form_Questions_Select_Column {
   CreatedAt = 'created_at',
   /** column name */
   DisplayOrder = 'display_order',
-  /** column name */
-  FormId = 'form_id',
   /** column name */
   HelpText = 'help_text',
   /** column name */
@@ -2750,6 +2790,8 @@ export enum Form_Questions_Select_Column {
   /** column name */
   ScaleMinLabel = 'scale_min_label',
   /** column name */
+  StepId = 'step_id',
+  /** column name */
   UpdatedAt = 'updated_at',
   /** column name */
   UpdatedBy = 'updated_by',
@@ -2781,8 +2823,6 @@ export type Form_Questions_Set_Input = {
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
   /** Order in which question appears on form. Unique per form, starts at 1 */
   display_order?: InputMaybe<Scalars['smallint']['input']>;
-  /** FK to forms - parent form this question belongs to */
-  form_id?: InputMaybe<Scalars['String']['input']>;
   /** Tooltip help text explaining what kind of answer is expected */
   help_text?: InputMaybe<Scalars['String']['input']>;
   /** Primary key - NanoID 12-char unique identifier */
@@ -2815,6 +2855,8 @@ export type Form_Questions_Set_Input = {
   scale_max_label?: InputMaybe<Scalars['String']['input']>;
   /** Custom label for minimum value on Linear Scale (e.g., "Low", "Strongly disagree"). NULL uses default "Low" */
   scale_min_label?: InputMaybe<Scalars['String']['input']>;
+  /** FK to form_steps. The step that owns this question. Nullable for steps without questions (welcome, thank_you, consent). CASCADE delete removes question when step is deleted. */
+  step_id?: InputMaybe<Scalars['String']['input']>;
   /** Timestamp of last modification. Auto-updated by trigger */
   updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
   /** FK to users - who last modified. NULL until first update */
@@ -2938,8 +2980,6 @@ export type Form_Questions_Stream_Cursor_Value_Input = {
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
   /** Order in which question appears on form. Unique per form, starts at 1 */
   display_order?: InputMaybe<Scalars['smallint']['input']>;
-  /** FK to forms - parent form this question belongs to */
-  form_id?: InputMaybe<Scalars['String']['input']>;
   /** Tooltip help text explaining what kind of answer is expected */
   help_text?: InputMaybe<Scalars['String']['input']>;
   /** Primary key - NanoID 12-char unique identifier */
@@ -2972,6 +3012,8 @@ export type Form_Questions_Stream_Cursor_Value_Input = {
   scale_max_label?: InputMaybe<Scalars['String']['input']>;
   /** Custom label for minimum value on Linear Scale (e.g., "Low", "Strongly disagree"). NULL uses default "Low" */
   scale_min_label?: InputMaybe<Scalars['String']['input']>;
+  /** FK to form_steps. The step that owns this question. Nullable for steps without questions (welcome, thank_you, consent). CASCADE delete removes question when step is deleted. */
+  step_id?: InputMaybe<Scalars['String']['input']>;
   /** Timestamp of last modification. Auto-updated by trigger */
   updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
   /** FK to users - who last modified. NULL until first update */
@@ -3022,8 +3064,6 @@ export enum Form_Questions_Update_Column {
   /** column name */
   DisplayOrder = 'display_order',
   /** column name */
-  FormId = 'form_id',
-  /** column name */
   HelpText = 'help_text',
   /** column name */
   Id = 'id',
@@ -3055,6 +3095,8 @@ export enum Form_Questions_Update_Column {
   ScaleMaxLabel = 'scale_max_label',
   /** column name */
   ScaleMinLabel = 'scale_min_label',
+  /** column name */
+  StepId = 'step_id',
   /** column name */
   UpdatedAt = 'updated_at',
   /** column name */
@@ -3171,7 +3213,7 @@ export type Form_Questions_Variance_Order_By = {
   min_value?: InputMaybe<Order_By>;
 };
 
-/** Stores step configuration per form for the timeline editor. Each step represents a screen in the testimonial collection flow (welcome, questions, consent, contact info, reward, thank you). */
+/** Form steps belong to flows. Question deletion handled by FK cascade on form_questions.step_id. */
 export type Form_Steps = {
   __typename?: 'form_steps';
   /** JSONB payload with type-specific configuration. Structure varies by step_type. Empty for question/rating types which use form_questions table instead. */
@@ -3188,10 +3230,6 @@ export type Form_Steps = {
   flow_id: Scalars['String']['output'];
   /** DEPRECATED: Legacy flow membership column. Use flow_id instead. This column will be removed in a future migration. Values are no longer constrained - any string is allowed during transition. */
   flow_membership: Scalars['String']['output'];
-  /** An object relationship */
-  form: Forms;
-  /** Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed. */
-  form_id: Scalars['String']['output'];
   /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
   id: Scalars['String']['output'];
   /** Soft delete flag. False hides step from form while preserving data for historical analysis and potential restoration. */
@@ -3200,10 +3238,10 @@ export type Form_Steps = {
   organization: Organizations;
   /** Foreign key to organizations table. Denormalized from form for efficient row-level security queries. Must match form.organization_id. */
   organization_id: Scalars['String']['output'];
-  /** An object relationship */
-  question?: Maybe<Form_Questions>;
-  /** Foreign key to form_questions table. Required for question/rating step types to link validation config. Must be NULL for non-question types. */
-  question_id?: Maybe<Scalars['String']['output']>;
+  /** An array relationship */
+  questions: Array<Form_Questions>;
+  /** An aggregate relationship */
+  questions_aggregate: Form_Questions_Aggregate;
   /** Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form. */
   step_order: Scalars['smallint']['output'];
   /** Enumerated type determining step behavior: welcome (intro screen), question (text input), rating (star/scale), consent (public/private choice), contact_info (submitter details), reward (incentive), thank_you (completion). */
@@ -3219,9 +3257,29 @@ export type Form_Steps = {
 };
 
 
-/** Stores step configuration per form for the timeline editor. Each step represents a screen in the testimonial collection flow (welcome, questions, consent, contact info, reward, thank you). */
+/** Form steps belong to flows. Question deletion handled by FK cascade on form_questions.step_id. */
 export type Form_StepsContentArgs = {
   path?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+/** Form steps belong to flows. Question deletion handled by FK cascade on form_questions.step_id. */
+export type Form_StepsQuestionsArgs = {
+  distinct_on?: InputMaybe<Array<Form_Questions_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Form_Questions_Order_By>>;
+  where?: InputMaybe<Form_Questions_Bool_Exp>;
+};
+
+
+/** Form steps belong to flows. Question deletion handled by FK cascade on form_questions.step_id. */
+export type Form_StepsQuestions_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Form_Questions_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Form_Questions_Order_By>>;
+  where?: InputMaybe<Form_Questions_Bool_Exp>;
 };
 
 /** aggregated selection of "form_steps" */
@@ -3334,14 +3392,12 @@ export type Form_Steps_Bool_Exp = {
   flow?: InputMaybe<Flows_Bool_Exp>;
   flow_id?: InputMaybe<String_Comparison_Exp>;
   flow_membership?: InputMaybe<String_Comparison_Exp>;
-  form?: InputMaybe<Forms_Bool_Exp>;
-  form_id?: InputMaybe<String_Comparison_Exp>;
   id?: InputMaybe<String_Comparison_Exp>;
   is_active?: InputMaybe<Boolean_Comparison_Exp>;
   organization?: InputMaybe<Organizations_Bool_Exp>;
   organization_id?: InputMaybe<String_Comparison_Exp>;
-  question?: InputMaybe<Form_Questions_Bool_Exp>;
-  question_id?: InputMaybe<String_Comparison_Exp>;
+  questions?: InputMaybe<Form_Questions_Bool_Exp>;
+  questions_aggregate?: InputMaybe<Form_Questions_Aggregate_Bool_Exp>;
   step_order?: InputMaybe<Smallint_Comparison_Exp>;
   step_type?: InputMaybe<String_Comparison_Exp>;
   tips?: InputMaybe<String_Array_Comparison_Exp>;
@@ -3352,7 +3408,7 @@ export type Form_Steps_Bool_Exp = {
 
 /** unique or primary key constraints on table "form_steps" */
 export enum Form_Steps_Constraint {
-  /** unique or primary key constraint on columns "flow_id", "step_order", "form_id" */
+  /** unique or primary key constraint on columns "flow_id", "step_order" */
   FormStepsFlowOrderUnique = 'form_steps_flow_order_unique',
   /** unique or primary key constraint on columns "id" */
   FormStepsPkey = 'form_steps_pkey'
@@ -3396,9 +3452,6 @@ export type Form_Steps_Insert_Input = {
   flow_id?: InputMaybe<Scalars['String']['input']>;
   /** DEPRECATED: Legacy flow membership column. Use flow_id instead. This column will be removed in a future migration. Values are no longer constrained - any string is allowed during transition. */
   flow_membership?: InputMaybe<Scalars['String']['input']>;
-  form?: InputMaybe<Forms_Obj_Rel_Insert_Input>;
-  /** Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed. */
-  form_id?: InputMaybe<Scalars['String']['input']>;
   /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
   id?: InputMaybe<Scalars['String']['input']>;
   /** Soft delete flag. False hides step from form while preserving data for historical analysis and potential restoration. */
@@ -3406,9 +3459,7 @@ export type Form_Steps_Insert_Input = {
   organization?: InputMaybe<Organizations_Obj_Rel_Insert_Input>;
   /** Foreign key to organizations table. Denormalized from form for efficient row-level security queries. Must match form.organization_id. */
   organization_id?: InputMaybe<Scalars['String']['input']>;
-  question?: InputMaybe<Form_Questions_Obj_Rel_Insert_Input>;
-  /** Foreign key to form_questions table. Required for question/rating step types to link validation config. Must be NULL for non-question types. */
-  question_id?: InputMaybe<Scalars['String']['input']>;
+  questions?: InputMaybe<Form_Questions_Arr_Rel_Insert_Input>;
   /** Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form. */
   step_order?: InputMaybe<Scalars['smallint']['input']>;
   /** Enumerated type determining step behavior: welcome (intro screen), question (text input), rating (star/scale), consent (public/private choice), contact_info (submitter details), reward (incentive), thank_you (completion). */
@@ -3433,14 +3484,10 @@ export type Form_Steps_Max_Fields = {
   flow_id?: Maybe<Scalars['String']['output']>;
   /** DEPRECATED: Legacy flow membership column. Use flow_id instead. This column will be removed in a future migration. Values are no longer constrained - any string is allowed during transition. */
   flow_membership?: Maybe<Scalars['String']['output']>;
-  /** Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed. */
-  form_id?: Maybe<Scalars['String']['output']>;
   /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
   id?: Maybe<Scalars['String']['output']>;
   /** Foreign key to organizations table. Denormalized from form for efficient row-level security queries. Must match form.organization_id. */
   organization_id?: Maybe<Scalars['String']['output']>;
-  /** Foreign key to form_questions table. Required for question/rating step types to link validation config. Must be NULL for non-question types. */
-  question_id?: Maybe<Scalars['String']['output']>;
   /** Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form. */
   step_order?: Maybe<Scalars['smallint']['output']>;
   /** Enumerated type determining step behavior: welcome (intro screen), question (text input), rating (star/scale), consent (public/private choice), contact_info (submitter details), reward (incentive), thank_you (completion). */
@@ -3463,14 +3510,10 @@ export type Form_Steps_Max_Order_By = {
   flow_id?: InputMaybe<Order_By>;
   /** DEPRECATED: Legacy flow membership column. Use flow_id instead. This column will be removed in a future migration. Values are no longer constrained - any string is allowed during transition. */
   flow_membership?: InputMaybe<Order_By>;
-  /** Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed. */
-  form_id?: InputMaybe<Order_By>;
   /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
   id?: InputMaybe<Order_By>;
   /** Foreign key to organizations table. Denormalized from form for efficient row-level security queries. Must match form.organization_id. */
   organization_id?: InputMaybe<Order_By>;
-  /** Foreign key to form_questions table. Required for question/rating step types to link validation config. Must be NULL for non-question types. */
-  question_id?: InputMaybe<Order_By>;
   /** Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form. */
   step_order?: InputMaybe<Order_By>;
   /** Enumerated type determining step behavior: welcome (intro screen), question (text input), rating (star/scale), consent (public/private choice), contact_info (submitter details), reward (incentive), thank_you (completion). */
@@ -3494,14 +3537,10 @@ export type Form_Steps_Min_Fields = {
   flow_id?: Maybe<Scalars['String']['output']>;
   /** DEPRECATED: Legacy flow membership column. Use flow_id instead. This column will be removed in a future migration. Values are no longer constrained - any string is allowed during transition. */
   flow_membership?: Maybe<Scalars['String']['output']>;
-  /** Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed. */
-  form_id?: Maybe<Scalars['String']['output']>;
   /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
   id?: Maybe<Scalars['String']['output']>;
   /** Foreign key to organizations table. Denormalized from form for efficient row-level security queries. Must match form.organization_id. */
   organization_id?: Maybe<Scalars['String']['output']>;
-  /** Foreign key to form_questions table. Required for question/rating step types to link validation config. Must be NULL for non-question types. */
-  question_id?: Maybe<Scalars['String']['output']>;
   /** Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form. */
   step_order?: Maybe<Scalars['smallint']['output']>;
   /** Enumerated type determining step behavior: welcome (intro screen), question (text input), rating (star/scale), consent (public/private choice), contact_info (submitter details), reward (incentive), thank_you (completion). */
@@ -3524,14 +3563,10 @@ export type Form_Steps_Min_Order_By = {
   flow_id?: InputMaybe<Order_By>;
   /** DEPRECATED: Legacy flow membership column. Use flow_id instead. This column will be removed in a future migration. Values are no longer constrained - any string is allowed during transition. */
   flow_membership?: InputMaybe<Order_By>;
-  /** Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed. */
-  form_id?: InputMaybe<Order_By>;
   /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
   id?: InputMaybe<Order_By>;
   /** Foreign key to organizations table. Denormalized from form for efficient row-level security queries. Must match form.organization_id. */
   organization_id?: InputMaybe<Order_By>;
-  /** Foreign key to form_questions table. Required for question/rating step types to link validation config. Must be NULL for non-question types. */
-  question_id?: InputMaybe<Order_By>;
   /** Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form. */
   step_order?: InputMaybe<Order_By>;
   /** Enumerated type determining step behavior: welcome (intro screen), question (text input), rating (star/scale), consent (public/private choice), contact_info (submitter details), reward (incentive), thank_you (completion). */
@@ -3553,6 +3588,13 @@ export type Form_Steps_Mutation_Response = {
   returning: Array<Form_Steps>;
 };
 
+/** input type for inserting object relation for remote table "form_steps" */
+export type Form_Steps_Obj_Rel_Insert_Input = {
+  data: Form_Steps_Insert_Input;
+  /** upsert condition */
+  on_conflict?: InputMaybe<Form_Steps_On_Conflict>;
+};
+
 /** on_conflict condition type for table "form_steps" */
 export type Form_Steps_On_Conflict = {
   constraint: Form_Steps_Constraint;
@@ -3569,14 +3611,11 @@ export type Form_Steps_Order_By = {
   flow?: InputMaybe<Flows_Order_By>;
   flow_id?: InputMaybe<Order_By>;
   flow_membership?: InputMaybe<Order_By>;
-  form?: InputMaybe<Forms_Order_By>;
-  form_id?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
   is_active?: InputMaybe<Order_By>;
   organization?: InputMaybe<Organizations_Order_By>;
   organization_id?: InputMaybe<Order_By>;
-  question?: InputMaybe<Form_Questions_Order_By>;
-  question_id?: InputMaybe<Order_By>;
+  questions_aggregate?: InputMaybe<Form_Questions_Aggregate_Order_By>;
   step_order?: InputMaybe<Order_By>;
   step_type?: InputMaybe<Order_By>;
   tips?: InputMaybe<Order_By>;
@@ -3610,15 +3649,11 @@ export enum Form_Steps_Select_Column {
   /** column name */
   FlowMembership = 'flow_membership',
   /** column name */
-  FormId = 'form_id',
-  /** column name */
   Id = 'id',
   /** column name */
   IsActive = 'is_active',
   /** column name */
   OrganizationId = 'organization_id',
-  /** column name */
-  QuestionId = 'question_id',
   /** column name */
   StepOrder = 'step_order',
   /** column name */
@@ -3655,16 +3690,12 @@ export type Form_Steps_Set_Input = {
   flow_id?: InputMaybe<Scalars['String']['input']>;
   /** DEPRECATED: Legacy flow membership column. Use flow_id instead. This column will be removed in a future migration. Values are no longer constrained - any string is allowed during transition. */
   flow_membership?: InputMaybe<Scalars['String']['input']>;
-  /** Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed. */
-  form_id?: InputMaybe<Scalars['String']['input']>;
   /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
   id?: InputMaybe<Scalars['String']['input']>;
   /** Soft delete flag. False hides step from form while preserving data for historical analysis and potential restoration. */
   is_active?: InputMaybe<Scalars['Boolean']['input']>;
   /** Foreign key to organizations table. Denormalized from form for efficient row-level security queries. Must match form.organization_id. */
   organization_id?: InputMaybe<Scalars['String']['input']>;
-  /** Foreign key to form_questions table. Required for question/rating step types to link validation config. Must be NULL for non-question types. */
-  question_id?: InputMaybe<Scalars['String']['input']>;
   /** Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form. */
   step_order?: InputMaybe<Scalars['smallint']['input']>;
   /** Enumerated type determining step behavior: welcome (intro screen), question (text input), rating (star/scale), consent (public/private choice), contact_info (submitter details), reward (incentive), thank_you (completion). */
@@ -3736,16 +3767,12 @@ export type Form_Steps_Stream_Cursor_Value_Input = {
   flow_id?: InputMaybe<Scalars['String']['input']>;
   /** DEPRECATED: Legacy flow membership column. Use flow_id instead. This column will be removed in a future migration. Values are no longer constrained - any string is allowed during transition. */
   flow_membership?: InputMaybe<Scalars['String']['input']>;
-  /** Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed. */
-  form_id?: InputMaybe<Scalars['String']['input']>;
   /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
   id?: InputMaybe<Scalars['String']['input']>;
   /** Soft delete flag. False hides step from form while preserving data for historical analysis and potential restoration. */
   is_active?: InputMaybe<Scalars['Boolean']['input']>;
   /** Foreign key to organizations table. Denormalized from form for efficient row-level security queries. Must match form.organization_id. */
   organization_id?: InputMaybe<Scalars['String']['input']>;
-  /** Foreign key to form_questions table. Required for question/rating step types to link validation config. Must be NULL for non-question types. */
-  question_id?: InputMaybe<Scalars['String']['input']>;
   /** Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form. */
   step_order?: InputMaybe<Scalars['smallint']['input']>;
   /** Enumerated type determining step behavior: welcome (intro screen), question (text input), rating (star/scale), consent (public/private choice), contact_info (submitter details), reward (incentive), thank_you (completion). */
@@ -3784,15 +3811,11 @@ export enum Form_Steps_Update_Column {
   /** column name */
   FlowMembership = 'flow_membership',
   /** column name */
-  FormId = 'form_id',
-  /** column name */
   Id = 'id',
   /** column name */
   IsActive = 'is_active',
   /** column name */
   OrganizationId = 'organization_id',
-  /** column name */
-  QuestionId = 'question_id',
   /** column name */
   StepOrder = 'step_order',
   /** column name */
@@ -4299,18 +4322,10 @@ export type Forms = {
   product_description?: Maybe<Scalars['String']['output']>;
   /** Name of product being reviewed - used in question templates (e.g., "How did {product} help?") */
   product_name: Scalars['String']['output'];
-  /** An array relationship */
-  questions: Array<Form_Questions>;
-  /** An aggregate relationship */
-  questions_aggregate: Form_Questions_Aggregate;
   /** UI preferences only (theme colors, branding) - NOT business logic. JSONB appropriate here */
   settings: Scalars['jsonb']['output'];
   /** Form lifecycle status: draft (editing), published (public), archived (hidden) */
   status: Scalars['String']['output'];
-  /** An array relationship */
-  steps: Array<Form_Steps>;
-  /** An aggregate relationship */
-  steps_aggregate: Form_Steps_Aggregate;
   /** An array relationship */
   submissions: Array<Form_Submissions>;
   /** An aggregate relationship */
@@ -4371,48 +4386,8 @@ export type FormsFlows_AggregateArgs = {
 
 
 /** Testimonial collection forms - questions normalized to form_questions table */
-export type FormsQuestionsArgs = {
-  distinct_on?: InputMaybe<Array<Form_Questions_Select_Column>>;
-  limit?: InputMaybe<Scalars['Int']['input']>;
-  offset?: InputMaybe<Scalars['Int']['input']>;
-  order_by?: InputMaybe<Array<Form_Questions_Order_By>>;
-  where?: InputMaybe<Form_Questions_Bool_Exp>;
-};
-
-
-/** Testimonial collection forms - questions normalized to form_questions table */
-export type FormsQuestions_AggregateArgs = {
-  distinct_on?: InputMaybe<Array<Form_Questions_Select_Column>>;
-  limit?: InputMaybe<Scalars['Int']['input']>;
-  offset?: InputMaybe<Scalars['Int']['input']>;
-  order_by?: InputMaybe<Array<Form_Questions_Order_By>>;
-  where?: InputMaybe<Form_Questions_Bool_Exp>;
-};
-
-
-/** Testimonial collection forms - questions normalized to form_questions table */
 export type FormsSettingsArgs = {
   path?: InputMaybe<Scalars['String']['input']>;
-};
-
-
-/** Testimonial collection forms - questions normalized to form_questions table */
-export type FormsStepsArgs = {
-  distinct_on?: InputMaybe<Array<Form_Steps_Select_Column>>;
-  limit?: InputMaybe<Scalars['Int']['input']>;
-  offset?: InputMaybe<Scalars['Int']['input']>;
-  order_by?: InputMaybe<Array<Form_Steps_Order_By>>;
-  where?: InputMaybe<Form_Steps_Bool_Exp>;
-};
-
-
-/** Testimonial collection forms - questions normalized to form_questions table */
-export type FormsSteps_AggregateArgs = {
-  distinct_on?: InputMaybe<Array<Form_Steps_Select_Column>>;
-  limit?: InputMaybe<Scalars['Int']['input']>;
-  offset?: InputMaybe<Scalars['Int']['input']>;
-  order_by?: InputMaybe<Array<Form_Steps_Order_By>>;
-  where?: InputMaybe<Form_Steps_Bool_Exp>;
 };
 
 
@@ -4526,12 +4501,8 @@ export type Forms_Bool_Exp = {
   organization_id?: InputMaybe<String_Comparison_Exp>;
   product_description?: InputMaybe<String_Comparison_Exp>;
   product_name?: InputMaybe<String_Comparison_Exp>;
-  questions?: InputMaybe<Form_Questions_Bool_Exp>;
-  questions_aggregate?: InputMaybe<Form_Questions_Aggregate_Bool_Exp>;
   settings?: InputMaybe<Jsonb_Comparison_Exp>;
   status?: InputMaybe<String_Comparison_Exp>;
-  steps?: InputMaybe<Form_Steps_Bool_Exp>;
-  steps_aggregate?: InputMaybe<Form_Steps_Aggregate_Bool_Exp>;
   submissions?: InputMaybe<Form_Submissions_Bool_Exp>;
   submissions_aggregate?: InputMaybe<Form_Submissions_Aggregate_Bool_Exp>;
   updated_at?: InputMaybe<Timestamptz_Comparison_Exp>;
@@ -4593,12 +4564,10 @@ export type Forms_Insert_Input = {
   product_description?: InputMaybe<Scalars['String']['input']>;
   /** Name of product being reviewed - used in question templates (e.g., "How did {product} help?") */
   product_name?: InputMaybe<Scalars['String']['input']>;
-  questions?: InputMaybe<Form_Questions_Arr_Rel_Insert_Input>;
   /** UI preferences only (theme colors, branding) - NOT business logic. JSONB appropriate here */
   settings?: InputMaybe<Scalars['jsonb']['input']>;
   /** Form lifecycle status: draft (editing), published (public), archived (hidden) */
   status?: InputMaybe<Scalars['String']['input']>;
-  steps?: InputMaybe<Form_Steps_Arr_Rel_Insert_Input>;
   submissions?: InputMaybe<Form_Submissions_Arr_Rel_Insert_Input>;
   /** Timestamp of last modification. Auto-updated by trigger */
   updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
@@ -4743,10 +4712,8 @@ export type Forms_Order_By = {
   organization_id?: InputMaybe<Order_By>;
   product_description?: InputMaybe<Order_By>;
   product_name?: InputMaybe<Order_By>;
-  questions_aggregate?: InputMaybe<Form_Questions_Aggregate_Order_By>;
   settings?: InputMaybe<Order_By>;
   status?: InputMaybe<Order_By>;
-  steps_aggregate?: InputMaybe<Form_Steps_Aggregate_Order_By>;
   submissions_aggregate?: InputMaybe<Form_Submissions_Aggregate_Order_By>;
   updated_at?: InputMaybe<Order_By>;
   updated_by?: InputMaybe<Order_By>;
@@ -18375,21 +18342,21 @@ export type Widgets_Variance_Order_By = {
   max_display?: InputMaybe<Order_By>;
 };
 
-export type FlowBasicFragment = { __typename?: 'flows', id: string, form_id: string, organization_id: string, name: string, flow_type: string, display_order: number, created_at: string, updated_at: string, branch_question_id?: string | null, branch_field?: string | null, branch_operator?: string | null, branch_value?: any | null };
+export type FlowBasicFragment = { __typename?: 'flows', id: string, form_id: string, organization_id: string, name: string, flow_type: string, is_primary: boolean, display_order: number, created_at: string, updated_at: string, branch_question_id?: string | null, branch_field?: string | null, branch_operator?: string | null, branch_value?: any | null };
 
 export type ClearFlowBranchColumnsMutationVariables = Exact<{
   formId: Scalars['String']['input'];
 }>;
 
 
-export type ClearFlowBranchColumnsMutation = { __typename?: 'mutation_root', update_flows?: { __typename?: 'flows_mutation_response', affected_rows: number, returning: Array<{ __typename?: 'flows', id: string, form_id: string, organization_id: string, name: string, flow_type: string, display_order: number, created_at: string, updated_at: string, branch_question_id?: string | null, branch_field?: string | null, branch_operator?: string | null, branch_value?: any | null }> } | null };
+export type ClearFlowBranchColumnsMutation = { __typename?: 'mutation_root', update_flows?: { __typename?: 'flows_mutation_response', affected_rows: number, returning: Array<{ __typename?: 'flows', id: string, form_id: string, organization_id: string, name: string, flow_type: string, is_primary: boolean, display_order: number, created_at: string, updated_at: string, branch_question_id?: string | null, branch_field?: string | null, branch_operator?: string | null, branch_value?: any | null }> } | null };
 
 export type CreateFlowsMutationVariables = Exact<{
   inputs: Array<Flows_Insert_Input> | Flows_Insert_Input;
 }>;
 
 
-export type CreateFlowsMutation = { __typename?: 'mutation_root', insert_flows?: { __typename?: 'flows_mutation_response', returning: Array<{ __typename?: 'flows', id: string, form_id: string, organization_id: string, name: string, flow_type: string, display_order: number, created_at: string, updated_at: string, branch_question_id?: string | null, branch_field?: string | null, branch_operator?: string | null, branch_value?: any | null }> } | null };
+export type CreateFlowsMutation = { __typename?: 'mutation_root', insert_flows?: { __typename?: 'flows_mutation_response', returning: Array<{ __typename?: 'flows', id: string, form_id: string, organization_id: string, name: string, flow_type: string, is_primary: boolean, display_order: number, created_at: string, updated_at: string, branch_question_id?: string | null, branch_field?: string | null, branch_operator?: string | null, branch_value?: any | null }> } | null };
 
 export type DeleteFlowMutationVariables = Exact<{
   flowId: Scalars['String']['input'];
@@ -18404,14 +18371,14 @@ export type UpdateFlowMutationVariables = Exact<{
 }>;
 
 
-export type UpdateFlowMutation = { __typename?: 'mutation_root', update_flows_by_pk?: { __typename?: 'flows', id: string, form_id: string, organization_id: string, name: string, flow_type: string, display_order: number, created_at: string, updated_at: string, branch_question_id?: string | null, branch_field?: string | null, branch_operator?: string | null, branch_value?: any | null } | null };
+export type UpdateFlowMutation = { __typename?: 'mutation_root', update_flows_by_pk?: { __typename?: 'flows', id: string, form_id: string, organization_id: string, name: string, flow_type: string, is_primary: boolean, display_order: number, created_at: string, updated_at: string, branch_question_id?: string | null, branch_field?: string | null, branch_operator?: string | null, branch_value?: any | null } | null };
 
 export type GetFlowsByBranchQuestionQueryVariables = Exact<{
   branchQuestionId: Scalars['String']['input'];
 }>;
 
 
-export type GetFlowsByBranchQuestionQuery = { __typename?: 'query_root', flows: Array<{ __typename?: 'flows', id: string, form_id: string, organization_id: string, name: string, flow_type: string, display_order: number, created_at: string, updated_at: string, branch_question_id?: string | null, branch_field?: string | null, branch_operator?: string | null, branch_value?: any | null, form: { __typename?: 'forms', id: string, name: string } }> };
+export type GetFlowsByBranchQuestionQuery = { __typename?: 'query_root', flows: Array<{ __typename?: 'flows', id: string, form_id: string, organization_id: string, name: string, flow_type: string, is_primary: boolean, display_order: number, created_at: string, updated_at: string, branch_question_id?: string | null, branch_field?: string | null, branch_operator?: string | null, branch_value?: any | null, form: { __typename?: 'forms', id: string, name: string } }> };
 
 export type FormBasicFragment = { __typename?: 'forms', id: string, name: string, product_name: string, product_description?: string | null, settings: any, branching_config: any, status: string, is_active: boolean, organization_id: string, created_by: string, created_at: string, updated_at: string, organization: { __typename?: 'organizations', id: string, logo?: { __typename?: 'media', id: string, storage_path: string } | null }, flows: Array<{ __typename?: 'flows', id: string, flow_type: string, display_order: number }> };
 
@@ -18466,23 +18433,23 @@ export type GetFormsQueryVariables = Exact<{
 
 export type GetFormsQuery = { __typename?: 'query_root', forms: Array<{ __typename?: 'forms', id: string, name: string, product_name: string, product_description?: string | null, settings: any, branching_config: any, status: string, is_active: boolean, organization_id: string, created_by: string, created_at: string, updated_at: string, organization: { __typename?: 'organizations', id: string, logo?: { __typename?: 'media', id: string, storage_path: string } | null }, flows: Array<{ __typename?: 'flows', id: string, flow_type: string, display_order: number }> }> };
 
-export type FormQuestionBasicFragment = { __typename?: 'form_questions', id: string, form_id: string, organization_id: string, question_type_id: string, question_key: string, question_text: string, placeholder?: string | null, help_text?: string | null, display_order: number, is_required: boolean, min_length?: number | null, max_length?: number | null, min_value?: number | null, max_value?: number | null, validation_pattern?: string | null, allowed_file_types?: Array<string> | null, max_file_size_kb?: number | null, is_active: boolean, created_at: string, updated_at: string, question_type: { __typename?: 'question_types', id: string, unique_name: string, name: string, category: string, input_component: string } };
+export type FormQuestionBasicFragment = { __typename?: 'form_questions', id: string, step_id?: string | null, organization_id: string, question_type_id: string, question_key: string, question_text: string, placeholder?: string | null, help_text?: string | null, display_order: number, is_required: boolean, min_length?: number | null, max_length?: number | null, min_value?: number | null, max_value?: number | null, validation_pattern?: string | null, allowed_file_types?: Array<string> | null, max_file_size_kb?: number | null, is_active: boolean, created_at: string, updated_at: string, question_type: { __typename?: 'question_types', id: string, unique_name: string, name: string, category: string, input_component: string } };
 
-export type FormQuestionWithOptionsFragment = { __typename?: 'form_questions', scale_min_label?: string | null, scale_max_label?: string | null, id: string, form_id: string, organization_id: string, question_type_id: string, question_key: string, question_text: string, placeholder?: string | null, help_text?: string | null, display_order: number, is_required: boolean, min_length?: number | null, max_length?: number | null, min_value?: number | null, max_value?: number | null, validation_pattern?: string | null, allowed_file_types?: Array<string> | null, max_file_size_kb?: number | null, is_active: boolean, created_at: string, updated_at: string, options: Array<{ __typename?: 'question_options', id: string, question_id: string, option_value: string, option_label: string, display_order: number, is_default: boolean, is_active: boolean }>, question_type: { __typename?: 'question_types', id: string, unique_name: string, name: string, category: string, input_component: string } };
+export type FormQuestionWithOptionsFragment = { __typename?: 'form_questions', scale_min_label?: string | null, scale_max_label?: string | null, id: string, step_id?: string | null, organization_id: string, question_type_id: string, question_key: string, question_text: string, placeholder?: string | null, help_text?: string | null, display_order: number, is_required: boolean, min_length?: number | null, max_length?: number | null, min_value?: number | null, max_value?: number | null, validation_pattern?: string | null, allowed_file_types?: Array<string> | null, max_file_size_kb?: number | null, is_active: boolean, created_at: string, updated_at: string, options: Array<{ __typename?: 'question_options', id: string, question_id: string, option_value: string, option_label: string, display_order: number, is_default: boolean, is_active: boolean }>, question_type: { __typename?: 'question_types', id: string, unique_name: string, name: string, category: string, input_component: string } };
 
 export type CreateFormQuestionMutationVariables = Exact<{
   input: Form_Questions_Insert_Input;
 }>;
 
 
-export type CreateFormQuestionMutation = { __typename?: 'mutation_root', insert_form_questions_one?: { __typename?: 'form_questions', id: string, form_id: string, organization_id: string, question_type_id: string, question_key: string, question_text: string, placeholder?: string | null, help_text?: string | null, display_order: number, is_required: boolean, min_length?: number | null, max_length?: number | null, min_value?: number | null, max_value?: number | null, validation_pattern?: string | null, allowed_file_types?: Array<string> | null, max_file_size_kb?: number | null, is_active: boolean, created_at: string, updated_at: string, question_type: { __typename?: 'question_types', id: string, unique_name: string, name: string, category: string, input_component: string } } | null };
+export type CreateFormQuestionMutation = { __typename?: 'mutation_root', insert_form_questions_one?: { __typename?: 'form_questions', id: string, step_id?: string | null, organization_id: string, question_type_id: string, question_key: string, question_text: string, placeholder?: string | null, help_text?: string | null, display_order: number, is_required: boolean, min_length?: number | null, max_length?: number | null, min_value?: number | null, max_value?: number | null, validation_pattern?: string | null, allowed_file_types?: Array<string> | null, max_file_size_kb?: number | null, is_active: boolean, created_at: string, updated_at: string, question_type: { __typename?: 'question_types', id: string, unique_name: string, name: string, category: string, input_component: string } } | null };
 
 export type CreateFormQuestionsMutationVariables = Exact<{
   inputs: Array<Form_Questions_Insert_Input> | Form_Questions_Insert_Input;
 }>;
 
 
-export type CreateFormQuestionsMutation = { __typename?: 'mutation_root', insert_form_questions?: { __typename?: 'form_questions_mutation_response', returning: Array<{ __typename?: 'form_questions', id: string, form_id: string, organization_id: string, question_type_id: string, question_key: string, question_text: string, placeholder?: string | null, help_text?: string | null, display_order: number, is_required: boolean, min_length?: number | null, max_length?: number | null, min_value?: number | null, max_value?: number | null, validation_pattern?: string | null, allowed_file_types?: Array<string> | null, max_file_size_kb?: number | null, is_active: boolean, created_at: string, updated_at: string, question_type: { __typename?: 'question_types', id: string, unique_name: string, name: string, category: string, input_component: string } }> } | null };
+export type CreateFormQuestionsMutation = { __typename?: 'mutation_root', insert_form_questions?: { __typename?: 'form_questions_mutation_response', returning: Array<{ __typename?: 'form_questions', id: string, step_id?: string | null, organization_id: string, question_type_id: string, question_key: string, question_text: string, placeholder?: string | null, help_text?: string | null, display_order: number, is_required: boolean, min_length?: number | null, max_length?: number | null, min_value?: number | null, max_value?: number | null, validation_pattern?: string | null, allowed_file_types?: Array<string> | null, max_file_size_kb?: number | null, is_active: boolean, created_at: string, updated_at: string, question_type: { __typename?: 'question_types', id: string, unique_name: string, name: string, category: string, input_component: string } }> } | null };
 
 export type DeactivateFormQuestionsMutationVariables = Exact<{
   formId: Scalars['String']['input'];
@@ -18511,7 +18478,7 @@ export type UpdateFormQuestionMutationVariables = Exact<{
 }>;
 
 
-export type UpdateFormQuestionMutation = { __typename?: 'mutation_root', update_form_questions_by_pk?: { __typename?: 'form_questions', id: string, form_id: string, organization_id: string, question_type_id: string, question_key: string, question_text: string, placeholder?: string | null, help_text?: string | null, display_order: number, is_required: boolean, min_length?: number | null, max_length?: number | null, min_value?: number | null, max_value?: number | null, validation_pattern?: string | null, allowed_file_types?: Array<string> | null, max_file_size_kb?: number | null, is_active: boolean, created_at: string, updated_at: string, question_type: { __typename?: 'question_types', id: string, unique_name: string, name: string, category: string, input_component: string } } | null };
+export type UpdateFormQuestionMutation = { __typename?: 'mutation_root', update_form_questions_by_pk?: { __typename?: 'form_questions', id: string, step_id?: string | null, organization_id: string, question_type_id: string, question_key: string, question_text: string, placeholder?: string | null, help_text?: string | null, display_order: number, is_required: boolean, min_length?: number | null, max_length?: number | null, min_value?: number | null, max_value?: number | null, validation_pattern?: string | null, allowed_file_types?: Array<string> | null, max_file_size_kb?: number | null, is_active: boolean, created_at: string, updated_at: string, question_type: { __typename?: 'question_types', id: string, unique_name: string, name: string, category: string, input_component: string } } | null };
 
 export type UpdateFormQuestionAutoSaveMutationVariables = Exact<{
   id: Scalars['String']['input'];
@@ -18526,16 +18493,16 @@ export type GetFormQuestionsQueryVariables = Exact<{
 }>;
 
 
-export type GetFormQuestionsQuery = { __typename?: 'query_root', form_questions: Array<{ __typename?: 'form_questions', id: string, form_id: string, organization_id: string, question_type_id: string, question_key: string, question_text: string, placeholder?: string | null, help_text?: string | null, display_order: number, is_required: boolean, min_length?: number | null, max_length?: number | null, min_value?: number | null, max_value?: number | null, validation_pattern?: string | null, allowed_file_types?: Array<string> | null, max_file_size_kb?: number | null, is_active: boolean, created_at: string, updated_at: string, question_type: { __typename?: 'question_types', id: string, unique_name: string, name: string, category: string, input_component: string } }> };
+export type GetFormQuestionsQuery = { __typename?: 'query_root', form_questions: Array<{ __typename?: 'form_questions', id: string, step_id?: string | null, organization_id: string, question_type_id: string, question_key: string, question_text: string, placeholder?: string | null, help_text?: string | null, display_order: number, is_required: boolean, min_length?: number | null, max_length?: number | null, min_value?: number | null, max_value?: number | null, validation_pattern?: string | null, allowed_file_types?: Array<string> | null, max_file_size_kb?: number | null, is_active: boolean, created_at: string, updated_at: string, question_type: { __typename?: 'question_types', id: string, unique_name: string, name: string, category: string, input_component: string } }> };
 
-export type FormStepBasicFragment = { __typename?: 'form_steps', id: string, form_id: string, flow_id: string, step_type: string, step_order: number, question_id?: string | null, content: any, tips?: Array<string> | null, flow_membership: string, is_active: boolean, created_at: string, updated_at: string };
+export type FormStepBasicFragment = { __typename?: 'form_steps', id: string, flow_id: string, step_type: string, step_order: number, content: any, tips?: Array<string> | null, flow_membership: string, is_active: boolean, created_at: string, updated_at: string, questions: Array<{ __typename?: 'form_questions', scale_min_label?: string | null, scale_max_label?: string | null, id: string, step_id?: string | null, organization_id: string, question_type_id: string, question_key: string, question_text: string, placeholder?: string | null, help_text?: string | null, display_order: number, is_required: boolean, min_length?: number | null, max_length?: number | null, min_value?: number | null, max_value?: number | null, validation_pattern?: string | null, allowed_file_types?: Array<string> | null, max_file_size_kb?: number | null, is_active: boolean, created_at: string, updated_at: string, options: Array<{ __typename?: 'question_options', id: string, question_id: string, option_value: string, option_label: string, display_order: number, is_default: boolean, is_active: boolean }>, question_type: { __typename?: 'question_types', id: string, unique_name: string, name: string, category: string, input_component: string } }> };
 
 export type CreateFormStepsMutationVariables = Exact<{
   inputs: Array<Form_Steps_Insert_Input> | Form_Steps_Insert_Input;
 }>;
 
 
-export type CreateFormStepsMutation = { __typename?: 'mutation_root', insert_form_steps?: { __typename?: 'form_steps_mutation_response', returning: Array<{ __typename?: 'form_steps', id: string, form_id: string, flow_id: string, step_type: string, step_order: number, question_id?: string | null, content: any, tips?: Array<string> | null, flow_membership: string, is_active: boolean, created_at: string, updated_at: string }> } | null };
+export type CreateFormStepsMutation = { __typename?: 'mutation_root', insert_form_steps?: { __typename?: 'form_steps_mutation_response', returning: Array<{ __typename?: 'form_steps', id: string, flow_id: string, step_type: string, step_order: number, content: any, tips?: Array<string> | null, flow_membership: string, is_active: boolean, created_at: string, updated_at: string, questions: Array<{ __typename?: 'form_questions', scale_min_label?: string | null, scale_max_label?: string | null, id: string, step_id?: string | null, organization_id: string, question_type_id: string, question_key: string, question_text: string, placeholder?: string | null, help_text?: string | null, display_order: number, is_required: boolean, min_length?: number | null, max_length?: number | null, min_value?: number | null, max_value?: number | null, validation_pattern?: string | null, allowed_file_types?: Array<string> | null, max_file_size_kb?: number | null, is_active: boolean, created_at: string, updated_at: string, options: Array<{ __typename?: 'question_options', id: string, question_id: string, option_value: string, option_label: string, display_order: number, is_default: boolean, is_active: boolean }>, question_type: { __typename?: 'question_types', id: string, unique_name: string, name: string, category: string, input_component: string } }> }> } | null };
 
 export type DeleteFormStepsMutationVariables = Exact<{
   ids: Array<Scalars['String']['input']> | Scalars['String']['input'];
@@ -18565,14 +18532,14 @@ export type UpsertFormStepsMutationVariables = Exact<{
 }>;
 
 
-export type UpsertFormStepsMutation = { __typename?: 'mutation_root', insert_form_steps?: { __typename?: 'form_steps_mutation_response', returning: Array<{ __typename?: 'form_steps', id: string, form_id: string, flow_id: string, step_type: string, step_order: number, question_id?: string | null, content: any, tips?: Array<string> | null, flow_membership: string, is_active: boolean, created_at: string, updated_at: string }> } | null };
+export type UpsertFormStepsMutation = { __typename?: 'mutation_root', insert_form_steps?: { __typename?: 'form_steps_mutation_response', returning: Array<{ __typename?: 'form_steps', id: string, flow_id: string, step_type: string, step_order: number, content: any, tips?: Array<string> | null, flow_membership: string, is_active: boolean, created_at: string, updated_at: string, questions: Array<{ __typename?: 'form_questions', scale_min_label?: string | null, scale_max_label?: string | null, id: string, step_id?: string | null, organization_id: string, question_type_id: string, question_key: string, question_text: string, placeholder?: string | null, help_text?: string | null, display_order: number, is_required: boolean, min_length?: number | null, max_length?: number | null, min_value?: number | null, max_value?: number | null, validation_pattern?: string | null, allowed_file_types?: Array<string> | null, max_file_size_kb?: number | null, is_active: boolean, created_at: string, updated_at: string, options: Array<{ __typename?: 'question_options', id: string, question_id: string, option_value: string, option_label: string, display_order: number, is_default: boolean, is_active: boolean }>, question_type: { __typename?: 'question_types', id: string, unique_name: string, name: string, category: string, input_component: string } }> }> } | null };
 
 export type GetFormStepsQueryVariables = Exact<{
   formId: Scalars['String']['input'];
 }>;
 
 
-export type GetFormStepsQuery = { __typename?: 'query_root', form_steps: Array<{ __typename?: 'form_steps', id: string, form_id: string, flow_id: string, step_type: string, step_order: number, question_id?: string | null, content: any, tips?: Array<string> | null, flow_membership: string, is_active: boolean, created_at: string, updated_at: string, question?: { __typename?: 'form_questions', scale_min_label?: string | null, scale_max_label?: string | null, id: string, form_id: string, organization_id: string, question_type_id: string, question_key: string, question_text: string, placeholder?: string | null, help_text?: string | null, display_order: number, is_required: boolean, min_length?: number | null, max_length?: number | null, min_value?: number | null, max_value?: number | null, validation_pattern?: string | null, allowed_file_types?: Array<string> | null, max_file_size_kb?: number | null, is_active: boolean, created_at: string, updated_at: string, options: Array<{ __typename?: 'question_options', id: string, question_id: string, option_value: string, option_label: string, display_order: number, is_default: boolean, is_active: boolean }>, question_type: { __typename?: 'question_types', id: string, unique_name: string, name: string, category: string, input_component: string } } | null }> };
+export type GetFormStepsQuery = { __typename?: 'query_root', form_steps: Array<{ __typename?: 'form_steps', id: string, flow_id: string, step_type: string, step_order: number, content: any, tips?: Array<string> | null, flow_membership: string, is_active: boolean, created_at: string, updated_at: string, questions: Array<{ __typename?: 'form_questions', scale_min_label?: string | null, scale_max_label?: string | null, id: string, step_id?: string | null, organization_id: string, question_type_id: string, question_key: string, question_text: string, placeholder?: string | null, help_text?: string | null, display_order: number, is_required: boolean, min_length?: number | null, max_length?: number | null, min_value?: number | null, max_value?: number | null, validation_pattern?: string | null, allowed_file_types?: Array<string> | null, max_file_size_kb?: number | null, is_active: boolean, created_at: string, updated_at: string, options: Array<{ __typename?: 'question_options', id: string, question_id: string, option_value: string, option_label: string, display_order: number, is_default: boolean, is_active: boolean }>, question_type: { __typename?: 'question_types', id: string, unique_name: string, name: string, category: string, input_component: string } }> }> };
 
 export type OrganizationBasicFragment = { __typename?: 'organizations', id: string, name: string, slug: string, logo_id?: string | null, setup_status: 'pending_setup' | 'completed', is_active: boolean, settings: any, created_at: string, updated_at: string, logo?: { __typename?: 'media', id: string, storage_path: string, status: string, mime_type: string, width?: number | null, height?: number | null } | null, plans: Array<{ __typename?: 'organization_plans', id: string, plan_id: string, status: string, plan: { __typename?: 'plans', id: string, unique_name: string, name: string, question_types: Array<{ __typename?: 'plan_question_types', question_type: { __typename?: 'question_types', id: string, unique_name: string, name: string, category: string, description?: string | null, icon?: string | null, input_component: string, answer_data_type: string, display_order: number, supports_options: boolean } }> } }> };
 
@@ -18729,6 +18696,7 @@ export const FlowBasicFragmentDoc = gql`
   organization_id
   name
   flow_type
+  is_primary
   display_order
   created_at
   updated_at
@@ -18769,7 +18737,7 @@ export const FormBasicFragmentDoc = gql`
 export const FormQuestionBasicFragmentDoc = gql`
     fragment FormQuestionBasic on form_questions {
   id
-  form_id
+  step_id
   organization_id
   question_type_id
   question_key
@@ -18822,19 +18790,20 @@ ${QuestionOptionBasicFragmentDoc}`;
 export const FormStepBasicFragmentDoc = gql`
     fragment FormStepBasic on form_steps {
   id
-  form_id
   flow_id
   step_type
   step_order
-  question_id
   content
   tips
   flow_membership
   is_active
   created_at
   updated_at
+  questions {
+    ...FormQuestionWithOptions
+  }
 }
-    `;
+    ${FormQuestionWithOptionsFragmentDoc}`;
 export const OrganizationBasicFragmentDoc = gql`
     fragment OrganizationBasic on organizations {
   id
@@ -19426,7 +19395,7 @@ export type CreateFormQuestionsMutationCompositionFunctionResult = VueApolloComp
 export const DeactivateFormQuestionsDocument = gql`
     mutation DeactivateFormQuestions($formId: String!) {
   update_form_questions(
-    where: {form_id: {_eq: $formId}, is_active: {_eq: true}}
+    where: {step: {flow: {form_id: {_eq: $formId}}}, is_active: {_eq: true}}
     _set: {is_active: false}
   ) {
     affected_rows
@@ -19581,7 +19550,7 @@ export type UpdateFormQuestionAutoSaveMutationCompositionFunctionResult = VueApo
 export const GetFormQuestionsDocument = gql`
     query GetFormQuestions($formId: String!) {
   form_questions(
-    where: {form_id: {_eq: $formId}, is_active: {_eq: true}}
+    where: {step: {flow: {form_id: {_eq: $formId}}}, is_active: {_eq: true}}
     order_by: {display_order: asc}
   ) {
     ...FormQuestionBasic
@@ -19777,17 +19746,13 @@ export type UpsertFormStepsMutationCompositionFunctionResult = VueApolloComposab
 export const GetFormStepsDocument = gql`
     query GetFormSteps($formId: String!) {
   form_steps(
-    where: {form_id: {_eq: $formId}}
+    where: {flow: {form_id: {_eq: $formId}}}
     order_by: [{flow: {display_order: asc}}, {step_order: asc}]
   ) {
     ...FormStepBasic
-    question {
-      ...FormQuestionWithOptions
-    }
   }
 }
-    ${FormStepBasicFragmentDoc}
-${FormQuestionWithOptionsFragmentDoc}`;
+    ${FormStepBasicFragmentDoc}`;
 
 /**
  * __useGetFormStepsQuery__

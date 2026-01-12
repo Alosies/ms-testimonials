@@ -4,6 +4,7 @@ fragment FlowBasic on flows {
   organization_id
   name
   flow_type
+  is_primary
   display_order
   created_at
   updated_at

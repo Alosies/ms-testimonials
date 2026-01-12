@@ -6426,6 +6426,22 @@
             "deprecationReason": null
           },
           {
+            "name": "is_primary",
+            "description": "Boolean flag marking the primary flow. Each form has exactly one primary flow (enforced by partial unique index). Primary flows are always shown; branch flows are conditional.",
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "Boolean",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "name",
             "description": "Human-readable flow name displayed in form editor (e.g., \"Shared Steps\", \"Testimonial Flow\", \"Improvement Flow\").",
             "args": [],
@@ -6745,12 +6761,172 @@
         "fields": null,
         "inputFields": [
           {
+            "name": "bool_and",
+            "description": null,
+            "type": {
+              "kind": "INPUT_OBJECT",
+              "name": "flows_aggregate_bool_exp_bool_and",
+              "ofType": null
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "bool_or",
+            "description": null,
+            "type": {
+              "kind": "INPUT_OBJECT",
+              "name": "flows_aggregate_bool_exp_bool_or",
+              "ofType": null
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "count",
             "description": null,
             "type": {
               "kind": "INPUT_OBJECT",
               "name": "flows_aggregate_bool_exp_count",
               "ofType": null
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "interfaces": null,
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "INPUT_OBJECT",
+        "name": "flows_aggregate_bool_exp_bool_and",
+        "description": null,
+        "isOneOf": false,
+        "fields": null,
+        "inputFields": [
+          {
+            "name": "arguments",
+            "description": null,
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "ENUM",
+                "name": "flows_select_column_flows_aggregate_bool_exp_bool_and_arguments_columns",
+                "ofType": null
+              }
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "distinct",
+            "description": null,
+            "type": {
+              "kind": "SCALAR",
+              "name": "Boolean",
+              "ofType": null
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "filter",
+            "description": null,
+            "type": {
+              "kind": "INPUT_OBJECT",
+              "name": "flows_bool_exp",
+              "ofType": null
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "predicate",
+            "description": null,
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "INPUT_OBJECT",
+                "name": "Boolean_comparison_exp",
+                "ofType": null
+              }
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "interfaces": null,
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "INPUT_OBJECT",
+        "name": "flows_aggregate_bool_exp_bool_or",
+        "description": null,
+        "isOneOf": false,
+        "fields": null,
+        "inputFields": [
+          {
+            "name": "arguments",
+            "description": null,
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "ENUM",
+                "name": "flows_select_column_flows_aggregate_bool_exp_bool_or_arguments_columns",
+                "ofType": null
+              }
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "distinct",
+            "description": null,
+            "type": {
+              "kind": "SCALAR",
+              "name": "Boolean",
+              "ofType": null
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "filter",
+            "description": null,
+            "type": {
+              "kind": "INPUT_OBJECT",
+              "name": "flows_bool_exp",
+              "ofType": null
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "predicate",
+            "description": null,
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "INPUT_OBJECT",
+                "name": "Boolean_comparison_exp",
+                "ofType": null
+              }
             },
             "defaultValue": null,
             "isDeprecated": false,
@@ -7470,6 +7646,18 @@
             "deprecationReason": null
           },
           {
+            "name": "is_primary",
+            "description": null,
+            "type": {
+              "kind": "INPUT_OBJECT",
+              "name": "Boolean_comparison_exp",
+              "ofType": null
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "name",
             "description": null,
             "type": {
@@ -7564,6 +7752,12 @@
           {
             "name": "flows_pkey",
             "description": "unique or primary key constraint on columns \"id\"",
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "idx_flows_primary_per_form",
+            "description": "unique or primary key constraint on columns \"form_id\"",
             "isDeprecated": false,
             "deprecationReason": null
           }
@@ -7807,6 +8001,18 @@
             "type": {
               "kind": "SCALAR",
               "name": "String",
+              "ofType": null
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "is_primary",
+            "description": "Boolean flag marking the primary flow. Each form has exactly one primary flow (enforced by partial unique index). Primary flows are always shown; branch flows are conditional.",
+            "type": {
+              "kind": "SCALAR",
+              "name": "Boolean",
               "ofType": null
             },
             "defaultValue": null,
@@ -8750,6 +8956,18 @@
             "deprecationReason": null
           },
           {
+            "name": "is_primary",
+            "description": null,
+            "type": {
+              "kind": "ENUM",
+              "name": "order_by",
+              "ofType": null
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "name",
             "description": null,
             "type": {
@@ -8930,6 +9148,12 @@
             "deprecationReason": null
           },
           {
+            "name": "is_primary",
+            "description": "column name",
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "name",
             "description": "column name",
             "isDeprecated": false,
@@ -8943,6 +9167,42 @@
           },
           {
             "name": "updated_at",
+            "description": "column name",
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "possibleTypes": null
+      },
+      {
+        "kind": "ENUM",
+        "name": "flows_select_column_flows_aggregate_bool_exp_bool_and_arguments_columns",
+        "description": "select \"flows_aggregate_bool_exp_bool_and_arguments_columns\" columns of table \"flows\"",
+        "isOneOf": null,
+        "fields": null,
+        "inputFields": null,
+        "interfaces": null,
+        "enumValues": [
+          {
+            "name": "is_primary",
+            "description": "column name",
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "possibleTypes": null
+      },
+      {
+        "kind": "ENUM",
+        "name": "flows_select_column_flows_aggregate_bool_exp_bool_or_arguments_columns",
+        "description": "select \"flows_aggregate_bool_exp_bool_or_arguments_columns\" columns of table \"flows\"",
+        "isOneOf": null,
+        "fields": null,
+        "inputFields": null,
+        "interfaces": null,
+        "enumValues": [
+          {
+            "name": "is_primary",
             "description": "column name",
             "isDeprecated": false,
             "deprecationReason": null
@@ -9059,6 +9319,18 @@
             "type": {
               "kind": "SCALAR",
               "name": "String",
+              "ofType": null
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "is_primary",
+            "description": "Boolean flag marking the primary flow. Each form has exactly one primary flow (enforced by partial unique index). Primary flows are always shown; branch flows are conditional.",
+            "type": {
+              "kind": "SCALAR",
+              "name": "Boolean",
               "ofType": null
             },
             "defaultValue": null,
@@ -9406,6 +9678,18 @@
             "deprecationReason": null
           },
           {
+            "name": "is_primary",
+            "description": "Boolean flag marking the primary flow. Each form has exactly one primary flow (enforced by partial unique index). Primary flows are always shown; branch flows are conditional.",
+            "type": {
+              "kind": "SCALAR",
+              "name": "Boolean",
+              "ofType": null
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "name",
             "description": "Human-readable flow name displayed in form editor (e.g., \"Shared Steps\", \"Testimonial Flow\", \"Improvement Flow\").",
             "type": {
@@ -9553,6 +9837,12 @@
           },
           {
             "name": "id",
+            "description": "column name",
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "is_primary",
             "description": "column name",
             "isDeprecated": false,
             "deprecationReason": null
@@ -13467,7 +13757,7 @@
       {
         "kind": "OBJECT",
         "name": "form_questions",
-        "description": "Form questions with typed validation - explicit columns, not JSONB",
+        "description": "Form questions belong to steps. Derive form via question.step.flow.form_id. Clean ownership: step → question.",
         "isOneOf": null,
         "fields": [
           {
@@ -13516,38 +13806,6 @@
               "ofType": {
                 "kind": "SCALAR",
                 "name": "smallint",
-                "ofType": null
-              }
-            },
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "form",
-            "description": "An object relationship",
-            "args": [],
-            "type": {
-              "kind": "NON_NULL",
-              "name": null,
-              "ofType": {
-                "kind": "OBJECT",
-                "name": "forms",
-                "ofType": null
-              }
-            },
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "form_id",
-            "description": "FK to forms - parent form this question belongs to",
-            "args": [],
-            "type": {
-              "kind": "NON_NULL",
-              "name": null,
-              "ofType": {
-                "kind": "SCALAR",
-                "name": "String",
                 "ofType": null
               }
             },
@@ -14185,6 +14443,30 @@
           {
             "name": "scale_min_label",
             "description": "Custom label for minimum value on Linear Scale (e.g., \"Low\", \"Strongly disagree\"). NULL uses default \"Low\"",
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "step",
+            "description": "An object relationship",
+            "args": [],
+            "type": {
+              "kind": "OBJECT",
+              "name": "form_steps",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "step_id",
+            "description": "FK to form_steps. The step that owns this question. Nullable for steps without questions (welcome, thank_you, consent). CASCADE delete removes question when step is deleted.",
             "args": [],
             "type": {
               "kind": "SCALAR",
@@ -15193,30 +15475,6 @@
             "deprecationReason": null
           },
           {
-            "name": "form",
-            "description": null,
-            "type": {
-              "kind": "INPUT_OBJECT",
-              "name": "forms_bool_exp",
-              "ofType": null
-            },
-            "defaultValue": null,
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "form_id",
-            "description": null,
-            "type": {
-              "kind": "INPUT_OBJECT",
-              "name": "String_comparison_exp",
-              "ofType": null
-            },
-            "defaultValue": null,
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
             "name": "help_text",
             "description": null,
             "type": {
@@ -15481,6 +15739,30 @@
             "deprecationReason": null
           },
           {
+            "name": "step",
+            "description": null,
+            "type": {
+              "kind": "INPUT_OBJECT",
+              "name": "form_steps_bool_exp",
+              "ofType": null
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "step_id",
+            "description": null,
+            "type": {
+              "kind": "INPUT_OBJECT",
+              "name": "String_comparison_exp",
+              "ofType": null
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "updated_at",
             "description": null,
             "type": {
@@ -15543,20 +15825,14 @@
         "interfaces": null,
         "enumValues": [
           {
-            "name": "form_questions_key_per_form_unique",
-            "description": "unique or primary key constraint on columns \"form_id\", \"question_key\"",
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "form_questions_order_per_form_unique",
-            "description": "unique or primary key constraint on columns \"form_id\", \"display_order\"",
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
             "name": "form_questions_pkey",
             "description": "unique or primary key constraint on columns \"id\"",
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "idx_form_questions_step_id_unique",
+            "description": "unique or primary key constraint on columns \"step_id\"",
             "isDeprecated": false,
             "deprecationReason": null
           }
@@ -15692,30 +15968,6 @@
             "type": {
               "kind": "SCALAR",
               "name": "smallint",
-              "ofType": null
-            },
-            "defaultValue": null,
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "form",
-            "description": null,
-            "type": {
-              "kind": "INPUT_OBJECT",
-              "name": "forms_obj_rel_insert_input",
-              "ofType": null
-            },
-            "defaultValue": null,
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "form_id",
-            "description": "FK to forms - parent form this question belongs to",
-            "type": {
-              "kind": "SCALAR",
-              "name": "String",
               "ofType": null
             },
             "defaultValue": null,
@@ -15963,6 +16215,30 @@
             "deprecationReason": null
           },
           {
+            "name": "step",
+            "description": null,
+            "type": {
+              "kind": "INPUT_OBJECT",
+              "name": "form_steps_obj_rel_insert_input",
+              "ofType": null
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "step_id",
+            "description": "FK to form_steps. The step that owns this question. Nullable for steps without questions (welcome, thank_you, consent). CASCADE delete removes question when step is deleted.",
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "updated_at",
             "description": "Timestamp of last modification. Auto-updated by trigger",
             "type": {
@@ -16066,18 +16342,6 @@
             "deprecationReason": null
           },
           {
-            "name": "form_id",
-            "description": "FK to forms - parent form this question belongs to",
-            "args": [],
-            "type": {
-              "kind": "SCALAR",
-              "name": "String",
-              "ofType": null
-            },
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
             "name": "help_text",
             "description": "Tooltip help text explaining what kind of answer is expected",
             "args": [],
@@ -16236,6 +16500,18 @@
           {
             "name": "scale_min_label",
             "description": "Custom label for minimum value on Linear Scale (e.g., \"Low\", \"Strongly disagree\"). NULL uses default \"Low\"",
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "step_id",
+            "description": "FK to form_steps. The step that owns this question. Nullable for steps without questions (welcome, thank_you, consent). CASCADE delete removes question when step is deleted.",
             "args": [],
             "type": {
               "kind": "SCALAR",
@@ -16331,18 +16607,6 @@
             "deprecationReason": null
           },
           {
-            "name": "form_id",
-            "description": "FK to forms - parent form this question belongs to",
-            "type": {
-              "kind": "ENUM",
-              "name": "order_by",
-              "ofType": null
-            },
-            "defaultValue": null,
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
             "name": "help_text",
             "description": "Tooltip help text explaining what kind of answer is expected",
             "type": {
@@ -16501,6 +16765,18 @@
           {
             "name": "scale_min_label",
             "description": "Custom label for minimum value on Linear Scale (e.g., \"Low\", \"Strongly disagree\"). NULL uses default \"Low\"",
+            "type": {
+              "kind": "ENUM",
+              "name": "order_by",
+              "ofType": null
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "step_id",
+            "description": "FK to form_steps. The step that owns this question. Nullable for steps without questions (welcome, thank_you, consent). CASCADE delete removes question when step is deleted.",
             "type": {
               "kind": "ENUM",
               "name": "order_by",
@@ -16602,18 +16878,6 @@
             "deprecationReason": null
           },
           {
-            "name": "form_id",
-            "description": "FK to forms - parent form this question belongs to",
-            "args": [],
-            "type": {
-              "kind": "SCALAR",
-              "name": "String",
-              "ofType": null
-            },
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
             "name": "help_text",
             "description": "Tooltip help text explaining what kind of answer is expected",
             "args": [],
@@ -16772,6 +17036,18 @@
           {
             "name": "scale_min_label",
             "description": "Custom label for minimum value on Linear Scale (e.g., \"Low\", \"Strongly disagree\"). NULL uses default \"Low\"",
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "step_id",
+            "description": "FK to form_steps. The step that owns this question. Nullable for steps without questions (welcome, thank_you, consent). CASCADE delete removes question when step is deleted.",
             "args": [],
             "type": {
               "kind": "SCALAR",
@@ -16867,18 +17143,6 @@
             "deprecationReason": null
           },
           {
-            "name": "form_id",
-            "description": "FK to forms - parent form this question belongs to",
-            "type": {
-              "kind": "ENUM",
-              "name": "order_by",
-              "ofType": null
-            },
-            "defaultValue": null,
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
             "name": "help_text",
             "description": "Tooltip help text explaining what kind of answer is expected",
             "type": {
@@ -17037,6 +17301,18 @@
           {
             "name": "scale_min_label",
             "description": "Custom label for minimum value on Linear Scale (e.g., \"Low\", \"Strongly disagree\"). NULL uses default \"Low\"",
+            "type": {
+              "kind": "ENUM",
+              "name": "order_by",
+              "ofType": null
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "step_id",
+            "description": "FK to form_steps. The step that owns this question. Nullable for steps without questions (welcome, thank_you, consent). CASCADE delete removes question when step is deleted.",
             "type": {
               "kind": "ENUM",
               "name": "order_by",
@@ -17276,30 +17552,6 @@
           },
           {
             "name": "display_order",
-            "description": null,
-            "type": {
-              "kind": "ENUM",
-              "name": "order_by",
-              "ofType": null
-            },
-            "defaultValue": null,
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "form",
-            "description": null,
-            "type": {
-              "kind": "INPUT_OBJECT",
-              "name": "forms_order_by",
-              "ofType": null
-            },
-            "defaultValue": null,
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "form_id",
             "description": null,
             "type": {
               "kind": "ENUM",
@@ -17551,6 +17803,30 @@
             "deprecationReason": null
           },
           {
+            "name": "step",
+            "description": null,
+            "type": {
+              "kind": "INPUT_OBJECT",
+              "name": "form_steps_order_by",
+              "ofType": null
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "step_id",
+            "description": null,
+            "type": {
+              "kind": "ENUM",
+              "name": "order_by",
+              "ofType": null
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "updated_at",
             "description": null,
             "type": {
@@ -17659,12 +17935,6 @@
             "deprecationReason": null
           },
           {
-            "name": "form_id",
-            "description": "column name",
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
             "name": "help_text",
             "description": "column name",
             "isDeprecated": false,
@@ -17756,6 +18026,12 @@
           },
           {
             "name": "scale_min_label",
+            "description": "column name",
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "step_id",
             "description": "column name",
             "isDeprecated": false,
             "deprecationReason": null
@@ -17874,18 +18150,6 @@
             "type": {
               "kind": "SCALAR",
               "name": "smallint",
-              "ofType": null
-            },
-            "defaultValue": null,
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "form_id",
-            "description": "FK to forms - parent form this question belongs to",
-            "type": {
-              "kind": "SCALAR",
-              "name": "String",
               "ofType": null
             },
             "defaultValue": null,
@@ -18075,6 +18339,18 @@
           {
             "name": "scale_min_label",
             "description": "Custom label for minimum value on Linear Scale (e.g., \"Low\", \"Strongly disagree\"). NULL uses default \"Low\"",
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "step_id",
+            "description": "FK to form_steps. The step that owns this question. Nullable for steps without questions (welcome, thank_you, consent). CASCADE delete removes question when step is deleted.",
             "type": {
               "kind": "SCALAR",
               "name": "String",
@@ -18721,18 +18997,6 @@
             "deprecationReason": null
           },
           {
-            "name": "form_id",
-            "description": "FK to forms - parent form this question belongs to",
-            "type": {
-              "kind": "SCALAR",
-              "name": "String",
-              "ofType": null
-            },
-            "defaultValue": null,
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
             "name": "help_text",
             "description": "Tooltip help text explaining what kind of answer is expected",
             "type": {
@@ -18915,6 +19179,18 @@
           {
             "name": "scale_min_label",
             "description": "Custom label for minimum value on Linear Scale (e.g., \"Low\", \"Strongly disagree\"). NULL uses default \"Low\"",
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "step_id",
+            "description": "FK to form_steps. The step that owns this question. Nullable for steps without questions (welcome, thank_you, consent). CASCADE delete removes question when step is deleted.",
             "type": {
               "kind": "SCALAR",
               "name": "String",
@@ -19161,12 +19437,6 @@
             "deprecationReason": null
           },
           {
-            "name": "form_id",
-            "description": "column name",
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
             "name": "help_text",
             "description": "column name",
             "isDeprecated": false,
@@ -19258,6 +19528,12 @@
           },
           {
             "name": "scale_min_label",
+            "description": "column name",
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "step_id",
             "description": "column name",
             "isDeprecated": false,
             "deprecationReason": null
@@ -19842,7 +20118,7 @@
       {
         "kind": "OBJECT",
         "name": "form_steps",
-        "description": "Stores step configuration per form for the timeline editor. Each step represents a screen in the testimonial collection flow (welcome, questions, consent, contact info, reward, thank you).",
+        "description": "Form steps belong to flows. Question deletion handled by FK cascade on form_questions.step_id.",
         "isOneOf": null,
         "fields": [
           {
@@ -19963,38 +20239,6 @@
             "deprecationReason": null
           },
           {
-            "name": "form",
-            "description": "An object relationship",
-            "args": [],
-            "type": {
-              "kind": "NON_NULL",
-              "name": null,
-              "ofType": {
-                "kind": "OBJECT",
-                "name": "forms",
-                "ofType": null
-              }
-            },
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "form_id",
-            "description": "Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed.",
-            "args": [],
-            "type": {
-              "kind": "NON_NULL",
-              "name": null,
-              "ofType": {
-                "kind": "SCALAR",
-                "name": "String",
-                "ofType": null
-              }
-            },
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
             "name": "id",
             "description": "Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification.",
             "args": [],
@@ -20059,25 +20303,195 @@
             "deprecationReason": null
           },
           {
-            "name": "question",
-            "description": "An object relationship",
-            "args": [],
+            "name": "questions",
+            "description": "An array relationship",
+            "args": [
+              {
+                "name": "distinct_on",
+                "description": "distinct select on columns",
+                "type": {
+                  "kind": "LIST",
+                  "name": null,
+                  "ofType": {
+                    "kind": "NON_NULL",
+                    "name": null,
+                    "ofType": {
+                      "kind": "ENUM",
+                      "name": "form_questions_select_column",
+                      "ofType": null
+                    }
+                  }
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              },
+              {
+                "name": "limit",
+                "description": "limit the number of rows returned",
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "Int",
+                  "ofType": null
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              },
+              {
+                "name": "offset",
+                "description": "skip the first n rows. Use only with order_by",
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "Int",
+                  "ofType": null
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              },
+              {
+                "name": "order_by",
+                "description": "sort the rows by one or more columns",
+                "type": {
+                  "kind": "LIST",
+                  "name": null,
+                  "ofType": {
+                    "kind": "NON_NULL",
+                    "name": null,
+                    "ofType": {
+                      "kind": "INPUT_OBJECT",
+                      "name": "form_questions_order_by",
+                      "ofType": null
+                    }
+                  }
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              },
+              {
+                "name": "where",
+                "description": "filter the rows returned",
+                "type": {
+                  "kind": "INPUT_OBJECT",
+                  "name": "form_questions_bool_exp",
+                  "ofType": null
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              }
+            ],
             "type": {
-              "kind": "OBJECT",
-              "name": "form_questions",
-              "ofType": null
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "LIST",
+                "name": null,
+                "ofType": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "OBJECT",
+                    "name": "form_questions",
+                    "ofType": null
+                  }
+                }
+              }
             },
             "isDeprecated": false,
             "deprecationReason": null
           },
           {
-            "name": "question_id",
-            "description": "Foreign key to form_questions table. Required for question/rating step types to link validation config. Must be NULL for non-question types.",
-            "args": [],
+            "name": "questions_aggregate",
+            "description": "An aggregate relationship",
+            "args": [
+              {
+                "name": "distinct_on",
+                "description": "distinct select on columns",
+                "type": {
+                  "kind": "LIST",
+                  "name": null,
+                  "ofType": {
+                    "kind": "NON_NULL",
+                    "name": null,
+                    "ofType": {
+                      "kind": "ENUM",
+                      "name": "form_questions_select_column",
+                      "ofType": null
+                    }
+                  }
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              },
+              {
+                "name": "limit",
+                "description": "limit the number of rows returned",
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "Int",
+                  "ofType": null
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              },
+              {
+                "name": "offset",
+                "description": "skip the first n rows. Use only with order_by",
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "Int",
+                  "ofType": null
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              },
+              {
+                "name": "order_by",
+                "description": "sort the rows by one or more columns",
+                "type": {
+                  "kind": "LIST",
+                  "name": null,
+                  "ofType": {
+                    "kind": "NON_NULL",
+                    "name": null,
+                    "ofType": {
+                      "kind": "INPUT_OBJECT",
+                      "name": "form_questions_order_by",
+                      "ofType": null
+                    }
+                  }
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              },
+              {
+                "name": "where",
+                "description": "filter the rows returned",
+                "type": {
+                  "kind": "INPUT_OBJECT",
+                  "name": "form_questions_bool_exp",
+                  "ofType": null
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              }
+            ],
             "type": {
-              "kind": "SCALAR",
-              "name": "String",
-              "ofType": null
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "form_questions_aggregate",
+                "ofType": null
+              }
             },
             "isDeprecated": false,
             "deprecationReason": null
@@ -21073,30 +21487,6 @@
             "deprecationReason": null
           },
           {
-            "name": "form",
-            "description": null,
-            "type": {
-              "kind": "INPUT_OBJECT",
-              "name": "forms_bool_exp",
-              "ofType": null
-            },
-            "defaultValue": null,
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "form_id",
-            "description": null,
-            "type": {
-              "kind": "INPUT_OBJECT",
-              "name": "String_comparison_exp",
-              "ofType": null
-            },
-            "defaultValue": null,
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
             "name": "id",
             "description": null,
             "type": {
@@ -21145,7 +21535,7 @@
             "deprecationReason": null
           },
           {
-            "name": "question",
+            "name": "questions",
             "description": null,
             "type": {
               "kind": "INPUT_OBJECT",
@@ -21157,11 +21547,11 @@
             "deprecationReason": null
           },
           {
-            "name": "question_id",
+            "name": "questions_aggregate",
             "description": null,
             "type": {
               "kind": "INPUT_OBJECT",
-              "name": "String_comparison_exp",
+              "name": "form_questions_aggregate_bool_exp",
               "ofType": null
             },
             "defaultValue": null,
@@ -21256,7 +21646,7 @@
         "enumValues": [
           {
             "name": "form_steps_flow_order_unique",
-            "description": "unique or primary key constraint on columns \"flow_id\", \"step_order\", \"form_id\"",
+            "description": "unique or primary key constraint on columns \"flow_id\", \"step_order\"",
             "isDeprecated": false,
             "deprecationReason": null
           },
@@ -21465,30 +21855,6 @@
             "deprecationReason": null
           },
           {
-            "name": "form",
-            "description": null,
-            "type": {
-              "kind": "INPUT_OBJECT",
-              "name": "forms_obj_rel_insert_input",
-              "ofType": null
-            },
-            "defaultValue": null,
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "form_id",
-            "description": "Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed.",
-            "type": {
-              "kind": "SCALAR",
-              "name": "String",
-              "ofType": null
-            },
-            "defaultValue": null,
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
             "name": "id",
             "description": "Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification.",
             "type": {
@@ -21537,23 +21903,11 @@
             "deprecationReason": null
           },
           {
-            "name": "question",
+            "name": "questions",
             "description": null,
             "type": {
               "kind": "INPUT_OBJECT",
-              "name": "form_questions_obj_rel_insert_input",
-              "ofType": null
-            },
-            "defaultValue": null,
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "question_id",
-            "description": "Foreign key to form_questions table. Required for question/rating step types to link validation config. Must be NULL for non-question types.",
-            "type": {
-              "kind": "SCALAR",
-              "name": "String",
+              "name": "form_questions_arr_rel_insert_input",
               "ofType": null
             },
             "defaultValue": null,
@@ -21700,18 +22054,6 @@
             "deprecationReason": null
           },
           {
-            "name": "form_id",
-            "description": "Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed.",
-            "args": [],
-            "type": {
-              "kind": "SCALAR",
-              "name": "String",
-              "ofType": null
-            },
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
             "name": "id",
             "description": "Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification.",
             "args": [],
@@ -21726,18 +22068,6 @@
           {
             "name": "organization_id",
             "description": "Foreign key to organizations table. Denormalized from form for efficient row-level security queries. Must match form.organization_id.",
-            "args": [],
-            "type": {
-              "kind": "SCALAR",
-              "name": "String",
-              "ofType": null
-            },
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "question_id",
-            "description": "Foreign key to form_questions table. Required for question/rating step types to link validation config. Must be NULL for non-question types.",
             "args": [],
             "type": {
               "kind": "SCALAR",
@@ -21877,18 +22207,6 @@
             "deprecationReason": null
           },
           {
-            "name": "form_id",
-            "description": "Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed.",
-            "type": {
-              "kind": "ENUM",
-              "name": "order_by",
-              "ofType": null
-            },
-            "defaultValue": null,
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
             "name": "id",
             "description": "Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification.",
             "type": {
@@ -21903,18 +22221,6 @@
           {
             "name": "organization_id",
             "description": "Foreign key to organizations table. Denormalized from form for efficient row-level security queries. Must match form.organization_id.",
-            "type": {
-              "kind": "ENUM",
-              "name": "order_by",
-              "ofType": null
-            },
-            "defaultValue": null,
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "question_id",
-            "description": "Foreign key to form_questions table. Required for question/rating step types to link validation config. Must be NULL for non-question types.",
             "type": {
               "kind": "ENUM",
               "name": "order_by",
@@ -22044,18 +22350,6 @@
             "deprecationReason": null
           },
           {
-            "name": "form_id",
-            "description": "Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed.",
-            "args": [],
-            "type": {
-              "kind": "SCALAR",
-              "name": "String",
-              "ofType": null
-            },
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
             "name": "id",
             "description": "Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification.",
             "args": [],
@@ -22070,18 +22364,6 @@
           {
             "name": "organization_id",
             "description": "Foreign key to organizations table. Denormalized from form for efficient row-level security queries. Must match form.organization_id.",
-            "args": [],
-            "type": {
-              "kind": "SCALAR",
-              "name": "String",
-              "ofType": null
-            },
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "question_id",
-            "description": "Foreign key to form_questions table. Required for question/rating step types to link validation config. Must be NULL for non-question types.",
             "args": [],
             "type": {
               "kind": "SCALAR",
@@ -22221,18 +22503,6 @@
             "deprecationReason": null
           },
           {
-            "name": "form_id",
-            "description": "Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed.",
-            "type": {
-              "kind": "ENUM",
-              "name": "order_by",
-              "ofType": null
-            },
-            "defaultValue": null,
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
             "name": "id",
             "description": "Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification.",
             "type": {
@@ -22247,18 +22517,6 @@
           {
             "name": "organization_id",
             "description": "Foreign key to organizations table. Denormalized from form for efficient row-level security queries. Must match form.organization_id.",
-            "type": {
-              "kind": "ENUM",
-              "name": "order_by",
-              "ofType": null
-            },
-            "defaultValue": null,
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "question_id",
-            "description": "Foreign key to form_questions table. Required for question/rating step types to link validation config. Must be NULL for non-question types.",
             "type": {
               "kind": "ENUM",
               "name": "order_by",
@@ -22382,6 +22640,46 @@
         ],
         "inputFields": null,
         "interfaces": [],
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "INPUT_OBJECT",
+        "name": "form_steps_obj_rel_insert_input",
+        "description": "input type for inserting object relation for remote table \"form_steps\"",
+        "isOneOf": false,
+        "fields": null,
+        "inputFields": [
+          {
+            "name": "data",
+            "description": null,
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "INPUT_OBJECT",
+                "name": "form_steps_insert_input",
+                "ofType": null
+              }
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "on_conflict",
+            "description": "upsert condition",
+            "type": {
+              "kind": "INPUT_OBJECT",
+              "name": "form_steps_on_conflict",
+              "ofType": null
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "interfaces": null,
         "enumValues": null,
         "possibleTypes": null
       },
@@ -22541,30 +22839,6 @@
             "deprecationReason": null
           },
           {
-            "name": "form",
-            "description": null,
-            "type": {
-              "kind": "INPUT_OBJECT",
-              "name": "forms_order_by",
-              "ofType": null
-            },
-            "defaultValue": null,
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "form_id",
-            "description": null,
-            "type": {
-              "kind": "ENUM",
-              "name": "order_by",
-              "ofType": null
-            },
-            "defaultValue": null,
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
             "name": "id",
             "description": null,
             "type": {
@@ -22613,23 +22887,11 @@
             "deprecationReason": null
           },
           {
-            "name": "question",
+            "name": "questions_aggregate",
             "description": null,
             "type": {
               "kind": "INPUT_OBJECT",
-              "name": "form_questions_order_by",
-              "ofType": null
-            },
-            "defaultValue": null,
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "question_id",
-            "description": null,
-            "type": {
-              "kind": "ENUM",
-              "name": "order_by",
+              "name": "form_questions_aggregate_order_by",
               "ofType": null
             },
             "defaultValue": null,
@@ -22805,12 +23067,6 @@
             "deprecationReason": null
           },
           {
-            "name": "form_id",
-            "description": "column name",
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
             "name": "id",
             "description": "column name",
             "isDeprecated": false,
@@ -22824,12 +23080,6 @@
           },
           {
             "name": "organization_id",
-            "description": "column name",
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "question_id",
             "description": "column name",
             "isDeprecated": false,
             "deprecationReason": null
@@ -22971,18 +23221,6 @@
             "deprecationReason": null
           },
           {
-            "name": "form_id",
-            "description": "Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed.",
-            "type": {
-              "kind": "SCALAR",
-              "name": "String",
-              "ofType": null
-            },
-            "defaultValue": null,
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
             "name": "id",
             "description": "Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification.",
             "type": {
@@ -23009,18 +23247,6 @@
           {
             "name": "organization_id",
             "description": "Foreign key to organizations table. Denormalized from form for efficient row-level security queries. Must match form.organization_id.",
-            "type": {
-              "kind": "SCALAR",
-              "name": "String",
-              "ofType": null
-            },
-            "defaultValue": null,
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "question_id",
-            "description": "Foreign key to form_questions table. Required for question/rating step types to link validation config. Must be NULL for non-question types.",
             "type": {
               "kind": "SCALAR",
               "name": "String",
@@ -23355,18 +23581,6 @@
             "deprecationReason": null
           },
           {
-            "name": "form_id",
-            "description": "Foreign key to forms table. Identifies which form this step belongs to. Cascade deletes when parent form is removed.",
-            "type": {
-              "kind": "SCALAR",
-              "name": "String",
-              "ofType": null
-            },
-            "defaultValue": null,
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
             "name": "id",
             "description": "Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification.",
             "type": {
@@ -23393,18 +23607,6 @@
           {
             "name": "organization_id",
             "description": "Foreign key to organizations table. Denormalized from form for efficient row-level security queries. Must match form.organization_id.",
-            "type": {
-              "kind": "SCALAR",
-              "name": "String",
-              "ofType": null
-            },
-            "defaultValue": null,
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "question_id",
-            "description": "Foreign key to form_questions table. Required for question/rating step types to link validation config. Must be NULL for non-question types.",
             "type": {
               "kind": "SCALAR",
               "name": "String",
@@ -23575,12 +23777,6 @@
             "deprecationReason": null
           },
           {
-            "name": "form_id",
-            "description": "column name",
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
             "name": "id",
             "description": "column name",
             "isDeprecated": false,
@@ -23594,12 +23790,6 @@
           },
           {
             "name": "organization_id",
-            "description": "column name",
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "question_id",
             "description": "column name",
             "isDeprecated": false,
             "deprecationReason": null
@@ -27040,200 +27230,6 @@
             "deprecationReason": null
           },
           {
-            "name": "questions",
-            "description": "An array relationship",
-            "args": [
-              {
-                "name": "distinct_on",
-                "description": "distinct select on columns",
-                "type": {
-                  "kind": "LIST",
-                  "name": null,
-                  "ofType": {
-                    "kind": "NON_NULL",
-                    "name": null,
-                    "ofType": {
-                      "kind": "ENUM",
-                      "name": "form_questions_select_column",
-                      "ofType": null
-                    }
-                  }
-                },
-                "defaultValue": null,
-                "isDeprecated": false,
-                "deprecationReason": null
-              },
-              {
-                "name": "limit",
-                "description": "limit the number of rows returned",
-                "type": {
-                  "kind": "SCALAR",
-                  "name": "Int",
-                  "ofType": null
-                },
-                "defaultValue": null,
-                "isDeprecated": false,
-                "deprecationReason": null
-              },
-              {
-                "name": "offset",
-                "description": "skip the first n rows. Use only with order_by",
-                "type": {
-                  "kind": "SCALAR",
-                  "name": "Int",
-                  "ofType": null
-                },
-                "defaultValue": null,
-                "isDeprecated": false,
-                "deprecationReason": null
-              },
-              {
-                "name": "order_by",
-                "description": "sort the rows by one or more columns",
-                "type": {
-                  "kind": "LIST",
-                  "name": null,
-                  "ofType": {
-                    "kind": "NON_NULL",
-                    "name": null,
-                    "ofType": {
-                      "kind": "INPUT_OBJECT",
-                      "name": "form_questions_order_by",
-                      "ofType": null
-                    }
-                  }
-                },
-                "defaultValue": null,
-                "isDeprecated": false,
-                "deprecationReason": null
-              },
-              {
-                "name": "where",
-                "description": "filter the rows returned",
-                "type": {
-                  "kind": "INPUT_OBJECT",
-                  "name": "form_questions_bool_exp",
-                  "ofType": null
-                },
-                "defaultValue": null,
-                "isDeprecated": false,
-                "deprecationReason": null
-              }
-            ],
-            "type": {
-              "kind": "NON_NULL",
-              "name": null,
-              "ofType": {
-                "kind": "LIST",
-                "name": null,
-                "ofType": {
-                  "kind": "NON_NULL",
-                  "name": null,
-                  "ofType": {
-                    "kind": "OBJECT",
-                    "name": "form_questions",
-                    "ofType": null
-                  }
-                }
-              }
-            },
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "questions_aggregate",
-            "description": "An aggregate relationship",
-            "args": [
-              {
-                "name": "distinct_on",
-                "description": "distinct select on columns",
-                "type": {
-                  "kind": "LIST",
-                  "name": null,
-                  "ofType": {
-                    "kind": "NON_NULL",
-                    "name": null,
-                    "ofType": {
-                      "kind": "ENUM",
-                      "name": "form_questions_select_column",
-                      "ofType": null
-                    }
-                  }
-                },
-                "defaultValue": null,
-                "isDeprecated": false,
-                "deprecationReason": null
-              },
-              {
-                "name": "limit",
-                "description": "limit the number of rows returned",
-                "type": {
-                  "kind": "SCALAR",
-                  "name": "Int",
-                  "ofType": null
-                },
-                "defaultValue": null,
-                "isDeprecated": false,
-                "deprecationReason": null
-              },
-              {
-                "name": "offset",
-                "description": "skip the first n rows. Use only with order_by",
-                "type": {
-                  "kind": "SCALAR",
-                  "name": "Int",
-                  "ofType": null
-                },
-                "defaultValue": null,
-                "isDeprecated": false,
-                "deprecationReason": null
-              },
-              {
-                "name": "order_by",
-                "description": "sort the rows by one or more columns",
-                "type": {
-                  "kind": "LIST",
-                  "name": null,
-                  "ofType": {
-                    "kind": "NON_NULL",
-                    "name": null,
-                    "ofType": {
-                      "kind": "INPUT_OBJECT",
-                      "name": "form_questions_order_by",
-                      "ofType": null
-                    }
-                  }
-                },
-                "defaultValue": null,
-                "isDeprecated": false,
-                "deprecationReason": null
-              },
-              {
-                "name": "where",
-                "description": "filter the rows returned",
-                "type": {
-                  "kind": "INPUT_OBJECT",
-                  "name": "form_questions_bool_exp",
-                  "ofType": null
-                },
-                "defaultValue": null,
-                "isDeprecated": false,
-                "deprecationReason": null
-              }
-            ],
-            "type": {
-              "kind": "NON_NULL",
-              "name": null,
-              "ofType": {
-                "kind": "OBJECT",
-                "name": "form_questions_aggregate",
-                "ofType": null
-              }
-            },
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
             "name": "settings",
             "description": "UI preferences only (theme colors, branding) - NOT business logic. JSONB appropriate here",
             "args": [
@@ -27272,200 +27268,6 @@
               "ofType": {
                 "kind": "SCALAR",
                 "name": "String",
-                "ofType": null
-              }
-            },
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "steps",
-            "description": "An array relationship",
-            "args": [
-              {
-                "name": "distinct_on",
-                "description": "distinct select on columns",
-                "type": {
-                  "kind": "LIST",
-                  "name": null,
-                  "ofType": {
-                    "kind": "NON_NULL",
-                    "name": null,
-                    "ofType": {
-                      "kind": "ENUM",
-                      "name": "form_steps_select_column",
-                      "ofType": null
-                    }
-                  }
-                },
-                "defaultValue": null,
-                "isDeprecated": false,
-                "deprecationReason": null
-              },
-              {
-                "name": "limit",
-                "description": "limit the number of rows returned",
-                "type": {
-                  "kind": "SCALAR",
-                  "name": "Int",
-                  "ofType": null
-                },
-                "defaultValue": null,
-                "isDeprecated": false,
-                "deprecationReason": null
-              },
-              {
-                "name": "offset",
-                "description": "skip the first n rows. Use only with order_by",
-                "type": {
-                  "kind": "SCALAR",
-                  "name": "Int",
-                  "ofType": null
-                },
-                "defaultValue": null,
-                "isDeprecated": false,
-                "deprecationReason": null
-              },
-              {
-                "name": "order_by",
-                "description": "sort the rows by one or more columns",
-                "type": {
-                  "kind": "LIST",
-                  "name": null,
-                  "ofType": {
-                    "kind": "NON_NULL",
-                    "name": null,
-                    "ofType": {
-                      "kind": "INPUT_OBJECT",
-                      "name": "form_steps_order_by",
-                      "ofType": null
-                    }
-                  }
-                },
-                "defaultValue": null,
-                "isDeprecated": false,
-                "deprecationReason": null
-              },
-              {
-                "name": "where",
-                "description": "filter the rows returned",
-                "type": {
-                  "kind": "INPUT_OBJECT",
-                  "name": "form_steps_bool_exp",
-                  "ofType": null
-                },
-                "defaultValue": null,
-                "isDeprecated": false,
-                "deprecationReason": null
-              }
-            ],
-            "type": {
-              "kind": "NON_NULL",
-              "name": null,
-              "ofType": {
-                "kind": "LIST",
-                "name": null,
-                "ofType": {
-                  "kind": "NON_NULL",
-                  "name": null,
-                  "ofType": {
-                    "kind": "OBJECT",
-                    "name": "form_steps",
-                    "ofType": null
-                  }
-                }
-              }
-            },
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "steps_aggregate",
-            "description": "An aggregate relationship",
-            "args": [
-              {
-                "name": "distinct_on",
-                "description": "distinct select on columns",
-                "type": {
-                  "kind": "LIST",
-                  "name": null,
-                  "ofType": {
-                    "kind": "NON_NULL",
-                    "name": null,
-                    "ofType": {
-                      "kind": "ENUM",
-                      "name": "form_steps_select_column",
-                      "ofType": null
-                    }
-                  }
-                },
-                "defaultValue": null,
-                "isDeprecated": false,
-                "deprecationReason": null
-              },
-              {
-                "name": "limit",
-                "description": "limit the number of rows returned",
-                "type": {
-                  "kind": "SCALAR",
-                  "name": "Int",
-                  "ofType": null
-                },
-                "defaultValue": null,
-                "isDeprecated": false,
-                "deprecationReason": null
-              },
-              {
-                "name": "offset",
-                "description": "skip the first n rows. Use only with order_by",
-                "type": {
-                  "kind": "SCALAR",
-                  "name": "Int",
-                  "ofType": null
-                },
-                "defaultValue": null,
-                "isDeprecated": false,
-                "deprecationReason": null
-              },
-              {
-                "name": "order_by",
-                "description": "sort the rows by one or more columns",
-                "type": {
-                  "kind": "LIST",
-                  "name": null,
-                  "ofType": {
-                    "kind": "NON_NULL",
-                    "name": null,
-                    "ofType": {
-                      "kind": "INPUT_OBJECT",
-                      "name": "form_steps_order_by",
-                      "ofType": null
-                    }
-                  }
-                },
-                "defaultValue": null,
-                "isDeprecated": false,
-                "deprecationReason": null
-              },
-              {
-                "name": "where",
-                "description": "filter the rows returned",
-                "type": {
-                  "kind": "INPUT_OBJECT",
-                  "name": "form_steps_bool_exp",
-                  "ofType": null
-                },
-                "defaultValue": null,
-                "isDeprecated": false,
-                "deprecationReason": null
-              }
-            ],
-            "type": {
-              "kind": "NON_NULL",
-              "name": null,
-              "ofType": {
-                "kind": "OBJECT",
-                "name": "form_steps_aggregate",
                 "ofType": null
               }
             },
@@ -28473,30 +28275,6 @@
             "deprecationReason": null
           },
           {
-            "name": "questions",
-            "description": null,
-            "type": {
-              "kind": "INPUT_OBJECT",
-              "name": "form_questions_bool_exp",
-              "ofType": null
-            },
-            "defaultValue": null,
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "questions_aggregate",
-            "description": null,
-            "type": {
-              "kind": "INPUT_OBJECT",
-              "name": "form_questions_aggregate_bool_exp",
-              "ofType": null
-            },
-            "defaultValue": null,
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
             "name": "settings",
             "description": null,
             "type": {
@@ -28514,30 +28292,6 @@
             "type": {
               "kind": "INPUT_OBJECT",
               "name": "String_comparison_exp",
-              "ofType": null
-            },
-            "defaultValue": null,
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "steps",
-            "description": null,
-            "type": {
-              "kind": "INPUT_OBJECT",
-              "name": "form_steps_bool_exp",
-              "ofType": null
-            },
-            "defaultValue": null,
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "steps_aggregate",
-            "description": null,
-            "type": {
-              "kind": "INPUT_OBJECT",
-              "name": "form_steps_aggregate_bool_exp",
               "ofType": null
             },
             "defaultValue": null,
@@ -28915,18 +28669,6 @@
             "deprecationReason": null
           },
           {
-            "name": "questions",
-            "description": null,
-            "type": {
-              "kind": "INPUT_OBJECT",
-              "name": "form_questions_arr_rel_insert_input",
-              "ofType": null
-            },
-            "defaultValue": null,
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
             "name": "settings",
             "description": "UI preferences only (theme colors, branding) - NOT business logic. JSONB appropriate here",
             "type": {
@@ -28944,18 +28686,6 @@
             "type": {
               "kind": "SCALAR",
               "name": "String",
-              "ofType": null
-            },
-            "defaultValue": null,
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "steps",
-            "description": null,
-            "type": {
-              "kind": "INPUT_OBJECT",
-              "name": "form_steps_arr_rel_insert_input",
               "ofType": null
             },
             "defaultValue": null,
@@ -29863,18 +29593,6 @@
             "deprecationReason": null
           },
           {
-            "name": "questions_aggregate",
-            "description": null,
-            "type": {
-              "kind": "INPUT_OBJECT",
-              "name": "form_questions_aggregate_order_by",
-              "ofType": null
-            },
-            "defaultValue": null,
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
             "name": "settings",
             "description": null,
             "type": {
@@ -29892,18 +29610,6 @@
             "type": {
               "kind": "ENUM",
               "name": "order_by",
-              "ofType": null
-            },
-            "defaultValue": null,
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "steps_aggregate",
-            "description": null,
-            "type": {
-              "kind": "INPUT_OBJECT",
-              "name": "form_steps_aggregate_order_by",
               "ofType": null
             },
             "defaultValue": null,

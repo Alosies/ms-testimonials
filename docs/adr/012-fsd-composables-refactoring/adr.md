@@ -1,28 +1,23 @@
 # ADR-012: FSD-Compliant Composables Refactoring
 
+> **DEPRECATED**: This ADR has been superseded by **ADR-014**.
+> See `docs/adr/014-fsd-composables-refactoring/` for the current version.
+>
+> **Reason**: ADR-012 was created before ADR-013 (schema refactoring) but became dependent on it.
+> To maintain chronological consistency, this ADR was deprecated and recreated as ADR-014.
+
 ## Doc Connections
 **ID**: `adr-012-fsd-composables-refactoring`
 
 2026-01-12
 
-**Parent ReadMes**:
-- `adr-index` - Architecture Decision Records index
-
-**Related ReadMes**:
-- `adr-010-centralized-auto-save` - Auto-save pattern (affected by this refactoring)
-- `adr-011-immediate-save-actions` - Immediate save pattern (affected by this refactoring)
-
-**Analysis Document**:
-- `docs/analysis/composables-architecture-review.md` - Detailed SOLID analysis
-
-**Data Model**:
-- `data-model.md` - Entity hierarchy and delete cascade behaviors
+**Superseded By**: `adr-014-fsd-composables-refactoring`
 
 ---
 
 ## Status
 
-**Proposed** - 2026-01-12
+**Superseded** - 2026-01-12
 
 ---
 
@@ -78,28 +73,30 @@ This section maps the high-level data flow inside `features/createForm/` to help
 
 ### Database Entities (GraphQL/Hasura)
 
+> **Schema Reference:** See `docs/adr/013-form-entities-schema-refactoring/adr.md` for authoritative schema.
+
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
 │                           DATABASE LAYER                                 │
+│                     Ownership: form → flow → step → question → options  │
 ├─────────────────────────────────────────────────────────────────────────┤
 │                                                                          │
 │  forms                     flows                    form_steps           │
 │  ├── id                    ├── id                   ├── id               │
-│  ├── name                  ├── form_id (FK)         ├── form_id (FK)     │
-│  ├── product_name          ├── flow_type            ├── flow_id (FK)     │
-│  ├── product_description   │   (shared|branch)      ├── step_type        │
-│  ├── branching_config      ├── branch_question_id   ├── step_order       │
-│  └── organization_id       ├── branch_operator      ├── question_id (FK) │
-│                            ├── branch_value         ├── content (JSONB)  │
-│                            └── display_order        └── tips             │
+│  ├── name                  ├── form_id (FK)         ├── flow_id (FK)     │
+│  ├── product_name          ├── is_primary           │   ← ONLY PARENT    │
+│  ├── product_description   ├── branch_question_id   ├── step_type        │
+│  ├── branching_config      ├── branch_operator      ├── step_order       │
+│  └── organization_id       ├── branch_value         ├── content (JSONB)  │
+│                            └── display_order        └── organization_id  │
 │                                                                          │
 │  form_questions            question_options                              │
 │  ├── id                    ├── id                                        │
-│  ├── form_id (FK)          ├── question_id (FK)                          │
-│  ├── question_text         ├── option_label                              │
-│  ├── question_type_id      ├── option_value                              │
-│  ├── display_order         └── display_order                             │
-│  └── is_required                                                         │
+│  ├── step_id (FK)          ├── question_id (FK)                          │
+│  │   ← NULLABLE            ├── option_label                              │
+│  ├── question_text         ├── option_value                              │
+│  ├── question_type_id      └── display_order                             │
+│  └── organization_id                                                     │
 │                                                                          │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
@@ -123,12 +120,12 @@ This section maps the high-level data flow inside `features/createForm/` to help
 │         (typing effect)         └─► "Create Form" button                 │
 │                                                                          │
 │  ┌─────────────────────────────────────────────────────────────────┐    │
-│  │ useCreateFormWithSteps() - Creates ALL entities in sequence:    │    │
-│  │   1. createForm()        → forms table                          │    │
-│  │   2. createFormQuestions() → form_questions table               │    │
-│  │   3. createFlows()       → flows table (shared + branches)      │    │
-│  │   4. createFormSteps()   → form_steps table                     │    │
-│  │   5. updateForm()        → branching_config on form             │    │
+│  │ useCreateFormWithSteps() - Creates entities following ownership: │    │
+│  │   1. createForm()         → forms table                          │    │
+│  │   2. createFlows()        → flows table (primary + branches)     │    │
+│  │   3. createFormSteps()    → form_steps table (owned by flow)     │    │
+│  │   4. createFormQuestions()→ form_questions table (owned by step) │    │
+│  │   5. updateForm()         → branching_config on form             │    │
 │  └─────────────────────────────────────────────────────────────────┘    │
 │                                                                          │
 └─────────────────────────────────────────────────────────────────────────┘
@@ -236,22 +233,22 @@ This section maps the high-level data flow inside `features/createForm/` to help
 │                       TYPE TRANSFORMATION FLOW                           │
 ├─────────────────────────────────────────────────────────────────────────┤
 │                                                                          │
-│  WIZARD FLOW:                                                            │
+│  WIZARD FLOW (creates form → flow → step → question):                   │
 │  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐              │
 │  │ AI Response  │───►│ QuestionData │───►│ FormQuestion │              │
-│  │ (AIQuestion) │    │ (+ isNew,    │    │ (DB entity)  │              │
-│  │              │    │   isModified)│    │              │              │
+│  │ (AIQuestion) │    │ (+ isNew,    │    │ (DB entity   │              │
+│  │              │    │   isModified)│    │  w/ step_id) │              │
 │  └──────────────┘    └──────────────┘    └──────────────┘              │
 │                                                                          │
-│  TIMELINE FLOW:                                                          │
+│  TIMELINE FLOW (step owns question via nested relationship):            │
 │  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐              │
 │  │ GraphQL      │───►│ FormStep     │───►│ FormStepInput│              │
 │  │ Response     │    │ (UI model    │    │ (mutation    │              │
-│  │              │    │  w/ question)│    │  input)      │              │
+│  │              │    │  + question) │    │  input)      │              │
 │  └──────────────┘    └──────────────┘    └──────────────┘              │
 │        │                   │                                             │
-│        │    stepTransform  │                                             │
-│        └───────────────────┘                                             │
+│        │    stepTransform  │  Note: question.step_id links              │
+│        └───────────────────┘  question back to step (not step→question) │
 │        (in useFormStudioData)                                            │
 │                                                                          │
 │  TYPE LOCATIONS (current - scattered):                                   │

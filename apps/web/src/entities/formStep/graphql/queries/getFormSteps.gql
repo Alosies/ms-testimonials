@@ -1,17 +1,15 @@
 #import "../fragments/FormStepBasic.gql"
-#import "../../../formQuestion/graphql/fragments/FormQuestionWithOptions.gql"
 
 query GetFormSteps($formId: String!) {
   form_steps(
-    where: { form_id: { _eq: $formId } }
+    # ADR-013: Query via flow relationship (form_id removed from form_steps)
+    where: { flow: { form_id: { _eq: $formId } } }
     order_by: [
       { flow: { display_order: asc } }
       { step_order: asc }
     ]
   ) {
     ...FormStepBasic
-    question {
-      ...FormQuestionWithOptions
-    }
+    # question included via FormStepBasic fragment
   }
 }

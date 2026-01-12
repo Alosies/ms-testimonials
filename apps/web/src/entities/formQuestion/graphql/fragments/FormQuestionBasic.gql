@@ -1,6 +1,6 @@
 fragment FormQuestionBasic on form_questions {
   id
-  form_id
+  step_id
   organization_id
   question_type_id
   question_key
