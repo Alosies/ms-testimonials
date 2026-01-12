@@ -1,0 +1,224 @@
+{
+  "project": "ms-testimonials",
+  "branchName": "yellow/adr-014-phase1",
+  "description": "ADR-014 Phase 1: Move types from features to entity layers (FSD architecture compliance)",
+  "prdDocument": "docs/adr/014-fsd-composables-refactoring/phase-1-types-to-entities.md",
+  "userStories": [
+    {
+      "id": "TS-001",
+      "title": "Update FormStep interface for new schema",
+      "description": "As a developer, I need the FormStep interface to match ADR-013 schema (no formId, flowId required, questions accessed via array relationship)",
+      "acceptanceCriteria": [
+        "Update FormStep interface in apps/web/src/shared/stepCards/models/stepContent.ts",
+        "Remove formId property (step belongs to flow, not form directly)",
+        "Make flowId required (string, not optional)",
+        "Update any direct question property to use questions[0] pattern where needed",
+        "pnpm typecheck passes"
+      ],
+      "priority": 1,
+      "passes": true,
+      "notes": "ADR-013 inverted ownership: questions now reference steps via step_id"
+    },
+    {
+      "id": "TS-002",
+      "title": "Update stepTransform.ts for questions array",
+      "description": "As a developer, I need stepTransform to handle the new questions[] array relationship from GraphQL",
+      "acceptanceCriteria": [
+        "Update transformFormSteps in apps/web/src/features/createForm/functions/stepTransform.ts",
+        "Access question via step.questions[0] instead of step.question",
+        "Handle case where questions array is empty",
+        "pnpm typecheck passes"
+      ],
+      "priority": 2,
+      "passes": true,
+      "notes": "Hasura array relationship uses questions (plural)"
+    },
+    {
+      "id": "TS-003",
+      "title": "Update stepOperations.ts to remove formId",
+      "description": "As a developer, I need step operation functions to not require formId since steps now belong to flows",
+      "acceptanceCriteria": [
+        "Update CreateStepParams interface - remove formId, make flowId required",
+        "Update AddStepAtParams interface - remove formId",
+        "Update DuplicateStepAtParams interface - remove formId",
+        "Update createStep function to use flowId from context",
+        "Update addStepAt, duplicateStepAt functions",
+        "pnpm typecheck passes"
+      ],
+      "priority": 3,
+      "passes": true,
+      "notes": "ADR-013: Steps belong to flows, not forms directly"
+    },
+    {
+      "id": "TS-004",
+      "title": "Update useStepQuestionService for step_id",
+      "description": "As a developer, I need useStepQuestionService to create questions with step_id instead of form_id",
+      "acceptanceCriteria": [
+        "Update CreateQuestionParams to use stepId instead of formId",
+        "Update createQuestionForStep to pass step_id in mutation input",
+        "Remove any form_id references in question creation",
+        "pnpm typecheck passes"
+      ],
+      "priority": 4,
+      "passes": true,
+      "notes": "ADR-013: Question now references step via step_id"
+    },
+    {
+      "id": "TS-005",
+      "title": "Update useTimelineStepCrud for new creation order",
+      "description": "As a developer, I need useTimelineStepCrud to create steps first, then questions (inverted order)",
+      "acceptanceCriteria": [
+        "Update addStepWithPersist: create step first, then question with step_id",
+        "Update duplicateStepWithPersist: same creation order",
+        "Remove formId from createFormSteps input (not in schema)",
+        "Remove question_id from step creation (inverted relationship)",
+        "Remove unused formId variable from deps destructuring",
+        "pnpm typecheck passes"
+      ],
+      "priority": 5,
+      "passes": true,
+      "notes": "Creation order: step → question (step must exist for question to reference)"
+    },
+    {
+      "id": "TS-006",
+      "title": "Update useSaveFormSteps for new schema",
+      "description": "As a developer, I need useSaveFormSteps to work with the new schema (no form_id, no question_id on steps)",
+      "acceptanceCriteria": [
+        "Update StepForMapping interface - remove formId",
+        "Update mapStepToInput - remove form_id and question_id from output",
+        "Update stepsToSave mapping - remove formId property",
+        "Update createQuestionRecordsForNewSteps to use step_id",
+        "pnpm typecheck passes"
+      ],
+      "priority": 6,
+      "passes": true,
+      "notes": "ADR-013: Steps persist via flow_id only"
+    },
+    {
+      "id": "TS-007",
+      "title": "Update useTimelineBranching FormStep literals",
+      "description": "As a developer, I need useTimelineBranching to create FormStep objects without formId",
+      "acceptanceCriteria": [
+        "Update addDefaultImprovementSteps - remove formId from step literals, add flowId",
+        "Update addStepToFlow - remove formId from step literal, add flowId",
+        "pnpm typecheck passes"
+      ],
+      "priority": 7,
+      "passes": true,
+      "notes": "FormStep literals must match updated interface"
+    },
+    {
+      "id": "TS-008",
+      "title": "Update public form page for questions array",
+      "description": "As a developer, I need the public form page to access questions via the new array relationship",
+      "acceptanceCriteria": [
+        "Update apps/web/src/pages/f/[urlSlug].vue",
+        "Change step.question to step.questions[0]",
+        "Handle empty questions array case",
+        "Add flowId to step transformation",
+        "pnpm typecheck passes"
+      ],
+      "priority": 8,
+      "passes": true,
+      "notes": "Public-facing page must work with new schema"
+    },
+    {
+      "id": "FE-001",
+      "title": "Verify form builder works with schema changes",
+      "description": "As a developer, I need to verify the form builder still works after all TypeScript changes",
+      "acceptanceCriteria": [
+        "Run pnpm dev:web",
+        "Navigate to form builder",
+        "Verify steps load correctly",
+        "Verify adding a new step works",
+        "Verify deleting a step works",
+        "Verify step reordering works",
+        "pnpm typecheck passes",
+        "pnpm build passes"
+      ],
+      "priority": 9,
+      "passes": true,
+      "notes": "End-to-end verification of Phase 1 changes. Also fixed useCreateFormWithSteps.ts for ADR-013 constraint-aware creation order."
+    },
+    {
+      "id": "TM-001",
+      "title": "Move FormStep and StepContent types to formStep entity",
+      "description": "As a developer, I need FormStep/StepContent types to live in entities/formStep/models per FSD architecture",
+      "acceptanceCriteria": [
+        "Create apps/web/src/entities/formStep/models/stepContent.ts",
+        "Move FormStep, StepContent, StepType, FlowMembership and related types from shared/stepCards/models/stepContent.ts",
+        "Update apps/web/src/entities/formStep/models/index.ts to export all moved types",
+        "Update apps/web/src/entities/formStep/index.ts to include models export",
+        "Keep re-exports in shared/stepCards/models for backward compatibility",
+        "Verify: grep -r \"from '@/entities/formStep'\" shows type imports work",
+        "pnpm typecheck passes"
+      ],
+      "priority": 10,
+      "passes": true,
+      "notes": "Moved all step types to entities/formStep/models/stepContent.ts. Backward compat re-exports in shared/stepCards/models."
+    },
+    {
+      "id": "TM-002",
+      "title": "Move QuestionData type to formQuestion entity",
+      "description": "As a developer, I need QuestionData to live in entities/formQuestion/models per FSD architecture",
+      "acceptanceCriteria": [
+        "Create apps/web/src/entities/formQuestion/models/questionData.ts with QuestionData interface",
+        "Update apps/web/src/entities/formQuestion/models/index.ts to export QuestionData",
+        "Update features/createForm/models/index.ts to re-export from entity (backward compat)",
+        "Update all direct imports to use entity path",
+        "Verify: grep -r \"QuestionData\" shows imports from @/entities/formQuestion",
+        "pnpm typecheck passes"
+      ],
+      "priority": 11,
+      "passes": true,
+      "notes": "Moved QuestionData to entities/formQuestion/models/questionData.ts. Re-exported from features/createForm/models."
+    },
+    {
+      "id": "TM-003",
+      "title": "Move FormData type to form entity",
+      "description": "As a developer, I need FormData to live in entities/form/models per FSD architecture",
+      "acceptanceCriteria": [
+        "Create apps/web/src/entities/form/models/formData.ts with FormData interface",
+        "Update apps/web/src/entities/form/models/index.ts to export FormData",
+        "Update features/createForm/models/index.ts to re-export from entity (backward compat)",
+        "Update all direct imports to use entity path",
+        "Verify: grep -r \"FormData\" shows imports from @/entities/form",
+        "pnpm typecheck passes"
+      ],
+      "priority": 12,
+      "passes": true,
+      "notes": "Moved FormData to entities/form/models/formData.ts. Re-exported from features/createForm/models."
+    },
+    {
+      "id": "TM-004",
+      "title": "Clean up feature models index",
+      "description": "As a developer, I need features/createForm/models to only contain multi-entity workflow types",
+      "acceptanceCriteria": [
+        "features/createForm/models/index.ts only exports: workflow state types, re-exports from entities",
+        "Remove any standalone type definitions that should be in entities",
+        "Verify HelpContent, SaveStatus, SectionId stay (feature-specific)",
+        "Verify FormEditorState stays (multi-entity workflow state)",
+        "pnpm typecheck passes"
+      ],
+      "priority": 13,
+      "passes": true,
+      "notes": "Verified: index.ts now only contains workflow state types (FormEditorState), feature-specific types (HelpContent, SaveStatus, SectionId), and re-exports from entities."
+    },
+    {
+      "id": "TM-005",
+      "title": "Final verification - types in correct layers",
+      "description": "As a developer, I need to verify all types are in correct FSD layers",
+      "acceptanceCriteria": [
+        "Run: grep -r \"from '@/entities/formStep'\" apps/web/src/features/ - shows FormStep imports",
+        "Run: grep -r \"from '@/entities/formQuestion'\" apps/web/src/features/ - shows QuestionData imports",
+        "Run: grep -r \"from '@/entities/form'\" apps/web/src/features/ - shows FormData imports",
+        "No type definitions (interface/type) in features/createForm/models except workflow types",
+        "pnpm typecheck passes",
+        "pnpm build passes"
+      ],
+      "priority": 14,
+      "passes": true,
+      "notes": "All acceptance criteria pass. Types moved to correct FSD layers with backward compat re-exports."
+    }
+  ]
+}

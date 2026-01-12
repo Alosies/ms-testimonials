@@ -52,48 +52,54 @@ const stepsVars = computed(() => ({ formId: formId.value }));
 const { formSteps, loading: stepsLoading } = useGetFormSteps(stepsVars);
 
 // Transform GraphQL form steps to FormStep type
+// ADR-013: Access question via questions[0] array relationship
 const steps = computed((): FormStep[] => {
-  return formSteps.value.map((step) => ({
-    id: step.id,
-    formId: step.form_id,
-    stepType: step.step_type as FormStep['stepType'],
-    stepOrder: step.step_order,
-    questionId: step.question_id ?? null,
-    question: step.question
-      ? {
-          id: step.question.id,
-          questionText: step.question.question_text,
-          placeholder: step.question.placeholder ?? null,
-          helpText: step.question.help_text ?? null,
-          isRequired: step.question.is_required,
-          minValue: step.question.min_value ?? null,
-          maxValue: step.question.max_value ?? null,
-          minLength: step.question.min_length ?? null,
-          maxLength: step.question.max_length ?? null,
-          scaleMinLabel: step.question.scale_min_label ?? null,
-          scaleMaxLabel: step.question.scale_max_label ?? null,
-          questionType: {
-            id: step.question.question_type.id,
-            uniqueName: step.question.question_type.unique_name,
-            name: step.question.question_type.name,
-            category: step.question.question_type.category,
-            inputComponent: step.question.question_type.input_component,
-          },
-          options:
-            step.question.options?.map((opt) => ({
-              id: opt.id,
-              optionValue: opt.option_value,
-              optionLabel: opt.option_label,
-              displayOrder: opt.display_order,
-              isDefault: opt.is_default,
-            })) ?? [],
-        }
-      : null,
-    content: (step.content as FormStep['content']) ?? {},
-    tips: (step.tips as string[]) ?? [],
-    flowMembership: (step.flow_membership as FormStep['flowMembership']) ?? 'shared',
-    isActive: step.is_active,
-  }));
+  return formSteps.value.map((step) => {
+    // ADR-013: Get first question from array relationship
+    const question = step.questions?.[0];
+    return {
+      id: step.id,
+      // ADR-013: flowId is required, formId removed
+      flowId: step.flow_id,
+      stepType: step.step_type as FormStep['stepType'],
+      stepOrder: step.step_order,
+      // ADR-013: Transform question from array or null
+      question: question
+        ? {
+            id: question.id,
+            questionText: question.question_text,
+            placeholder: question.placeholder ?? null,
+            helpText: question.help_text ?? null,
+            isRequired: question.is_required,
+            minValue: question.min_value ?? null,
+            maxValue: question.max_value ?? null,
+            minLength: question.min_length ?? null,
+            maxLength: question.max_length ?? null,
+            scaleMinLabel: question.scale_min_label ?? null,
+            scaleMaxLabel: question.scale_max_label ?? null,
+            questionType: {
+              id: question.question_type.id,
+              uniqueName: question.question_type.unique_name,
+              name: question.question_type.name,
+              category: question.question_type.category,
+              inputComponent: question.question_type.input_component,
+            },
+            options:
+              question.options?.map((opt: { id: string; option_value: string; option_label: string; display_order: number; is_default: boolean }) => ({
+                id: opt.id,
+                optionValue: opt.option_value,
+                optionLabel: opt.option_label,
+                displayOrder: opt.display_order,
+                isDefault: opt.is_default,
+              })) ?? [],
+          }
+        : null,
+      content: (step.content as FormStep['content']) ?? {},
+      tips: (step.tips as string[]) ?? [],
+      flowMembership: (step.flow_membership as FormStep['flowMembership']) ?? 'shared',
+      isActive: step.is_active,
+    };
+  });
 });
 
 const isLoading = computed(() => formLoading.value || stepsLoading.value);

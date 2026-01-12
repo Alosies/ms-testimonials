@@ -1,0 +1,9 @@
+{
+  "feature": "adr-014-phase1",
+  "createdAt": "2026-01-12T12:00:00Z",
+  "createdBy": "yellow",
+  "primaryAgent": "yellow",
+  "status": "active",
+  "sourceDocument": "docs/adr/014-fsd-composables-refactoring/adr.md",
+  "handoffs": []
+}

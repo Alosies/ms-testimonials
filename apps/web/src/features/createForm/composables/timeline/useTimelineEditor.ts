@@ -45,7 +45,8 @@ export const useTimelineEditor = createSharedComposable(() => {
   const selection = useTimelineSelection({ steps });
   const { selectedIndex, selectedStep, canGoNext, canGoPrev, selectStep: selectStepCore, selectStepById: selectStepByIdCore, resetSelection } = selection;
 
-  const stepCrud = useTimelineStepCrud({ steps, formId: currentFormId, formContext });
+  // ADR-013: formId removed from StepCrudDeps (steps belong to flows)
+  const stepCrud = useTimelineStepCrud({ steps, formContext });
 
   const branching = useTimelineBranching({
     steps,

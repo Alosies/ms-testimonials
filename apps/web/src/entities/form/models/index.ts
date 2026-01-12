@@ -3,6 +3,7 @@ export type * from './mutations';
 export type * from './branchingConfig';
 export type * from './designConfig';
 export type * from './flowMetadata';
+export type { FormData } from './formData';
 
 // Re-export functions from branchingConfig
 export {

@@ -20,18 +20,18 @@ import {
 export interface CreateStepParams {
   type: StepType;
   order: number;
-  formId: string;
-  flowId?: string;
+  // ADR-013: Steps belong to flows, not forms directly
+  flowId: string;
   ctx?: FormContext;
 }
 
 export interface AddStepAtParams {
   steps: FormStep[];
   type: StepType;
-  formId: string;
+  // ADR-013: Steps belong to flows, not forms directly
+  flowId: string;
   ctx: FormContext;
   afterIndex?: number;
-  flowId?: string;
 }
 
 export interface UpdateStepAtParams {
@@ -49,7 +49,7 @@ export interface MoveStepAtParams {
 export interface DuplicateStepAtParams {
   steps: FormStep[];
   index: number;
-  formId: string;
+  // ADR-013: Steps belong to flows, not forms directly (flowId taken from original step)
   ctx: FormContext;
 }
 
@@ -73,21 +73,19 @@ export function generateTempId(): string {
 
 /**
  * Create a new step with default content based on type
- * Uses flowId from params, or falls back to shared flowId from context
+ * ADR-013: Steps belong to flows directly, flowId is required
  */
 export function createStep(params: CreateStepParams): FormStep {
-  const { type, order, formId, flowId, ctx = {} } = params;
-  // Use provided flowId, or fall back to shared flow from context
-  const resolvedFlowId = flowId ?? ctx.flowIds?.shared;
+  const { type, order, flowId, ctx = {} } = params;
   const baseStep: FormStep = {
     id: generateTempId(),
-    formId,
+    // ADR-013: flowId is now required
+    flowId,
     stepType: type,
     stepOrder: order,
-    questionId: null,
+    // ADR-013: question is now an optional property (inverted relationship)
     content: {},
     tips: [],
-    flowId: resolvedFlowId,
     flowMembership: 'shared',
     isActive: true,
     isNew: true,
@@ -131,15 +129,15 @@ export function reorderSteps(steps: FormStep[]): void {
 
 /**
  * Add a step at a specific position
- * flowId is optional during migration
+ * ADR-013: flowId is required
  */
 export function addStepAt(params: AddStepAtParams): FormStep {
-  const { steps, type, formId, ctx, afterIndex, flowId } = params;
+  const { steps, type, flowId, ctx, afterIndex } = params;
   const insertIndex = afterIndex !== undefined
     ? afterIndex + 1
     : steps.length;
 
-  const newStep = createStep({ type, order: insertIndex, formId, flowId, ctx });
+  const newStep = createStep({ type, order: insertIndex, flowId, ctx });
   steps.splice(insertIndex, 0, newStep);
   reorderSteps(steps);
 
@@ -187,16 +185,17 @@ export function moveStepAt(params: MoveStepAtParams): void {
 
 /**
  * Duplicate a step at a specific index
+ * ADR-013: Uses flowId from original step
  */
 export function duplicateStepAt(params: DuplicateStepAtParams): FormStep | null {
-  const { steps, index, formId, ctx } = params;
+  const { steps, index, ctx } = params;
   const original = steps[index];
   if (!original) return null;
 
   const duplicate = createStep({
     type: original.stepType,
     order: index + 1,
-    formId,
+    // ADR-013: flowId from original step (steps belong to flows)
     flowId: original.flowId,
     ctx,
   });
@@ -246,7 +245,8 @@ export function changeStepTypeAt(params: ChangeStepTypeAtParams): void {
     ...step,
     stepType: newType,
     content: newContent,
-    questionId: null,
+    // ADR-013: question property cleared (inverted relationship - question references step)
+    question: null,
     isModified: true,
   };
 }

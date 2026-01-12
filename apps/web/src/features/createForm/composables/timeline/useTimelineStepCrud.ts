@@ -28,7 +28,7 @@ import { toRefs } from 'vue';
 
 interface StepCrudDeps {
   steps: Ref<FormStep[]>;
-  formId: Ref<string | null>;
+  // ADR-013: formId removed, steps now belong to flows
   formContext: Ref<FormContext>;
 }
 
@@ -53,7 +53,8 @@ export interface TimelineStepCrudReturn {
 }
 
 export function useTimelineStepCrud(deps: StepCrudDeps): TimelineStepCrudReturn {
-  const { steps, formId, formContext } = deps;
+  // ADR-013: formId removed from deps, steps now belong to flows
+  const { steps, formContext } = deps;
   const questionService = useStepQuestionService();
 
   // ADR-011: Initialize persistence composables
@@ -64,11 +65,22 @@ export function useTimelineStepCrud(deps: StepCrudDeps): TimelineStepCrudReturn 
   const contextStore = useCurrentContextStore();
   const { currentOrganizationId } = toRefs(contextStore);
 
+  /**
+   * Get the flow ID to use for new steps.
+   * ADR-013: Steps belong to flows, flowId is required.
+   */
+  function getFlowIdForStep(): string {
+    const flowIds = formContext.value.flowIds;
+    // Prefer shared flow, fallback to any available flow
+    return flowIds?.shared ?? flowIds?.testimonial ?? flowIds?.improvement ?? '';
+  }
+
   function addStep(type: StepType, afterIndex?: number): FormStep {
     return addStepAt({
       steps: steps.value,
       type,
-      formId: formId.value ?? '',
+      // ADR-013: Use flowId from context
+      flowId: getFlowIdForStep(),
       ctx: formContext.value,
       afterIndex,
     });
@@ -76,34 +88,39 @@ export function useTimelineStepCrud(deps: StepCrudDeps): TimelineStepCrudReturn 
 
   /**
    * Async version of addStep that creates a form_question for question/rating steps.
-   * The question is created first, then the step is added with the questionId.
+   * ADR-013: Step is created first (local), then question is created with step_id.
+   * Note: This is local-only. For persistence, use addStepWithPersist.
    *
    * @param type - The step type to create
    * @param afterIndex - Optional index after which to insert
    * @param displayOrder - Optional explicit display_order for question creation
    *                       (avoids uniqueness conflicts when local array index differs from DB order)
+   * @param persistedStepId - Optional step ID if the step was already persisted (for question creation)
    */
   async function addStepAsync(
     type: StepType,
     afterIndex?: number,
     displayOrder?: number,
+    persistedStepId?: string,
   ): Promise<FormStep> {
-    const currentFormId = formId.value ?? '';
     const ctx = formContext.value;
 
-    // First, add the step to get its initial state
+    // First, add the step to local state
     const newStep = addStepAt({
       steps: steps.value,
       type,
-      formId: currentFormId,
+      // ADR-013: Use flowId from context
+      flowId: getFlowIdForStep(),
       ctx,
       afterIndex,
     });
 
-    // If this is a question/rating step, create the form_question
-    if (questionService.requiresQuestion(type)) {
+    // ADR-013: If step requires a question, create it with step_id
+    // Only create question if we have a persisted step ID (question needs to reference step)
+    if (questionService.requiresQuestion(type) && persistedStepId) {
       const result = await questionService.createQuestionForStep({
-        formId: currentFormId,
+        // ADR-013: Question now references step via step_id
+        stepId: persistedStepId,
         stepType: type,
         stepOrder: newStep.stepOrder,
         flowMembership: newStep.flowMembership,
@@ -111,7 +128,7 @@ export function useTimelineStepCrud(deps: StepCrudDeps): TimelineStepCrudReturn 
       });
 
       if (result) {
-        // Find and update the step with the questionId and question data
+        // Find and update the step with the question data
         const stepIndex = steps.value.findIndex(s => s.id === newStep.id);
         if (stepIndex >= 0) {
           // Create a minimal LinkedQuestion object with the new question data
@@ -139,11 +156,10 @@ export function useTimelineStepCrud(deps: StepCrudDeps): TimelineStepCrudReturn 
 
           steps.value[stepIndex] = {
             ...steps.value[stepIndex],
-            questionId: result.questionId,
             question: linkedQuestion,
           };
 
-          // Return the updated step (with questionId) instead of the original
+          // Return the updated step (with question) instead of the original
           return steps.value[stepIndex];
         }
       }
@@ -190,7 +206,7 @@ export function useTimelineStepCrud(deps: StepCrudDeps): TimelineStepCrudReturn 
     return duplicateStepAt({
       steps: steps.value,
       index,
-      formId: formId.value ?? '',
+      // ADR-013: formId removed, flowId is taken from original step
       ctx: formContext.value,
     });
   }
@@ -205,18 +221,18 @@ export function useTimelineStepCrud(deps: StepCrudDeps): TimelineStepCrudReturn 
 
   /**
    * Add a step with immediate persistence.
-   * Creates question first (if needed), then persists the step.
+   * ADR-013: Step is persisted first, then question is created with step_id.
    *
    * Note: Uses computed next step_order to avoid uniqueness conflicts.
    * The local stepOrder (array index) may differ from database step_order.
    */
   async function addStepWithPersist(type: StepType, afterIndex?: number): Promise<FormStep> {
     return withLock('add-step', async () => {
-      const currentFormId = formId.value;
       const orgId = currentOrganizationId.value;
+      const flowId = getFlowIdForStep();
 
-      if (!currentFormId || !orgId) {
-        throw new Error('Cannot add step: missing formId or organizationId');
+      if (!orgId || !flowId) {
+        throw new Error('Cannot add step: missing organizationId or flowId');
       }
 
       // Compute a unique step_order that fits within SMALLINT (max 32767)
@@ -227,26 +243,69 @@ export function useTimelineStepCrud(deps: StepCrudDeps): TimelineStepCrudReturn 
       const randomOffset = Math.floor(Math.random() * 99) + 1;
       const nextStepOrder = Math.min(baseOrder + randomOffset, 32000); // Stay within SMALLINT
 
-      // Create step locally first (with question if needed)
-      // Note: addStepAsync will reorder local array, but we'll use nextStepOrder for DB
-      const newStep = await addStepAsync(type, afterIndex, nextStepOrder);
+      // ADR-013: Create step locally first (without question)
+      const newStep = addStep(type, afterIndex);
 
-      // Persist the step to database with computed step_order
+      // ADR-013: Persist the step to database FIRST (step must exist for question to reference)
       await createFormSteps({
         inputs: [{
           id: newStep.id,
-          form_id: currentFormId,
+          // ADR-013: Steps belong to flows, not forms (form_id removed, question_id removed)
+          flow_id: flowId,
           organization_id: orgId,
           step_type: newStep.stepType,
           step_order: nextStepOrder, // Use computed order, not local array index
-          question_id: newStep.questionId ?? null,
-          flow_id: newStep.flowId ?? null,
           flow_membership: newStep.flowMembership ?? 'shared',
           tips: newStep.tips ?? [],
           content: newStep.content ?? {},
           is_active: true,
         }],
       });
+
+      // ADR-013: Now create question if needed (question references step via step_id)
+      if (questionService.requiresQuestion(type)) {
+        const result = await questionService.createQuestionForStep({
+          stepId: newStep.id,
+          stepType: type,
+          stepOrder: nextStepOrder,
+          flowMembership: newStep.flowMembership,
+          displayOrder: nextStepOrder,
+        });
+
+        if (result) {
+          // Update local step with question data
+          const stepIndex = steps.value.findIndex(s => s.id === newStep.id);
+          if (stepIndex >= 0) {
+            const linkedQuestion: LinkedQuestion = {
+              id: result.questionId,
+              questionText: result.questionText,
+              placeholder: null,
+              helpText: null,
+              isRequired: false,
+              minValue: null,
+              maxValue: null,
+              minLength: null,
+              maxLength: null,
+              scaleMinLabel: null,
+              scaleMaxLabel: null,
+              questionType: {
+                id: '',
+                uniqueName: 'text_long',
+                name: 'Long Text',
+                category: 'text',
+                inputComponent: 'TextArea',
+              },
+              options: [],
+            };
+
+            steps.value[stepIndex] = {
+              ...steps.value[stepIndex],
+              question: linkedQuestion,
+            };
+            return steps.value[stepIndex];
+          }
+        }
+      }
 
       return newStep;
     });
@@ -290,15 +349,14 @@ export function useTimelineStepCrud(deps: StepCrudDeps): TimelineStepCrudReturn 
 
   /**
    * Duplicate a step with immediate persistence.
-   * Creates question copy first (if needed), then persists the new step.
+   * ADR-013: Step is persisted first, then question is created with step_id.
    */
   async function duplicateStepWithPersist(index: number): Promise<FormStep | null> {
     return withLock('duplicate-step', async () => {
-      const currentFormId = formId.value;
       const orgId = currentOrganizationId.value;
 
-      if (!currentFormId || !orgId) {
-        throw new Error('Cannot duplicate step: missing formId or organizationId');
+      if (!orgId) {
+        throw new Error('Cannot duplicate step: missing organizationId');
       }
 
       const sourceStep = steps.value[index];
@@ -308,17 +366,33 @@ export function useTimelineStepCrud(deps: StepCrudDeps): TimelineStepCrudReturn 
       const newStep = duplicateStep(index);
       if (!newStep) return null;
 
-      // If source has a question, create a new question for the duplicate
+      // ADR-013: Persist the step to database FIRST (step must exist for question to reference)
+      await createFormSteps({
+        inputs: [{
+          id: newStep.id,
+          // ADR-013: Steps belong to flows, not forms (form_id removed, question_id removed)
+          flow_id: newStep.flowId,
+          organization_id: orgId,
+          step_type: newStep.stepType,
+          step_order: newStep.stepOrder,
+          flow_membership: newStep.flowMembership ?? 'shared',
+          tips: newStep.tips ?? [],
+          content: newStep.content ?? {},
+          is_active: true,
+        }],
+      });
+
+      // ADR-013: Now create question if needed (question references step via step_id)
       if (questionService.requiresQuestion(newStep.stepType)) {
         const result = await questionService.createQuestionForStep({
-          formId: currentFormId,
+          stepId: newStep.id,
           stepType: newStep.stepType,
           stepOrder: newStep.stepOrder,
           flowMembership: newStep.flowMembership,
         });
 
         if (result) {
-          // Update the step with the new questionId
+          // Update the step with the new question
           const stepIndex = steps.value.findIndex(s => s.id === newStep.id);
           if (stepIndex >= 0) {
             const linkedQuestion: LinkedQuestion = {
@@ -345,30 +419,11 @@ export function useTimelineStepCrud(deps: StepCrudDeps): TimelineStepCrudReturn 
 
             steps.value[stepIndex] = {
               ...steps.value[stepIndex],
-              questionId: result.questionId,
               question: linkedQuestion,
             };
-            newStep.questionId = result.questionId;
           }
         }
       }
-
-      // Persist the new step
-      await createFormSteps({
-        inputs: [{
-          id: newStep.id,
-          form_id: currentFormId,
-          organization_id: orgId,
-          step_type: newStep.stepType,
-          step_order: newStep.stepOrder,
-          question_id: newStep.questionId ?? null,
-          flow_id: newStep.flowId ?? null,
-          flow_membership: newStep.flowMembership ?? 'shared',
-          tips: newStep.tips ?? [],
-          content: newStep.content ?? {},
-          is_active: true,
-        }],
-      });
 
       return newStep;
     });

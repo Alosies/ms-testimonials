@@ -1,7 +1,13 @@
-import type { AIQuestion, AIContext } from '@/shared/api';
+import type { AIContext } from '@/shared/api';
+import type { QuestionData } from '@/entities/formQuestion';
+import type { FormData } from '@/entities/form';
 
-// Step types - re-export from shared
+// Step types - re-export from shared (which re-exports from entities/formStep)
 export * from '@/shared/stepCards/models/stepContent';
+
+// Entity types - re-export for backward compatibility (ADR-014 Phase 1)
+export type { QuestionData };
+export type { FormData };
 
 // Flow navigation types
 export type {
@@ -25,28 +31,7 @@ export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 // Section Types (single-page layout)
 export type SectionId = 'product-info' | 'questions' | 'preview';
 
-// Form Data (collected in Step 1)
-export interface FormData {
-  name: string;
-  product_name: string;
-  product_description: string;
-  focus_areas?: string; // Optional guidance for AI question generation
-}
-
-// Question Data (with local editing state)
-export interface QuestionData extends AIQuestion {
-  id?: string;
-  isNew?: boolean;
-  isModified?: boolean;
-  // Rating type fields
-  min_value?: number | null;
-  max_value?: number | null;
-  // Linear scale label customization
-  scale_min_label?: string | null;
-  scale_max_label?: string | null;
-}
-
-// Form Editor State
+// Form Editor State (multi-entity workflow state - stays in feature layer)
 export interface FormEditorState {
   formData: FormData;
   questions: QuestionData[];

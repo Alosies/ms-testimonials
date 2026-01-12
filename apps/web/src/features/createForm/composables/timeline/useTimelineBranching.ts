@@ -147,12 +147,15 @@ export function useTimelineBranching(deps: BranchingDeps) {
   }
 
   function addDefaultImprovementSteps() {
+    // ADR-013: Get improvement flowId from context (should be created when branching is enabled)
+    const improvementFlowId = steps.value.find(s => s.flowMembership === 'improvement')?.flowId ?? '';
+
     const whatWentWrongStep: FormStep = {
       id: generateTempId(),
-      formId: formId.value ?? '',
+      // ADR-013: flowId is required, formId removed
+      flowId: improvementFlowId,
       stepType: 'question',
       stepOrder: steps.value.length,
-      questionId: null,
       content: {},
       tips: ['Be honest - your feedback helps us improve'],
       flowMembership: 'improvement',
@@ -163,10 +166,10 @@ export function useTimelineBranching(deps: BranchingDeps) {
 
     const improvementThankYouStep: FormStep = {
       id: generateTempId(),
-      formId: formId.value ?? '',
+      // ADR-013: flowId is required, formId removed
+      flowId: improvementFlowId,
       stepType: 'thank_you',
       stepOrder: steps.value.length + 1,
-      questionId: null,
       content: {
         title: 'Thank you for your feedback',
         message: 'We take your feedback seriously and will work to improve.',
@@ -189,12 +192,16 @@ export function useTimelineBranching(deps: BranchingDeps) {
       ? afterIndex + 1
       : flowSteps.length;
 
+    // ADR-013: Get flowId from existing steps in the same flow
+    const existingFlowStep = steps.value.find(s => s.flowMembership === flow);
+    const targetFlowId = existingFlowStep?.flowId ?? '';
+
     const newStep: FormStep = {
       id: generateTempId(),
-      formId: formId.value ?? '',
+      // ADR-013: flowId is required, formId removed
+      flowId: targetFlowId,
       stepType: type,
       stepOrder: steps.value.length,
-      questionId: null,
       content: {},
       tips: [],
       flowMembership: flow,

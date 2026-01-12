@@ -100,22 +100,21 @@ export const useSaveFormSteps = createSharedComposable(() => {
 
   /**
    * Create form_questions database records for new question/rating steps.
-   * Required because the database constraint enforces question_id NOT NULL
-   * for question/rating step types.
+   * ADR-013: Questions now reference steps via step_id (step must exist first).
+   *
+   * Note: This function is called AFTER steps are persisted, so step IDs are available.
    */
   async function createQuestionRecordsForNewSteps(
     organizationId: string,
     _userId?: string,
   ): Promise<Map<string, string>> {
     const stepToQuestionMap = new Map<string, string>();
-    const formId = editor.currentFormId.value;
-
-    if (!formId) return stepToQuestionMap;
 
     // Find question/rating steps that need questions created
+    // ADR-013: Check for !step.question instead of !step.questionId
     const stepsNeedingQuestions = editor.steps.value.filter(step =>
       (step.stepType === 'question' || step.stepType === 'rating') &&
-      !step.questionId &&
+      !step.question &&
       step.isNew,
     );
 
@@ -146,7 +145,8 @@ export const useSaveFormSteps = createSharedComposable(() => {
 
         const result = await createFormQuestion({
           input: {
-            form_id: formId,
+            // ADR-013: Question now references step via step_id (not form_id)
+            step_id: step.id,
             organization_id: organizationId,
             question_type_id: questionTypeId,
             question_key: `${config.questionKey}_${Date.now()}`,
@@ -159,10 +159,33 @@ export const useSaveFormSteps = createSharedComposable(() => {
 
         if (result?.id) {
           stepToQuestionMap.set(step.id, result.id);
-          // Update the step's questionId in the editor
+          // Update the step's question in the editor
           const stepIndex = editor.steps.value.findIndex(s => s.id === step.id);
           if (stepIndex >= 0) {
-            editor.updateStep(stepIndex, { questionId: result.id });
+            // ADR-013: Update question property (not questionId)
+            editor.updateStep(stepIndex, {
+              question: {
+                id: result.id,
+                questionText: config.questionText,
+                placeholder: null,
+                helpText: null,
+                isRequired: false,
+                minValue: null,
+                maxValue: null,
+                minLength: null,
+                maxLength: null,
+                scaleMinLabel: null,
+                scaleMaxLabel: null,
+                questionType: {
+                  id: questionTypeId,
+                  uniqueName: 'text_long',
+                  name: 'Long Text',
+                  category: 'text',
+                  inputComponent: 'TextArea',
+                },
+                options: [],
+              },
+            });
           }
         }
       } catch (err) {
@@ -195,17 +218,16 @@ export const useSaveFormSteps = createSharedComposable(() => {
    * Step data required for mapping to database input
    * Explicitly typed to avoid readonly issues
    *
-   * Updated for ADR-009 Phase 2: Includes flowId for persistence.
+   * ADR-013: Removed formId and questionId (steps belong to flows, questions reference steps)
    */
   interface StepForMapping {
     id: string;
-    formId: string;
     stepType: string;
     stepOrder: number;
-    questionId?: string | null;
     content: Record<string, unknown>;
     tips: string[];
-    flowId?: string;
+    // ADR-013: flowId is required (steps belong to flows)
+    flowId: string;
     flowMembership: string;
     isActive: boolean;
     isNew?: boolean;
@@ -214,21 +236,18 @@ export const useSaveFormSteps = createSharedComposable(() => {
   /**
    * Convert FormStep to form_steps_insert_input format
    *
-   * Updated for ADR-009 Phase 2: Includes flow_id for step-flow assignment.
-   * flow_membership is kept for backward compatibility but flow_id is the source of truth.
+   * ADR-013: Removed form_id and question_id (steps belong to flows, questions reference steps)
    */
   function mapStepToInput(step: StepForMapping, organizationId: string, userId?: string) {
     return {
       id: step.id.startsWith('temp_') ? undefined : step.id,
-      form_id: step.formId,
+      // ADR-013: Steps belong to flows, not forms (form_id and question_id removed)
+      flow_id: step.flowId,
       organization_id: organizationId,
       step_type: step.stepType,
       step_order: step.stepOrder,
-      question_id: step.questionId || null,
       content: step.content || {},
       tips: step.tips || [],
-      // ADR-009 Phase 2: flow_id is the source of truth for step-flow assignment
-      flow_id: step.flowId || null,
       // Keep flow_membership for backward compatibility during migration
       flow_membership: step.flowMembership,
       is_active: step.isActive,
@@ -275,17 +294,16 @@ export const useSaveFormSteps = createSharedComposable(() => {
     try {
       // Filter to only steps that need saving (new or modified)
       // Extract only the properties we need to avoid readonly issues
-      // ADR-009 Phase 2: Include flowId for persistence
+      // ADR-013: Removed formId and questionId (steps belong to flows, questions reference steps)
       const stepsToSave = steps
         .filter(step => step.isNew || step.isModified)
         .map(step => ({
           id: step.id,
-          formId: step.formId,
           stepType: step.stepType,
           stepOrder: step.stepOrder,
-          questionId: step.questionId,
           content: step.content as Record<string, unknown>,
           tips: [...(step.tips || [])],
+          // ADR-013: flowId is required
           flowId: step.flowId,
           flowMembership: step.flowMembership,
           isActive: step.isActive,

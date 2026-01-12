@@ -1,0 +1,394 @@
+# Progress Log: ADR-014 Phase 1 - Creation Order
+# Started: 2026-01-12
+# Branch: yellow/adr-014-phase1
+# Workspace: ralph/workspaces/adr-014-phase1_2026-01-12/
+
+## Session Context
+
+### Project Overview
+- Testimonials: Testimonial collection and display tool
+- Tech Stack: Vue 3 + TypeScript + Tailwind, Hono.js API, Hasura GraphQL, PostgreSQL
+- Package Manager: pnpm
+
+### Key Patterns
+- FSD Architecture: Types exported from models/ folders only
+- GraphQL: Use generated types from @/shared/graphql/generated/operations
+- Hasura: db/hasura/migrations/default/, db/hasura/metadata/
+- Codegen: pnpm codegen:web
+- Typecheck: pnpm typecheck
+
+### ADR-013 Schema Changes (Already Applied)
+- form_steps: Removed form_id, removed question_id
+- form_questions: Removed form_id, added step_id (FK to form_steps)
+- flows: Added is_primary
+- Ownership chain: form → flow → step → question → options
+
+### Critical Files
+- apps/web/src/shared/stepCards/models/stepContent.ts: FormStep interface
+- apps/web/src/features/createForm/functions/stepOperations.ts: Step CRUD operations
+- apps/web/src/features/createForm/functions/stepTransform.ts: GraphQL to FormStep transform
+- apps/web/src/features/createForm/composables/timeline/useStepQuestionService.ts: Question creation
+- apps/web/src/features/createForm/composables/timeline/useTimelineStepCrud.ts: Step persistence
+- apps/web/src/features/createForm/composables/timeline/useSaveFormSteps.ts: Save orchestration
+- apps/web/src/features/createForm/composables/timeline/useTimelineBranching.ts: Branching logic
+- apps/web/src/pages/f/[urlSlug].vue: Public form page
+
+### Gotchas / Warnings
+- Hasura uses questions[] (plural) - access as questions[0] for 0:1 relationship
+- Creation order is now: step first, then question (question references step via step_id)
+- flowId is required on FormStep, formId is removed
+- form_id and question_id removed from form_steps insert inputs
+
+### Skill Mapping
+- TS-* tasks: No specific skill (manual TypeScript changes)
+- FE-* tasks: No specific skill (manual verification)
+- Before commit: Use /code-review skill
+
+### Source Document
+docs/adr/014-fsd-composables-refactoring/adr.md
+
+---
+## Completed Phases (Not in PRD)
+
+### Phase 0.1 - Database Migrations ✅
+- Migrations applied for ADR-013 schema changes
+- Committed in previous session
+
+### Phase 0.2-0.5 - GraphQL Updates + Codegen ✅
+- Updated GraphQL fragments, queries, mutations
+- Codegen ran successfully
+- Committed in previous session
+
+---
+## Iteration Log
+
+### Iteration 0 - Setup (2026-01-12)
+- [x] Workspace created
+- [x] PRD generated with 9 stories (Phase 1 only)
+- Scope: TypeScript composable updates for ADR-013 schema
+- Next: TS-001 (Update FormStep interface)
+
+Mon 12 Jan 2026 12:00:30 IST: Starting iteration 1
+Mon 12 Jan 2026 12:13:38 IST: Starting iteration 1
+
+### Iteration 1 - TypeScript Updates (2026-01-12)
+Completed all TypeScript stories (TS-001 through TS-008)
+
+#### TS-001: Update FormStep interface ✅
+- Removed formId property
+- Made flowId required (string, not optional)
+- Removed questionId property
+- Updated comments to document ADR-013 changes
+
+#### TS-002: Update stepTransform.ts ✅
+- Changed step.question to step.questions[0]
+- Handled empty questions array case
+- Removed formId from output
+
+#### TS-003: Update stepOperations.ts ✅
+- CreateStepParams: removed formId, made flowId required
+- AddStepAtParams: removed formId
+- DuplicateStepAtParams: removed formId
+- Updated createStep to use flowId from params
+- Updated addStepAt, duplicateStepAt functions
+
+#### TS-004: Update useStepQuestionService ✅
+- CreateQuestionParams: changed formId to stepId
+- createQuestionForStep: passes step_id in mutation input
+- Removed all form_id references
+
+#### TS-005: Update useTimelineStepCrud ✅
+- addStepWithPersist: creates step first, then question with step_id
+- duplicateStepWithPersist: same creation order
+- Removed formId from StepCrudDeps interface
+- Removed form_id, question_id from createFormSteps input
+- Added getFlowIdForStep helper function
+
+#### TS-006: Update useSaveFormSteps ✅
+- StepForMapping: removed formId, questionId
+- mapStepToInput: removed form_id, question_id from output
+- stepsToSave: removed formId from mapping
+- createQuestionRecordsForNewSteps: uses step_id, checks !step.question
+
+#### TS-007: Update useTimelineBranching ✅
+- addDefaultImprovementSteps: removed formId, added flowId lookup
+- addStepToFlow: removed formId, added flowId from existing steps
+
+#### TS-008: Update public form page ✅
+- Changed step.question to step.questions[0]
+- Handled empty questions array case
+- Added flowId to step transformation
+- Removed formId
+
+#### Additional Fixes
+- useStepState.ts: Removed questionId from structural fields
+- useTimelineEditor.ts: Removed formId from StepCrudDeps call
+
+#### Verification
+- pnpm typecheck passes ✅
+
+#### Patterns Discovered
+- questions[0] pattern for Hasura array relationships
+- Creation order: step → question (step must exist for question to reference)
+- flowId is retrieved from formContext.flowIds or existing steps in same flow
+
+Next: FE-001 (End-to-end verification)
+Mon 12 Jan 2026 12:22:53 IST: Starting iteration 2
+
+### Iteration 2 - End-to-End Verification (2026-01-12)
+
+#### FE-001: Verify form builder works with schema changes ✅
+
+##### Issues Found & Fixed
+
+**Issue 1: Wizard form creation used old schema**
+- File: apps/web/src/features/createForm/composables/wizard/useCreateFormWithSteps.ts
+- Problem: Still passing form_id when creating questions
+- Fix: Refactored to ADR-013 constraint-aware creation order
+
+**Issue 2: Branch flows constraint violation**
+- Constraint: `chk_flows_branch_requires_conditions` requires branch_question_id for non-primary flows
+- Fix: Create only shared flow initially, then branch flows AFTER questions exist
+
+**Issue 3: Internal tracking fields sent to API**
+- Problem: `_flowMembership`, `_originalQuestionIndex` sent to GraphQL mutation
+- Fix: Strip internal fields before API call with destructuring
+
+**Issue 4: Step order uniqueness violation**
+- Constraint: `form_steps_flow_order_unique` UNIQUE(form_id, flow_id, step_order)
+- Problem: Per-flow step_order counters caused duplicates when all steps go to shared flow
+- Fix: Use globalStepOrder counter, store _intendedStepOrder for later update
+
+##### ADR-013 Constraint-Aware Creation Order (useCreateFormWithSteps.ts)
+1. Create form
+2. Create ONLY shared flow (is_primary = true)
+3. Create ALL steps pointing to shared flow (unique global step_order)
+4. Create questions with step_id (now step exists!)
+5. Create branch flows WITH branch_question_id (now question exists!)
+6. Update branch steps to point to actual branch flows with correct step_order
+7. Update form branching_config
+
+##### Verification Results
+- ✅ pnpm typecheck passes
+- ✅ pnpm build passes
+- ✅ Dev server starts (port 3003)
+- ✅ Wizard form creation works
+- ✅ Steps load correctly in Form Studio
+- ✅ Adding new steps works
+- ✅ Deleting steps works
+- ✅ Step reordering UI functional
+
+##### Files Modified
+- apps/web/src/features/createForm/composables/wizard/useCreateFormWithSteps.ts (major refactor)
+
+---
+## Phase 1 Complete ✅
+
+All 9 user stories completed:
+- TS-001 through TS-008: TypeScript composable updates
+- FE-001: End-to-end verification
+
+### Summary of Changes
+1. FormStep interface: removed formId, made flowId required
+2. All composables updated for step→question ownership (ADR-013)
+3. questions[0] pattern for Hasura array relationships
+4. Wizard form creation refactored for constraint-aware creation order
+5. Build and typecheck pass
+Mon 12 Jan 2026 12:43:47 IST: Starting iteration 3
+Mon 12 Jan 2026 12:44:25 IST: Starting iteration 4
+Mon 12 Jan 2026 12:45:48 IST: Starting iteration 5
+Mon 12 Jan 2026 12:47:08 IST: Max iterations reached
+
+---
+## Code Review Feedback (2026-01-12)
+
+### Issues Found
+
+#### [WARNING] FSD Architecture: Types not moved to entity layer per Phase-1 spec
+- Phase-1 spec requires types to be moved to entity layers
+- Current state: Types remain in `shared/stepCards/models/stepContent.ts`
+- Missing: `entities/formStep/models/` folder doesn't exist
+- `FormData` and `QuestionData` still defined in `features/createForm/models/`
+
+#### [WARNING] FSD Architecture: Feature layer contains entity-level types
+- `features/createForm/models/index.ts` defines `FormData` and `QuestionData`
+- These are single-entity types that should be in entity layer
+
+### Root Cause Analysis
+
+The original PRD focused on **ADR-013 schema changes** (which were needed and correctly implemented) but missed the core **Phase-1 requirement: moving types to entity layers**.
+
+The PRD description was: "Update TypeScript composables for ADR-013 schema"
+It should have been: "Move types from features to entity layers (FSD architecture compliance)"
+
+### Corrective Actions
+
+1. **Added new tasks (TM-001 through TM-005)** for type migration work
+2. **Updated PRD description** to reflect Phase-1 goal accurately
+3. **Updated prdDocument** to point to phase-1-types-to-entities.md
+
+### Learnings for Future Phases
+
+1. **Always read the phase spec file first** - not just the ADR overview
+2. **Match PRD description to phase goal** - the description should reflect what the phase accomplishes
+3. **Include verification criteria from spec** - Phase-1 spec has explicit acceptance criteria
+4. **Entity-level types belong in entities/** - not shared/ or features/
+5. **Use re-exports for backward compatibility** - don't break existing imports
+
+### Patterns to Enforce in Future PRDs
+
+Each TM-* (Type Migration) task should include:
+- Create entity model file
+- Export from entity barrel file
+- Export from entity public API
+- Add re-export in old location for backward compatibility
+- Grep verification that imports work
+- pnpm typecheck passes
+
+---
+## Remaining Work
+
+### Type Migration Tasks (TM-001 through TM-005)
+- [x] TM-001: Move FormStep and StepContent types to formStep entity
+- [x] TM-002: Move QuestionData type to formQuestion entity
+- [x] TM-003: Move FormData type to form entity
+- [x] TM-004: Clean up feature models index
+- [x] TM-005: Final verification - types in correct layers
+
+Mon 12 Jan 2026 13:13:19 IST: Starting iteration 1
+
+### Iteration 3 - TM-001: Move FormStep types (2026-01-12)
+
+#### TM-001: Move FormStep and StepContent types to formStep entity ✅
+
+**Files Created:**
+- apps/web/src/entities/formStep/models/stepContent.ts - All step types
+- apps/web/src/entities/formStep/models/index.ts - Barrel export
+
+**Files Modified:**
+- apps/web/src/entities/formStep/index.ts - Added models export
+- apps/web/src/shared/stepCards/models/stepContent.ts - Re-exports from entity
+
+**Types Moved:**
+- FlowIds, FormContext, StepType, FlowMembership, ContactField
+- WelcomeContent, ConsentContent, ContactInfoContent, RewardContent, ThankYouContent
+- StepContent, LinkedQuestionType, QuestionOption, LinkedQuestion
+- FormStep
+
+**Verification:**
+- pnpm typecheck passes ✅
+- grep shows imports from @/entities/formStep working ✅
+
+---
+
+### Iteration 4 - TM-002: Move QuestionData type (2026-01-12)
+
+#### TM-002: Move QuestionData type to formQuestion entity ✅
+
+**Files Created:**
+- apps/web/src/entities/formQuestion/models/questionData.ts - QuestionData interface
+
+**Files Modified:**
+- apps/web/src/entities/formQuestion/models/index.ts - Added QuestionData export
+- apps/web/src/features/createForm/models/index.ts - Re-exports QuestionData from entity
+
+**Pattern:**
+- Import type from entity, then re-export for backward compat
+- This allows local scope usage in FormEditorState while providing re-export
+
+**Verification:**
+- pnpm typecheck passes ✅
+- grep shows imports from @/entities/formQuestion working ✅
+
+---
+
+### Iteration 5 - TM-003: Move FormData type (2026-01-12)
+
+#### TM-003: Move FormData type to form entity ✅
+
+**Files Created:**
+- apps/web/src/entities/form/models/formData.ts - FormData interface
+
+**Files Modified:**
+- apps/web/src/entities/form/models/index.ts - Added FormData export
+- apps/web/src/features/createForm/models/index.ts - Re-exports FormData from entity
+
+**Verification:**
+- pnpm typecheck passes ✅
+- grep shows imports from @/entities/form working ✅
+
+---
+
+### Iteration 6 - TM-004: Clean up feature models (2026-01-12)
+
+#### TM-004: Clean up feature models index ✅
+
+**Verified current state of features/createForm/models/index.ts:**
+
+**Re-exports from entities (backward compat):**
+- QuestionData from @/entities/formQuestion
+- FormData from @/entities/form
+- Step types via shared (which re-exports from entities/formStep)
+
+**Feature-specific types (stay in feature layer):**
+- HelpContent - properties panel help content
+- SaveStatus - auto-save status tracking
+- SectionId - single-page layout sections
+- FlowStep, FlowNavigationDeps, etc. - multi-entity workflow navigation
+
+**Multi-entity workflow state (stay in feature layer):**
+- FormEditorState - contains FormData, QuestionData[], AIContext, etc.
+
+**Verification:**
+- pnpm typecheck passes ✅
+- No standalone entity types defined in feature layer ✅
+
+---
+
+### Iteration 7 - TM-005: Final verification (2026-01-12)
+
+#### TM-005: Final verification - types in correct layers ✅
+
+**Entity Import Verification:**
+- ✅ grep shows @/entities/formStep imports in features/ (6 files)
+- ✅ grep shows @/entities/formQuestion imports in features/ (10 files)
+- ✅ grep shows @/entities/form imports in features/ (35 files)
+
+**Feature Layer Verification:**
+- ✅ features/createForm/models/index.ts contains only:
+  - Re-exports from entities (QuestionData, FormData)
+  - Feature-specific types (HelpContent, SaveStatus, SectionId)
+  - Multi-entity workflow types (FormEditorState, flow navigation)
+- ✅ No standalone entity types defined in feature layer
+
+**Build Verification:**
+- ✅ pnpm typecheck passes
+- ✅ pnpm build passes
+
+---
+
+## Phase 1 Type Migration Complete ✅
+
+All 14 user stories completed:
+- TS-001 through TS-008: TypeScript composable updates for ADR-013
+- FE-001: End-to-end verification
+- TM-001 through TM-005: Type migration to entity layers
+
+### Summary of Changes
+
+**Entity Types Created:**
+- entities/formStep/models/stepContent.ts - FormStep, StepContent, etc.
+- entities/formQuestion/models/questionData.ts - QuestionData
+- entities/form/models/formData.ts - FormData
+
+**Re-exports for Backward Compatibility:**
+- shared/stepCards/models/stepContent.ts - re-exports from entities/formStep
+- features/createForm/models/index.ts - re-exports QuestionData, FormData
+
+**FSD Architecture Compliance:**
+- Single-entity types now in entities/ layer
+- Feature layer contains only workflow types and re-exports
+- All imports work, typecheck and build pass
+Mon 12 Jan 2026 13:23:54 IST: Starting iteration 2
+Mon 12 Jan 2026 13:25:11 IST: Starting iteration 3
+Mon 12 Jan 2026 13:26:30 IST: Starting iteration 4

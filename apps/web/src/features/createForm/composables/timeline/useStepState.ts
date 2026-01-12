@@ -58,7 +58,7 @@ export function useStepState(): StepStateReturn {
       flowId: step.flowId,
       flowMembership: step.flowMembership,
       stepType: step.stepType,
-      questionId: step.questionId,
+      // ADR-013: questionId removed (inverted relationship - question references step)
       isActive: step.isActive,
     };
   }

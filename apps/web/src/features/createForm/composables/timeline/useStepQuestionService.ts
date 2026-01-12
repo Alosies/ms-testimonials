@@ -16,7 +16,8 @@ import { useCurrentContextStore } from '@/shared/currentContext';
 import type { StepType, FlowMembership } from '@/shared/stepCards';
 
 export interface CreateQuestionParams {
-  formId: string;
+  // ADR-013: Question now references step via step_id (not form_id)
+  stepId: string;
   stepType: StepType;
   stepOrder: number;
   flowMembership: FlowMembership;
@@ -86,12 +87,13 @@ export const useStepQuestionService = createSharedComposable(() => {
 
   /**
    * Create a form_question for a new question/rating step.
+   * ADR-013: Questions now reference steps via step_id (step must exist first).
    * Returns the created question's ID and text, or null if creation fails.
    */
   async function createQuestionForStep(
     params: CreateQuestionParams,
   ): Promise<CreateQuestionResult | null> {
-    const { formId, stepType, stepOrder, flowMembership, displayOrder } = params;
+    const { stepId, stepType, stepOrder, flowMembership, displayOrder } = params;
 
     // Only create questions for question/rating step types
     if (!requiresQuestion(stepType)) {
@@ -118,7 +120,8 @@ export const useStepQuestionService = createSharedComposable(() => {
     try {
       const result = await createFormQuestion({
         input: {
-          form_id: formId,
+          // ADR-013: Question now references step via step_id (not form_id)
+          step_id: stepId,
           organization_id: organizationId,
           question_type_id: questionTypeId,
           question_key: `${config.questionKeyPrefix}_${Date.now()}`,
