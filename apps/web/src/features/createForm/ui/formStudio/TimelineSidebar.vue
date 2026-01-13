@@ -20,6 +20,7 @@ import { STEP_TYPE_CONFIGS } from '../../constants';
 import { FLOW_METADATA } from '@/entities/form';
 import StepTypePicker from '../stepsSidebar/StepTypePicker.vue';
 import type { StepType, FlowMembership } from '@/shared/stepCards';
+import { studioTestIds } from '@/shared/constants/testIds';
 
 const editor = useTimelineEditor();
 
@@ -65,12 +66,13 @@ async function handleAddAtEnd(type: StepType) {
 </script>
 
 <template>
-  <div class="p-2 text-xs text-muted-foreground">
+  <div :data-testid="studioTestIds.sidebar" class="p-2 text-xs text-muted-foreground">
     <div class="mb-2 font-semibold">STEPS</div>
 
     <template v-for="(step, index) in editor.steps.value" :key="step.id">
       <!-- Step item -->
       <div
+        :data-testid="studioTestIds.sidebarStepCard"
         class="step-item p-2 bg-background rounded cursor-pointer flex items-center gap-2 border-l-2 transition-colors"
         :class="[
           index === editor.selectedIndex.value ? 'ring-2 ring-primary' : '',
@@ -122,6 +124,7 @@ async function handleAddAtEnd(type: StepType) {
       @select="handleAddAtEnd"
     >
       <button
+        :data-testid="studioTestIds.sidebarAddButton"
         class="w-full p-2 border border-dashed rounded text-center hover:bg-muted/50 flex items-center justify-center gap-2"
       >
         <span>Add new</span>

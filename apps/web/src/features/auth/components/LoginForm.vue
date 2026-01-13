@@ -3,6 +3,7 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { Button, Input, Label } from '@testimonials/ui';
 import { useAuth } from '../composables/useAuth';
+import { authTestIds } from '@/shared/constants/testIds';
 
 defineOptions({
   name: 'LoginForm',
@@ -34,6 +35,7 @@ async function handleSubmit() {
 
 <template>
   <form
+    :data-testid="authTestIds.loginForm"
     class="space-y-4"
     @submit.prevent="handleSubmit"
   >
@@ -42,6 +44,7 @@ async function handleSubmit() {
       <Input
         id="email"
         v-model="email"
+        :data-testid="authTestIds.loginEmailInput"
         type="email"
         placeholder="you@example.com"
         autocomplete="email"
@@ -54,6 +57,7 @@ async function handleSubmit() {
       <Input
         id="password"
         v-model="password"
+        :data-testid="authTestIds.loginPasswordInput"
         type="password"
         placeholder="Enter your password"
         autocomplete="current-password"
@@ -63,6 +67,7 @@ async function handleSubmit() {
 
     <div
       v-if="error"
+      :data-testid="authTestIds.loginErrorMessage"
       class="text-sm text-destructive"
     >
       {{ error }}
@@ -70,6 +75,7 @@ async function handleSubmit() {
 
     <Button
       type="submit"
+      :data-testid="authTestIds.loginSubmitButton"
       class="w-full"
       :disabled="isAuthLoading"
     >

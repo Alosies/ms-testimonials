@@ -23,6 +23,7 @@ import {
 } from '@/shared/stepCards';
 import { OrganizationLogo } from '@/entities/organization';
 import TimelineConnector from './TimelineConnector.vue';
+import { studioTestIds } from '@/shared/constants/testIds';
 
 const props = defineProps<{
   step: FormStep;
@@ -79,6 +80,7 @@ function handleInsert(type: StepType) {
 <template>
   <div
     ref="cardRef"
+    :data-testid="studioTestIds.canvasStepCard"
     :data-step-id="step.id"
     class="timeline-step"
     :class="{

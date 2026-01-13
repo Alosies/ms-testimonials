@@ -2,6 +2,7 @@
 import { Icon } from '@testimonials/icons'
 import FormsTableRow from './FormsTableRow.vue'
 import type { FormItem, SortColumn, SortDirection } from '../models'
+import { formsTestIds } from '@/shared/constants/testIds'
 
 const props = defineProps<{
   forms: FormItem[]
@@ -29,7 +30,7 @@ const isSortedBy = (column: SortColumn): boolean => props.sortColumn === column
 </script>
 
 <template>
-  <div class="rounded-xl border border-border bg-card overflow-hidden">
+  <div :data-testid="formsTestIds.formsList" class="rounded-xl border border-border bg-card overflow-hidden">
     <table class="w-full">
       <!-- Table Header -->
       <thead>

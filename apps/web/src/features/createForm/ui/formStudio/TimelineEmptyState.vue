@@ -7,6 +7,7 @@
 import { Icon } from '@testimonials/icons';
 import { Kbd } from '@testimonials/ui';
 import type { StepType } from '../../models';
+import { studioTestIds } from '@/shared/constants/testIds';
 
 const emit = defineEmits<{
   addStep: [stepType: StepType];
@@ -14,7 +15,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <div class="empty-state">
+  <div :data-testid="studioTestIds.canvasEmptyState" class="empty-state">
     <!-- Ghost card outline - represents what a step will look like -->
     <div class="empty-card-ghost">
       <div class="ghost-header">
@@ -54,6 +55,7 @@ const emit = defineEmits<{
             Design your testimonial collection flow
           </p>
           <button
+            :data-testid="studioTestIds.canvasAddButton"
             class="px-5 py-2.5 bg-primary text-primary-foreground text-sm rounded-lg hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 flex items-center gap-2 font-medium"
             @click="emit('addStep', 'welcome')"
           >

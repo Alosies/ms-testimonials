@@ -5,6 +5,7 @@ import QuestionTips from './QuestionTips.vue';
 import BranchingSettings from './BranchingSettings.vue';
 import DesignSettings from './DesignSettings.vue';
 import { useTimelineEditor } from '../../composables/timeline';
+import { studioTestIds } from '@/shared/constants/testIds';
 
 // Direct import - fully typed, no inject needed
 const editor = useTimelineEditor();
@@ -23,7 +24,7 @@ function handleUpdateTips(tips: string[]) {
 </script>
 
 <template>
-  <div class="h-full p-4 overflow-y-auto">
+  <div :data-testid="studioTestIds.propertiesPanel" class="h-full p-4 overflow-y-auto">
     <!-- No selection state -->
     <div v-if="!selectedStep" class="text-center py-12">
       <p class="text-sm text-muted-foreground">

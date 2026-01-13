@@ -25,6 +25,7 @@ import { useGetForms, useDeleteForm } from '@/entities/form'
 import { useCurrentContextStore } from '@/shared/currentContext'
 import { useRouting } from '@/shared/routing'
 import { useConfirmationModal } from '@/shared/widgets/ConfirmationModal'
+import { formsTestIds } from '@/shared/constants/testIds'
 
 definePage({
   meta: {
@@ -96,7 +97,7 @@ const showNoResults = computed(() => !showLoading.value && hasForms.value && !ha
             </p>
           </div>
 
-          <Button @click="goToNewForm" class="gap-2">
+          <Button :data-testid="formsTestIds.formsCreateButton" @click="goToNewForm" class="gap-2">
             <Icon icon="heroicons:plus" class="h-4 w-4" />
             Create Form
           </Button>

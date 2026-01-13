@@ -9,6 +9,7 @@ import {
   DropdownMenuTrigger,
 } from '@testimonials/ui'
 import type { FormItem } from '../models'
+import { formsTestIds } from '@/shared/constants/testIds'
 
 defineProps<{
   form: FormItem
@@ -45,6 +46,7 @@ const formatDate = (dateString: string): string => {
 
 <template>
   <tr
+    :data-testid="formsTestIds.formsListItem"
     class="group transition-colors hover:bg-muted/30 cursor-pointer"
     @click="emit('view')"
   >
