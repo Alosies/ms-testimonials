@@ -40,3 +40,7 @@ Each ADR follows this structure:
 | [ADR-009](./009-flows-table-branching/adr.md) | Flows Table for Branching Architecture | Accepted | 2026-01-06 |
 | [ADR-010](./010-centralized-auto-save/adr.md) | Centralized Auto-Save Controller | Proposed | 2026-01-11 |
 | [ADR-011](./011-immediate-save-actions/adr.md) | Immediate Save Actions | Proposed | 2026-01-11 |
+| ADR-012 | *(Deprecated - see ADR-014)* | Deprecated | 2026-01-12 |
+| [ADR-013](./013-form-entities-schema-refactoring/adr.md) | Form Entities Schema Refactoring | Accepted | 2026-01-12 |
+| [ADR-014](./014-fsd-composables-refactoring/adr.md) | FSD Composables Refactoring | In Progress | 2026-01-12 |
+| [ADR-015](./015-e2e-testing-architecture/adr.md) | Modular E2E Testing Architecture | Proposed | 2026-01-12 |

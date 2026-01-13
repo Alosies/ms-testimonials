@@ -1,0 +1,6 @@
+# Test results
+test-results/
+playwright-report/
+
+# Browser binaries (installed via npx playwright install)
+# These are usually in ~/.cache/ms-playwright, not here
