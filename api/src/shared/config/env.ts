@@ -53,4 +53,7 @@ export const env = {
 
   // AWS Lambda Media Webhook (Lambda uses this secret to authenticate callbacks)
   AWS_LAMBDA_MEDIA_WEBHOOK_SECRET: getEnvVar('AWS_LAMBDA_MEDIA_WEBHOOK_SECRET', 'dev-webhook-secret'),
+
+  // Test API (E2E Testing)
+  TEST_API_SECRET: getEnvVar('TEST_API_SECRET', ''),
 };

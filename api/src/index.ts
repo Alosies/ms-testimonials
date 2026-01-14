@@ -2,6 +2,7 @@ import { serve } from '@hono/node-server';
 import { OpenAPIHono } from '@hono/zod-openapi';
 import { apiReference } from '@scalar/hono-api-reference';
 import { cors } from 'hono/cors';
+import { HTTPException } from 'hono/http-exception';
 import { logger } from 'hono/logger';
 
 import { env } from '@/shared/config/env';
@@ -13,6 +14,7 @@ import formRoutes from '@/routes/forms';
 import widgetRoutes from '@/routes/widgets';
 import aiRoutes from '@/routes/ai';
 import mediaRoutes from '@/routes/media';
+import { createTestRoutes } from '@/routes/test';
 
 const app = new OpenAPIHono();
 
@@ -56,6 +58,9 @@ app.route('/forms', formRoutes);
 app.route('/widgets', widgetRoutes);
 app.route('/ai', aiRoutes);
 app.route('/media', mediaRoutes);
+
+// Test routes (only active when TEST_API_SECRET is configured)
+app.route('/test', createTestRoutes());
 
 // OpenAPI Documentation
 app.doc('/openapi.json', {
@@ -124,6 +129,19 @@ app.get(
 
 // Global error handler
 app.onError((err, c) => {
+  // Handle HTTPException (e.g., 401 from test API middleware)
+  if (err instanceof HTTPException) {
+    const status = err.status;
+    return c.json(
+      {
+        error: status === 401 ? 'Unauthorized' : `HTTP Error ${status}`,
+        message: err.message,
+        timestamp: new Date().toISOString(),
+      },
+      status
+    );
+  }
+
   console.error('Global error handler:', err);
 
   return c.json(
