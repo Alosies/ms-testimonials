@@ -1,4 +1,4 @@
-import { executeGraphQL } from '@/shared/libs/hasura';
+import { executeGraphQLAsAdmin } from '@/shared/libs/hasura';
 import { CreateIdentityDocument } from '@/graphql/generated/operations';
 import type { CreateIdentityInput } from '../models';
 
@@ -14,7 +14,7 @@ interface CreateIdentityResult {
 export async function createIdentity(
   input: CreateIdentityInput
 ): Promise<CreateIdentityResult | null> {
-  const { data, error } = await executeGraphQL<
+  const { data, error } = await executeGraphQLAsAdmin<
     { insert_user_identities_one: CreateIdentityResult | null },
     {
       user_id: string;

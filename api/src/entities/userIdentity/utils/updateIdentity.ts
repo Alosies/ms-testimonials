@@ -1,4 +1,4 @@
-import { executeGraphQL } from '@/shared/libs/hasura';
+import { executeGraphQLAsAdmin } from '@/shared/libs/hasura';
 import { UpdateIdentityDocument } from '@/graphql/generated/operations';
 import type { UpdateIdentityInput, UserIdentity } from '../models';
 
@@ -8,7 +8,7 @@ import type { UpdateIdentityInput, UserIdentity } from '../models';
 export async function updateIdentity(
   input: UpdateIdentityInput
 ): Promise<Pick<UserIdentity, 'id' | 'user_id' | 'provider'> | null> {
-  const { data, error } = await executeGraphQL<
+  const { data, error } = await executeGraphQLAsAdmin<
     { update_user_identities_by_pk: { id: string; user_id: string; provider: string } | null },
     { id: string; provider_user_id: string; provider_metadata: Record<string, unknown> | null }
   >(UpdateIdentityDocument, {

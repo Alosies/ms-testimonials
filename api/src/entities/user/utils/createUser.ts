@@ -1,4 +1,4 @@
-import { executeGraphQL } from '@/shared/libs/hasura';
+import { executeGraphQLAsAdmin } from '@/shared/libs/hasura';
 import { CreateUserDocument } from '@/graphql/generated/operations';
 import type { User, CreateUserInput } from '../models';
 
@@ -11,7 +11,7 @@ interface CreateUserVariables {
 }
 
 export async function createUser(input: CreateUserInput): Promise<User | null> {
-  const { data, error } = await executeGraphQL<
+  const { data, error } = await executeGraphQLAsAdmin<
     { insert_users_one: User | null },
     CreateUserVariables
   >(CreateUserDocument, {

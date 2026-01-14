@@ -1,4 +1,4 @@
-import { executeGraphQL } from '@/shared/libs/hasura';
+import { executeGraphQLAsAdmin } from '@/shared/libs/hasura';
 import { FetchUserRolesDocument } from '@/graphql/generated/operations';
 import type { OrganizationRole } from '../models';
 
@@ -6,7 +6,7 @@ import type { OrganizationRole } from '../models';
  * Fetch all roles for a user across all organizations
  */
 export async function fetchUserRoles(userId: string): Promise<OrganizationRole[] | null> {
-  const { data, error } = await executeGraphQL<
+  const { data, error } = await executeGraphQLAsAdmin<
     { organization_roles: OrganizationRole[] },
     { userId: string }
   >(FetchUserRolesDocument, { userId });

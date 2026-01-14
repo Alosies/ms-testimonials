@@ -1,8 +1,8 @@
-import { executeGraphQL } from '@/shared/libs/hasura';
+import { executeGraphQLAsAdmin } from '@/shared/libs/hasura';
 import { UpdateUserLoginDocument } from '@/graphql/generated/operations';
 
 export async function updateUserLogin(id: string): Promise<boolean> {
-  const { error } = await executeGraphQL<
+  const { error } = await executeGraphQLAsAdmin<
     { update_users_by_pk: { id: string } | null },
     { id: string }
   >(UpdateUserLoginDocument, { id });

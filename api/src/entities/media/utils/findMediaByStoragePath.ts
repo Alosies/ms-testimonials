@@ -1,4 +1,4 @@
-import { executeGraphQL } from '@/shared/libs/hasura';
+import { executeGraphQLAsAdmin } from '@/shared/libs/hasura';
 import { FIND_MEDIA_BY_STORAGE_PATH } from '../graphql/operations';
 import type { Media } from '../models';
 
@@ -10,7 +10,7 @@ export async function findMediaByStoragePath(
   storageBucket: string,
   storagePath: string
 ): Promise<Media | null> {
-  const { data, error } = await executeGraphQL<FindMediaResponse>(
+  const { data, error } = await executeGraphQLAsAdmin<FindMediaResponse>(
     FIND_MEDIA_BY_STORAGE_PATH,
     {
       storage_bucket: storageBucket,

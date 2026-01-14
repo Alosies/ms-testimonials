@@ -1,4 +1,4 @@
-import { executeGraphQL } from '@/shared/libs/hasura';
+import { executeGraphQLAsAdmin } from '@/shared/libs/hasura';
 import {
   CreateOrganizationDocument,
   FindFreePlanDocument,
@@ -44,7 +44,7 @@ export async function createDefaultOrganization(
     const orgName = displayName ? `${displayName}'s Workspace` : `${email.split('@')[0]}'s Workspace`;
     const slug = generateSlug(displayName, email);
 
-    const { data: orgData, error: orgError } = await executeGraphQL<
+    const { data: orgData, error: orgError } = await executeGraphQLAsAdmin<
       { insert_organizations_one: Organization | null },
       { name: string; slug: string; created_by: string; setup_status: 'pending_setup' | 'completed' }
     >(CreateOrganizationDocument, {
@@ -62,7 +62,7 @@ export async function createDefaultOrganization(
     const organization = orgData.insert_organizations_one;
 
     // 2. Get free plan details
-    const { data: planData, error: planError } = await executeGraphQL<
+    const { data: planData, error: planError } = await executeGraphQLAsAdmin<
       { plans: Plan[] },
       Record<string, never>
     >(FindFreePlanDocument, {});
@@ -74,7 +74,7 @@ export async function createDefaultOrganization(
       const freePlan = planData.plans[0];
 
       // 3. Create organization plan subscription
-      await executeGraphQL<
+      await executeGraphQLAsAdmin<
         { insert_organization_plans_one: { id: string } | null },
         {
           organization_id: string;
@@ -97,7 +97,7 @@ export async function createDefaultOrganization(
     }
 
     // 4. Get owner role
-    const { data: roleData, error: roleError } = await executeGraphQL<
+    const { data: roleData, error: roleError } = await executeGraphQLAsAdmin<
       { roles: { id: string; name: string; unique_name: string }[] },
       { uniqueName: string }
     >(FindRoleByUniqueNameDocument, { uniqueName: roleUniqueNames.OWNER });
@@ -110,7 +110,7 @@ export async function createDefaultOrganization(
     const ownerRole = roleData.roles[0];
 
     // 5. Assign owner role to user
-    await executeGraphQL<
+    await executeGraphQLAsAdmin<
       { insert_organization_roles_one: { id: string } | null },
       { organization_id: string; user_id: string; role_id: string; is_default_org: boolean }
     >(AssignRoleDocument, {

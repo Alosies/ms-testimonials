@@ -1,4 +1,4 @@
-import { executeGraphQL } from '@/shared/libs/hasura';
+import { executeGraphQLAsAdmin } from '@/shared/libs/hasura';
 import { INSERT_MEDIA } from '../graphql/operations';
 import type { Media, CreateMediaInput } from '../models';
 
@@ -7,7 +7,7 @@ interface InsertMediaResponse {
 }
 
 export async function createMedia(input: CreateMediaInput): Promise<Media | null> {
-  const { data, error } = await executeGraphQL<InsertMediaResponse>(INSERT_MEDIA, {
+  const { data, error } = await executeGraphQLAsAdmin<InsertMediaResponse>(INSERT_MEDIA, {
     organization_id: input.organization_id,
     filename: input.filename,
     mime_type: input.mime_type,

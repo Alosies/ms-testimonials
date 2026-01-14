@@ -1,1 +1,1 @@
-export { getHasuraClient, executeGraphQL } from './client';
+export { executeGraphQLAsAdmin } from './client';

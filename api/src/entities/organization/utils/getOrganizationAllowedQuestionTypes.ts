@@ -1,4 +1,4 @@
-import { executeGraphQL } from '@/shared/libs/hasura';
+import { executeGraphQLAsAdmin } from '@/shared/libs/hasura';
 import {
   GetOrganizationPlanQuestionTypesDocument,
   type GetOrganizationPlanQuestionTypesQuery,
@@ -24,7 +24,7 @@ export type GetAllowedQuestionTypesResult =
 export async function getOrganizationAllowedQuestionTypes(
   organizationId: string
 ): Promise<GetAllowedQuestionTypesResult> {
-  const { data, error } = await executeGraphQL<
+  const { data, error } = await executeGraphQLAsAdmin<
     GetOrganizationPlanQuestionTypesQuery,
     { organizationId: string }
   >(GetOrganizationPlanQuestionTypesDocument, { organizationId });

@@ -1,4 +1,4 @@
-import { executeGraphQL } from '@/shared/libs/hasura';
+import { executeGraphQLAsAdmin } from '@/shared/libs/hasura';
 import { FindIdentityDocument } from '@/graphql/generated/operations';
 import type { UserIdentity } from '../models';
 
@@ -9,7 +9,7 @@ export async function findIdentity(
   provider: string,
   providerUserId: string
 ): Promise<UserIdentity | null> {
-  const { data, error } = await executeGraphQL<
+  const { data, error } = await executeGraphQLAsAdmin<
     { user_identities: UserIdentity[] },
     { provider: string; providerUserId: string }
   >(FindIdentityDocument, { provider, providerUserId });
