@@ -1,5 +1,11 @@
+/**
+ * Forms Page Object
+ *
+ * Page object for the forms list page. Provides locators and actions
+ * for interacting with the forms list UI.
+ */
 import { Page, expect } from '@playwright/test';
-import { formsTestIds } from '../../../src/shared/constants/testIds';
+import { formsTestIds } from '@/shared/constants/testIds';
 
 export function createFormsPage(page: Page) {
   const formsList = page.getByTestId(formsTestIds.formsList);
@@ -15,7 +21,8 @@ export function createFormsPage(page: Page) {
     emptyState,
 
     async goto() {
-      await page.goto('/forms');
+      // Click Forms button in sidebar (navigation items are buttons, not links)
+      await page.getByRole('button', { name: 'Forms' }).click();
       // Wait for either forms list or empty state
       await Promise.race([
         formsList.waitFor({ timeout: 10000 }),

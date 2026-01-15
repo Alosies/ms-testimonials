@@ -1,0 +1,19 @@
+mutation CreateTestFormStep(
+  $flow_id: String!
+  $organization_id: String!
+  $step_type: String!
+  $step_order: smallint!
+  $is_active: Boolean!
+) {
+  insert_form_steps_one(
+    object: {
+      flow_id: $flow_id
+      organization_id: $organization_id
+      step_type: $step_type
+      step_order: $step_order
+      is_active: $is_active
+    }
+  ) {
+    id
+  }
+}

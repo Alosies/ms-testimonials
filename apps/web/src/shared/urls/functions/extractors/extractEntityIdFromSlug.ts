@@ -28,7 +28,9 @@ export function extractEntityIdFromSlug(urlSlug: string): EntityUrlInfo | null {
   const slug = urlSlug.substring(0, lastUnderscoreIndex);
   const entityId = urlSlug.substring(lastUnderscoreIndex + 1);
 
-  // Validate: entityId should be alphanumeric (NanoID format - 12 chars)
+  // Validate: entityId should match database NanoID format
+  // DB alphabet: 123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz
+  // (excludes 0, O, I, l for readability - no hyphens or underscores)
   const isValidEntityId = entityId.length > 0 && /^[a-zA-Z0-9]+$/.test(entityId);
 
   return {

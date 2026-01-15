@@ -14,7 +14,9 @@ export type Scalars = {
   Boolean: { input: boolean; output: boolean; }
   Int: { input: number; output: number; }
   Float: { input: number; output: number; }
+  bigint: { input: number; output: number; }
   jsonb: { input: any; output: any; }
+  numeric: { input: number; output: number; }
   organization_setup_status: { input: 'pending_setup' | 'completed'; output: 'pending_setup' | 'completed'; }
   smallint: { input: number; output: number; }
   timestamptz: { input: string; output: string; }
@@ -96,6 +98,759 @@ export type String_Comparison_Exp = {
   _similar?: InputMaybe<Scalars['String']['input']>;
 };
 
+/** Boolean expression to compare columns of type "bigint". All fields are combined with logical 'AND'. */
+export type Bigint_Comparison_Exp = {
+  _eq?: InputMaybe<Scalars['bigint']['input']>;
+  _gt?: InputMaybe<Scalars['bigint']['input']>;
+  _gte?: InputMaybe<Scalars['bigint']['input']>;
+  _in?: InputMaybe<Array<Scalars['bigint']['input']>>;
+  _is_null?: InputMaybe<Scalars['Boolean']['input']>;
+  _lt?: InputMaybe<Scalars['bigint']['input']>;
+  _lte?: InputMaybe<Scalars['bigint']['input']>;
+  _neq?: InputMaybe<Scalars['bigint']['input']>;
+  _nin?: InputMaybe<Array<Scalars['bigint']['input']>>;
+};
+
+/** Normalized contact data for testimonial submitters. Enables contact management, deduplication across forms, and tracking of repeat submissions within an organization. */
+export type Contacts = {
+  __typename?: 'contacts';
+  /** URL to profile photo or avatar image. Displayed alongside testimonials for visual social proof and authenticity. */
+  avatar_url: Maybe<Scalars['String']['output']>;
+  /** Name of the company or organization where the contact works. Used for B2B testimonial displays and logo integration. */
+  company_name: Maybe<Scalars['String']['output']>;
+  /** URL to the contact's company website. May be used for automated logo fetching or company verification. */
+  company_website: Maybe<Scalars['String']['output']>;
+  /** Timestamp when this contact record was first created. Set automatically on insert, never modified thereafter. */
+  created_at: Scalars['timestamptz']['output'];
+  /** Primary identifier for the contact. Unique within each organization. Used for deduplication when same person submits multiple testimonials across different forms. */
+  email: Scalars['String']['output'];
+  /** Boolean flag indicating if email ownership has been confirmed via verification link. Verified contacts may receive preferential display treatment. */
+  email_verified: Scalars['Boolean']['output'];
+  /** Timestamp of first interaction with the organization. Set on creation and never modified. Used for cohort analysis and engagement metrics. */
+  first_seen_at: Scalars['timestamptz']['output'];
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
+  id: Scalars['String']['output'];
+  /** Professional title or role (e.g., "VP of Engineering", "Founder"). Adds credibility context to testimonials, especially for B2B use cases. */
+  job_title: Maybe<Scalars['String']['output']>;
+  /** Timestamp of most recent activity. Updated on each new submission or interaction. Used for identifying active vs dormant contacts. */
+  last_seen_at: Scalars['timestamptz']['output'];
+  /** URL to LinkedIn profile. Provides professional verification and enables social proof through platform recognition. */
+  linkedin_url: Maybe<Scalars['String']['output']>;
+  /** Display name of the contact. Collected from form submission contact_info step or enriched from external data sources like LinkedIn. */
+  name: Maybe<Scalars['String']['output']>;
+  /** An object relationship */
+  organization: Organizations;
+  /** Foreign key to organizations table. Establishes tenant boundary - all contacts are scoped to a single organization for multi-tenancy isolation. */
+  organization_id: Scalars['String']['output'];
+  /** Origin of this contact record: form_submission (created during testimonial submission), import (bulk CSV/API import), manual (admin created). Used for analytics and attribution. */
+  source: Scalars['String']['output'];
+  /** An object relationship */
+  source_form: Maybe<Forms>;
+  /** Foreign key to forms table. References the first form through which this contact was acquired. Preserved even if form is later deleted (set null). */
+  source_form_id: Maybe<Scalars['String']['output']>;
+  /** Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers. */
+  submission_count: Scalars['Int']['output'];
+  /** An array relationship */
+  submissions: Array<Form_Submissions>;
+  /** An aggregate relationship */
+  submissions_aggregate: Form_Submissions_Aggregate;
+  /** URL to Twitter/X profile. Used for social sharing integration and additional verification of contact identity. */
+  twitter_url: Maybe<Scalars['String']['output']>;
+  /** Timestamp of last modification to this record. Automatically updated by database trigger on any column change. */
+  updated_at: Scalars['timestamptz']['output'];
+};
+
+
+/** Normalized contact data for testimonial submitters. Enables contact management, deduplication across forms, and tracking of repeat submissions within an organization. */
+export type ContactsSubmissionsArgs = {
+  distinct_on?: InputMaybe<Array<Form_Submissions_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Form_Submissions_Order_By>>;
+  where?: InputMaybe<Form_Submissions_Bool_Exp>;
+};
+
+
+/** Normalized contact data for testimonial submitters. Enables contact management, deduplication across forms, and tracking of repeat submissions within an organization. */
+export type ContactsSubmissions_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Form_Submissions_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Form_Submissions_Order_By>>;
+  where?: InputMaybe<Form_Submissions_Bool_Exp>;
+};
+
+/** aggregated selection of "contacts" */
+export type Contacts_Aggregate = {
+  __typename?: 'contacts_aggregate';
+  aggregate: Maybe<Contacts_Aggregate_Fields>;
+  nodes: Array<Contacts>;
+};
+
+export type Contacts_Aggregate_Bool_Exp = {
+  bool_and?: InputMaybe<Contacts_Aggregate_Bool_Exp_Bool_And>;
+  bool_or?: InputMaybe<Contacts_Aggregate_Bool_Exp_Bool_Or>;
+  count?: InputMaybe<Contacts_Aggregate_Bool_Exp_Count>;
+};
+
+export type Contacts_Aggregate_Bool_Exp_Bool_And = {
+  arguments: Contacts_Select_Column_Contacts_Aggregate_Bool_Exp_Bool_And_Arguments_Columns;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+  filter?: InputMaybe<Contacts_Bool_Exp>;
+  predicate: Boolean_Comparison_Exp;
+};
+
+export type Contacts_Aggregate_Bool_Exp_Bool_Or = {
+  arguments: Contacts_Select_Column_Contacts_Aggregate_Bool_Exp_Bool_Or_Arguments_Columns;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+  filter?: InputMaybe<Contacts_Bool_Exp>;
+  predicate: Boolean_Comparison_Exp;
+};
+
+export type Contacts_Aggregate_Bool_Exp_Count = {
+  arguments?: InputMaybe<Array<Contacts_Select_Column>>;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+  filter?: InputMaybe<Contacts_Bool_Exp>;
+  predicate: Int_Comparison_Exp;
+};
+
+/** aggregate fields of "contacts" */
+export type Contacts_Aggregate_Fields = {
+  __typename?: 'contacts_aggregate_fields';
+  avg: Maybe<Contacts_Avg_Fields>;
+  count: Scalars['Int']['output'];
+  max: Maybe<Contacts_Max_Fields>;
+  min: Maybe<Contacts_Min_Fields>;
+  stddev: Maybe<Contacts_Stddev_Fields>;
+  stddev_pop: Maybe<Contacts_Stddev_Pop_Fields>;
+  stddev_samp: Maybe<Contacts_Stddev_Samp_Fields>;
+  sum: Maybe<Contacts_Sum_Fields>;
+  var_pop: Maybe<Contacts_Var_Pop_Fields>;
+  var_samp: Maybe<Contacts_Var_Samp_Fields>;
+  variance: Maybe<Contacts_Variance_Fields>;
+};
+
+
+/** aggregate fields of "contacts" */
+export type Contacts_Aggregate_FieldsCountArgs = {
+  columns?: InputMaybe<Array<Contacts_Select_Column>>;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+/** order by aggregate values of table "contacts" */
+export type Contacts_Aggregate_Order_By = {
+  avg?: InputMaybe<Contacts_Avg_Order_By>;
+  count?: InputMaybe<Order_By>;
+  max?: InputMaybe<Contacts_Max_Order_By>;
+  min?: InputMaybe<Contacts_Min_Order_By>;
+  stddev?: InputMaybe<Contacts_Stddev_Order_By>;
+  stddev_pop?: InputMaybe<Contacts_Stddev_Pop_Order_By>;
+  stddev_samp?: InputMaybe<Contacts_Stddev_Samp_Order_By>;
+  sum?: InputMaybe<Contacts_Sum_Order_By>;
+  var_pop?: InputMaybe<Contacts_Var_Pop_Order_By>;
+  var_samp?: InputMaybe<Contacts_Var_Samp_Order_By>;
+  variance?: InputMaybe<Contacts_Variance_Order_By>;
+};
+
+/** input type for inserting array relation for remote table "contacts" */
+export type Contacts_Arr_Rel_Insert_Input = {
+  data: Array<Contacts_Insert_Input>;
+  /** upsert condition */
+  on_conflict?: InputMaybe<Contacts_On_Conflict>;
+};
+
+/** aggregate avg on columns */
+export type Contacts_Avg_Fields = {
+  __typename?: 'contacts_avg_fields';
+  /** Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers. */
+  submission_count: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by avg() on columns of table "contacts" */
+export type Contacts_Avg_Order_By = {
+  /** Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers. */
+  submission_count?: InputMaybe<Order_By>;
+};
+
+/** Boolean expression to filter rows from the table "contacts". All fields are combined with a logical 'AND'. */
+export type Contacts_Bool_Exp = {
+  _and?: InputMaybe<Array<Contacts_Bool_Exp>>;
+  _not?: InputMaybe<Contacts_Bool_Exp>;
+  _or?: InputMaybe<Array<Contacts_Bool_Exp>>;
+  avatar_url?: InputMaybe<String_Comparison_Exp>;
+  company_name?: InputMaybe<String_Comparison_Exp>;
+  company_website?: InputMaybe<String_Comparison_Exp>;
+  created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  email?: InputMaybe<String_Comparison_Exp>;
+  email_verified?: InputMaybe<Boolean_Comparison_Exp>;
+  first_seen_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  id?: InputMaybe<String_Comparison_Exp>;
+  job_title?: InputMaybe<String_Comparison_Exp>;
+  last_seen_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  linkedin_url?: InputMaybe<String_Comparison_Exp>;
+  name?: InputMaybe<String_Comparison_Exp>;
+  organization?: InputMaybe<Organizations_Bool_Exp>;
+  organization_id?: InputMaybe<String_Comparison_Exp>;
+  source?: InputMaybe<String_Comparison_Exp>;
+  source_form?: InputMaybe<Forms_Bool_Exp>;
+  source_form_id?: InputMaybe<String_Comparison_Exp>;
+  submission_count?: InputMaybe<Int_Comparison_Exp>;
+  submissions?: InputMaybe<Form_Submissions_Bool_Exp>;
+  submissions_aggregate?: InputMaybe<Form_Submissions_Aggregate_Bool_Exp>;
+  twitter_url?: InputMaybe<String_Comparison_Exp>;
+  updated_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+};
+
+/** unique or primary key constraints on table "contacts" */
+export const Contacts_Constraint = {
+  /** unique or primary key constraint on columns "email", "organization_id" */
+  ContactsOrgEmailUnique: 'contacts_org_email_unique',
+  /** unique or primary key constraint on columns "id" */
+  ContactsPkey: 'contacts_pkey'
+} as const;
+
+export type Contacts_Constraint = typeof Contacts_Constraint[keyof typeof Contacts_Constraint];
+/** input type for incrementing numeric columns in table "contacts" */
+export type Contacts_Inc_Input = {
+  /** Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers. */
+  submission_count?: InputMaybe<Scalars['Int']['input']>;
+};
+
+/** input type for inserting data into table "contacts" */
+export type Contacts_Insert_Input = {
+  /** URL to profile photo or avatar image. Displayed alongside testimonials for visual social proof and authenticity. */
+  avatar_url?: InputMaybe<Scalars['String']['input']>;
+  /** Name of the company or organization where the contact works. Used for B2B testimonial displays and logo integration. */
+  company_name?: InputMaybe<Scalars['String']['input']>;
+  /** URL to the contact's company website. May be used for automated logo fetching or company verification. */
+  company_website?: InputMaybe<Scalars['String']['input']>;
+  /** Timestamp when this contact record was first created. Set automatically on insert, never modified thereafter. */
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Primary identifier for the contact. Unique within each organization. Used for deduplication when same person submits multiple testimonials across different forms. */
+  email?: InputMaybe<Scalars['String']['input']>;
+  /** Boolean flag indicating if email ownership has been confirmed via verification link. Verified contacts may receive preferential display treatment. */
+  email_verified?: InputMaybe<Scalars['Boolean']['input']>;
+  /** Timestamp of first interaction with the organization. Set on creation and never modified. Used for cohort analysis and engagement metrics. */
+  first_seen_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
+  id?: InputMaybe<Scalars['String']['input']>;
+  /** Professional title or role (e.g., "VP of Engineering", "Founder"). Adds credibility context to testimonials, especially for B2B use cases. */
+  job_title?: InputMaybe<Scalars['String']['input']>;
+  /** Timestamp of most recent activity. Updated on each new submission or interaction. Used for identifying active vs dormant contacts. */
+  last_seen_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** URL to LinkedIn profile. Provides professional verification and enables social proof through platform recognition. */
+  linkedin_url?: InputMaybe<Scalars['String']['input']>;
+  /** Display name of the contact. Collected from form submission contact_info step or enriched from external data sources like LinkedIn. */
+  name?: InputMaybe<Scalars['String']['input']>;
+  organization?: InputMaybe<Organizations_Obj_Rel_Insert_Input>;
+  /** Foreign key to organizations table. Establishes tenant boundary - all contacts are scoped to a single organization for multi-tenancy isolation. */
+  organization_id?: InputMaybe<Scalars['String']['input']>;
+  /** Origin of this contact record: form_submission (created during testimonial submission), import (bulk CSV/API import), manual (admin created). Used for analytics and attribution. */
+  source?: InputMaybe<Scalars['String']['input']>;
+  source_form?: InputMaybe<Forms_Obj_Rel_Insert_Input>;
+  /** Foreign key to forms table. References the first form through which this contact was acquired. Preserved even if form is later deleted (set null). */
+  source_form_id?: InputMaybe<Scalars['String']['input']>;
+  /** Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers. */
+  submission_count?: InputMaybe<Scalars['Int']['input']>;
+  submissions?: InputMaybe<Form_Submissions_Arr_Rel_Insert_Input>;
+  /** URL to Twitter/X profile. Used for social sharing integration and additional verification of contact identity. */
+  twitter_url?: InputMaybe<Scalars['String']['input']>;
+  /** Timestamp of last modification to this record. Automatically updated by database trigger on any column change. */
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+};
+
+/** aggregate max on columns */
+export type Contacts_Max_Fields = {
+  __typename?: 'contacts_max_fields';
+  /** URL to profile photo or avatar image. Displayed alongside testimonials for visual social proof and authenticity. */
+  avatar_url: Maybe<Scalars['String']['output']>;
+  /** Name of the company or organization where the contact works. Used for B2B testimonial displays and logo integration. */
+  company_name: Maybe<Scalars['String']['output']>;
+  /** URL to the contact's company website. May be used for automated logo fetching or company verification. */
+  company_website: Maybe<Scalars['String']['output']>;
+  /** Timestamp when this contact record was first created. Set automatically on insert, never modified thereafter. */
+  created_at: Maybe<Scalars['timestamptz']['output']>;
+  /** Primary identifier for the contact. Unique within each organization. Used for deduplication when same person submits multiple testimonials across different forms. */
+  email: Maybe<Scalars['String']['output']>;
+  /** Timestamp of first interaction with the organization. Set on creation and never modified. Used for cohort analysis and engagement metrics. */
+  first_seen_at: Maybe<Scalars['timestamptz']['output']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
+  id: Maybe<Scalars['String']['output']>;
+  /** Professional title or role (e.g., "VP of Engineering", "Founder"). Adds credibility context to testimonials, especially for B2B use cases. */
+  job_title: Maybe<Scalars['String']['output']>;
+  /** Timestamp of most recent activity. Updated on each new submission or interaction. Used for identifying active vs dormant contacts. */
+  last_seen_at: Maybe<Scalars['timestamptz']['output']>;
+  /** URL to LinkedIn profile. Provides professional verification and enables social proof through platform recognition. */
+  linkedin_url: Maybe<Scalars['String']['output']>;
+  /** Display name of the contact. Collected from form submission contact_info step or enriched from external data sources like LinkedIn. */
+  name: Maybe<Scalars['String']['output']>;
+  /** Foreign key to organizations table. Establishes tenant boundary - all contacts are scoped to a single organization for multi-tenancy isolation. */
+  organization_id: Maybe<Scalars['String']['output']>;
+  /** Origin of this contact record: form_submission (created during testimonial submission), import (bulk CSV/API import), manual (admin created). Used for analytics and attribution. */
+  source: Maybe<Scalars['String']['output']>;
+  /** Foreign key to forms table. References the first form through which this contact was acquired. Preserved even if form is later deleted (set null). */
+  source_form_id: Maybe<Scalars['String']['output']>;
+  /** Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers. */
+  submission_count: Maybe<Scalars['Int']['output']>;
+  /** URL to Twitter/X profile. Used for social sharing integration and additional verification of contact identity. */
+  twitter_url: Maybe<Scalars['String']['output']>;
+  /** Timestamp of last modification to this record. Automatically updated by database trigger on any column change. */
+  updated_at: Maybe<Scalars['timestamptz']['output']>;
+};
+
+/** order by max() on columns of table "contacts" */
+export type Contacts_Max_Order_By = {
+  /** URL to profile photo or avatar image. Displayed alongside testimonials for visual social proof and authenticity. */
+  avatar_url?: InputMaybe<Order_By>;
+  /** Name of the company or organization where the contact works. Used for B2B testimonial displays and logo integration. */
+  company_name?: InputMaybe<Order_By>;
+  /** URL to the contact's company website. May be used for automated logo fetching or company verification. */
+  company_website?: InputMaybe<Order_By>;
+  /** Timestamp when this contact record was first created. Set automatically on insert, never modified thereafter. */
+  created_at?: InputMaybe<Order_By>;
+  /** Primary identifier for the contact. Unique within each organization. Used for deduplication when same person submits multiple testimonials across different forms. */
+  email?: InputMaybe<Order_By>;
+  /** Timestamp of first interaction with the organization. Set on creation and never modified. Used for cohort analysis and engagement metrics. */
+  first_seen_at?: InputMaybe<Order_By>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
+  id?: InputMaybe<Order_By>;
+  /** Professional title or role (e.g., "VP of Engineering", "Founder"). Adds credibility context to testimonials, especially for B2B use cases. */
+  job_title?: InputMaybe<Order_By>;
+  /** Timestamp of most recent activity. Updated on each new submission or interaction. Used for identifying active vs dormant contacts. */
+  last_seen_at?: InputMaybe<Order_By>;
+  /** URL to LinkedIn profile. Provides professional verification and enables social proof through platform recognition. */
+  linkedin_url?: InputMaybe<Order_By>;
+  /** Display name of the contact. Collected from form submission contact_info step or enriched from external data sources like LinkedIn. */
+  name?: InputMaybe<Order_By>;
+  /** Foreign key to organizations table. Establishes tenant boundary - all contacts are scoped to a single organization for multi-tenancy isolation. */
+  organization_id?: InputMaybe<Order_By>;
+  /** Origin of this contact record: form_submission (created during testimonial submission), import (bulk CSV/API import), manual (admin created). Used for analytics and attribution. */
+  source?: InputMaybe<Order_By>;
+  /** Foreign key to forms table. References the first form through which this contact was acquired. Preserved even if form is later deleted (set null). */
+  source_form_id?: InputMaybe<Order_By>;
+  /** Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers. */
+  submission_count?: InputMaybe<Order_By>;
+  /** URL to Twitter/X profile. Used for social sharing integration and additional verification of contact identity. */
+  twitter_url?: InputMaybe<Order_By>;
+  /** Timestamp of last modification to this record. Automatically updated by database trigger on any column change. */
+  updated_at?: InputMaybe<Order_By>;
+};
+
+/** aggregate min on columns */
+export type Contacts_Min_Fields = {
+  __typename?: 'contacts_min_fields';
+  /** URL to profile photo or avatar image. Displayed alongside testimonials for visual social proof and authenticity. */
+  avatar_url: Maybe<Scalars['String']['output']>;
+  /** Name of the company or organization where the contact works. Used for B2B testimonial displays and logo integration. */
+  company_name: Maybe<Scalars['String']['output']>;
+  /** URL to the contact's company website. May be used for automated logo fetching or company verification. */
+  company_website: Maybe<Scalars['String']['output']>;
+  /** Timestamp when this contact record was first created. Set automatically on insert, never modified thereafter. */
+  created_at: Maybe<Scalars['timestamptz']['output']>;
+  /** Primary identifier for the contact. Unique within each organization. Used for deduplication when same person submits multiple testimonials across different forms. */
+  email: Maybe<Scalars['String']['output']>;
+  /** Timestamp of first interaction with the organization. Set on creation and never modified. Used for cohort analysis and engagement metrics. */
+  first_seen_at: Maybe<Scalars['timestamptz']['output']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
+  id: Maybe<Scalars['String']['output']>;
+  /** Professional title or role (e.g., "VP of Engineering", "Founder"). Adds credibility context to testimonials, especially for B2B use cases. */
+  job_title: Maybe<Scalars['String']['output']>;
+  /** Timestamp of most recent activity. Updated on each new submission or interaction. Used for identifying active vs dormant contacts. */
+  last_seen_at: Maybe<Scalars['timestamptz']['output']>;
+  /** URL to LinkedIn profile. Provides professional verification and enables social proof through platform recognition. */
+  linkedin_url: Maybe<Scalars['String']['output']>;
+  /** Display name of the contact. Collected from form submission contact_info step or enriched from external data sources like LinkedIn. */
+  name: Maybe<Scalars['String']['output']>;
+  /** Foreign key to organizations table. Establishes tenant boundary - all contacts are scoped to a single organization for multi-tenancy isolation. */
+  organization_id: Maybe<Scalars['String']['output']>;
+  /** Origin of this contact record: form_submission (created during testimonial submission), import (bulk CSV/API import), manual (admin created). Used for analytics and attribution. */
+  source: Maybe<Scalars['String']['output']>;
+  /** Foreign key to forms table. References the first form through which this contact was acquired. Preserved even if form is later deleted (set null). */
+  source_form_id: Maybe<Scalars['String']['output']>;
+  /** Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers. */
+  submission_count: Maybe<Scalars['Int']['output']>;
+  /** URL to Twitter/X profile. Used for social sharing integration and additional verification of contact identity. */
+  twitter_url: Maybe<Scalars['String']['output']>;
+  /** Timestamp of last modification to this record. Automatically updated by database trigger on any column change. */
+  updated_at: Maybe<Scalars['timestamptz']['output']>;
+};
+
+/** order by min() on columns of table "contacts" */
+export type Contacts_Min_Order_By = {
+  /** URL to profile photo or avatar image. Displayed alongside testimonials for visual social proof and authenticity. */
+  avatar_url?: InputMaybe<Order_By>;
+  /** Name of the company or organization where the contact works. Used for B2B testimonial displays and logo integration. */
+  company_name?: InputMaybe<Order_By>;
+  /** URL to the contact's company website. May be used for automated logo fetching or company verification. */
+  company_website?: InputMaybe<Order_By>;
+  /** Timestamp when this contact record was first created. Set automatically on insert, never modified thereafter. */
+  created_at?: InputMaybe<Order_By>;
+  /** Primary identifier for the contact. Unique within each organization. Used for deduplication when same person submits multiple testimonials across different forms. */
+  email?: InputMaybe<Order_By>;
+  /** Timestamp of first interaction with the organization. Set on creation and never modified. Used for cohort analysis and engagement metrics. */
+  first_seen_at?: InputMaybe<Order_By>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
+  id?: InputMaybe<Order_By>;
+  /** Professional title or role (e.g., "VP of Engineering", "Founder"). Adds credibility context to testimonials, especially for B2B use cases. */
+  job_title?: InputMaybe<Order_By>;
+  /** Timestamp of most recent activity. Updated on each new submission or interaction. Used for identifying active vs dormant contacts. */
+  last_seen_at?: InputMaybe<Order_By>;
+  /** URL to LinkedIn profile. Provides professional verification and enables social proof through platform recognition. */
+  linkedin_url?: InputMaybe<Order_By>;
+  /** Display name of the contact. Collected from form submission contact_info step or enriched from external data sources like LinkedIn. */
+  name?: InputMaybe<Order_By>;
+  /** Foreign key to organizations table. Establishes tenant boundary - all contacts are scoped to a single organization for multi-tenancy isolation. */
+  organization_id?: InputMaybe<Order_By>;
+  /** Origin of this contact record: form_submission (created during testimonial submission), import (bulk CSV/API import), manual (admin created). Used for analytics and attribution. */
+  source?: InputMaybe<Order_By>;
+  /** Foreign key to forms table. References the first form through which this contact was acquired. Preserved even if form is later deleted (set null). */
+  source_form_id?: InputMaybe<Order_By>;
+  /** Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers. */
+  submission_count?: InputMaybe<Order_By>;
+  /** URL to Twitter/X profile. Used for social sharing integration and additional verification of contact identity. */
+  twitter_url?: InputMaybe<Order_By>;
+  /** Timestamp of last modification to this record. Automatically updated by database trigger on any column change. */
+  updated_at?: InputMaybe<Order_By>;
+};
+
+/** response of any mutation on the table "contacts" */
+export type Contacts_Mutation_Response = {
+  __typename?: 'contacts_mutation_response';
+  /** number of rows affected by the mutation */
+  affected_rows: Scalars['Int']['output'];
+  /** data from the rows affected by the mutation */
+  returning: Array<Contacts>;
+};
+
+/** input type for inserting object relation for remote table "contacts" */
+export type Contacts_Obj_Rel_Insert_Input = {
+  data: Contacts_Insert_Input;
+  /** upsert condition */
+  on_conflict?: InputMaybe<Contacts_On_Conflict>;
+};
+
+/** on_conflict condition type for table "contacts" */
+export type Contacts_On_Conflict = {
+  constraint: Contacts_Constraint;
+  update_columns?: Array<Contacts_Update_Column>;
+  where?: InputMaybe<Contacts_Bool_Exp>;
+};
+
+/** Ordering options when selecting data from "contacts". */
+export type Contacts_Order_By = {
+  avatar_url?: InputMaybe<Order_By>;
+  company_name?: InputMaybe<Order_By>;
+  company_website?: InputMaybe<Order_By>;
+  created_at?: InputMaybe<Order_By>;
+  email?: InputMaybe<Order_By>;
+  email_verified?: InputMaybe<Order_By>;
+  first_seen_at?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
+  job_title?: InputMaybe<Order_By>;
+  last_seen_at?: InputMaybe<Order_By>;
+  linkedin_url?: InputMaybe<Order_By>;
+  name?: InputMaybe<Order_By>;
+  organization?: InputMaybe<Organizations_Order_By>;
+  organization_id?: InputMaybe<Order_By>;
+  source?: InputMaybe<Order_By>;
+  source_form?: InputMaybe<Forms_Order_By>;
+  source_form_id?: InputMaybe<Order_By>;
+  submission_count?: InputMaybe<Order_By>;
+  submissions_aggregate?: InputMaybe<Form_Submissions_Aggregate_Order_By>;
+  twitter_url?: InputMaybe<Order_By>;
+  updated_at?: InputMaybe<Order_By>;
+};
+
+/** primary key columns input for table: contacts */
+export type Contacts_Pk_Columns_Input = {
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
+  id: Scalars['String']['input'];
+};
+
+/** select columns of table "contacts" */
+export const Contacts_Select_Column = {
+  /** column name */
+  AvatarUrl: 'avatar_url',
+  /** column name */
+  CompanyName: 'company_name',
+  /** column name */
+  CompanyWebsite: 'company_website',
+  /** column name */
+  CreatedAt: 'created_at',
+  /** column name */
+  Email: 'email',
+  /** column name */
+  EmailVerified: 'email_verified',
+  /** column name */
+  FirstSeenAt: 'first_seen_at',
+  /** column name */
+  Id: 'id',
+  /** column name */
+  JobTitle: 'job_title',
+  /** column name */
+  LastSeenAt: 'last_seen_at',
+  /** column name */
+  LinkedinUrl: 'linkedin_url',
+  /** column name */
+  Name: 'name',
+  /** column name */
+  OrganizationId: 'organization_id',
+  /** column name */
+  Source: 'source',
+  /** column name */
+  SourceFormId: 'source_form_id',
+  /** column name */
+  SubmissionCount: 'submission_count',
+  /** column name */
+  TwitterUrl: 'twitter_url',
+  /** column name */
+  UpdatedAt: 'updated_at'
+} as const;
+
+export type Contacts_Select_Column = typeof Contacts_Select_Column[keyof typeof Contacts_Select_Column];
+/** select "contacts_aggregate_bool_exp_bool_and_arguments_columns" columns of table "contacts" */
+export const Contacts_Select_Column_Contacts_Aggregate_Bool_Exp_Bool_And_Arguments_Columns = {
+  /** column name */
+  EmailVerified: 'email_verified'
+} as const;
+
+export type Contacts_Select_Column_Contacts_Aggregate_Bool_Exp_Bool_And_Arguments_Columns = typeof Contacts_Select_Column_Contacts_Aggregate_Bool_Exp_Bool_And_Arguments_Columns[keyof typeof Contacts_Select_Column_Contacts_Aggregate_Bool_Exp_Bool_And_Arguments_Columns];
+/** select "contacts_aggregate_bool_exp_bool_or_arguments_columns" columns of table "contacts" */
+export const Contacts_Select_Column_Contacts_Aggregate_Bool_Exp_Bool_Or_Arguments_Columns = {
+  /** column name */
+  EmailVerified: 'email_verified'
+} as const;
+
+export type Contacts_Select_Column_Contacts_Aggregate_Bool_Exp_Bool_Or_Arguments_Columns = typeof Contacts_Select_Column_Contacts_Aggregate_Bool_Exp_Bool_Or_Arguments_Columns[keyof typeof Contacts_Select_Column_Contacts_Aggregate_Bool_Exp_Bool_Or_Arguments_Columns];
+/** input type for updating data in table "contacts" */
+export type Contacts_Set_Input = {
+  /** URL to profile photo or avatar image. Displayed alongside testimonials for visual social proof and authenticity. */
+  avatar_url?: InputMaybe<Scalars['String']['input']>;
+  /** Name of the company or organization where the contact works. Used for B2B testimonial displays and logo integration. */
+  company_name?: InputMaybe<Scalars['String']['input']>;
+  /** URL to the contact's company website. May be used for automated logo fetching or company verification. */
+  company_website?: InputMaybe<Scalars['String']['input']>;
+  /** Timestamp when this contact record was first created. Set automatically on insert, never modified thereafter. */
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Primary identifier for the contact. Unique within each organization. Used for deduplication when same person submits multiple testimonials across different forms. */
+  email?: InputMaybe<Scalars['String']['input']>;
+  /** Boolean flag indicating if email ownership has been confirmed via verification link. Verified contacts may receive preferential display treatment. */
+  email_verified?: InputMaybe<Scalars['Boolean']['input']>;
+  /** Timestamp of first interaction with the organization. Set on creation and never modified. Used for cohort analysis and engagement metrics. */
+  first_seen_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
+  id?: InputMaybe<Scalars['String']['input']>;
+  /** Professional title or role (e.g., "VP of Engineering", "Founder"). Adds credibility context to testimonials, especially for B2B use cases. */
+  job_title?: InputMaybe<Scalars['String']['input']>;
+  /** Timestamp of most recent activity. Updated on each new submission or interaction. Used for identifying active vs dormant contacts. */
+  last_seen_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** URL to LinkedIn profile. Provides professional verification and enables social proof through platform recognition. */
+  linkedin_url?: InputMaybe<Scalars['String']['input']>;
+  /** Display name of the contact. Collected from form submission contact_info step or enriched from external data sources like LinkedIn. */
+  name?: InputMaybe<Scalars['String']['input']>;
+  /** Foreign key to organizations table. Establishes tenant boundary - all contacts are scoped to a single organization for multi-tenancy isolation. */
+  organization_id?: InputMaybe<Scalars['String']['input']>;
+  /** Origin of this contact record: form_submission (created during testimonial submission), import (bulk CSV/API import), manual (admin created). Used for analytics and attribution. */
+  source?: InputMaybe<Scalars['String']['input']>;
+  /** Foreign key to forms table. References the first form through which this contact was acquired. Preserved even if form is later deleted (set null). */
+  source_form_id?: InputMaybe<Scalars['String']['input']>;
+  /** Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers. */
+  submission_count?: InputMaybe<Scalars['Int']['input']>;
+  /** URL to Twitter/X profile. Used for social sharing integration and additional verification of contact identity. */
+  twitter_url?: InputMaybe<Scalars['String']['input']>;
+  /** Timestamp of last modification to this record. Automatically updated by database trigger on any column change. */
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+};
+
+/** aggregate stddev on columns */
+export type Contacts_Stddev_Fields = {
+  __typename?: 'contacts_stddev_fields';
+  /** Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers. */
+  submission_count: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by stddev() on columns of table "contacts" */
+export type Contacts_Stddev_Order_By = {
+  /** Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers. */
+  submission_count?: InputMaybe<Order_By>;
+};
+
+/** aggregate stddev_pop on columns */
+export type Contacts_Stddev_Pop_Fields = {
+  __typename?: 'contacts_stddev_pop_fields';
+  /** Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers. */
+  submission_count: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by stddev_pop() on columns of table "contacts" */
+export type Contacts_Stddev_Pop_Order_By = {
+  /** Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers. */
+  submission_count?: InputMaybe<Order_By>;
+};
+
+/** aggregate stddev_samp on columns */
+export type Contacts_Stddev_Samp_Fields = {
+  __typename?: 'contacts_stddev_samp_fields';
+  /** Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers. */
+  submission_count: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by stddev_samp() on columns of table "contacts" */
+export type Contacts_Stddev_Samp_Order_By = {
+  /** Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers. */
+  submission_count?: InputMaybe<Order_By>;
+};
+
+/** Streaming cursor of the table "contacts" */
+export type Contacts_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Contacts_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type Contacts_Stream_Cursor_Value_Input = {
+  /** URL to profile photo or avatar image. Displayed alongside testimonials for visual social proof and authenticity. */
+  avatar_url?: InputMaybe<Scalars['String']['input']>;
+  /** Name of the company or organization where the contact works. Used for B2B testimonial displays and logo integration. */
+  company_name?: InputMaybe<Scalars['String']['input']>;
+  /** URL to the contact's company website. May be used for automated logo fetching or company verification. */
+  company_website?: InputMaybe<Scalars['String']['input']>;
+  /** Timestamp when this contact record was first created. Set automatically on insert, never modified thereafter. */
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Primary identifier for the contact. Unique within each organization. Used for deduplication when same person submits multiple testimonials across different forms. */
+  email?: InputMaybe<Scalars['String']['input']>;
+  /** Boolean flag indicating if email ownership has been confirmed via verification link. Verified contacts may receive preferential display treatment. */
+  email_verified?: InputMaybe<Scalars['Boolean']['input']>;
+  /** Timestamp of first interaction with the organization. Set on creation and never modified. Used for cohort analysis and engagement metrics. */
+  first_seen_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
+  id?: InputMaybe<Scalars['String']['input']>;
+  /** Professional title or role (e.g., "VP of Engineering", "Founder"). Adds credibility context to testimonials, especially for B2B use cases. */
+  job_title?: InputMaybe<Scalars['String']['input']>;
+  /** Timestamp of most recent activity. Updated on each new submission or interaction. Used for identifying active vs dormant contacts. */
+  last_seen_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** URL to LinkedIn profile. Provides professional verification and enables social proof through platform recognition. */
+  linkedin_url?: InputMaybe<Scalars['String']['input']>;
+  /** Display name of the contact. Collected from form submission contact_info step or enriched from external data sources like LinkedIn. */
+  name?: InputMaybe<Scalars['String']['input']>;
+  /** Foreign key to organizations table. Establishes tenant boundary - all contacts are scoped to a single organization for multi-tenancy isolation. */
+  organization_id?: InputMaybe<Scalars['String']['input']>;
+  /** Origin of this contact record: form_submission (created during testimonial submission), import (bulk CSV/API import), manual (admin created). Used for analytics and attribution. */
+  source?: InputMaybe<Scalars['String']['input']>;
+  /** Foreign key to forms table. References the first form through which this contact was acquired. Preserved even if form is later deleted (set null). */
+  source_form_id?: InputMaybe<Scalars['String']['input']>;
+  /** Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers. */
+  submission_count?: InputMaybe<Scalars['Int']['input']>;
+  /** URL to Twitter/X profile. Used for social sharing integration and additional verification of contact identity. */
+  twitter_url?: InputMaybe<Scalars['String']['input']>;
+  /** Timestamp of last modification to this record. Automatically updated by database trigger on any column change. */
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+};
+
+/** aggregate sum on columns */
+export type Contacts_Sum_Fields = {
+  __typename?: 'contacts_sum_fields';
+  /** Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers. */
+  submission_count: Maybe<Scalars['Int']['output']>;
+};
+
+/** order by sum() on columns of table "contacts" */
+export type Contacts_Sum_Order_By = {
+  /** Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers. */
+  submission_count?: InputMaybe<Order_By>;
+};
+
+/** update columns of table "contacts" */
+export const Contacts_Update_Column = {
+  /** column name */
+  AvatarUrl: 'avatar_url',
+  /** column name */
+  CompanyName: 'company_name',
+  /** column name */
+  CompanyWebsite: 'company_website',
+  /** column name */
+  CreatedAt: 'created_at',
+  /** column name */
+  Email: 'email',
+  /** column name */
+  EmailVerified: 'email_verified',
+  /** column name */
+  FirstSeenAt: 'first_seen_at',
+  /** column name */
+  Id: 'id',
+  /** column name */
+  JobTitle: 'job_title',
+  /** column name */
+  LastSeenAt: 'last_seen_at',
+  /** column name */
+  LinkedinUrl: 'linkedin_url',
+  /** column name */
+  Name: 'name',
+  /** column name */
+  OrganizationId: 'organization_id',
+  /** column name */
+  Source: 'source',
+  /** column name */
+  SourceFormId: 'source_form_id',
+  /** column name */
+  SubmissionCount: 'submission_count',
+  /** column name */
+  TwitterUrl: 'twitter_url',
+  /** column name */
+  UpdatedAt: 'updated_at'
+} as const;
+
+export type Contacts_Update_Column = typeof Contacts_Update_Column[keyof typeof Contacts_Update_Column];
+export type Contacts_Updates = {
+  /** increments the numeric columns with given value of the filtered values */
+  _inc?: InputMaybe<Contacts_Inc_Input>;
+  /** sets the columns of the filtered rows to the given values */
+  _set?: InputMaybe<Contacts_Set_Input>;
+  /** filter the rows which have to be updated */
+  where: Contacts_Bool_Exp;
+};
+
+/** aggregate var_pop on columns */
+export type Contacts_Var_Pop_Fields = {
+  __typename?: 'contacts_var_pop_fields';
+  /** Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers. */
+  submission_count: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by var_pop() on columns of table "contacts" */
+export type Contacts_Var_Pop_Order_By = {
+  /** Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers. */
+  submission_count?: InputMaybe<Order_By>;
+};
+
+/** aggregate var_samp on columns */
+export type Contacts_Var_Samp_Fields = {
+  __typename?: 'contacts_var_samp_fields';
+  /** Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers. */
+  submission_count: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by var_samp() on columns of table "contacts" */
+export type Contacts_Var_Samp_Order_By = {
+  /** Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers. */
+  submission_count?: InputMaybe<Order_By>;
+};
+
+/** aggregate variance on columns */
+export type Contacts_Variance_Fields = {
+  __typename?: 'contacts_variance_fields';
+  /** Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers. */
+  submission_count: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by variance() on columns of table "contacts" */
+export type Contacts_Variance_Order_By = {
+  /** Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers. */
+  submission_count?: InputMaybe<Order_By>;
+};
+
 /** ordering argument of a cursor */
 export const Cursor_Ordering = {
   /** ascending ordering of the cursor */
@@ -105,6 +860,681 @@ export const Cursor_Ordering = {
 } as const;
 
 export type Cursor_Ordering = typeof Cursor_Ordering[keyof typeof Cursor_Ordering];
+/** Defines branching paths for forms. Each form has flows (shared, testimonial, improvement) that determine step visibility based on user responses like rating. See ADR-009 for architecture details. */
+export type Flows = {
+  __typename?: 'flows';
+  /** Response column to evaluate. Valid values: answer_integer, answer_text, answer_boolean, answer_json. NULL for shared flows. */
+  branch_field: Maybe<Scalars['String']['output']>;
+  /** Comparison operator. Valid values: equals, not_equals, greater_than, greater_than_or_equal_to, less_than, less_than_or_equal_to, between, is_one_of, contains, is_empty. NULL for shared flows. */
+  branch_operator: Maybe<Scalars['String']['output']>;
+  /** An object relationship */
+  branch_question: Maybe<Form_Questions>;
+  /** FK to form_questions (ON DELETE RESTRICT). The question whose answer determines this branch. NULL for shared flows. */
+  branch_question_id: Maybe<Scalars['String']['output']>;
+  /** Structured comparison value as JSONB. Format: {type: "number"|"string"|"boolean"|"range"|"list", value: ...}. NULL for shared flows or is_empty operator. */
+  branch_value: Maybe<Scalars['jsonb']['output']>;
+  /** Timestamp when this flow was first created. Set automatically, never modified. */
+  created_at: Scalars['timestamptz']['output'];
+  /** Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...). */
+  display_order: Scalars['smallint']['output'];
+  /** Flow behavior type: shared (always shown, before branch) or branch (conditional, after branch point). */
+  flow_type: Scalars['String']['output'];
+  /** An object relationship */
+  form: Forms;
+  /** Foreign key to forms table. Identifies which form this flow belongs to. Cascade deletes when parent form is removed. */
+  form_id: Scalars['String']['output'];
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
+  id: Scalars['String']['output'];
+  /** Boolean flag marking the primary flow. Each form has exactly one primary flow (enforced by partial unique index). Primary flows are always shown; branch flows are conditional. */
+  is_primary: Scalars['Boolean']['output'];
+  /** Human-readable flow name displayed in form editor (e.g., "Shared Steps", "Testimonial Flow", "Improvement Flow"). */
+  name: Scalars['String']['output'];
+  /** An object relationship */
+  organization: Organizations;
+  /** Foreign key to organizations for row-level security. Denormalized from form for efficient permission queries. */
+  organization_id: Scalars['String']['output'];
+  /** An array relationship */
+  steps: Array<Form_Steps>;
+  /** An aggregate relationship */
+  steps_aggregate: Form_Steps_Aggregate;
+  /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
+  updated_at: Scalars['timestamptz']['output'];
+};
+
+
+/** Defines branching paths for forms. Each form has flows (shared, testimonial, improvement) that determine step visibility based on user responses like rating. See ADR-009 for architecture details. */
+export type FlowsBranch_ValueArgs = {
+  path?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+/** Defines branching paths for forms. Each form has flows (shared, testimonial, improvement) that determine step visibility based on user responses like rating. See ADR-009 for architecture details. */
+export type FlowsStepsArgs = {
+  distinct_on?: InputMaybe<Array<Form_Steps_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Form_Steps_Order_By>>;
+  where?: InputMaybe<Form_Steps_Bool_Exp>;
+};
+
+
+/** Defines branching paths for forms. Each form has flows (shared, testimonial, improvement) that determine step visibility based on user responses like rating. See ADR-009 for architecture details. */
+export type FlowsSteps_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Form_Steps_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Form_Steps_Order_By>>;
+  where?: InputMaybe<Form_Steps_Bool_Exp>;
+};
+
+/** aggregated selection of "flows" */
+export type Flows_Aggregate = {
+  __typename?: 'flows_aggregate';
+  aggregate: Maybe<Flows_Aggregate_Fields>;
+  nodes: Array<Flows>;
+};
+
+export type Flows_Aggregate_Bool_Exp = {
+  bool_and?: InputMaybe<Flows_Aggregate_Bool_Exp_Bool_And>;
+  bool_or?: InputMaybe<Flows_Aggregate_Bool_Exp_Bool_Or>;
+  count?: InputMaybe<Flows_Aggregate_Bool_Exp_Count>;
+};
+
+export type Flows_Aggregate_Bool_Exp_Bool_And = {
+  arguments: Flows_Select_Column_Flows_Aggregate_Bool_Exp_Bool_And_Arguments_Columns;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+  filter?: InputMaybe<Flows_Bool_Exp>;
+  predicate: Boolean_Comparison_Exp;
+};
+
+export type Flows_Aggregate_Bool_Exp_Bool_Or = {
+  arguments: Flows_Select_Column_Flows_Aggregate_Bool_Exp_Bool_Or_Arguments_Columns;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+  filter?: InputMaybe<Flows_Bool_Exp>;
+  predicate: Boolean_Comparison_Exp;
+};
+
+export type Flows_Aggregate_Bool_Exp_Count = {
+  arguments?: InputMaybe<Array<Flows_Select_Column>>;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+  filter?: InputMaybe<Flows_Bool_Exp>;
+  predicate: Int_Comparison_Exp;
+};
+
+/** aggregate fields of "flows" */
+export type Flows_Aggregate_Fields = {
+  __typename?: 'flows_aggregate_fields';
+  avg: Maybe<Flows_Avg_Fields>;
+  count: Scalars['Int']['output'];
+  max: Maybe<Flows_Max_Fields>;
+  min: Maybe<Flows_Min_Fields>;
+  stddev: Maybe<Flows_Stddev_Fields>;
+  stddev_pop: Maybe<Flows_Stddev_Pop_Fields>;
+  stddev_samp: Maybe<Flows_Stddev_Samp_Fields>;
+  sum: Maybe<Flows_Sum_Fields>;
+  var_pop: Maybe<Flows_Var_Pop_Fields>;
+  var_samp: Maybe<Flows_Var_Samp_Fields>;
+  variance: Maybe<Flows_Variance_Fields>;
+};
+
+
+/** aggregate fields of "flows" */
+export type Flows_Aggregate_FieldsCountArgs = {
+  columns?: InputMaybe<Array<Flows_Select_Column>>;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+/** order by aggregate values of table "flows" */
+export type Flows_Aggregate_Order_By = {
+  avg?: InputMaybe<Flows_Avg_Order_By>;
+  count?: InputMaybe<Order_By>;
+  max?: InputMaybe<Flows_Max_Order_By>;
+  min?: InputMaybe<Flows_Min_Order_By>;
+  stddev?: InputMaybe<Flows_Stddev_Order_By>;
+  stddev_pop?: InputMaybe<Flows_Stddev_Pop_Order_By>;
+  stddev_samp?: InputMaybe<Flows_Stddev_Samp_Order_By>;
+  sum?: InputMaybe<Flows_Sum_Order_By>;
+  var_pop?: InputMaybe<Flows_Var_Pop_Order_By>;
+  var_samp?: InputMaybe<Flows_Var_Samp_Order_By>;
+  variance?: InputMaybe<Flows_Variance_Order_By>;
+};
+
+/** append existing jsonb value of filtered columns with new jsonb value */
+export type Flows_Append_Input = {
+  /** Structured comparison value as JSONB. Format: {type: "number"|"string"|"boolean"|"range"|"list", value: ...}. NULL for shared flows or is_empty operator. */
+  branch_value?: InputMaybe<Scalars['jsonb']['input']>;
+};
+
+/** input type for inserting array relation for remote table "flows" */
+export type Flows_Arr_Rel_Insert_Input = {
+  data: Array<Flows_Insert_Input>;
+  /** upsert condition */
+  on_conflict?: InputMaybe<Flows_On_Conflict>;
+};
+
+/** aggregate avg on columns */
+export type Flows_Avg_Fields = {
+  __typename?: 'flows_avg_fields';
+  /** Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...). */
+  display_order: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by avg() on columns of table "flows" */
+export type Flows_Avg_Order_By = {
+  /** Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...). */
+  display_order?: InputMaybe<Order_By>;
+};
+
+/** Boolean expression to filter rows from the table "flows". All fields are combined with a logical 'AND'. */
+export type Flows_Bool_Exp = {
+  _and?: InputMaybe<Array<Flows_Bool_Exp>>;
+  _not?: InputMaybe<Flows_Bool_Exp>;
+  _or?: InputMaybe<Array<Flows_Bool_Exp>>;
+  branch_field?: InputMaybe<String_Comparison_Exp>;
+  branch_operator?: InputMaybe<String_Comparison_Exp>;
+  branch_question?: InputMaybe<Form_Questions_Bool_Exp>;
+  branch_question_id?: InputMaybe<String_Comparison_Exp>;
+  branch_value?: InputMaybe<Jsonb_Comparison_Exp>;
+  created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  display_order?: InputMaybe<Smallint_Comparison_Exp>;
+  flow_type?: InputMaybe<String_Comparison_Exp>;
+  form?: InputMaybe<Forms_Bool_Exp>;
+  form_id?: InputMaybe<String_Comparison_Exp>;
+  id?: InputMaybe<String_Comparison_Exp>;
+  is_primary?: InputMaybe<Boolean_Comparison_Exp>;
+  name?: InputMaybe<String_Comparison_Exp>;
+  organization?: InputMaybe<Organizations_Bool_Exp>;
+  organization_id?: InputMaybe<String_Comparison_Exp>;
+  steps?: InputMaybe<Form_Steps_Bool_Exp>;
+  steps_aggregate?: InputMaybe<Form_Steps_Aggregate_Bool_Exp>;
+  updated_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+};
+
+/** unique or primary key constraints on table "flows" */
+export const Flows_Constraint = {
+  /** unique or primary key constraint on columns "form_id", "name" */
+  FlowsFormNameUnique: 'flows_form_name_unique',
+  /** unique or primary key constraint on columns "id" */
+  FlowsPkey: 'flows_pkey',
+  /** unique or primary key constraint on columns "form_id" */
+  IdxFlowsPrimaryPerForm: 'idx_flows_primary_per_form'
+} as const;
+
+export type Flows_Constraint = typeof Flows_Constraint[keyof typeof Flows_Constraint];
+/** delete the field or element with specified path (for JSON arrays, negative integers count from the end) */
+export type Flows_Delete_At_Path_Input = {
+  /** Structured comparison value as JSONB. Format: {type: "number"|"string"|"boolean"|"range"|"list", value: ...}. NULL for shared flows or is_empty operator. */
+  branch_value?: InputMaybe<Array<Scalars['String']['input']>>;
+};
+
+/** delete the array element with specified index (negative integers count from the end). throws an error if top level container is not an array */
+export type Flows_Delete_Elem_Input = {
+  /** Structured comparison value as JSONB. Format: {type: "number"|"string"|"boolean"|"range"|"list", value: ...}. NULL for shared flows or is_empty operator. */
+  branch_value?: InputMaybe<Scalars['Int']['input']>;
+};
+
+/** delete key/value pair or string element. key/value pairs are matched based on their key value */
+export type Flows_Delete_Key_Input = {
+  /** Structured comparison value as JSONB. Format: {type: "number"|"string"|"boolean"|"range"|"list", value: ...}. NULL for shared flows or is_empty operator. */
+  branch_value?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** input type for incrementing numeric columns in table "flows" */
+export type Flows_Inc_Input = {
+  /** Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...). */
+  display_order?: InputMaybe<Scalars['smallint']['input']>;
+};
+
+/** input type for inserting data into table "flows" */
+export type Flows_Insert_Input = {
+  /** Response column to evaluate. Valid values: answer_integer, answer_text, answer_boolean, answer_json. NULL for shared flows. */
+  branch_field?: InputMaybe<Scalars['String']['input']>;
+  /** Comparison operator. Valid values: equals, not_equals, greater_than, greater_than_or_equal_to, less_than, less_than_or_equal_to, between, is_one_of, contains, is_empty. NULL for shared flows. */
+  branch_operator?: InputMaybe<Scalars['String']['input']>;
+  branch_question?: InputMaybe<Form_Questions_Obj_Rel_Insert_Input>;
+  /** FK to form_questions (ON DELETE RESTRICT). The question whose answer determines this branch. NULL for shared flows. */
+  branch_question_id?: InputMaybe<Scalars['String']['input']>;
+  /** Structured comparison value as JSONB. Format: {type: "number"|"string"|"boolean"|"range"|"list", value: ...}. NULL for shared flows or is_empty operator. */
+  branch_value?: InputMaybe<Scalars['jsonb']['input']>;
+  /** Timestamp when this flow was first created. Set automatically, never modified. */
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...). */
+  display_order?: InputMaybe<Scalars['smallint']['input']>;
+  /** Flow behavior type: shared (always shown, before branch) or branch (conditional, after branch point). */
+  flow_type?: InputMaybe<Scalars['String']['input']>;
+  form?: InputMaybe<Forms_Obj_Rel_Insert_Input>;
+  /** Foreign key to forms table. Identifies which form this flow belongs to. Cascade deletes when parent form is removed. */
+  form_id?: InputMaybe<Scalars['String']['input']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
+  id?: InputMaybe<Scalars['String']['input']>;
+  /** Boolean flag marking the primary flow. Each form has exactly one primary flow (enforced by partial unique index). Primary flows are always shown; branch flows are conditional. */
+  is_primary?: InputMaybe<Scalars['Boolean']['input']>;
+  /** Human-readable flow name displayed in form editor (e.g., "Shared Steps", "Testimonial Flow", "Improvement Flow"). */
+  name?: InputMaybe<Scalars['String']['input']>;
+  organization?: InputMaybe<Organizations_Obj_Rel_Insert_Input>;
+  /** Foreign key to organizations for row-level security. Denormalized from form for efficient permission queries. */
+  organization_id?: InputMaybe<Scalars['String']['input']>;
+  steps?: InputMaybe<Form_Steps_Arr_Rel_Insert_Input>;
+  /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+};
+
+/** aggregate max on columns */
+export type Flows_Max_Fields = {
+  __typename?: 'flows_max_fields';
+  /** Response column to evaluate. Valid values: answer_integer, answer_text, answer_boolean, answer_json. NULL for shared flows. */
+  branch_field: Maybe<Scalars['String']['output']>;
+  /** Comparison operator. Valid values: equals, not_equals, greater_than, greater_than_or_equal_to, less_than, less_than_or_equal_to, between, is_one_of, contains, is_empty. NULL for shared flows. */
+  branch_operator: Maybe<Scalars['String']['output']>;
+  /** FK to form_questions (ON DELETE RESTRICT). The question whose answer determines this branch. NULL for shared flows. */
+  branch_question_id: Maybe<Scalars['String']['output']>;
+  /** Timestamp when this flow was first created. Set automatically, never modified. */
+  created_at: Maybe<Scalars['timestamptz']['output']>;
+  /** Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...). */
+  display_order: Maybe<Scalars['smallint']['output']>;
+  /** Flow behavior type: shared (always shown, before branch) or branch (conditional, after branch point). */
+  flow_type: Maybe<Scalars['String']['output']>;
+  /** Foreign key to forms table. Identifies which form this flow belongs to. Cascade deletes when parent form is removed. */
+  form_id: Maybe<Scalars['String']['output']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
+  id: Maybe<Scalars['String']['output']>;
+  /** Human-readable flow name displayed in form editor (e.g., "Shared Steps", "Testimonial Flow", "Improvement Flow"). */
+  name: Maybe<Scalars['String']['output']>;
+  /** Foreign key to organizations for row-level security. Denormalized from form for efficient permission queries. */
+  organization_id: Maybe<Scalars['String']['output']>;
+  /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
+  updated_at: Maybe<Scalars['timestamptz']['output']>;
+};
+
+/** order by max() on columns of table "flows" */
+export type Flows_Max_Order_By = {
+  /** Response column to evaluate. Valid values: answer_integer, answer_text, answer_boolean, answer_json. NULL for shared flows. */
+  branch_field?: InputMaybe<Order_By>;
+  /** Comparison operator. Valid values: equals, not_equals, greater_than, greater_than_or_equal_to, less_than, less_than_or_equal_to, between, is_one_of, contains, is_empty. NULL for shared flows. */
+  branch_operator?: InputMaybe<Order_By>;
+  /** FK to form_questions (ON DELETE RESTRICT). The question whose answer determines this branch. NULL for shared flows. */
+  branch_question_id?: InputMaybe<Order_By>;
+  /** Timestamp when this flow was first created. Set automatically, never modified. */
+  created_at?: InputMaybe<Order_By>;
+  /** Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...). */
+  display_order?: InputMaybe<Order_By>;
+  /** Flow behavior type: shared (always shown, before branch) or branch (conditional, after branch point). */
+  flow_type?: InputMaybe<Order_By>;
+  /** Foreign key to forms table. Identifies which form this flow belongs to. Cascade deletes when parent form is removed. */
+  form_id?: InputMaybe<Order_By>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
+  id?: InputMaybe<Order_By>;
+  /** Human-readable flow name displayed in form editor (e.g., "Shared Steps", "Testimonial Flow", "Improvement Flow"). */
+  name?: InputMaybe<Order_By>;
+  /** Foreign key to organizations for row-level security. Denormalized from form for efficient permission queries. */
+  organization_id?: InputMaybe<Order_By>;
+  /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
+  updated_at?: InputMaybe<Order_By>;
+};
+
+/** aggregate min on columns */
+export type Flows_Min_Fields = {
+  __typename?: 'flows_min_fields';
+  /** Response column to evaluate. Valid values: answer_integer, answer_text, answer_boolean, answer_json. NULL for shared flows. */
+  branch_field: Maybe<Scalars['String']['output']>;
+  /** Comparison operator. Valid values: equals, not_equals, greater_than, greater_than_or_equal_to, less_than, less_than_or_equal_to, between, is_one_of, contains, is_empty. NULL for shared flows. */
+  branch_operator: Maybe<Scalars['String']['output']>;
+  /** FK to form_questions (ON DELETE RESTRICT). The question whose answer determines this branch. NULL for shared flows. */
+  branch_question_id: Maybe<Scalars['String']['output']>;
+  /** Timestamp when this flow was first created. Set automatically, never modified. */
+  created_at: Maybe<Scalars['timestamptz']['output']>;
+  /** Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...). */
+  display_order: Maybe<Scalars['smallint']['output']>;
+  /** Flow behavior type: shared (always shown, before branch) or branch (conditional, after branch point). */
+  flow_type: Maybe<Scalars['String']['output']>;
+  /** Foreign key to forms table. Identifies which form this flow belongs to. Cascade deletes when parent form is removed. */
+  form_id: Maybe<Scalars['String']['output']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
+  id: Maybe<Scalars['String']['output']>;
+  /** Human-readable flow name displayed in form editor (e.g., "Shared Steps", "Testimonial Flow", "Improvement Flow"). */
+  name: Maybe<Scalars['String']['output']>;
+  /** Foreign key to organizations for row-level security. Denormalized from form for efficient permission queries. */
+  organization_id: Maybe<Scalars['String']['output']>;
+  /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
+  updated_at: Maybe<Scalars['timestamptz']['output']>;
+};
+
+/** order by min() on columns of table "flows" */
+export type Flows_Min_Order_By = {
+  /** Response column to evaluate. Valid values: answer_integer, answer_text, answer_boolean, answer_json. NULL for shared flows. */
+  branch_field?: InputMaybe<Order_By>;
+  /** Comparison operator. Valid values: equals, not_equals, greater_than, greater_than_or_equal_to, less_than, less_than_or_equal_to, between, is_one_of, contains, is_empty. NULL for shared flows. */
+  branch_operator?: InputMaybe<Order_By>;
+  /** FK to form_questions (ON DELETE RESTRICT). The question whose answer determines this branch. NULL for shared flows. */
+  branch_question_id?: InputMaybe<Order_By>;
+  /** Timestamp when this flow was first created. Set automatically, never modified. */
+  created_at?: InputMaybe<Order_By>;
+  /** Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...). */
+  display_order?: InputMaybe<Order_By>;
+  /** Flow behavior type: shared (always shown, before branch) or branch (conditional, after branch point). */
+  flow_type?: InputMaybe<Order_By>;
+  /** Foreign key to forms table. Identifies which form this flow belongs to. Cascade deletes when parent form is removed. */
+  form_id?: InputMaybe<Order_By>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
+  id?: InputMaybe<Order_By>;
+  /** Human-readable flow name displayed in form editor (e.g., "Shared Steps", "Testimonial Flow", "Improvement Flow"). */
+  name?: InputMaybe<Order_By>;
+  /** Foreign key to organizations for row-level security. Denormalized from form for efficient permission queries. */
+  organization_id?: InputMaybe<Order_By>;
+  /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
+  updated_at?: InputMaybe<Order_By>;
+};
+
+/** response of any mutation on the table "flows" */
+export type Flows_Mutation_Response = {
+  __typename?: 'flows_mutation_response';
+  /** number of rows affected by the mutation */
+  affected_rows: Scalars['Int']['output'];
+  /** data from the rows affected by the mutation */
+  returning: Array<Flows>;
+};
+
+/** input type for inserting object relation for remote table "flows" */
+export type Flows_Obj_Rel_Insert_Input = {
+  data: Flows_Insert_Input;
+  /** upsert condition */
+  on_conflict?: InputMaybe<Flows_On_Conflict>;
+};
+
+/** on_conflict condition type for table "flows" */
+export type Flows_On_Conflict = {
+  constraint: Flows_Constraint;
+  update_columns?: Array<Flows_Update_Column>;
+  where?: InputMaybe<Flows_Bool_Exp>;
+};
+
+/** Ordering options when selecting data from "flows". */
+export type Flows_Order_By = {
+  branch_field?: InputMaybe<Order_By>;
+  branch_operator?: InputMaybe<Order_By>;
+  branch_question?: InputMaybe<Form_Questions_Order_By>;
+  branch_question_id?: InputMaybe<Order_By>;
+  branch_value?: InputMaybe<Order_By>;
+  created_at?: InputMaybe<Order_By>;
+  display_order?: InputMaybe<Order_By>;
+  flow_type?: InputMaybe<Order_By>;
+  form?: InputMaybe<Forms_Order_By>;
+  form_id?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
+  is_primary?: InputMaybe<Order_By>;
+  name?: InputMaybe<Order_By>;
+  organization?: InputMaybe<Organizations_Order_By>;
+  organization_id?: InputMaybe<Order_By>;
+  steps_aggregate?: InputMaybe<Form_Steps_Aggregate_Order_By>;
+  updated_at?: InputMaybe<Order_By>;
+};
+
+/** primary key columns input for table: flows */
+export type Flows_Pk_Columns_Input = {
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
+  id: Scalars['String']['input'];
+};
+
+/** prepend existing jsonb value of filtered columns with new jsonb value */
+export type Flows_Prepend_Input = {
+  /** Structured comparison value as JSONB. Format: {type: "number"|"string"|"boolean"|"range"|"list", value: ...}. NULL for shared flows or is_empty operator. */
+  branch_value?: InputMaybe<Scalars['jsonb']['input']>;
+};
+
+/** select columns of table "flows" */
+export const Flows_Select_Column = {
+  /** column name */
+  BranchField: 'branch_field',
+  /** column name */
+  BranchOperator: 'branch_operator',
+  /** column name */
+  BranchQuestionId: 'branch_question_id',
+  /** column name */
+  BranchValue: 'branch_value',
+  /** column name */
+  CreatedAt: 'created_at',
+  /** column name */
+  DisplayOrder: 'display_order',
+  /** column name */
+  FlowType: 'flow_type',
+  /** column name */
+  FormId: 'form_id',
+  /** column name */
+  Id: 'id',
+  /** column name */
+  IsPrimary: 'is_primary',
+  /** column name */
+  Name: 'name',
+  /** column name */
+  OrganizationId: 'organization_id',
+  /** column name */
+  UpdatedAt: 'updated_at'
+} as const;
+
+export type Flows_Select_Column = typeof Flows_Select_Column[keyof typeof Flows_Select_Column];
+/** select "flows_aggregate_bool_exp_bool_and_arguments_columns" columns of table "flows" */
+export const Flows_Select_Column_Flows_Aggregate_Bool_Exp_Bool_And_Arguments_Columns = {
+  /** column name */
+  IsPrimary: 'is_primary'
+} as const;
+
+export type Flows_Select_Column_Flows_Aggregate_Bool_Exp_Bool_And_Arguments_Columns = typeof Flows_Select_Column_Flows_Aggregate_Bool_Exp_Bool_And_Arguments_Columns[keyof typeof Flows_Select_Column_Flows_Aggregate_Bool_Exp_Bool_And_Arguments_Columns];
+/** select "flows_aggregate_bool_exp_bool_or_arguments_columns" columns of table "flows" */
+export const Flows_Select_Column_Flows_Aggregate_Bool_Exp_Bool_Or_Arguments_Columns = {
+  /** column name */
+  IsPrimary: 'is_primary'
+} as const;
+
+export type Flows_Select_Column_Flows_Aggregate_Bool_Exp_Bool_Or_Arguments_Columns = typeof Flows_Select_Column_Flows_Aggregate_Bool_Exp_Bool_Or_Arguments_Columns[keyof typeof Flows_Select_Column_Flows_Aggregate_Bool_Exp_Bool_Or_Arguments_Columns];
+/** input type for updating data in table "flows" */
+export type Flows_Set_Input = {
+  /** Response column to evaluate. Valid values: answer_integer, answer_text, answer_boolean, answer_json. NULL for shared flows. */
+  branch_field?: InputMaybe<Scalars['String']['input']>;
+  /** Comparison operator. Valid values: equals, not_equals, greater_than, greater_than_or_equal_to, less_than, less_than_or_equal_to, between, is_one_of, contains, is_empty. NULL for shared flows. */
+  branch_operator?: InputMaybe<Scalars['String']['input']>;
+  /** FK to form_questions (ON DELETE RESTRICT). The question whose answer determines this branch. NULL for shared flows. */
+  branch_question_id?: InputMaybe<Scalars['String']['input']>;
+  /** Structured comparison value as JSONB. Format: {type: "number"|"string"|"boolean"|"range"|"list", value: ...}. NULL for shared flows or is_empty operator. */
+  branch_value?: InputMaybe<Scalars['jsonb']['input']>;
+  /** Timestamp when this flow was first created. Set automatically, never modified. */
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...). */
+  display_order?: InputMaybe<Scalars['smallint']['input']>;
+  /** Flow behavior type: shared (always shown, before branch) or branch (conditional, after branch point). */
+  flow_type?: InputMaybe<Scalars['String']['input']>;
+  /** Foreign key to forms table. Identifies which form this flow belongs to. Cascade deletes when parent form is removed. */
+  form_id?: InputMaybe<Scalars['String']['input']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
+  id?: InputMaybe<Scalars['String']['input']>;
+  /** Boolean flag marking the primary flow. Each form has exactly one primary flow (enforced by partial unique index). Primary flows are always shown; branch flows are conditional. */
+  is_primary?: InputMaybe<Scalars['Boolean']['input']>;
+  /** Human-readable flow name displayed in form editor (e.g., "Shared Steps", "Testimonial Flow", "Improvement Flow"). */
+  name?: InputMaybe<Scalars['String']['input']>;
+  /** Foreign key to organizations for row-level security. Denormalized from form for efficient permission queries. */
+  organization_id?: InputMaybe<Scalars['String']['input']>;
+  /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+};
+
+/** aggregate stddev on columns */
+export type Flows_Stddev_Fields = {
+  __typename?: 'flows_stddev_fields';
+  /** Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...). */
+  display_order: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by stddev() on columns of table "flows" */
+export type Flows_Stddev_Order_By = {
+  /** Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...). */
+  display_order?: InputMaybe<Order_By>;
+};
+
+/** aggregate stddev_pop on columns */
+export type Flows_Stddev_Pop_Fields = {
+  __typename?: 'flows_stddev_pop_fields';
+  /** Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...). */
+  display_order: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by stddev_pop() on columns of table "flows" */
+export type Flows_Stddev_Pop_Order_By = {
+  /** Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...). */
+  display_order?: InputMaybe<Order_By>;
+};
+
+/** aggregate stddev_samp on columns */
+export type Flows_Stddev_Samp_Fields = {
+  __typename?: 'flows_stddev_samp_fields';
+  /** Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...). */
+  display_order: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by stddev_samp() on columns of table "flows" */
+export type Flows_Stddev_Samp_Order_By = {
+  /** Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...). */
+  display_order?: InputMaybe<Order_By>;
+};
+
+/** Streaming cursor of the table "flows" */
+export type Flows_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Flows_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type Flows_Stream_Cursor_Value_Input = {
+  /** Response column to evaluate. Valid values: answer_integer, answer_text, answer_boolean, answer_json. NULL for shared flows. */
+  branch_field?: InputMaybe<Scalars['String']['input']>;
+  /** Comparison operator. Valid values: equals, not_equals, greater_than, greater_than_or_equal_to, less_than, less_than_or_equal_to, between, is_one_of, contains, is_empty. NULL for shared flows. */
+  branch_operator?: InputMaybe<Scalars['String']['input']>;
+  /** FK to form_questions (ON DELETE RESTRICT). The question whose answer determines this branch. NULL for shared flows. */
+  branch_question_id?: InputMaybe<Scalars['String']['input']>;
+  /** Structured comparison value as JSONB. Format: {type: "number"|"string"|"boolean"|"range"|"list", value: ...}. NULL for shared flows or is_empty operator. */
+  branch_value?: InputMaybe<Scalars['jsonb']['input']>;
+  /** Timestamp when this flow was first created. Set automatically, never modified. */
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...). */
+  display_order?: InputMaybe<Scalars['smallint']['input']>;
+  /** Flow behavior type: shared (always shown, before branch) or branch (conditional, after branch point). */
+  flow_type?: InputMaybe<Scalars['String']['input']>;
+  /** Foreign key to forms table. Identifies which form this flow belongs to. Cascade deletes when parent form is removed. */
+  form_id?: InputMaybe<Scalars['String']['input']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
+  id?: InputMaybe<Scalars['String']['input']>;
+  /** Boolean flag marking the primary flow. Each form has exactly one primary flow (enforced by partial unique index). Primary flows are always shown; branch flows are conditional. */
+  is_primary?: InputMaybe<Scalars['Boolean']['input']>;
+  /** Human-readable flow name displayed in form editor (e.g., "Shared Steps", "Testimonial Flow", "Improvement Flow"). */
+  name?: InputMaybe<Scalars['String']['input']>;
+  /** Foreign key to organizations for row-level security. Denormalized from form for efficient permission queries. */
+  organization_id?: InputMaybe<Scalars['String']['input']>;
+  /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+};
+
+/** aggregate sum on columns */
+export type Flows_Sum_Fields = {
+  __typename?: 'flows_sum_fields';
+  /** Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...). */
+  display_order: Maybe<Scalars['smallint']['output']>;
+};
+
+/** order by sum() on columns of table "flows" */
+export type Flows_Sum_Order_By = {
+  /** Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...). */
+  display_order?: InputMaybe<Order_By>;
+};
+
+/** update columns of table "flows" */
+export const Flows_Update_Column = {
+  /** column name */
+  BranchField: 'branch_field',
+  /** column name */
+  BranchOperator: 'branch_operator',
+  /** column name */
+  BranchQuestionId: 'branch_question_id',
+  /** column name */
+  BranchValue: 'branch_value',
+  /** column name */
+  CreatedAt: 'created_at',
+  /** column name */
+  DisplayOrder: 'display_order',
+  /** column name */
+  FlowType: 'flow_type',
+  /** column name */
+  FormId: 'form_id',
+  /** column name */
+  Id: 'id',
+  /** column name */
+  IsPrimary: 'is_primary',
+  /** column name */
+  Name: 'name',
+  /** column name */
+  OrganizationId: 'organization_id',
+  /** column name */
+  UpdatedAt: 'updated_at'
+} as const;
+
+export type Flows_Update_Column = typeof Flows_Update_Column[keyof typeof Flows_Update_Column];
+export type Flows_Updates = {
+  /** append existing jsonb value of filtered columns with new jsonb value */
+  _append?: InputMaybe<Flows_Append_Input>;
+  /** delete the field or element with specified path (for JSON arrays, negative integers count from the end) */
+  _delete_at_path?: InputMaybe<Flows_Delete_At_Path_Input>;
+  /** delete the array element with specified index (negative integers count from the end). throws an error if top level container is not an array */
+  _delete_elem?: InputMaybe<Flows_Delete_Elem_Input>;
+  /** delete key/value pair or string element. key/value pairs are matched based on their key value */
+  _delete_key?: InputMaybe<Flows_Delete_Key_Input>;
+  /** increments the numeric columns with given value of the filtered values */
+  _inc?: InputMaybe<Flows_Inc_Input>;
+  /** prepend existing jsonb value of filtered columns with new jsonb value */
+  _prepend?: InputMaybe<Flows_Prepend_Input>;
+  /** sets the columns of the filtered rows to the given values */
+  _set?: InputMaybe<Flows_Set_Input>;
+  /** filter the rows which have to be updated */
+  where: Flows_Bool_Exp;
+};
+
+/** aggregate var_pop on columns */
+export type Flows_Var_Pop_Fields = {
+  __typename?: 'flows_var_pop_fields';
+  /** Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...). */
+  display_order: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by var_pop() on columns of table "flows" */
+export type Flows_Var_Pop_Order_By = {
+  /** Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...). */
+  display_order?: InputMaybe<Order_By>;
+};
+
+/** aggregate var_samp on columns */
+export type Flows_Var_Samp_Fields = {
+  __typename?: 'flows_var_samp_fields';
+  /** Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...). */
+  display_order: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by var_samp() on columns of table "flows" */
+export type Flows_Var_Samp_Order_By = {
+  /** Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...). */
+  display_order?: InputMaybe<Order_By>;
+};
+
+/** aggregate variance on columns */
+export type Flows_Variance_Fields = {
+  __typename?: 'flows_variance_fields';
+  /** Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...). */
+  display_order: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by variance() on columns of table "flows" */
+export type Flows_Variance_Order_By = {
+  /** Order for displaying flows in UI and queries. Convention: shared=0, branches follow (1, 2, ...). */
+  display_order?: InputMaybe<Order_By>;
+};
+
 /** Raw form submission responses - internal data for AI assembly, not displayed on widgets */
 export type Form_Question_Responses = {
   __typename?: 'form_question_responses';
@@ -748,7 +2178,7 @@ export type Form_Question_Responses_Variance_Order_By = {
   answer_integer?: InputMaybe<Order_By>;
 };
 
-/** Form questions with typed validation - explicit columns, not JSONB */
+/** Form questions belong to steps. Derive form via question.step.flow.form_id. Clean ownership: step → question. */
 export type Form_Questions = {
   __typename?: 'form_questions';
   /** Array of allowed MIME types for file uploads. Post-MVP */
@@ -757,10 +2187,6 @@ export type Form_Questions = {
   created_at: Scalars['timestamptz']['output'];
   /** Order in which question appears on form. Unique per form, starts at 1 */
   display_order: Scalars['smallint']['output'];
-  /** An object relationship */
-  form: Forms;
-  /** FK to forms - parent form this question belongs to */
-  form_id: Scalars['String']['output'];
   /** Tooltip help text explaining what kind of answer is expected */
   help_text: Maybe<Scalars['String']['output']>;
   /** Primary key - NanoID 12-char unique identifier */
@@ -801,6 +2227,14 @@ export type Form_Questions = {
   responses: Array<Form_Question_Responses>;
   /** An aggregate relationship */
   responses_aggregate: Form_Question_Responses_Aggregate;
+  /** Custom label for maximum value on Linear Scale (e.g., "High", "Strongly agree"). NULL uses default "High" */
+  scale_max_label: Maybe<Scalars['String']['output']>;
+  /** Custom label for minimum value on Linear Scale (e.g., "Low", "Strongly disagree"). NULL uses default "Low" */
+  scale_min_label: Maybe<Scalars['String']['output']>;
+  /** An object relationship */
+  step: Maybe<Form_Steps>;
+  /** FK to form_steps. The step that owns this question. Nullable for steps without questions (welcome, thank_you, consent). CASCADE delete removes question when step is deleted. */
+  step_id: Maybe<Scalars['String']['output']>;
   /** Timestamp of last modification. Auto-updated by trigger */
   updated_at: Scalars['timestamptz']['output'];
   /** FK to users - who last modified. NULL until first update */
@@ -812,7 +2246,7 @@ export type Form_Questions = {
 };
 
 
-/** Form questions with typed validation - explicit columns, not JSONB */
+/** Form questions belong to steps. Derive form via question.step.flow.form_id. Clean ownership: step → question. */
 export type Form_QuestionsOptionsArgs = {
   distinct_on?: InputMaybe<Array<Question_Options_Select_Column>>;
   limit?: InputMaybe<Scalars['Int']['input']>;
@@ -822,7 +2256,7 @@ export type Form_QuestionsOptionsArgs = {
 };
 
 
-/** Form questions with typed validation - explicit columns, not JSONB */
+/** Form questions belong to steps. Derive form via question.step.flow.form_id. Clean ownership: step → question. */
 export type Form_QuestionsOptions_AggregateArgs = {
   distinct_on?: InputMaybe<Array<Question_Options_Select_Column>>;
   limit?: InputMaybe<Scalars['Int']['input']>;
@@ -832,7 +2266,7 @@ export type Form_QuestionsOptions_AggregateArgs = {
 };
 
 
-/** Form questions with typed validation - explicit columns, not JSONB */
+/** Form questions belong to steps. Derive form via question.step.flow.form_id. Clean ownership: step → question. */
 export type Form_QuestionsResponsesArgs = {
   distinct_on?: InputMaybe<Array<Form_Question_Responses_Select_Column>>;
   limit?: InputMaybe<Scalars['Int']['input']>;
@@ -842,7 +2276,7 @@ export type Form_QuestionsResponsesArgs = {
 };
 
 
-/** Form questions with typed validation - explicit columns, not JSONB */
+/** Form questions belong to steps. Derive form via question.step.flow.form_id. Clean ownership: step → question. */
 export type Form_QuestionsResponses_AggregateArgs = {
   distinct_on?: InputMaybe<Array<Form_Question_Responses_Select_Column>>;
   limit?: InputMaybe<Scalars['Int']['input']>;
@@ -971,8 +2405,6 @@ export type Form_Questions_Bool_Exp = {
   allowed_file_types?: InputMaybe<String_Array_Comparison_Exp>;
   created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
   display_order?: InputMaybe<Smallint_Comparison_Exp>;
-  form?: InputMaybe<Forms_Bool_Exp>;
-  form_id?: InputMaybe<String_Comparison_Exp>;
   help_text?: InputMaybe<String_Comparison_Exp>;
   id?: InputMaybe<String_Comparison_Exp>;
   is_active?: InputMaybe<Boolean_Comparison_Exp>;
@@ -993,6 +2425,10 @@ export type Form_Questions_Bool_Exp = {
   question_type_id?: InputMaybe<String_Comparison_Exp>;
   responses?: InputMaybe<Form_Question_Responses_Bool_Exp>;
   responses_aggregate?: InputMaybe<Form_Question_Responses_Aggregate_Bool_Exp>;
+  scale_max_label?: InputMaybe<String_Comparison_Exp>;
+  scale_min_label?: InputMaybe<String_Comparison_Exp>;
+  step?: InputMaybe<Form_Steps_Bool_Exp>;
+  step_id?: InputMaybe<String_Comparison_Exp>;
   updated_at?: InputMaybe<Timestamptz_Comparison_Exp>;
   updated_by?: InputMaybe<String_Comparison_Exp>;
   updater?: InputMaybe<Users_Bool_Exp>;
@@ -1001,12 +2437,10 @@ export type Form_Questions_Bool_Exp = {
 
 /** unique or primary key constraints on table "form_questions" */
 export const Form_Questions_Constraint = {
-  /** unique or primary key constraint on columns "form_id", "question_key" */
-  FormQuestionsKeyPerFormUnique: 'form_questions_key_per_form_unique',
-  /** unique or primary key constraint on columns "form_id", "display_order" */
-  FormQuestionsOrderPerFormUnique: 'form_questions_order_per_form_unique',
   /** unique or primary key constraint on columns "id" */
-  FormQuestionsPkey: 'form_questions_pkey'
+  FormQuestionsPkey: 'form_questions_pkey',
+  /** unique or primary key constraint on columns "step_id" */
+  IdxFormQuestionsStepIdUnique: 'idx_form_questions_step_id_unique'
 } as const;
 
 export type Form_Questions_Constraint = typeof Form_Questions_Constraint[keyof typeof Form_Questions_Constraint];
@@ -1034,9 +2468,6 @@ export type Form_Questions_Insert_Input = {
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
   /** Order in which question appears on form. Unique per form, starts at 1 */
   display_order?: InputMaybe<Scalars['smallint']['input']>;
-  form?: InputMaybe<Forms_Obj_Rel_Insert_Input>;
-  /** FK to forms - parent form this question belongs to */
-  form_id?: InputMaybe<Scalars['String']['input']>;
   /** Tooltip help text explaining what kind of answer is expected */
   help_text?: InputMaybe<Scalars['String']['input']>;
   /** Primary key - NanoID 12-char unique identifier */
@@ -1069,6 +2500,13 @@ export type Form_Questions_Insert_Input = {
   /** FK to question_types - determines input component and applicable validation rules */
   question_type_id?: InputMaybe<Scalars['String']['input']>;
   responses?: InputMaybe<Form_Question_Responses_Arr_Rel_Insert_Input>;
+  /** Custom label for maximum value on Linear Scale (e.g., "High", "Strongly agree"). NULL uses default "High" */
+  scale_max_label?: InputMaybe<Scalars['String']['input']>;
+  /** Custom label for minimum value on Linear Scale (e.g., "Low", "Strongly disagree"). NULL uses default "Low" */
+  scale_min_label?: InputMaybe<Scalars['String']['input']>;
+  step?: InputMaybe<Form_Steps_Obj_Rel_Insert_Input>;
+  /** FK to form_steps. The step that owns this question. Nullable for steps without questions (welcome, thank_you, consent). CASCADE delete removes question when step is deleted. */
+  step_id?: InputMaybe<Scalars['String']['input']>;
   /** Timestamp of last modification. Auto-updated by trigger */
   updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
   /** FK to users - who last modified. NULL until first update */
@@ -1087,8 +2525,6 @@ export type Form_Questions_Max_Fields = {
   created_at: Maybe<Scalars['timestamptz']['output']>;
   /** Order in which question appears on form. Unique per form, starts at 1 */
   display_order: Maybe<Scalars['smallint']['output']>;
-  /** FK to forms - parent form this question belongs to */
-  form_id: Maybe<Scalars['String']['output']>;
   /** Tooltip help text explaining what kind of answer is expected */
   help_text: Maybe<Scalars['String']['output']>;
   /** Primary key - NanoID 12-char unique identifier */
@@ -1113,6 +2549,12 @@ export type Form_Questions_Max_Fields = {
   question_text: Maybe<Scalars['String']['output']>;
   /** FK to question_types - determines input component and applicable validation rules */
   question_type_id: Maybe<Scalars['String']['output']>;
+  /** Custom label for maximum value on Linear Scale (e.g., "High", "Strongly agree"). NULL uses default "High" */
+  scale_max_label: Maybe<Scalars['String']['output']>;
+  /** Custom label for minimum value on Linear Scale (e.g., "Low", "Strongly disagree"). NULL uses default "Low" */
+  scale_min_label: Maybe<Scalars['String']['output']>;
+  /** FK to form_steps. The step that owns this question. Nullable for steps without questions (welcome, thank_you, consent). CASCADE delete removes question when step is deleted. */
+  step_id: Maybe<Scalars['String']['output']>;
   /** Timestamp of last modification. Auto-updated by trigger */
   updated_at: Maybe<Scalars['timestamptz']['output']>;
   /** FK to users - who last modified. NULL until first update */
@@ -1129,8 +2571,6 @@ export type Form_Questions_Max_Order_By = {
   created_at?: InputMaybe<Order_By>;
   /** Order in which question appears on form. Unique per form, starts at 1 */
   display_order?: InputMaybe<Order_By>;
-  /** FK to forms - parent form this question belongs to */
-  form_id?: InputMaybe<Order_By>;
   /** Tooltip help text explaining what kind of answer is expected */
   help_text?: InputMaybe<Order_By>;
   /** Primary key - NanoID 12-char unique identifier */
@@ -1155,6 +2595,12 @@ export type Form_Questions_Max_Order_By = {
   question_text?: InputMaybe<Order_By>;
   /** FK to question_types - determines input component and applicable validation rules */
   question_type_id?: InputMaybe<Order_By>;
+  /** Custom label for maximum value on Linear Scale (e.g., "High", "Strongly agree"). NULL uses default "High" */
+  scale_max_label?: InputMaybe<Order_By>;
+  /** Custom label for minimum value on Linear Scale (e.g., "Low", "Strongly disagree"). NULL uses default "Low" */
+  scale_min_label?: InputMaybe<Order_By>;
+  /** FK to form_steps. The step that owns this question. Nullable for steps without questions (welcome, thank_you, consent). CASCADE delete removes question when step is deleted. */
+  step_id?: InputMaybe<Order_By>;
   /** Timestamp of last modification. Auto-updated by trigger */
   updated_at?: InputMaybe<Order_By>;
   /** FK to users - who last modified. NULL until first update */
@@ -1172,8 +2618,6 @@ export type Form_Questions_Min_Fields = {
   created_at: Maybe<Scalars['timestamptz']['output']>;
   /** Order in which question appears on form. Unique per form, starts at 1 */
   display_order: Maybe<Scalars['smallint']['output']>;
-  /** FK to forms - parent form this question belongs to */
-  form_id: Maybe<Scalars['String']['output']>;
   /** Tooltip help text explaining what kind of answer is expected */
   help_text: Maybe<Scalars['String']['output']>;
   /** Primary key - NanoID 12-char unique identifier */
@@ -1198,6 +2642,12 @@ export type Form_Questions_Min_Fields = {
   question_text: Maybe<Scalars['String']['output']>;
   /** FK to question_types - determines input component and applicable validation rules */
   question_type_id: Maybe<Scalars['String']['output']>;
+  /** Custom label for maximum value on Linear Scale (e.g., "High", "Strongly agree"). NULL uses default "High" */
+  scale_max_label: Maybe<Scalars['String']['output']>;
+  /** Custom label for minimum value on Linear Scale (e.g., "Low", "Strongly disagree"). NULL uses default "Low" */
+  scale_min_label: Maybe<Scalars['String']['output']>;
+  /** FK to form_steps. The step that owns this question. Nullable for steps without questions (welcome, thank_you, consent). CASCADE delete removes question when step is deleted. */
+  step_id: Maybe<Scalars['String']['output']>;
   /** Timestamp of last modification. Auto-updated by trigger */
   updated_at: Maybe<Scalars['timestamptz']['output']>;
   /** FK to users - who last modified. NULL until first update */
@@ -1214,8 +2664,6 @@ export type Form_Questions_Min_Order_By = {
   created_at?: InputMaybe<Order_By>;
   /** Order in which question appears on form. Unique per form, starts at 1 */
   display_order?: InputMaybe<Order_By>;
-  /** FK to forms - parent form this question belongs to */
-  form_id?: InputMaybe<Order_By>;
   /** Tooltip help text explaining what kind of answer is expected */
   help_text?: InputMaybe<Order_By>;
   /** Primary key - NanoID 12-char unique identifier */
@@ -1240,6 +2688,12 @@ export type Form_Questions_Min_Order_By = {
   question_text?: InputMaybe<Order_By>;
   /** FK to question_types - determines input component and applicable validation rules */
   question_type_id?: InputMaybe<Order_By>;
+  /** Custom label for maximum value on Linear Scale (e.g., "High", "Strongly agree"). NULL uses default "High" */
+  scale_max_label?: InputMaybe<Order_By>;
+  /** Custom label for minimum value on Linear Scale (e.g., "Low", "Strongly disagree"). NULL uses default "Low" */
+  scale_min_label?: InputMaybe<Order_By>;
+  /** FK to form_steps. The step that owns this question. Nullable for steps without questions (welcome, thank_you, consent). CASCADE delete removes question when step is deleted. */
+  step_id?: InputMaybe<Order_By>;
   /** Timestamp of last modification. Auto-updated by trigger */
   updated_at?: InputMaybe<Order_By>;
   /** FK to users - who last modified. NULL until first update */
@@ -1276,8 +2730,6 @@ export type Form_Questions_Order_By = {
   allowed_file_types?: InputMaybe<Order_By>;
   created_at?: InputMaybe<Order_By>;
   display_order?: InputMaybe<Order_By>;
-  form?: InputMaybe<Forms_Order_By>;
-  form_id?: InputMaybe<Order_By>;
   help_text?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
   is_active?: InputMaybe<Order_By>;
@@ -1296,6 +2748,10 @@ export type Form_Questions_Order_By = {
   question_type?: InputMaybe<Question_Types_Order_By>;
   question_type_id?: InputMaybe<Order_By>;
   responses_aggregate?: InputMaybe<Form_Question_Responses_Aggregate_Order_By>;
+  scale_max_label?: InputMaybe<Order_By>;
+  scale_min_label?: InputMaybe<Order_By>;
+  step?: InputMaybe<Form_Steps_Order_By>;
+  step_id?: InputMaybe<Order_By>;
   updated_at?: InputMaybe<Order_By>;
   updated_by?: InputMaybe<Order_By>;
   updater?: InputMaybe<Users_Order_By>;
@@ -1316,8 +2772,6 @@ export const Form_Questions_Select_Column = {
   CreatedAt: 'created_at',
   /** column name */
   DisplayOrder: 'display_order',
-  /** column name */
-  FormId: 'form_id',
   /** column name */
   HelpText: 'help_text',
   /** column name */
@@ -1346,6 +2800,12 @@ export const Form_Questions_Select_Column = {
   QuestionText: 'question_text',
   /** column name */
   QuestionTypeId: 'question_type_id',
+  /** column name */
+  ScaleMaxLabel: 'scale_max_label',
+  /** column name */
+  ScaleMinLabel: 'scale_min_label',
+  /** column name */
+  StepId: 'step_id',
   /** column name */
   UpdatedAt: 'updated_at',
   /** column name */
@@ -1381,8 +2841,6 @@ export type Form_Questions_Set_Input = {
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
   /** Order in which question appears on form. Unique per form, starts at 1 */
   display_order?: InputMaybe<Scalars['smallint']['input']>;
-  /** FK to forms - parent form this question belongs to */
-  form_id?: InputMaybe<Scalars['String']['input']>;
   /** Tooltip help text explaining what kind of answer is expected */
   help_text?: InputMaybe<Scalars['String']['input']>;
   /** Primary key - NanoID 12-char unique identifier */
@@ -1411,6 +2869,12 @@ export type Form_Questions_Set_Input = {
   question_text?: InputMaybe<Scalars['String']['input']>;
   /** FK to question_types - determines input component and applicable validation rules */
   question_type_id?: InputMaybe<Scalars['String']['input']>;
+  /** Custom label for maximum value on Linear Scale (e.g., "High", "Strongly agree"). NULL uses default "High" */
+  scale_max_label?: InputMaybe<Scalars['String']['input']>;
+  /** Custom label for minimum value on Linear Scale (e.g., "Low", "Strongly disagree"). NULL uses default "Low" */
+  scale_min_label?: InputMaybe<Scalars['String']['input']>;
+  /** FK to form_steps. The step that owns this question. Nullable for steps without questions (welcome, thank_you, consent). CASCADE delete removes question when step is deleted. */
+  step_id?: InputMaybe<Scalars['String']['input']>;
   /** Timestamp of last modification. Auto-updated by trigger */
   updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
   /** FK to users - who last modified. NULL until first update */
@@ -1534,8 +2998,6 @@ export type Form_Questions_Stream_Cursor_Value_Input = {
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
   /** Order in which question appears on form. Unique per form, starts at 1 */
   display_order?: InputMaybe<Scalars['smallint']['input']>;
-  /** FK to forms - parent form this question belongs to */
-  form_id?: InputMaybe<Scalars['String']['input']>;
   /** Tooltip help text explaining what kind of answer is expected */
   help_text?: InputMaybe<Scalars['String']['input']>;
   /** Primary key - NanoID 12-char unique identifier */
@@ -1564,6 +3026,12 @@ export type Form_Questions_Stream_Cursor_Value_Input = {
   question_text?: InputMaybe<Scalars['String']['input']>;
   /** FK to question_types - determines input component and applicable validation rules */
   question_type_id?: InputMaybe<Scalars['String']['input']>;
+  /** Custom label for maximum value on Linear Scale (e.g., "High", "Strongly agree"). NULL uses default "High" */
+  scale_max_label?: InputMaybe<Scalars['String']['input']>;
+  /** Custom label for minimum value on Linear Scale (e.g., "Low", "Strongly disagree"). NULL uses default "Low" */
+  scale_min_label?: InputMaybe<Scalars['String']['input']>;
+  /** FK to form_steps. The step that owns this question. Nullable for steps without questions (welcome, thank_you, consent). CASCADE delete removes question when step is deleted. */
+  step_id?: InputMaybe<Scalars['String']['input']>;
   /** Timestamp of last modification. Auto-updated by trigger */
   updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
   /** FK to users - who last modified. NULL until first update */
@@ -1614,8 +3082,6 @@ export const Form_Questions_Update_Column = {
   /** column name */
   DisplayOrder: 'display_order',
   /** column name */
-  FormId: 'form_id',
-  /** column name */
   HelpText: 'help_text',
   /** column name */
   Id: 'id',
@@ -1643,6 +3109,12 @@ export const Form_Questions_Update_Column = {
   QuestionText: 'question_text',
   /** column name */
   QuestionTypeId: 'question_type_id',
+  /** column name */
+  ScaleMaxLabel: 'scale_max_label',
+  /** column name */
+  ScaleMinLabel: 'scale_min_label',
+  /** column name */
+  StepId: 'step_id',
   /** column name */
   UpdatedAt: 'updated_at',
   /** column name */
@@ -1760,9 +3232,691 @@ export type Form_Questions_Variance_Order_By = {
   min_value?: InputMaybe<Order_By>;
 };
 
+/** Form steps belong to flows. Question deletion handled by FK cascade on form_questions.step_id. */
+export type Form_Steps = {
+  __typename?: 'form_steps';
+  /** JSONB payload with type-specific configuration. Structure varies by step_type. Empty for question/rating types which use form_questions table instead. */
+  content: Scalars['jsonb']['output'];
+  /** Timestamp when this step record was first created. Set automatically, never modified. */
+  created_at: Scalars['timestamptz']['output'];
+  /** Foreign key to users table. Records which user originally created this step for audit purposes. */
+  created_by: Maybe<Scalars['String']['output']>;
+  /** An object relationship */
+  creator: Maybe<Users>;
+  /** An object relationship */
+  flow: Flows;
+  /** Foreign key to flows table. Links step to its parent flow (shared, testimonial, or improvement). Will be NOT NULL after backfill migration. */
+  flow_id: Scalars['String']['output'];
+  /** DEPRECATED: Legacy flow membership column. Use flow_id instead. This column will be removed in a future migration. Values are no longer constrained - any string is allowed during transition. */
+  flow_membership: Scalars['String']['output'];
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
+  id: Scalars['String']['output'];
+  /** Soft delete flag. False hides step from form while preserving data for historical analysis and potential restoration. */
+  is_active: Scalars['Boolean']['output'];
+  /** An object relationship */
+  organization: Organizations;
+  /** Foreign key to organizations table. Denormalized from form for efficient row-level security queries. Must match form.organization_id. */
+  organization_id: Scalars['String']['output'];
+  /** An array relationship */
+  questions: Array<Form_Questions>;
+  /** An aggregate relationship */
+  questions_aggregate: Form_Questions_Aggregate;
+  /** Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form. */
+  step_order: Scalars['smallint']['output'];
+  /** Enumerated type determining step behavior: welcome (intro screen), question (text input), rating (star/scale), consent (public/private choice), contact_info (submitter details), reward (incentive), thank_you (completion). */
+  step_type: Scalars['String']['output'];
+  /** Array of helper text strings shown to customers during question/rating steps. Provides guidance for better quality responses. */
+  tips: Maybe<Array<Scalars['String']['output']>>;
+  /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
+  updated_at: Scalars['timestamptz']['output'];
+  /** Foreign key to users table. Records which user last modified this step for audit trail. */
+  updated_by: Maybe<Scalars['String']['output']>;
+  /** An object relationship */
+  updater: Maybe<Users>;
+};
+
+
+/** Form steps belong to flows. Question deletion handled by FK cascade on form_questions.step_id. */
+export type Form_StepsContentArgs = {
+  path?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+/** Form steps belong to flows. Question deletion handled by FK cascade on form_questions.step_id. */
+export type Form_StepsQuestionsArgs = {
+  distinct_on?: InputMaybe<Array<Form_Questions_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Form_Questions_Order_By>>;
+  where?: InputMaybe<Form_Questions_Bool_Exp>;
+};
+
+
+/** Form steps belong to flows. Question deletion handled by FK cascade on form_questions.step_id. */
+export type Form_StepsQuestions_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Form_Questions_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Form_Questions_Order_By>>;
+  where?: InputMaybe<Form_Questions_Bool_Exp>;
+};
+
+/** aggregated selection of "form_steps" */
+export type Form_Steps_Aggregate = {
+  __typename?: 'form_steps_aggregate';
+  aggregate: Maybe<Form_Steps_Aggregate_Fields>;
+  nodes: Array<Form_Steps>;
+};
+
+export type Form_Steps_Aggregate_Bool_Exp = {
+  bool_and?: InputMaybe<Form_Steps_Aggregate_Bool_Exp_Bool_And>;
+  bool_or?: InputMaybe<Form_Steps_Aggregate_Bool_Exp_Bool_Or>;
+  count?: InputMaybe<Form_Steps_Aggregate_Bool_Exp_Count>;
+};
+
+export type Form_Steps_Aggregate_Bool_Exp_Bool_And = {
+  arguments: Form_Steps_Select_Column_Form_Steps_Aggregate_Bool_Exp_Bool_And_Arguments_Columns;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+  filter?: InputMaybe<Form_Steps_Bool_Exp>;
+  predicate: Boolean_Comparison_Exp;
+};
+
+export type Form_Steps_Aggregate_Bool_Exp_Bool_Or = {
+  arguments: Form_Steps_Select_Column_Form_Steps_Aggregate_Bool_Exp_Bool_Or_Arguments_Columns;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+  filter?: InputMaybe<Form_Steps_Bool_Exp>;
+  predicate: Boolean_Comparison_Exp;
+};
+
+export type Form_Steps_Aggregate_Bool_Exp_Count = {
+  arguments?: InputMaybe<Array<Form_Steps_Select_Column>>;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+  filter?: InputMaybe<Form_Steps_Bool_Exp>;
+  predicate: Int_Comparison_Exp;
+};
+
+/** aggregate fields of "form_steps" */
+export type Form_Steps_Aggregate_Fields = {
+  __typename?: 'form_steps_aggregate_fields';
+  avg: Maybe<Form_Steps_Avg_Fields>;
+  count: Scalars['Int']['output'];
+  max: Maybe<Form_Steps_Max_Fields>;
+  min: Maybe<Form_Steps_Min_Fields>;
+  stddev: Maybe<Form_Steps_Stddev_Fields>;
+  stddev_pop: Maybe<Form_Steps_Stddev_Pop_Fields>;
+  stddev_samp: Maybe<Form_Steps_Stddev_Samp_Fields>;
+  sum: Maybe<Form_Steps_Sum_Fields>;
+  var_pop: Maybe<Form_Steps_Var_Pop_Fields>;
+  var_samp: Maybe<Form_Steps_Var_Samp_Fields>;
+  variance: Maybe<Form_Steps_Variance_Fields>;
+};
+
+
+/** aggregate fields of "form_steps" */
+export type Form_Steps_Aggregate_FieldsCountArgs = {
+  columns?: InputMaybe<Array<Form_Steps_Select_Column>>;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+/** order by aggregate values of table "form_steps" */
+export type Form_Steps_Aggregate_Order_By = {
+  avg?: InputMaybe<Form_Steps_Avg_Order_By>;
+  count?: InputMaybe<Order_By>;
+  max?: InputMaybe<Form_Steps_Max_Order_By>;
+  min?: InputMaybe<Form_Steps_Min_Order_By>;
+  stddev?: InputMaybe<Form_Steps_Stddev_Order_By>;
+  stddev_pop?: InputMaybe<Form_Steps_Stddev_Pop_Order_By>;
+  stddev_samp?: InputMaybe<Form_Steps_Stddev_Samp_Order_By>;
+  sum?: InputMaybe<Form_Steps_Sum_Order_By>;
+  var_pop?: InputMaybe<Form_Steps_Var_Pop_Order_By>;
+  var_samp?: InputMaybe<Form_Steps_Var_Samp_Order_By>;
+  variance?: InputMaybe<Form_Steps_Variance_Order_By>;
+};
+
+/** append existing jsonb value of filtered columns with new jsonb value */
+export type Form_Steps_Append_Input = {
+  /** JSONB payload with type-specific configuration. Structure varies by step_type. Empty for question/rating types which use form_questions table instead. */
+  content?: InputMaybe<Scalars['jsonb']['input']>;
+};
+
+/** input type for inserting array relation for remote table "form_steps" */
+export type Form_Steps_Arr_Rel_Insert_Input = {
+  data: Array<Form_Steps_Insert_Input>;
+  /** upsert condition */
+  on_conflict?: InputMaybe<Form_Steps_On_Conflict>;
+};
+
+/** aggregate avg on columns */
+export type Form_Steps_Avg_Fields = {
+  __typename?: 'form_steps_avg_fields';
+  /** Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form. */
+  step_order: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by avg() on columns of table "form_steps" */
+export type Form_Steps_Avg_Order_By = {
+  /** Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form. */
+  step_order?: InputMaybe<Order_By>;
+};
+
+/** Boolean expression to filter rows from the table "form_steps". All fields are combined with a logical 'AND'. */
+export type Form_Steps_Bool_Exp = {
+  _and?: InputMaybe<Array<Form_Steps_Bool_Exp>>;
+  _not?: InputMaybe<Form_Steps_Bool_Exp>;
+  _or?: InputMaybe<Array<Form_Steps_Bool_Exp>>;
+  content?: InputMaybe<Jsonb_Comparison_Exp>;
+  created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  created_by?: InputMaybe<String_Comparison_Exp>;
+  creator?: InputMaybe<Users_Bool_Exp>;
+  flow?: InputMaybe<Flows_Bool_Exp>;
+  flow_id?: InputMaybe<String_Comparison_Exp>;
+  flow_membership?: InputMaybe<String_Comparison_Exp>;
+  id?: InputMaybe<String_Comparison_Exp>;
+  is_active?: InputMaybe<Boolean_Comparison_Exp>;
+  organization?: InputMaybe<Organizations_Bool_Exp>;
+  organization_id?: InputMaybe<String_Comparison_Exp>;
+  questions?: InputMaybe<Form_Questions_Bool_Exp>;
+  questions_aggregate?: InputMaybe<Form_Questions_Aggregate_Bool_Exp>;
+  step_order?: InputMaybe<Smallint_Comparison_Exp>;
+  step_type?: InputMaybe<String_Comparison_Exp>;
+  tips?: InputMaybe<String_Array_Comparison_Exp>;
+  updated_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  updated_by?: InputMaybe<String_Comparison_Exp>;
+  updater?: InputMaybe<Users_Bool_Exp>;
+};
+
+/** unique or primary key constraints on table "form_steps" */
+export const Form_Steps_Constraint = {
+  /** unique or primary key constraint on columns "flow_id", "step_order" */
+  FormStepsFlowOrderUnique: 'form_steps_flow_order_unique',
+  /** unique or primary key constraint on columns "id" */
+  FormStepsPkey: 'form_steps_pkey'
+} as const;
+
+export type Form_Steps_Constraint = typeof Form_Steps_Constraint[keyof typeof Form_Steps_Constraint];
+/** delete the field or element with specified path (for JSON arrays, negative integers count from the end) */
+export type Form_Steps_Delete_At_Path_Input = {
+  /** JSONB payload with type-specific configuration. Structure varies by step_type. Empty for question/rating types which use form_questions table instead. */
+  content?: InputMaybe<Array<Scalars['String']['input']>>;
+};
+
+/** delete the array element with specified index (negative integers count from the end). throws an error if top level container is not an array */
+export type Form_Steps_Delete_Elem_Input = {
+  /** JSONB payload with type-specific configuration. Structure varies by step_type. Empty for question/rating types which use form_questions table instead. */
+  content?: InputMaybe<Scalars['Int']['input']>;
+};
+
+/** delete key/value pair or string element. key/value pairs are matched based on their key value */
+export type Form_Steps_Delete_Key_Input = {
+  /** JSONB payload with type-specific configuration. Structure varies by step_type. Empty for question/rating types which use form_questions table instead. */
+  content?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** input type for incrementing numeric columns in table "form_steps" */
+export type Form_Steps_Inc_Input = {
+  /** Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form. */
+  step_order?: InputMaybe<Scalars['smallint']['input']>;
+};
+
+/** input type for inserting data into table "form_steps" */
+export type Form_Steps_Insert_Input = {
+  /** JSONB payload with type-specific configuration. Structure varies by step_type. Empty for question/rating types which use form_questions table instead. */
+  content?: InputMaybe<Scalars['jsonb']['input']>;
+  /** Timestamp when this step record was first created. Set automatically, never modified. */
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Foreign key to users table. Records which user originally created this step for audit purposes. */
+  created_by?: InputMaybe<Scalars['String']['input']>;
+  creator?: InputMaybe<Users_Obj_Rel_Insert_Input>;
+  flow?: InputMaybe<Flows_Obj_Rel_Insert_Input>;
+  /** Foreign key to flows table. Links step to its parent flow (shared, testimonial, or improvement). Will be NOT NULL after backfill migration. */
+  flow_id?: InputMaybe<Scalars['String']['input']>;
+  /** DEPRECATED: Legacy flow membership column. Use flow_id instead. This column will be removed in a future migration. Values are no longer constrained - any string is allowed during transition. */
+  flow_membership?: InputMaybe<Scalars['String']['input']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
+  id?: InputMaybe<Scalars['String']['input']>;
+  /** Soft delete flag. False hides step from form while preserving data for historical analysis and potential restoration. */
+  is_active?: InputMaybe<Scalars['Boolean']['input']>;
+  organization?: InputMaybe<Organizations_Obj_Rel_Insert_Input>;
+  /** Foreign key to organizations table. Denormalized from form for efficient row-level security queries. Must match form.organization_id. */
+  organization_id?: InputMaybe<Scalars['String']['input']>;
+  questions?: InputMaybe<Form_Questions_Arr_Rel_Insert_Input>;
+  /** Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form. */
+  step_order?: InputMaybe<Scalars['smallint']['input']>;
+  /** Enumerated type determining step behavior: welcome (intro screen), question (text input), rating (star/scale), consent (public/private choice), contact_info (submitter details), reward (incentive), thank_you (completion). */
+  step_type?: InputMaybe<Scalars['String']['input']>;
+  /** Array of helper text strings shown to customers during question/rating steps. Provides guidance for better quality responses. */
+  tips?: InputMaybe<Array<Scalars['String']['input']>>;
+  /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Foreign key to users table. Records which user last modified this step for audit trail. */
+  updated_by?: InputMaybe<Scalars['String']['input']>;
+  updater?: InputMaybe<Users_Obj_Rel_Insert_Input>;
+};
+
+/** aggregate max on columns */
+export type Form_Steps_Max_Fields = {
+  __typename?: 'form_steps_max_fields';
+  /** Timestamp when this step record was first created. Set automatically, never modified. */
+  created_at: Maybe<Scalars['timestamptz']['output']>;
+  /** Foreign key to users table. Records which user originally created this step for audit purposes. */
+  created_by: Maybe<Scalars['String']['output']>;
+  /** Foreign key to flows table. Links step to its parent flow (shared, testimonial, or improvement). Will be NOT NULL after backfill migration. */
+  flow_id: Maybe<Scalars['String']['output']>;
+  /** DEPRECATED: Legacy flow membership column. Use flow_id instead. This column will be removed in a future migration. Values are no longer constrained - any string is allowed during transition. */
+  flow_membership: Maybe<Scalars['String']['output']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
+  id: Maybe<Scalars['String']['output']>;
+  /** Foreign key to organizations table. Denormalized from form for efficient row-level security queries. Must match form.organization_id. */
+  organization_id: Maybe<Scalars['String']['output']>;
+  /** Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form. */
+  step_order: Maybe<Scalars['smallint']['output']>;
+  /** Enumerated type determining step behavior: welcome (intro screen), question (text input), rating (star/scale), consent (public/private choice), contact_info (submitter details), reward (incentive), thank_you (completion). */
+  step_type: Maybe<Scalars['String']['output']>;
+  /** Array of helper text strings shown to customers during question/rating steps. Provides guidance for better quality responses. */
+  tips: Maybe<Array<Scalars['String']['output']>>;
+  /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
+  updated_at: Maybe<Scalars['timestamptz']['output']>;
+  /** Foreign key to users table. Records which user last modified this step for audit trail. */
+  updated_by: Maybe<Scalars['String']['output']>;
+};
+
+/** order by max() on columns of table "form_steps" */
+export type Form_Steps_Max_Order_By = {
+  /** Timestamp when this step record was first created. Set automatically, never modified. */
+  created_at?: InputMaybe<Order_By>;
+  /** Foreign key to users table. Records which user originally created this step for audit purposes. */
+  created_by?: InputMaybe<Order_By>;
+  /** Foreign key to flows table. Links step to its parent flow (shared, testimonial, or improvement). Will be NOT NULL after backfill migration. */
+  flow_id?: InputMaybe<Order_By>;
+  /** DEPRECATED: Legacy flow membership column. Use flow_id instead. This column will be removed in a future migration. Values are no longer constrained - any string is allowed during transition. */
+  flow_membership?: InputMaybe<Order_By>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
+  id?: InputMaybe<Order_By>;
+  /** Foreign key to organizations table. Denormalized from form for efficient row-level security queries. Must match form.organization_id. */
+  organization_id?: InputMaybe<Order_By>;
+  /** Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form. */
+  step_order?: InputMaybe<Order_By>;
+  /** Enumerated type determining step behavior: welcome (intro screen), question (text input), rating (star/scale), consent (public/private choice), contact_info (submitter details), reward (incentive), thank_you (completion). */
+  step_type?: InputMaybe<Order_By>;
+  /** Array of helper text strings shown to customers during question/rating steps. Provides guidance for better quality responses. */
+  tips?: InputMaybe<Order_By>;
+  /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
+  updated_at?: InputMaybe<Order_By>;
+  /** Foreign key to users table. Records which user last modified this step for audit trail. */
+  updated_by?: InputMaybe<Order_By>;
+};
+
+/** aggregate min on columns */
+export type Form_Steps_Min_Fields = {
+  __typename?: 'form_steps_min_fields';
+  /** Timestamp when this step record was first created. Set automatically, never modified. */
+  created_at: Maybe<Scalars['timestamptz']['output']>;
+  /** Foreign key to users table. Records which user originally created this step for audit purposes. */
+  created_by: Maybe<Scalars['String']['output']>;
+  /** Foreign key to flows table. Links step to its parent flow (shared, testimonial, or improvement). Will be NOT NULL after backfill migration. */
+  flow_id: Maybe<Scalars['String']['output']>;
+  /** DEPRECATED: Legacy flow membership column. Use flow_id instead. This column will be removed in a future migration. Values are no longer constrained - any string is allowed during transition. */
+  flow_membership: Maybe<Scalars['String']['output']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
+  id: Maybe<Scalars['String']['output']>;
+  /** Foreign key to organizations table. Denormalized from form for efficient row-level security queries. Must match form.organization_id. */
+  organization_id: Maybe<Scalars['String']['output']>;
+  /** Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form. */
+  step_order: Maybe<Scalars['smallint']['output']>;
+  /** Enumerated type determining step behavior: welcome (intro screen), question (text input), rating (star/scale), consent (public/private choice), contact_info (submitter details), reward (incentive), thank_you (completion). */
+  step_type: Maybe<Scalars['String']['output']>;
+  /** Array of helper text strings shown to customers during question/rating steps. Provides guidance for better quality responses. */
+  tips: Maybe<Array<Scalars['String']['output']>>;
+  /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
+  updated_at: Maybe<Scalars['timestamptz']['output']>;
+  /** Foreign key to users table. Records which user last modified this step for audit trail. */
+  updated_by: Maybe<Scalars['String']['output']>;
+};
+
+/** order by min() on columns of table "form_steps" */
+export type Form_Steps_Min_Order_By = {
+  /** Timestamp when this step record was first created. Set automatically, never modified. */
+  created_at?: InputMaybe<Order_By>;
+  /** Foreign key to users table. Records which user originally created this step for audit purposes. */
+  created_by?: InputMaybe<Order_By>;
+  /** Foreign key to flows table. Links step to its parent flow (shared, testimonial, or improvement). Will be NOT NULL after backfill migration. */
+  flow_id?: InputMaybe<Order_By>;
+  /** DEPRECATED: Legacy flow membership column. Use flow_id instead. This column will be removed in a future migration. Values are no longer constrained - any string is allowed during transition. */
+  flow_membership?: InputMaybe<Order_By>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
+  id?: InputMaybe<Order_By>;
+  /** Foreign key to organizations table. Denormalized from form for efficient row-level security queries. Must match form.organization_id. */
+  organization_id?: InputMaybe<Order_By>;
+  /** Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form. */
+  step_order?: InputMaybe<Order_By>;
+  /** Enumerated type determining step behavior: welcome (intro screen), question (text input), rating (star/scale), consent (public/private choice), contact_info (submitter details), reward (incentive), thank_you (completion). */
+  step_type?: InputMaybe<Order_By>;
+  /** Array of helper text strings shown to customers during question/rating steps. Provides guidance for better quality responses. */
+  tips?: InputMaybe<Order_By>;
+  /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
+  updated_at?: InputMaybe<Order_By>;
+  /** Foreign key to users table. Records which user last modified this step for audit trail. */
+  updated_by?: InputMaybe<Order_By>;
+};
+
+/** response of any mutation on the table "form_steps" */
+export type Form_Steps_Mutation_Response = {
+  __typename?: 'form_steps_mutation_response';
+  /** number of rows affected by the mutation */
+  affected_rows: Scalars['Int']['output'];
+  /** data from the rows affected by the mutation */
+  returning: Array<Form_Steps>;
+};
+
+/** input type for inserting object relation for remote table "form_steps" */
+export type Form_Steps_Obj_Rel_Insert_Input = {
+  data: Form_Steps_Insert_Input;
+  /** upsert condition */
+  on_conflict?: InputMaybe<Form_Steps_On_Conflict>;
+};
+
+/** on_conflict condition type for table "form_steps" */
+export type Form_Steps_On_Conflict = {
+  constraint: Form_Steps_Constraint;
+  update_columns?: Array<Form_Steps_Update_Column>;
+  where?: InputMaybe<Form_Steps_Bool_Exp>;
+};
+
+/** Ordering options when selecting data from "form_steps". */
+export type Form_Steps_Order_By = {
+  content?: InputMaybe<Order_By>;
+  created_at?: InputMaybe<Order_By>;
+  created_by?: InputMaybe<Order_By>;
+  creator?: InputMaybe<Users_Order_By>;
+  flow?: InputMaybe<Flows_Order_By>;
+  flow_id?: InputMaybe<Order_By>;
+  flow_membership?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
+  is_active?: InputMaybe<Order_By>;
+  organization?: InputMaybe<Organizations_Order_By>;
+  organization_id?: InputMaybe<Order_By>;
+  questions_aggregate?: InputMaybe<Form_Questions_Aggregate_Order_By>;
+  step_order?: InputMaybe<Order_By>;
+  step_type?: InputMaybe<Order_By>;
+  tips?: InputMaybe<Order_By>;
+  updated_at?: InputMaybe<Order_By>;
+  updated_by?: InputMaybe<Order_By>;
+  updater?: InputMaybe<Users_Order_By>;
+};
+
+/** primary key columns input for table: form_steps */
+export type Form_Steps_Pk_Columns_Input = {
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
+  id: Scalars['String']['input'];
+};
+
+/** prepend existing jsonb value of filtered columns with new jsonb value */
+export type Form_Steps_Prepend_Input = {
+  /** JSONB payload with type-specific configuration. Structure varies by step_type. Empty for question/rating types which use form_questions table instead. */
+  content?: InputMaybe<Scalars['jsonb']['input']>;
+};
+
+/** select columns of table "form_steps" */
+export const Form_Steps_Select_Column = {
+  /** column name */
+  Content: 'content',
+  /** column name */
+  CreatedAt: 'created_at',
+  /** column name */
+  CreatedBy: 'created_by',
+  /** column name */
+  FlowId: 'flow_id',
+  /** column name */
+  FlowMembership: 'flow_membership',
+  /** column name */
+  Id: 'id',
+  /** column name */
+  IsActive: 'is_active',
+  /** column name */
+  OrganizationId: 'organization_id',
+  /** column name */
+  StepOrder: 'step_order',
+  /** column name */
+  StepType: 'step_type',
+  /** column name */
+  Tips: 'tips',
+  /** column name */
+  UpdatedAt: 'updated_at',
+  /** column name */
+  UpdatedBy: 'updated_by'
+} as const;
+
+export type Form_Steps_Select_Column = typeof Form_Steps_Select_Column[keyof typeof Form_Steps_Select_Column];
+/** select "form_steps_aggregate_bool_exp_bool_and_arguments_columns" columns of table "form_steps" */
+export const Form_Steps_Select_Column_Form_Steps_Aggregate_Bool_Exp_Bool_And_Arguments_Columns = {
+  /** column name */
+  IsActive: 'is_active'
+} as const;
+
+export type Form_Steps_Select_Column_Form_Steps_Aggregate_Bool_Exp_Bool_And_Arguments_Columns = typeof Form_Steps_Select_Column_Form_Steps_Aggregate_Bool_Exp_Bool_And_Arguments_Columns[keyof typeof Form_Steps_Select_Column_Form_Steps_Aggregate_Bool_Exp_Bool_And_Arguments_Columns];
+/** select "form_steps_aggregate_bool_exp_bool_or_arguments_columns" columns of table "form_steps" */
+export const Form_Steps_Select_Column_Form_Steps_Aggregate_Bool_Exp_Bool_Or_Arguments_Columns = {
+  /** column name */
+  IsActive: 'is_active'
+} as const;
+
+export type Form_Steps_Select_Column_Form_Steps_Aggregate_Bool_Exp_Bool_Or_Arguments_Columns = typeof Form_Steps_Select_Column_Form_Steps_Aggregate_Bool_Exp_Bool_Or_Arguments_Columns[keyof typeof Form_Steps_Select_Column_Form_Steps_Aggregate_Bool_Exp_Bool_Or_Arguments_Columns];
+/** input type for updating data in table "form_steps" */
+export type Form_Steps_Set_Input = {
+  /** JSONB payload with type-specific configuration. Structure varies by step_type. Empty for question/rating types which use form_questions table instead. */
+  content?: InputMaybe<Scalars['jsonb']['input']>;
+  /** Timestamp when this step record was first created. Set automatically, never modified. */
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Foreign key to users table. Records which user originally created this step for audit purposes. */
+  created_by?: InputMaybe<Scalars['String']['input']>;
+  /** Foreign key to flows table. Links step to its parent flow (shared, testimonial, or improvement). Will be NOT NULL after backfill migration. */
+  flow_id?: InputMaybe<Scalars['String']['input']>;
+  /** DEPRECATED: Legacy flow membership column. Use flow_id instead. This column will be removed in a future migration. Values are no longer constrained - any string is allowed during transition. */
+  flow_membership?: InputMaybe<Scalars['String']['input']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
+  id?: InputMaybe<Scalars['String']['input']>;
+  /** Soft delete flag. False hides step from form while preserving data for historical analysis and potential restoration. */
+  is_active?: InputMaybe<Scalars['Boolean']['input']>;
+  /** Foreign key to organizations table. Denormalized from form for efficient row-level security queries. Must match form.organization_id. */
+  organization_id?: InputMaybe<Scalars['String']['input']>;
+  /** Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form. */
+  step_order?: InputMaybe<Scalars['smallint']['input']>;
+  /** Enumerated type determining step behavior: welcome (intro screen), question (text input), rating (star/scale), consent (public/private choice), contact_info (submitter details), reward (incentive), thank_you (completion). */
+  step_type?: InputMaybe<Scalars['String']['input']>;
+  /** Array of helper text strings shown to customers during question/rating steps. Provides guidance for better quality responses. */
+  tips?: InputMaybe<Array<Scalars['String']['input']>>;
+  /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Foreign key to users table. Records which user last modified this step for audit trail. */
+  updated_by?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** aggregate stddev on columns */
+export type Form_Steps_Stddev_Fields = {
+  __typename?: 'form_steps_stddev_fields';
+  /** Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form. */
+  step_order: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by stddev() on columns of table "form_steps" */
+export type Form_Steps_Stddev_Order_By = {
+  /** Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form. */
+  step_order?: InputMaybe<Order_By>;
+};
+
+/** aggregate stddev_pop on columns */
+export type Form_Steps_Stddev_Pop_Fields = {
+  __typename?: 'form_steps_stddev_pop_fields';
+  /** Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form. */
+  step_order: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by stddev_pop() on columns of table "form_steps" */
+export type Form_Steps_Stddev_Pop_Order_By = {
+  /** Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form. */
+  step_order?: InputMaybe<Order_By>;
+};
+
+/** aggregate stddev_samp on columns */
+export type Form_Steps_Stddev_Samp_Fields = {
+  __typename?: 'form_steps_stddev_samp_fields';
+  /** Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form. */
+  step_order: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by stddev_samp() on columns of table "form_steps" */
+export type Form_Steps_Stddev_Samp_Order_By = {
+  /** Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form. */
+  step_order?: InputMaybe<Order_By>;
+};
+
+/** Streaming cursor of the table "form_steps" */
+export type Form_Steps_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Form_Steps_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type Form_Steps_Stream_Cursor_Value_Input = {
+  /** JSONB payload with type-specific configuration. Structure varies by step_type. Empty for question/rating types which use form_questions table instead. */
+  content?: InputMaybe<Scalars['jsonb']['input']>;
+  /** Timestamp when this step record was first created. Set automatically, never modified. */
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Foreign key to users table. Records which user originally created this step for audit purposes. */
+  created_by?: InputMaybe<Scalars['String']['input']>;
+  /** Foreign key to flows table. Links step to its parent flow (shared, testimonial, or improvement). Will be NOT NULL after backfill migration. */
+  flow_id?: InputMaybe<Scalars['String']['input']>;
+  /** DEPRECATED: Legacy flow membership column. Use flow_id instead. This column will be removed in a future migration. Values are no longer constrained - any string is allowed during transition. */
+  flow_membership?: InputMaybe<Scalars['String']['input']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant unique identification. */
+  id?: InputMaybe<Scalars['String']['input']>;
+  /** Soft delete flag. False hides step from form while preserving data for historical analysis and potential restoration. */
+  is_active?: InputMaybe<Scalars['Boolean']['input']>;
+  /** Foreign key to organizations table. Denormalized from form for efficient row-level security queries. Must match form.organization_id. */
+  organization_id?: InputMaybe<Scalars['String']['input']>;
+  /** Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form. */
+  step_order?: InputMaybe<Scalars['smallint']['input']>;
+  /** Enumerated type determining step behavior: welcome (intro screen), question (text input), rating (star/scale), consent (public/private choice), contact_info (submitter details), reward (incentive), thank_you (completion). */
+  step_type?: InputMaybe<Scalars['String']['input']>;
+  /** Array of helper text strings shown to customers during question/rating steps. Provides guidance for better quality responses. */
+  tips?: InputMaybe<Array<Scalars['String']['input']>>;
+  /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Foreign key to users table. Records which user last modified this step for audit trail. */
+  updated_by?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** aggregate sum on columns */
+export type Form_Steps_Sum_Fields = {
+  __typename?: 'form_steps_sum_fields';
+  /** Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form. */
+  step_order: Maybe<Scalars['smallint']['output']>;
+};
+
+/** order by sum() on columns of table "form_steps" */
+export type Form_Steps_Sum_Order_By = {
+  /** Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form. */
+  step_order?: InputMaybe<Order_By>;
+};
+
+/** update columns of table "form_steps" */
+export const Form_Steps_Update_Column = {
+  /** column name */
+  Content: 'content',
+  /** column name */
+  CreatedAt: 'created_at',
+  /** column name */
+  CreatedBy: 'created_by',
+  /** column name */
+  FlowId: 'flow_id',
+  /** column name */
+  FlowMembership: 'flow_membership',
+  /** column name */
+  Id: 'id',
+  /** column name */
+  IsActive: 'is_active',
+  /** column name */
+  OrganizationId: 'organization_id',
+  /** column name */
+  StepOrder: 'step_order',
+  /** column name */
+  StepType: 'step_type',
+  /** column name */
+  Tips: 'tips',
+  /** column name */
+  UpdatedAt: 'updated_at',
+  /** column name */
+  UpdatedBy: 'updated_by'
+} as const;
+
+export type Form_Steps_Update_Column = typeof Form_Steps_Update_Column[keyof typeof Form_Steps_Update_Column];
+export type Form_Steps_Updates = {
+  /** append existing jsonb value of filtered columns with new jsonb value */
+  _append?: InputMaybe<Form_Steps_Append_Input>;
+  /** delete the field or element with specified path (for JSON arrays, negative integers count from the end) */
+  _delete_at_path?: InputMaybe<Form_Steps_Delete_At_Path_Input>;
+  /** delete the array element with specified index (negative integers count from the end). throws an error if top level container is not an array */
+  _delete_elem?: InputMaybe<Form_Steps_Delete_Elem_Input>;
+  /** delete key/value pair or string element. key/value pairs are matched based on their key value */
+  _delete_key?: InputMaybe<Form_Steps_Delete_Key_Input>;
+  /** increments the numeric columns with given value of the filtered values */
+  _inc?: InputMaybe<Form_Steps_Inc_Input>;
+  /** prepend existing jsonb value of filtered columns with new jsonb value */
+  _prepend?: InputMaybe<Form_Steps_Prepend_Input>;
+  /** sets the columns of the filtered rows to the given values */
+  _set?: InputMaybe<Form_Steps_Set_Input>;
+  /** filter the rows which have to be updated */
+  where: Form_Steps_Bool_Exp;
+};
+
+/** aggregate var_pop on columns */
+export type Form_Steps_Var_Pop_Fields = {
+  __typename?: 'form_steps_var_pop_fields';
+  /** Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form. */
+  step_order: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by var_pop() on columns of table "form_steps" */
+export type Form_Steps_Var_Pop_Order_By = {
+  /** Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form. */
+  step_order?: InputMaybe<Order_By>;
+};
+
+/** aggregate var_samp on columns */
+export type Form_Steps_Var_Samp_Fields = {
+  __typename?: 'form_steps_var_samp_fields';
+  /** Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form. */
+  step_order: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by var_samp() on columns of table "form_steps" */
+export type Form_Steps_Var_Samp_Order_By = {
+  /** Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form. */
+  step_order?: InputMaybe<Order_By>;
+};
+
+/** aggregate variance on columns */
+export type Form_Steps_Variance_Fields = {
+  __typename?: 'form_steps_variance_fields';
+  /** Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form. */
+  step_order: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by variance() on columns of table "form_steps" */
+export type Form_Steps_Variance_Order_By = {
+  /** Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form. */
+  step_order?: InputMaybe<Order_By>;
+};
+
 /** Raw form submission event - submitter info lives here, responses in form_question_responses */
 export type Form_Submissions = {
   __typename?: 'form_submissions';
+  /** An object relationship */
+  contact: Maybe<Contacts>;
+  /** Foreign key to contacts table. Links this submission to a normalized contact record for deduplication and contact management. NULL for legacy submissions or anonymous submissions. */
+  contact_id: Maybe<Scalars['String']['output']>;
   /** Record creation timestamp. Same as submitted_at */
   created_at: Scalars['timestamptz']['output'];
   /** An object relationship */
@@ -1781,20 +3935,6 @@ export type Form_Submissions = {
   responses_aggregate: Form_Question_Responses_Aggregate;
   /** When customer submitted the form. Immutable */
   submitted_at: Scalars['timestamptz']['output'];
-  /** Profile photo URL. From Gravatar or upload */
-  submitter_avatar_url: Maybe<Scalars['String']['output']>;
-  /** Company name like "Acme Inc". Copied to testimonial for display */
-  submitter_company: Maybe<Scalars['String']['output']>;
-  /** Email for follow-up. NOT displayed publicly on widgets */
-  submitter_email: Scalars['String']['output'];
-  /** LinkedIn profile URL for social proof verification */
-  submitter_linkedin_url: Maybe<Scalars['String']['output']>;
-  /** Full name of person who submitted. Source of truth for customer identity */
-  submitter_name: Scalars['String']['output'];
-  /** Job title like "Product Manager". Copied to testimonial for display */
-  submitter_title: Maybe<Scalars['String']['output']>;
-  /** Twitter/X profile URL for social proof verification */
-  submitter_twitter_url: Maybe<Scalars['String']['output']>;
   /** An array relationship */
   testimonials: Array<Testimonials>;
   /** An aggregate relationship */
@@ -1899,6 +4039,8 @@ export type Form_Submissions_Bool_Exp = {
   _and?: InputMaybe<Array<Form_Submissions_Bool_Exp>>;
   _not?: InputMaybe<Form_Submissions_Bool_Exp>;
   _or?: InputMaybe<Array<Form_Submissions_Bool_Exp>>;
+  contact?: InputMaybe<Contacts_Bool_Exp>;
+  contact_id?: InputMaybe<String_Comparison_Exp>;
   created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
   form?: InputMaybe<Forms_Bool_Exp>;
   form_id?: InputMaybe<String_Comparison_Exp>;
@@ -1908,13 +4050,6 @@ export type Form_Submissions_Bool_Exp = {
   responses?: InputMaybe<Form_Question_Responses_Bool_Exp>;
   responses_aggregate?: InputMaybe<Form_Question_Responses_Aggregate_Bool_Exp>;
   submitted_at?: InputMaybe<Timestamptz_Comparison_Exp>;
-  submitter_avatar_url?: InputMaybe<String_Comparison_Exp>;
-  submitter_company?: InputMaybe<String_Comparison_Exp>;
-  submitter_email?: InputMaybe<String_Comparison_Exp>;
-  submitter_linkedin_url?: InputMaybe<String_Comparison_Exp>;
-  submitter_name?: InputMaybe<String_Comparison_Exp>;
-  submitter_title?: InputMaybe<String_Comparison_Exp>;
-  submitter_twitter_url?: InputMaybe<String_Comparison_Exp>;
   testimonials?: InputMaybe<Testimonials_Bool_Exp>;
   testimonials_aggregate?: InputMaybe<Testimonials_Aggregate_Bool_Exp>;
   updated_at?: InputMaybe<Timestamptz_Comparison_Exp>;
@@ -1931,6 +4066,9 @@ export const Form_Submissions_Constraint = {
 export type Form_Submissions_Constraint = typeof Form_Submissions_Constraint[keyof typeof Form_Submissions_Constraint];
 /** input type for inserting data into table "form_submissions" */
 export type Form_Submissions_Insert_Input = {
+  contact?: InputMaybe<Contacts_Obj_Rel_Insert_Input>;
+  /** Foreign key to contacts table. Links this submission to a normalized contact record for deduplication and contact management. NULL for legacy submissions or anonymous submissions. */
+  contact_id?: InputMaybe<Scalars['String']['input']>;
   /** Record creation timestamp. Same as submitted_at */
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
   form?: InputMaybe<Forms_Obj_Rel_Insert_Input>;
@@ -1944,20 +4082,6 @@ export type Form_Submissions_Insert_Input = {
   responses?: InputMaybe<Form_Question_Responses_Arr_Rel_Insert_Input>;
   /** When customer submitted the form. Immutable */
   submitted_at?: InputMaybe<Scalars['timestamptz']['input']>;
-  /** Profile photo URL. From Gravatar or upload */
-  submitter_avatar_url?: InputMaybe<Scalars['String']['input']>;
-  /** Company name like "Acme Inc". Copied to testimonial for display */
-  submitter_company?: InputMaybe<Scalars['String']['input']>;
-  /** Email for follow-up. NOT displayed publicly on widgets */
-  submitter_email?: InputMaybe<Scalars['String']['input']>;
-  /** LinkedIn profile URL for social proof verification */
-  submitter_linkedin_url?: InputMaybe<Scalars['String']['input']>;
-  /** Full name of person who submitted. Source of truth for customer identity */
-  submitter_name?: InputMaybe<Scalars['String']['input']>;
-  /** Job title like "Product Manager". Copied to testimonial for display */
-  submitter_title?: InputMaybe<Scalars['String']['input']>;
-  /** Twitter/X profile URL for social proof verification */
-  submitter_twitter_url?: InputMaybe<Scalars['String']['input']>;
   testimonials?: InputMaybe<Testimonials_Arr_Rel_Insert_Input>;
   /** Last modification. Auto-updated by trigger */
   updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
@@ -1969,6 +4093,8 @@ export type Form_Submissions_Insert_Input = {
 /** aggregate max on columns */
 export type Form_Submissions_Max_Fields = {
   __typename?: 'form_submissions_max_fields';
+  /** Foreign key to contacts table. Links this submission to a normalized contact record for deduplication and contact management. NULL for legacy submissions or anonymous submissions. */
+  contact_id: Maybe<Scalars['String']['output']>;
   /** Record creation timestamp. Same as submitted_at */
   created_at: Maybe<Scalars['timestamptz']['output']>;
   /** FK to forms - which form was submitted */
@@ -1979,20 +4105,6 @@ export type Form_Submissions_Max_Fields = {
   organization_id: Maybe<Scalars['String']['output']>;
   /** When customer submitted the form. Immutable */
   submitted_at: Maybe<Scalars['timestamptz']['output']>;
-  /** Profile photo URL. From Gravatar or upload */
-  submitter_avatar_url: Maybe<Scalars['String']['output']>;
-  /** Company name like "Acme Inc". Copied to testimonial for display */
-  submitter_company: Maybe<Scalars['String']['output']>;
-  /** Email for follow-up. NOT displayed publicly on widgets */
-  submitter_email: Maybe<Scalars['String']['output']>;
-  /** LinkedIn profile URL for social proof verification */
-  submitter_linkedin_url: Maybe<Scalars['String']['output']>;
-  /** Full name of person who submitted. Source of truth for customer identity */
-  submitter_name: Maybe<Scalars['String']['output']>;
-  /** Job title like "Product Manager". Copied to testimonial for display */
-  submitter_title: Maybe<Scalars['String']['output']>;
-  /** Twitter/X profile URL for social proof verification */
-  submitter_twitter_url: Maybe<Scalars['String']['output']>;
   /** Last modification. Auto-updated by trigger */
   updated_at: Maybe<Scalars['timestamptz']['output']>;
   /** FK to users - who made admin edits. NULL until first update */
@@ -2001,6 +4113,8 @@ export type Form_Submissions_Max_Fields = {
 
 /** order by max() on columns of table "form_submissions" */
 export type Form_Submissions_Max_Order_By = {
+  /** Foreign key to contacts table. Links this submission to a normalized contact record for deduplication and contact management. NULL for legacy submissions or anonymous submissions. */
+  contact_id?: InputMaybe<Order_By>;
   /** Record creation timestamp. Same as submitted_at */
   created_at?: InputMaybe<Order_By>;
   /** FK to forms - which form was submitted */
@@ -2011,20 +4125,6 @@ export type Form_Submissions_Max_Order_By = {
   organization_id?: InputMaybe<Order_By>;
   /** When customer submitted the form. Immutable */
   submitted_at?: InputMaybe<Order_By>;
-  /** Profile photo URL. From Gravatar or upload */
-  submitter_avatar_url?: InputMaybe<Order_By>;
-  /** Company name like "Acme Inc". Copied to testimonial for display */
-  submitter_company?: InputMaybe<Order_By>;
-  /** Email for follow-up. NOT displayed publicly on widgets */
-  submitter_email?: InputMaybe<Order_By>;
-  /** LinkedIn profile URL for social proof verification */
-  submitter_linkedin_url?: InputMaybe<Order_By>;
-  /** Full name of person who submitted. Source of truth for customer identity */
-  submitter_name?: InputMaybe<Order_By>;
-  /** Job title like "Product Manager". Copied to testimonial for display */
-  submitter_title?: InputMaybe<Order_By>;
-  /** Twitter/X profile URL for social proof verification */
-  submitter_twitter_url?: InputMaybe<Order_By>;
   /** Last modification. Auto-updated by trigger */
   updated_at?: InputMaybe<Order_By>;
   /** FK to users - who made admin edits. NULL until first update */
@@ -2034,6 +4134,8 @@ export type Form_Submissions_Max_Order_By = {
 /** aggregate min on columns */
 export type Form_Submissions_Min_Fields = {
   __typename?: 'form_submissions_min_fields';
+  /** Foreign key to contacts table. Links this submission to a normalized contact record for deduplication and contact management. NULL for legacy submissions or anonymous submissions. */
+  contact_id: Maybe<Scalars['String']['output']>;
   /** Record creation timestamp. Same as submitted_at */
   created_at: Maybe<Scalars['timestamptz']['output']>;
   /** FK to forms - which form was submitted */
@@ -2044,20 +4146,6 @@ export type Form_Submissions_Min_Fields = {
   organization_id: Maybe<Scalars['String']['output']>;
   /** When customer submitted the form. Immutable */
   submitted_at: Maybe<Scalars['timestamptz']['output']>;
-  /** Profile photo URL. From Gravatar or upload */
-  submitter_avatar_url: Maybe<Scalars['String']['output']>;
-  /** Company name like "Acme Inc". Copied to testimonial for display */
-  submitter_company: Maybe<Scalars['String']['output']>;
-  /** Email for follow-up. NOT displayed publicly on widgets */
-  submitter_email: Maybe<Scalars['String']['output']>;
-  /** LinkedIn profile URL for social proof verification */
-  submitter_linkedin_url: Maybe<Scalars['String']['output']>;
-  /** Full name of person who submitted. Source of truth for customer identity */
-  submitter_name: Maybe<Scalars['String']['output']>;
-  /** Job title like "Product Manager". Copied to testimonial for display */
-  submitter_title: Maybe<Scalars['String']['output']>;
-  /** Twitter/X profile URL for social proof verification */
-  submitter_twitter_url: Maybe<Scalars['String']['output']>;
   /** Last modification. Auto-updated by trigger */
   updated_at: Maybe<Scalars['timestamptz']['output']>;
   /** FK to users - who made admin edits. NULL until first update */
@@ -2066,6 +4154,8 @@ export type Form_Submissions_Min_Fields = {
 
 /** order by min() on columns of table "form_submissions" */
 export type Form_Submissions_Min_Order_By = {
+  /** Foreign key to contacts table. Links this submission to a normalized contact record for deduplication and contact management. NULL for legacy submissions or anonymous submissions. */
+  contact_id?: InputMaybe<Order_By>;
   /** Record creation timestamp. Same as submitted_at */
   created_at?: InputMaybe<Order_By>;
   /** FK to forms - which form was submitted */
@@ -2076,20 +4166,6 @@ export type Form_Submissions_Min_Order_By = {
   organization_id?: InputMaybe<Order_By>;
   /** When customer submitted the form. Immutable */
   submitted_at?: InputMaybe<Order_By>;
-  /** Profile photo URL. From Gravatar or upload */
-  submitter_avatar_url?: InputMaybe<Order_By>;
-  /** Company name like "Acme Inc". Copied to testimonial for display */
-  submitter_company?: InputMaybe<Order_By>;
-  /** Email for follow-up. NOT displayed publicly on widgets */
-  submitter_email?: InputMaybe<Order_By>;
-  /** LinkedIn profile URL for social proof verification */
-  submitter_linkedin_url?: InputMaybe<Order_By>;
-  /** Full name of person who submitted. Source of truth for customer identity */
-  submitter_name?: InputMaybe<Order_By>;
-  /** Job title like "Product Manager". Copied to testimonial for display */
-  submitter_title?: InputMaybe<Order_By>;
-  /** Twitter/X profile URL for social proof verification */
-  submitter_twitter_url?: InputMaybe<Order_By>;
   /** Last modification. Auto-updated by trigger */
   updated_at?: InputMaybe<Order_By>;
   /** FK to users - who made admin edits. NULL until first update */
@@ -2121,6 +4197,8 @@ export type Form_Submissions_On_Conflict = {
 
 /** Ordering options when selecting data from "form_submissions". */
 export type Form_Submissions_Order_By = {
+  contact?: InputMaybe<Contacts_Order_By>;
+  contact_id?: InputMaybe<Order_By>;
   created_at?: InputMaybe<Order_By>;
   form?: InputMaybe<Forms_Order_By>;
   form_id?: InputMaybe<Order_By>;
@@ -2129,13 +4207,6 @@ export type Form_Submissions_Order_By = {
   organization_id?: InputMaybe<Order_By>;
   responses_aggregate?: InputMaybe<Form_Question_Responses_Aggregate_Order_By>;
   submitted_at?: InputMaybe<Order_By>;
-  submitter_avatar_url?: InputMaybe<Order_By>;
-  submitter_company?: InputMaybe<Order_By>;
-  submitter_email?: InputMaybe<Order_By>;
-  submitter_linkedin_url?: InputMaybe<Order_By>;
-  submitter_name?: InputMaybe<Order_By>;
-  submitter_title?: InputMaybe<Order_By>;
-  submitter_twitter_url?: InputMaybe<Order_By>;
   testimonials_aggregate?: InputMaybe<Testimonials_Aggregate_Order_By>;
   updated_at?: InputMaybe<Order_By>;
   updated_by?: InputMaybe<Order_By>;
@@ -2151,6 +4222,8 @@ export type Form_Submissions_Pk_Columns_Input = {
 /** select columns of table "form_submissions" */
 export const Form_Submissions_Select_Column = {
   /** column name */
+  ContactId: 'contact_id',
+  /** column name */
   CreatedAt: 'created_at',
   /** column name */
   FormId: 'form_id',
@@ -2161,20 +4234,6 @@ export const Form_Submissions_Select_Column = {
   /** column name */
   SubmittedAt: 'submitted_at',
   /** column name */
-  SubmitterAvatarUrl: 'submitter_avatar_url',
-  /** column name */
-  SubmitterCompany: 'submitter_company',
-  /** column name */
-  SubmitterEmail: 'submitter_email',
-  /** column name */
-  SubmitterLinkedinUrl: 'submitter_linkedin_url',
-  /** column name */
-  SubmitterName: 'submitter_name',
-  /** column name */
-  SubmitterTitle: 'submitter_title',
-  /** column name */
-  SubmitterTwitterUrl: 'submitter_twitter_url',
-  /** column name */
   UpdatedAt: 'updated_at',
   /** column name */
   UpdatedBy: 'updated_by'
@@ -2183,6 +4242,8 @@ export const Form_Submissions_Select_Column = {
 export type Form_Submissions_Select_Column = typeof Form_Submissions_Select_Column[keyof typeof Form_Submissions_Select_Column];
 /** input type for updating data in table "form_submissions" */
 export type Form_Submissions_Set_Input = {
+  /** Foreign key to contacts table. Links this submission to a normalized contact record for deduplication and contact management. NULL for legacy submissions or anonymous submissions. */
+  contact_id?: InputMaybe<Scalars['String']['input']>;
   /** Record creation timestamp. Same as submitted_at */
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
   /** FK to forms - which form was submitted */
@@ -2193,20 +4254,6 @@ export type Form_Submissions_Set_Input = {
   organization_id?: InputMaybe<Scalars['String']['input']>;
   /** When customer submitted the form. Immutable */
   submitted_at?: InputMaybe<Scalars['timestamptz']['input']>;
-  /** Profile photo URL. From Gravatar or upload */
-  submitter_avatar_url?: InputMaybe<Scalars['String']['input']>;
-  /** Company name like "Acme Inc". Copied to testimonial for display */
-  submitter_company?: InputMaybe<Scalars['String']['input']>;
-  /** Email for follow-up. NOT displayed publicly on widgets */
-  submitter_email?: InputMaybe<Scalars['String']['input']>;
-  /** LinkedIn profile URL for social proof verification */
-  submitter_linkedin_url?: InputMaybe<Scalars['String']['input']>;
-  /** Full name of person who submitted. Source of truth for customer identity */
-  submitter_name?: InputMaybe<Scalars['String']['input']>;
-  /** Job title like "Product Manager". Copied to testimonial for display */
-  submitter_title?: InputMaybe<Scalars['String']['input']>;
-  /** Twitter/X profile URL for social proof verification */
-  submitter_twitter_url?: InputMaybe<Scalars['String']['input']>;
   /** Last modification. Auto-updated by trigger */
   updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
   /** FK to users - who made admin edits. NULL until first update */
@@ -2223,6 +4270,8 @@ export type Form_Submissions_Stream_Cursor_Input = {
 
 /** Initial value of the column from where the streaming should start */
 export type Form_Submissions_Stream_Cursor_Value_Input = {
+  /** Foreign key to contacts table. Links this submission to a normalized contact record for deduplication and contact management. NULL for legacy submissions or anonymous submissions. */
+  contact_id?: InputMaybe<Scalars['String']['input']>;
   /** Record creation timestamp. Same as submitted_at */
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
   /** FK to forms - which form was submitted */
@@ -2233,20 +4282,6 @@ export type Form_Submissions_Stream_Cursor_Value_Input = {
   organization_id?: InputMaybe<Scalars['String']['input']>;
   /** When customer submitted the form. Immutable */
   submitted_at?: InputMaybe<Scalars['timestamptz']['input']>;
-  /** Profile photo URL. From Gravatar or upload */
-  submitter_avatar_url?: InputMaybe<Scalars['String']['input']>;
-  /** Company name like "Acme Inc". Copied to testimonial for display */
-  submitter_company?: InputMaybe<Scalars['String']['input']>;
-  /** Email for follow-up. NOT displayed publicly on widgets */
-  submitter_email?: InputMaybe<Scalars['String']['input']>;
-  /** LinkedIn profile URL for social proof verification */
-  submitter_linkedin_url?: InputMaybe<Scalars['String']['input']>;
-  /** Full name of person who submitted. Source of truth for customer identity */
-  submitter_name?: InputMaybe<Scalars['String']['input']>;
-  /** Job title like "Product Manager". Copied to testimonial for display */
-  submitter_title?: InputMaybe<Scalars['String']['input']>;
-  /** Twitter/X profile URL for social proof verification */
-  submitter_twitter_url?: InputMaybe<Scalars['String']['input']>;
   /** Last modification. Auto-updated by trigger */
   updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
   /** FK to users - who made admin edits. NULL until first update */
@@ -2255,6 +4290,8 @@ export type Form_Submissions_Stream_Cursor_Value_Input = {
 
 /** update columns of table "form_submissions" */
 export const Form_Submissions_Update_Column = {
+  /** column name */
+  ContactId: 'contact_id',
   /** column name */
   CreatedAt: 'created_at',
   /** column name */
@@ -2265,20 +4302,6 @@ export const Form_Submissions_Update_Column = {
   OrganizationId: 'organization_id',
   /** column name */
   SubmittedAt: 'submitted_at',
-  /** column name */
-  SubmitterAvatarUrl: 'submitter_avatar_url',
-  /** column name */
-  SubmitterCompany: 'submitter_company',
-  /** column name */
-  SubmitterEmail: 'submitter_email',
-  /** column name */
-  SubmitterLinkedinUrl: 'submitter_linkedin_url',
-  /** column name */
-  SubmitterName: 'submitter_name',
-  /** column name */
-  SubmitterTitle: 'submitter_title',
-  /** column name */
-  SubmitterTwitterUrl: 'submitter_twitter_url',
   /** column name */
   UpdatedAt: 'updated_at',
   /** column name */
@@ -2296,12 +4319,22 @@ export type Form_Submissions_Updates = {
 /** Testimonial collection forms - questions normalized to form_questions table */
 export type Forms = {
   __typename?: 'forms';
+  /** Branching configuration: { enabled: boolean, threshold: number (rating cutoff), ratingStepId: string | null (step that triggers branching) } */
+  branching_config: Scalars['jsonb']['output'];
+  /** An array relationship */
+  contacts: Array<Contacts>;
+  /** An aggregate relationship */
+  contacts_aggregate: Contacts_Aggregate;
   /** Timestamp when form was created. Immutable after insert */
   created_at: Scalars['timestamptz']['output'];
   /** FK to users - user who created this form */
   created_by: Scalars['String']['output'];
   /** An object relationship */
   creator: Users;
+  /** An array relationship */
+  flows: Array<Flows>;
+  /** An aggregate relationship */
+  flows_aggregate: Flows_Aggregate;
   /** Primary key - NanoID 12-char unique identifier */
   id: Scalars['String']['output'];
   /** Soft delete flag. False = form disabled, public link returns 404 */
@@ -2316,14 +4349,10 @@ export type Forms = {
   product_description: Maybe<Scalars['String']['output']>;
   /** Name of product being reviewed - used in question templates (e.g., "How did {product} help?") */
   product_name: Scalars['String']['output'];
-  /** An array relationship */
-  questions: Array<Form_Questions>;
-  /** An aggregate relationship */
-  questions_aggregate: Form_Questions_Aggregate;
   /** UI preferences only (theme colors, branding) - NOT business logic. JSONB appropriate here */
   settings: Scalars['jsonb']['output'];
-  /** URL-friendly identifier for public form link (/f/{slug}). Lowercase alphanumeric with hyphens */
-  slug: Scalars['String']['output'];
+  /** Form lifecycle status: draft (editing), published (public), archived (hidden) */
+  status: Scalars['String']['output'];
   /** An array relationship */
   submissions: Array<Form_Submissions>;
   /** An aggregate relationship */
@@ -2338,22 +4367,48 @@ export type Forms = {
 
 
 /** Testimonial collection forms - questions normalized to form_questions table */
-export type FormsQuestionsArgs = {
-  distinct_on?: InputMaybe<Array<Form_Questions_Select_Column>>;
-  limit?: InputMaybe<Scalars['Int']['input']>;
-  offset?: InputMaybe<Scalars['Int']['input']>;
-  order_by?: InputMaybe<Array<Form_Questions_Order_By>>;
-  where?: InputMaybe<Form_Questions_Bool_Exp>;
+export type FormsBranching_ConfigArgs = {
+  path?: InputMaybe<Scalars['String']['input']>;
 };
 
 
 /** Testimonial collection forms - questions normalized to form_questions table */
-export type FormsQuestions_AggregateArgs = {
-  distinct_on?: InputMaybe<Array<Form_Questions_Select_Column>>;
+export type FormsContactsArgs = {
+  distinct_on?: InputMaybe<Array<Contacts_Select_Column>>;
   limit?: InputMaybe<Scalars['Int']['input']>;
   offset?: InputMaybe<Scalars['Int']['input']>;
-  order_by?: InputMaybe<Array<Form_Questions_Order_By>>;
-  where?: InputMaybe<Form_Questions_Bool_Exp>;
+  order_by?: InputMaybe<Array<Contacts_Order_By>>;
+  where?: InputMaybe<Contacts_Bool_Exp>;
+};
+
+
+/** Testimonial collection forms - questions normalized to form_questions table */
+export type FormsContacts_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Contacts_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Contacts_Order_By>>;
+  where?: InputMaybe<Contacts_Bool_Exp>;
+};
+
+
+/** Testimonial collection forms - questions normalized to form_questions table */
+export type FormsFlowsArgs = {
+  distinct_on?: InputMaybe<Array<Flows_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Flows_Order_By>>;
+  where?: InputMaybe<Flows_Bool_Exp>;
+};
+
+
+/** Testimonial collection forms - questions normalized to form_questions table */
+export type FormsFlows_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Flows_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Flows_Order_By>>;
+  where?: InputMaybe<Flows_Bool_Exp>;
 };
 
 
@@ -2440,6 +4495,8 @@ export type Forms_Aggregate_Order_By = {
 
 /** append existing jsonb value of filtered columns with new jsonb value */
 export type Forms_Append_Input = {
+  /** Branching configuration: { enabled: boolean, threshold: number (rating cutoff), ratingStepId: string | null (step that triggers branching) } */
+  branching_config?: InputMaybe<Scalars['jsonb']['input']>;
   /** UI preferences only (theme colors, branding) - NOT business logic. JSONB appropriate here */
   settings?: InputMaybe<Scalars['jsonb']['input']>;
 };
@@ -2456,9 +4513,14 @@ export type Forms_Bool_Exp = {
   _and?: InputMaybe<Array<Forms_Bool_Exp>>;
   _not?: InputMaybe<Forms_Bool_Exp>;
   _or?: InputMaybe<Array<Forms_Bool_Exp>>;
+  branching_config?: InputMaybe<Jsonb_Comparison_Exp>;
+  contacts?: InputMaybe<Contacts_Bool_Exp>;
+  contacts_aggregate?: InputMaybe<Contacts_Aggregate_Bool_Exp>;
   created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
   created_by?: InputMaybe<String_Comparison_Exp>;
   creator?: InputMaybe<Users_Bool_Exp>;
+  flows?: InputMaybe<Flows_Bool_Exp>;
+  flows_aggregate?: InputMaybe<Flows_Aggregate_Bool_Exp>;
   id?: InputMaybe<String_Comparison_Exp>;
   is_active?: InputMaybe<Boolean_Comparison_Exp>;
   name?: InputMaybe<String_Comparison_Exp>;
@@ -2466,10 +4528,8 @@ export type Forms_Bool_Exp = {
   organization_id?: InputMaybe<String_Comparison_Exp>;
   product_description?: InputMaybe<String_Comparison_Exp>;
   product_name?: InputMaybe<String_Comparison_Exp>;
-  questions?: InputMaybe<Form_Questions_Bool_Exp>;
-  questions_aggregate?: InputMaybe<Form_Questions_Aggregate_Bool_Exp>;
   settings?: InputMaybe<Jsonb_Comparison_Exp>;
-  slug?: InputMaybe<String_Comparison_Exp>;
+  status?: InputMaybe<String_Comparison_Exp>;
   submissions?: InputMaybe<Form_Submissions_Bool_Exp>;
   submissions_aggregate?: InputMaybe<Form_Submissions_Aggregate_Bool_Exp>;
   updated_at?: InputMaybe<Timestamptz_Comparison_Exp>;
@@ -2480,37 +4540,45 @@ export type Forms_Bool_Exp = {
 /** unique or primary key constraints on table "forms" */
 export const Forms_Constraint = {
   /** unique or primary key constraint on columns "id" */
-  FormsPkey: 'forms_pkey',
-  /** unique or primary key constraint on columns "organization_id", "slug" */
-  FormsSlugPerOrgUnique: 'forms_slug_per_org_unique'
+  FormsPkey: 'forms_pkey'
 } as const;
 
 export type Forms_Constraint = typeof Forms_Constraint[keyof typeof Forms_Constraint];
 /** delete the field or element with specified path (for JSON arrays, negative integers count from the end) */
 export type Forms_Delete_At_Path_Input = {
+  /** Branching configuration: { enabled: boolean, threshold: number (rating cutoff), ratingStepId: string | null (step that triggers branching) } */
+  branching_config?: InputMaybe<Array<Scalars['String']['input']>>;
   /** UI preferences only (theme colors, branding) - NOT business logic. JSONB appropriate here */
   settings?: InputMaybe<Array<Scalars['String']['input']>>;
 };
 
 /** delete the array element with specified index (negative integers count from the end). throws an error if top level container is not an array */
 export type Forms_Delete_Elem_Input = {
+  /** Branching configuration: { enabled: boolean, threshold: number (rating cutoff), ratingStepId: string | null (step that triggers branching) } */
+  branching_config?: InputMaybe<Scalars['Int']['input']>;
   /** UI preferences only (theme colors, branding) - NOT business logic. JSONB appropriate here */
   settings?: InputMaybe<Scalars['Int']['input']>;
 };
 
 /** delete key/value pair or string element. key/value pairs are matched based on their key value */
 export type Forms_Delete_Key_Input = {
+  /** Branching configuration: { enabled: boolean, threshold: number (rating cutoff), ratingStepId: string | null (step that triggers branching) } */
+  branching_config?: InputMaybe<Scalars['String']['input']>;
   /** UI preferences only (theme colors, branding) - NOT business logic. JSONB appropriate here */
   settings?: InputMaybe<Scalars['String']['input']>;
 };
 
 /** input type for inserting data into table "forms" */
 export type Forms_Insert_Input = {
+  /** Branching configuration: { enabled: boolean, threshold: number (rating cutoff), ratingStepId: string | null (step that triggers branching) } */
+  branching_config?: InputMaybe<Scalars['jsonb']['input']>;
+  contacts?: InputMaybe<Contacts_Arr_Rel_Insert_Input>;
   /** Timestamp when form was created. Immutable after insert */
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
   /** FK to users - user who created this form */
   created_by?: InputMaybe<Scalars['String']['input']>;
   creator?: InputMaybe<Users_Obj_Rel_Insert_Input>;
+  flows?: InputMaybe<Flows_Arr_Rel_Insert_Input>;
   /** Primary key - NanoID 12-char unique identifier */
   id?: InputMaybe<Scalars['String']['input']>;
   /** Soft delete flag. False = form disabled, public link returns 404 */
@@ -2524,11 +4592,10 @@ export type Forms_Insert_Input = {
   product_description?: InputMaybe<Scalars['String']['input']>;
   /** Name of product being reviewed - used in question templates (e.g., "How did {product} help?") */
   product_name?: InputMaybe<Scalars['String']['input']>;
-  questions?: InputMaybe<Form_Questions_Arr_Rel_Insert_Input>;
   /** UI preferences only (theme colors, branding) - NOT business logic. JSONB appropriate here */
   settings?: InputMaybe<Scalars['jsonb']['input']>;
-  /** URL-friendly identifier for public form link (/f/{slug}). Lowercase alphanumeric with hyphens */
-  slug?: InputMaybe<Scalars['String']['input']>;
+  /** Form lifecycle status: draft (editing), published (public), archived (hidden) */
+  status?: InputMaybe<Scalars['String']['input']>;
   submissions?: InputMaybe<Form_Submissions_Arr_Rel_Insert_Input>;
   /** Timestamp of last modification. Auto-updated by trigger */
   updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
@@ -2554,8 +4621,8 @@ export type Forms_Max_Fields = {
   product_description: Maybe<Scalars['String']['output']>;
   /** Name of product being reviewed - used in question templates (e.g., "How did {product} help?") */
   product_name: Maybe<Scalars['String']['output']>;
-  /** URL-friendly identifier for public form link (/f/{slug}). Lowercase alphanumeric with hyphens */
-  slug: Maybe<Scalars['String']['output']>;
+  /** Form lifecycle status: draft (editing), published (public), archived (hidden) */
+  status: Maybe<Scalars['String']['output']>;
   /** Timestamp of last modification. Auto-updated by trigger */
   updated_at: Maybe<Scalars['timestamptz']['output']>;
   /** FK to users - user who last modified. NULL until first update */
@@ -2578,8 +4645,8 @@ export type Forms_Max_Order_By = {
   product_description?: InputMaybe<Order_By>;
   /** Name of product being reviewed - used in question templates (e.g., "How did {product} help?") */
   product_name?: InputMaybe<Order_By>;
-  /** URL-friendly identifier for public form link (/f/{slug}). Lowercase alphanumeric with hyphens */
-  slug?: InputMaybe<Order_By>;
+  /** Form lifecycle status: draft (editing), published (public), archived (hidden) */
+  status?: InputMaybe<Order_By>;
   /** Timestamp of last modification. Auto-updated by trigger */
   updated_at?: InputMaybe<Order_By>;
   /** FK to users - user who last modified. NULL until first update */
@@ -2603,8 +4670,8 @@ export type Forms_Min_Fields = {
   product_description: Maybe<Scalars['String']['output']>;
   /** Name of product being reviewed - used in question templates (e.g., "How did {product} help?") */
   product_name: Maybe<Scalars['String']['output']>;
-  /** URL-friendly identifier for public form link (/f/{slug}). Lowercase alphanumeric with hyphens */
-  slug: Maybe<Scalars['String']['output']>;
+  /** Form lifecycle status: draft (editing), published (public), archived (hidden) */
+  status: Maybe<Scalars['String']['output']>;
   /** Timestamp of last modification. Auto-updated by trigger */
   updated_at: Maybe<Scalars['timestamptz']['output']>;
   /** FK to users - user who last modified. NULL until first update */
@@ -2627,8 +4694,8 @@ export type Forms_Min_Order_By = {
   product_description?: InputMaybe<Order_By>;
   /** Name of product being reviewed - used in question templates (e.g., "How did {product} help?") */
   product_name?: InputMaybe<Order_By>;
-  /** URL-friendly identifier for public form link (/f/{slug}). Lowercase alphanumeric with hyphens */
-  slug?: InputMaybe<Order_By>;
+  /** Form lifecycle status: draft (editing), published (public), archived (hidden) */
+  status?: InputMaybe<Order_By>;
   /** Timestamp of last modification. Auto-updated by trigger */
   updated_at?: InputMaybe<Order_By>;
   /** FK to users - user who last modified. NULL until first update */
@@ -2660,9 +4727,12 @@ export type Forms_On_Conflict = {
 
 /** Ordering options when selecting data from "forms". */
 export type Forms_Order_By = {
+  branching_config?: InputMaybe<Order_By>;
+  contacts_aggregate?: InputMaybe<Contacts_Aggregate_Order_By>;
   created_at?: InputMaybe<Order_By>;
   created_by?: InputMaybe<Order_By>;
   creator?: InputMaybe<Users_Order_By>;
+  flows_aggregate?: InputMaybe<Flows_Aggregate_Order_By>;
   id?: InputMaybe<Order_By>;
   is_active?: InputMaybe<Order_By>;
   name?: InputMaybe<Order_By>;
@@ -2670,9 +4740,8 @@ export type Forms_Order_By = {
   organization_id?: InputMaybe<Order_By>;
   product_description?: InputMaybe<Order_By>;
   product_name?: InputMaybe<Order_By>;
-  questions_aggregate?: InputMaybe<Form_Questions_Aggregate_Order_By>;
   settings?: InputMaybe<Order_By>;
-  slug?: InputMaybe<Order_By>;
+  status?: InputMaybe<Order_By>;
   submissions_aggregate?: InputMaybe<Form_Submissions_Aggregate_Order_By>;
   updated_at?: InputMaybe<Order_By>;
   updated_by?: InputMaybe<Order_By>;
@@ -2687,12 +4756,16 @@ export type Forms_Pk_Columns_Input = {
 
 /** prepend existing jsonb value of filtered columns with new jsonb value */
 export type Forms_Prepend_Input = {
+  /** Branching configuration: { enabled: boolean, threshold: number (rating cutoff), ratingStepId: string | null (step that triggers branching) } */
+  branching_config?: InputMaybe<Scalars['jsonb']['input']>;
   /** UI preferences only (theme colors, branding) - NOT business logic. JSONB appropriate here */
   settings?: InputMaybe<Scalars['jsonb']['input']>;
 };
 
 /** select columns of table "forms" */
 export const Forms_Select_Column = {
+  /** column name */
+  BranchingConfig: 'branching_config',
   /** column name */
   CreatedAt: 'created_at',
   /** column name */
@@ -2712,7 +4785,7 @@ export const Forms_Select_Column = {
   /** column name */
   Settings: 'settings',
   /** column name */
-  Slug: 'slug',
+  Status: 'status',
   /** column name */
   UpdatedAt: 'updated_at',
   /** column name */
@@ -2736,6 +4809,8 @@ export const Forms_Select_Column_Forms_Aggregate_Bool_Exp_Bool_Or_Arguments_Colu
 export type Forms_Select_Column_Forms_Aggregate_Bool_Exp_Bool_Or_Arguments_Columns = typeof Forms_Select_Column_Forms_Aggregate_Bool_Exp_Bool_Or_Arguments_Columns[keyof typeof Forms_Select_Column_Forms_Aggregate_Bool_Exp_Bool_Or_Arguments_Columns];
 /** input type for updating data in table "forms" */
 export type Forms_Set_Input = {
+  /** Branching configuration: { enabled: boolean, threshold: number (rating cutoff), ratingStepId: string | null (step that triggers branching) } */
+  branching_config?: InputMaybe<Scalars['jsonb']['input']>;
   /** Timestamp when form was created. Immutable after insert */
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
   /** FK to users - user who created this form */
@@ -2754,8 +4829,8 @@ export type Forms_Set_Input = {
   product_name?: InputMaybe<Scalars['String']['input']>;
   /** UI preferences only (theme colors, branding) - NOT business logic. JSONB appropriate here */
   settings?: InputMaybe<Scalars['jsonb']['input']>;
-  /** URL-friendly identifier for public form link (/f/{slug}). Lowercase alphanumeric with hyphens */
-  slug?: InputMaybe<Scalars['String']['input']>;
+  /** Form lifecycle status: draft (editing), published (public), archived (hidden) */
+  status?: InputMaybe<Scalars['String']['input']>;
   /** Timestamp of last modification. Auto-updated by trigger */
   updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
   /** FK to users - user who last modified. NULL until first update */
@@ -2772,6 +4847,8 @@ export type Forms_Stream_Cursor_Input = {
 
 /** Initial value of the column from where the streaming should start */
 export type Forms_Stream_Cursor_Value_Input = {
+  /** Branching configuration: { enabled: boolean, threshold: number (rating cutoff), ratingStepId: string | null (step that triggers branching) } */
+  branching_config?: InputMaybe<Scalars['jsonb']['input']>;
   /** Timestamp when form was created. Immutable after insert */
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
   /** FK to users - user who created this form */
@@ -2790,8 +4867,8 @@ export type Forms_Stream_Cursor_Value_Input = {
   product_name?: InputMaybe<Scalars['String']['input']>;
   /** UI preferences only (theme colors, branding) - NOT business logic. JSONB appropriate here */
   settings?: InputMaybe<Scalars['jsonb']['input']>;
-  /** URL-friendly identifier for public form link (/f/{slug}). Lowercase alphanumeric with hyphens */
-  slug?: InputMaybe<Scalars['String']['input']>;
+  /** Form lifecycle status: draft (editing), published (public), archived (hidden) */
+  status?: InputMaybe<Scalars['String']['input']>;
   /** Timestamp of last modification. Auto-updated by trigger */
   updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
   /** FK to users - user who last modified. NULL until first update */
@@ -2800,6 +4877,8 @@ export type Forms_Stream_Cursor_Value_Input = {
 
 /** update columns of table "forms" */
 export const Forms_Update_Column = {
+  /** column name */
+  BranchingConfig: 'branching_config',
   /** column name */
   CreatedAt: 'created_at',
   /** column name */
@@ -2819,7 +4898,7 @@ export const Forms_Update_Column = {
   /** column name */
   Settings: 'settings',
   /** column name */
-  Slug: 'slug',
+  Status: 'status',
   /** column name */
   UpdatedAt: 'updated_at',
   /** column name */
@@ -2872,9 +4951,2489 @@ export type Jsonb_Comparison_Exp = {
   _nin?: InputMaybe<Array<Scalars['jsonb']['input']>>;
 };
 
+/**
+ * Centralized tracking for all uploaded media files.
+ *
+ *    This table stores metadata for files uploaded to cloud storage (S3, GCS, etc.)
+ *    and tracks their processing status through the upload workflow.
+ *
+ *    Key features:
+ *    1. Provider-agnostic: storage_path is portable across providers
+ *    2. Polymorphic: entity_type + entity_id links to any entity type
+ *    3. Status workflow: tracks upload from pending to ready/failed
+ *    4. Audit trail: tracks who uploaded and when
+ *
+ *    Upload flow:
+ *    1. API creates media record with status=pending
+ *    2. Frontend uploads to presigned URL
+ *    3. Lambda validates and calls webhook
+ *    4. Webhook updates status to ready/failed
+ */
+export type Media = {
+  __typename?: 'media';
+  /** Timestamp when the media record was created (upload initiated). */
+  created_at: Scalars['timestamptz']['output'];
+  /**
+   * Duration of video in seconds. Reserved for future video support.
+   *    NULL for images.
+   */
+  duration_seconds: Maybe<Scalars['numeric']['output']>;
+  /**
+   * ID of the entity this media is associated with.
+   *    Nullable for pending uploads (entity may not exist yet).
+   *    The target table is defined in media_entity_types.target_table.
+   */
+  entity_id: Maybe<Scalars['String']['output']>;
+  /**
+   * Type of entity this media is associated with.
+   *    References media_entity_types.code (not id).
+   *    Examples: organization_logo, contact_avatar, testimonial_video.
+   */
+  entity_type: Scalars['String']['output'];
+  /** An object relationship */
+  entity_type_config: Media_Entity_Types;
+  /**
+   * Error details when status is failed.
+   *    Examples: "File size exceeds limit", "Invalid MIME type", etc.
+   */
+  error_message: Maybe<Scalars['String']['output']>;
+  /**
+   * File size in bytes. Used for quota tracking and validation against
+   *    media_entity_types.max_file_size_bytes.
+   */
+  file_size_bytes: Scalars['bigint']['output'];
+  /**
+   * Original filename from the upload. Preserved for display purposes.
+   *    The actual storage path uses a sanitized, unique name.
+   */
+  filename: Scalars['String']['output'];
+  /**
+   * Height of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  height: Maybe<Scalars['Int']['output']>;
+  /**
+   * Opaque unique identifier (NanoID 12-char). This ID is embedded in the S3 path
+   *    to correlate presigned URL with webhook callback.
+   */
+  id: Scalars['String']['output'];
+  /**
+   * MIME type of the file (e.g., image/png, video/mp4).
+   *    Validated against media_entity_types.allowed_mime_types.
+   */
+  mime_type: Scalars['String']['output'];
+  /** An object relationship */
+  organization: Organizations;
+  /**
+   * Organization that owns this media. Used for RLS, quota tracking, and data export.
+   *    All media queries should filter by organization_id.
+   */
+  organization_id: Scalars['String']['output'];
+  /**
+   * JSONB for provider-specific metadata.
+   *    Examples: ImageKit file_id, CloudFront invalidation_id, virus scan results.
+   *    This is appropriate use of JSONB: truly dynamic, provider-specific data.
+   */
+  processing_metadata: Scalars['jsonb']['output'];
+  /**
+   * Processing status of the media file.
+   *    - pending: Upload initiated, waiting for file
+   *    - processing: File received, being validated
+   *    - ready: Validation passed, file is available
+   *    - failed: Validation failed, see error_message
+   *    - deleted: Soft deleted, file may be retained for backup
+   */
+  status: Scalars['String']['output'];
+  /**
+   * Bucket/container name where the file is stored.
+   *    Environment-specific: testimonials-dev-uploads, testimonials-prod-uploads, etc.
+   */
+  storage_bucket: Scalars['String']['output'];
+  /**
+   * Full object path within the bucket. This is the portable key.
+   *    Format: {org_id}/{entity_type}/{year}/{month}/{day}/{media_id}_{timestamp}.{ext}
+   *    Example: org_abc/organization_logo/2025/01/05/med_xyz_20250105T143022.png
+   */
+  storage_path: Scalars['String']['output'];
+  /**
+   * Storage provider identifier. Default is aws_s3.
+   *    Other possible values: gcs (Google Cloud), azure_blob, etc.
+   *    Used by CDN adapter to construct URLs.
+   */
+  storage_provider: Scalars['String']['output'];
+  /**
+   * AWS region or equivalent for other providers.
+   *    Used for constructing direct S3 URLs if needed.
+   */
+  storage_region: Maybe<Scalars['String']['output']>;
+  /**
+   * Storage path for video thumbnail. Reserved for future video support.
+   *    Lambda generates thumbnail and stores path here.
+   */
+  thumbnail_path: Maybe<Scalars['String']['output']>;
+  /**
+   * Timestamp of last modification. Auto-updated by trigger.
+   *    Changes when status updates, processing completes, etc.
+   */
+  updated_at: Scalars['timestamptz']['output'];
+  /**
+   * User who initiated the upload. NULL for anonymous uploads
+   *    (e.g., form submissions by external customers).
+   *    References users.id.
+   */
+  uploaded_by: Maybe<Scalars['String']['output']>;
+  /** An object relationship */
+  uploader: Maybe<Users>;
+  /**
+   * Width of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  width: Maybe<Scalars['Int']['output']>;
+};
+
+
+/**
+ * Centralized tracking for all uploaded media files.
+ *
+ *    This table stores metadata for files uploaded to cloud storage (S3, GCS, etc.)
+ *    and tracks their processing status through the upload workflow.
+ *
+ *    Key features:
+ *    1. Provider-agnostic: storage_path is portable across providers
+ *    2. Polymorphic: entity_type + entity_id links to any entity type
+ *    3. Status workflow: tracks upload from pending to ready/failed
+ *    4. Audit trail: tracks who uploaded and when
+ *
+ *    Upload flow:
+ *    1. API creates media record with status=pending
+ *    2. Frontend uploads to presigned URL
+ *    3. Lambda validates and calls webhook
+ *    4. Webhook updates status to ready/failed
+ */
+export type MediaProcessing_MetadataArgs = {
+  path?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** aggregated selection of "media" */
+export type Media_Aggregate = {
+  __typename?: 'media_aggregate';
+  aggregate: Maybe<Media_Aggregate_Fields>;
+  nodes: Array<Media>;
+};
+
+export type Media_Aggregate_Bool_Exp = {
+  count?: InputMaybe<Media_Aggregate_Bool_Exp_Count>;
+};
+
+export type Media_Aggregate_Bool_Exp_Count = {
+  arguments?: InputMaybe<Array<Media_Select_Column>>;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+  filter?: InputMaybe<Media_Bool_Exp>;
+  predicate: Int_Comparison_Exp;
+};
+
+/** aggregate fields of "media" */
+export type Media_Aggregate_Fields = {
+  __typename?: 'media_aggregate_fields';
+  avg: Maybe<Media_Avg_Fields>;
+  count: Scalars['Int']['output'];
+  max: Maybe<Media_Max_Fields>;
+  min: Maybe<Media_Min_Fields>;
+  stddev: Maybe<Media_Stddev_Fields>;
+  stddev_pop: Maybe<Media_Stddev_Pop_Fields>;
+  stddev_samp: Maybe<Media_Stddev_Samp_Fields>;
+  sum: Maybe<Media_Sum_Fields>;
+  var_pop: Maybe<Media_Var_Pop_Fields>;
+  var_samp: Maybe<Media_Var_Samp_Fields>;
+  variance: Maybe<Media_Variance_Fields>;
+};
+
+
+/** aggregate fields of "media" */
+export type Media_Aggregate_FieldsCountArgs = {
+  columns?: InputMaybe<Array<Media_Select_Column>>;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+/** order by aggregate values of table "media" */
+export type Media_Aggregate_Order_By = {
+  avg?: InputMaybe<Media_Avg_Order_By>;
+  count?: InputMaybe<Order_By>;
+  max?: InputMaybe<Media_Max_Order_By>;
+  min?: InputMaybe<Media_Min_Order_By>;
+  stddev?: InputMaybe<Media_Stddev_Order_By>;
+  stddev_pop?: InputMaybe<Media_Stddev_Pop_Order_By>;
+  stddev_samp?: InputMaybe<Media_Stddev_Samp_Order_By>;
+  sum?: InputMaybe<Media_Sum_Order_By>;
+  var_pop?: InputMaybe<Media_Var_Pop_Order_By>;
+  var_samp?: InputMaybe<Media_Var_Samp_Order_By>;
+  variance?: InputMaybe<Media_Variance_Order_By>;
+};
+
+/** append existing jsonb value of filtered columns with new jsonb value */
+export type Media_Append_Input = {
+  /**
+   * JSONB for provider-specific metadata.
+   *    Examples: ImageKit file_id, CloudFront invalidation_id, virus scan results.
+   *    This is appropriate use of JSONB: truly dynamic, provider-specific data.
+   */
+  processing_metadata?: InputMaybe<Scalars['jsonb']['input']>;
+};
+
+/** input type for inserting array relation for remote table "media" */
+export type Media_Arr_Rel_Insert_Input = {
+  data: Array<Media_Insert_Input>;
+  /** upsert condition */
+  on_conflict?: InputMaybe<Media_On_Conflict>;
+};
+
+/** aggregate avg on columns */
+export type Media_Avg_Fields = {
+  __typename?: 'media_avg_fields';
+  /**
+   * Duration of video in seconds. Reserved for future video support.
+   *    NULL for images.
+   */
+  duration_seconds: Maybe<Scalars['Float']['output']>;
+  /**
+   * File size in bytes. Used for quota tracking and validation against
+   *    media_entity_types.max_file_size_bytes.
+   */
+  file_size_bytes: Maybe<Scalars['Float']['output']>;
+  /**
+   * Height of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  height: Maybe<Scalars['Float']['output']>;
+  /**
+   * Width of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  width: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by avg() on columns of table "media" */
+export type Media_Avg_Order_By = {
+  /**
+   * Duration of video in seconds. Reserved for future video support.
+   *    NULL for images.
+   */
+  duration_seconds?: InputMaybe<Order_By>;
+  /**
+   * File size in bytes. Used for quota tracking and validation against
+   *    media_entity_types.max_file_size_bytes.
+   */
+  file_size_bytes?: InputMaybe<Order_By>;
+  /**
+   * Height of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  height?: InputMaybe<Order_By>;
+  /**
+   * Width of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  width?: InputMaybe<Order_By>;
+};
+
+/** Boolean expression to filter rows from the table "media". All fields are combined with a logical 'AND'. */
+export type Media_Bool_Exp = {
+  _and?: InputMaybe<Array<Media_Bool_Exp>>;
+  _not?: InputMaybe<Media_Bool_Exp>;
+  _or?: InputMaybe<Array<Media_Bool_Exp>>;
+  created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  duration_seconds?: InputMaybe<Numeric_Comparison_Exp>;
+  entity_id?: InputMaybe<String_Comparison_Exp>;
+  entity_type?: InputMaybe<String_Comparison_Exp>;
+  entity_type_config?: InputMaybe<Media_Entity_Types_Bool_Exp>;
+  error_message?: InputMaybe<String_Comparison_Exp>;
+  file_size_bytes?: InputMaybe<Bigint_Comparison_Exp>;
+  filename?: InputMaybe<String_Comparison_Exp>;
+  height?: InputMaybe<Int_Comparison_Exp>;
+  id?: InputMaybe<String_Comparison_Exp>;
+  mime_type?: InputMaybe<String_Comparison_Exp>;
+  organization?: InputMaybe<Organizations_Bool_Exp>;
+  organization_id?: InputMaybe<String_Comparison_Exp>;
+  processing_metadata?: InputMaybe<Jsonb_Comparison_Exp>;
+  status?: InputMaybe<String_Comparison_Exp>;
+  storage_bucket?: InputMaybe<String_Comparison_Exp>;
+  storage_path?: InputMaybe<String_Comparison_Exp>;
+  storage_provider?: InputMaybe<String_Comparison_Exp>;
+  storage_region?: InputMaybe<String_Comparison_Exp>;
+  thumbnail_path?: InputMaybe<String_Comparison_Exp>;
+  updated_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  uploaded_by?: InputMaybe<String_Comparison_Exp>;
+  uploader?: InputMaybe<Users_Bool_Exp>;
+  width?: InputMaybe<Int_Comparison_Exp>;
+};
+
+/** unique or primary key constraints on table "media" */
+export const Media_Constraint = {
+  /** unique or primary key constraint on columns "storage_path", "storage_bucket" */
+  IdxMediaStoragePath: 'idx_media_storage_path',
+  /** unique or primary key constraint on columns "id" */
+  MediaPkey: 'media_pkey'
+} as const;
+
+export type Media_Constraint = typeof Media_Constraint[keyof typeof Media_Constraint];
+/** delete the field or element with specified path (for JSON arrays, negative integers count from the end) */
+export type Media_Delete_At_Path_Input = {
+  /**
+   * JSONB for provider-specific metadata.
+   *    Examples: ImageKit file_id, CloudFront invalidation_id, virus scan results.
+   *    This is appropriate use of JSONB: truly dynamic, provider-specific data.
+   */
+  processing_metadata?: InputMaybe<Array<Scalars['String']['input']>>;
+};
+
+/** delete the array element with specified index (negative integers count from the end). throws an error if top level container is not an array */
+export type Media_Delete_Elem_Input = {
+  /**
+   * JSONB for provider-specific metadata.
+   *    Examples: ImageKit file_id, CloudFront invalidation_id, virus scan results.
+   *    This is appropriate use of JSONB: truly dynamic, provider-specific data.
+   */
+  processing_metadata?: InputMaybe<Scalars['Int']['input']>;
+};
+
+/** delete key/value pair or string element. key/value pairs are matched based on their key value */
+export type Media_Delete_Key_Input = {
+  /**
+   * JSONB for provider-specific metadata.
+   *    Examples: ImageKit file_id, CloudFront invalidation_id, virus scan results.
+   *    This is appropriate use of JSONB: truly dynamic, provider-specific data.
+   */
+  processing_metadata?: InputMaybe<Scalars['String']['input']>;
+};
+
+/**
+ * Lookup table defining valid media entity types with validation rules.
+ *
+ *    This table serves multiple purposes:
+ *    1. Enforces valid values for media.entity_type via FK constraint on `code`
+ *    2. Stores validation rules (mime types, max size) queryable at runtime
+ *    3. Documents the polymorphic relationship (which table entity_id references)
+ *    4. Allows enabling/disabling entity types without code changes
+ *
+ *    When adding a new entity type:
+ *    1. INSERT a new row with appropriate validation rules
+ *    2. Update Lambda validator if needed (for content-based validation)
+ *    3. Update frontend upload config to match
+ */
+export type Media_Entity_Types = {
+  __typename?: 'media_entity_types';
+  /**
+   * PostgreSQL array of MIME types allowed for uploads of this entity type.
+   *    Validated at two points:
+   *    1. API presign endpoint (fast rejection)
+   *    2. Lambda after upload (content-based verification)
+   *    Example: ARRAY['image/jpeg', 'image/png', 'image/webp']
+   */
+  allowed_mime_types: Array<Scalars['String']['output']>;
+  /**
+   * Semantic code for the entity type. Use lowercase_snake_case.
+   *    Examples: organization_logo, contact_avatar, testimonial_video.
+   *    This value is stored in media.entity_type (FK target).
+   *    UNIQUE constraint allows foreign key references.
+   */
+  code: Scalars['String']['output'];
+  /** Timestamp when this entity type was created. For audit purposes. */
+  created_at: Scalars['timestamptz']['output'];
+  /**
+   * User who created this entity type. NULL for seed data inserted by migrations.
+   *    References users.id.
+   */
+  created_by: Maybe<Scalars['String']['output']>;
+  /**
+   * Detailed description of what this media type is used for.
+   *    Helps developers understand the purpose and context.
+   */
+  description: Scalars['String']['output'];
+  /** Human-readable name shown in UI. Example: "Organization Logo" */
+  display_name: Scalars['String']['output'];
+  /**
+   * Opaque unique identifier (NanoID 12-char). Following project convention
+   *    that IDs should be meaningless. Use `code` for semantic lookups.
+   */
+  id: Scalars['String']['output'];
+  /**
+   * Whether this entity type is currently enabled for uploads.
+   *    Set to false to disable without deleting (preserves existing references).
+   *    Use for feature flags or deprecating entity types.
+   */
+  is_active: Scalars['Boolean']['output'];
+  /**
+   * Maximum allowed file size in bytes. Enforced at:
+   *    1. API presign endpoint (rejects before upload)
+   *    2. Lambda validation (rejects after upload, deletes file)
+   *    Common values: 2MB=2097152, 5MB=5242880, 10MB=10485760, 500MB=524288000
+   */
+  max_file_size_bytes: Scalars['bigint']['output'];
+  /** An array relationship */
+  media: Array<Media>;
+  /** An aggregate relationship */
+  media_aggregate: Media_Aggregate;
+  /**
+   * The column in target_table that entity_id references. Usually "id".
+   *    Allows flexibility for tables with non-standard PK names.
+   */
+  target_column: Scalars['String']['output'];
+  /**
+   * The database table that media.entity_id references for this type.
+   *    Example: "organizations" means entity_id is an organizations.id value.
+   *    Used for documentation; actual FK validation is application-level.
+   */
+  target_table: Scalars['String']['output'];
+  /** Timestamp of last modification. Auto-updated by trigger. */
+  updated_at: Scalars['timestamptz']['output'];
+  /**
+   * User who last modified this entity type. Set by application on updates.
+   *    References users.id.
+   */
+  updated_by: Maybe<Scalars['String']['output']>;
+};
+
+
+/**
+ * Lookup table defining valid media entity types with validation rules.
+ *
+ *    This table serves multiple purposes:
+ *    1. Enforces valid values for media.entity_type via FK constraint on `code`
+ *    2. Stores validation rules (mime types, max size) queryable at runtime
+ *    3. Documents the polymorphic relationship (which table entity_id references)
+ *    4. Allows enabling/disabling entity types without code changes
+ *
+ *    When adding a new entity type:
+ *    1. INSERT a new row with appropriate validation rules
+ *    2. Update Lambda validator if needed (for content-based validation)
+ *    3. Update frontend upload config to match
+ */
+export type Media_Entity_TypesMediaArgs = {
+  distinct_on?: InputMaybe<Array<Media_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Media_Order_By>>;
+  where?: InputMaybe<Media_Bool_Exp>;
+};
+
+
+/**
+ * Lookup table defining valid media entity types with validation rules.
+ *
+ *    This table serves multiple purposes:
+ *    1. Enforces valid values for media.entity_type via FK constraint on `code`
+ *    2. Stores validation rules (mime types, max size) queryable at runtime
+ *    3. Documents the polymorphic relationship (which table entity_id references)
+ *    4. Allows enabling/disabling entity types without code changes
+ *
+ *    When adding a new entity type:
+ *    1. INSERT a new row with appropriate validation rules
+ *    2. Update Lambda validator if needed (for content-based validation)
+ *    3. Update frontend upload config to match
+ */
+export type Media_Entity_TypesMedia_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Media_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Media_Order_By>>;
+  where?: InputMaybe<Media_Bool_Exp>;
+};
+
+/** aggregated selection of "media_entity_types" */
+export type Media_Entity_Types_Aggregate = {
+  __typename?: 'media_entity_types_aggregate';
+  aggregate: Maybe<Media_Entity_Types_Aggregate_Fields>;
+  nodes: Array<Media_Entity_Types>;
+};
+
+/** aggregate fields of "media_entity_types" */
+export type Media_Entity_Types_Aggregate_Fields = {
+  __typename?: 'media_entity_types_aggregate_fields';
+  avg: Maybe<Media_Entity_Types_Avg_Fields>;
+  count: Scalars['Int']['output'];
+  max: Maybe<Media_Entity_Types_Max_Fields>;
+  min: Maybe<Media_Entity_Types_Min_Fields>;
+  stddev: Maybe<Media_Entity_Types_Stddev_Fields>;
+  stddev_pop: Maybe<Media_Entity_Types_Stddev_Pop_Fields>;
+  stddev_samp: Maybe<Media_Entity_Types_Stddev_Samp_Fields>;
+  sum: Maybe<Media_Entity_Types_Sum_Fields>;
+  var_pop: Maybe<Media_Entity_Types_Var_Pop_Fields>;
+  var_samp: Maybe<Media_Entity_Types_Var_Samp_Fields>;
+  variance: Maybe<Media_Entity_Types_Variance_Fields>;
+};
+
+
+/** aggregate fields of "media_entity_types" */
+export type Media_Entity_Types_Aggregate_FieldsCountArgs = {
+  columns?: InputMaybe<Array<Media_Entity_Types_Select_Column>>;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+/** aggregate avg on columns */
+export type Media_Entity_Types_Avg_Fields = {
+  __typename?: 'media_entity_types_avg_fields';
+  /**
+   * Maximum allowed file size in bytes. Enforced at:
+   *    1. API presign endpoint (rejects before upload)
+   *    2. Lambda validation (rejects after upload, deletes file)
+   *    Common values: 2MB=2097152, 5MB=5242880, 10MB=10485760, 500MB=524288000
+   */
+  max_file_size_bytes: Maybe<Scalars['Float']['output']>;
+};
+
+/** Boolean expression to filter rows from the table "media_entity_types". All fields are combined with a logical 'AND'. */
+export type Media_Entity_Types_Bool_Exp = {
+  _and?: InputMaybe<Array<Media_Entity_Types_Bool_Exp>>;
+  _not?: InputMaybe<Media_Entity_Types_Bool_Exp>;
+  _or?: InputMaybe<Array<Media_Entity_Types_Bool_Exp>>;
+  allowed_mime_types?: InputMaybe<String_Array_Comparison_Exp>;
+  code?: InputMaybe<String_Comparison_Exp>;
+  created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  created_by?: InputMaybe<String_Comparison_Exp>;
+  description?: InputMaybe<String_Comparison_Exp>;
+  display_name?: InputMaybe<String_Comparison_Exp>;
+  id?: InputMaybe<String_Comparison_Exp>;
+  is_active?: InputMaybe<Boolean_Comparison_Exp>;
+  max_file_size_bytes?: InputMaybe<Bigint_Comparison_Exp>;
+  media?: InputMaybe<Media_Bool_Exp>;
+  media_aggregate?: InputMaybe<Media_Aggregate_Bool_Exp>;
+  target_column?: InputMaybe<String_Comparison_Exp>;
+  target_table?: InputMaybe<String_Comparison_Exp>;
+  updated_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  updated_by?: InputMaybe<String_Comparison_Exp>;
+};
+
+/** unique or primary key constraints on table "media_entity_types" */
+export const Media_Entity_Types_Constraint = {
+  /** unique or primary key constraint on columns "code" */
+  MediaEntityTypesCodeKey: 'media_entity_types_code_key',
+  /** unique or primary key constraint on columns "id" */
+  MediaEntityTypesPkey: 'media_entity_types_pkey'
+} as const;
+
+export type Media_Entity_Types_Constraint = typeof Media_Entity_Types_Constraint[keyof typeof Media_Entity_Types_Constraint];
+/** input type for incrementing numeric columns in table "media_entity_types" */
+export type Media_Entity_Types_Inc_Input = {
+  /**
+   * Maximum allowed file size in bytes. Enforced at:
+   *    1. API presign endpoint (rejects before upload)
+   *    2. Lambda validation (rejects after upload, deletes file)
+   *    Common values: 2MB=2097152, 5MB=5242880, 10MB=10485760, 500MB=524288000
+   */
+  max_file_size_bytes?: InputMaybe<Scalars['bigint']['input']>;
+};
+
+/** input type for inserting data into table "media_entity_types" */
+export type Media_Entity_Types_Insert_Input = {
+  /**
+   * PostgreSQL array of MIME types allowed for uploads of this entity type.
+   *    Validated at two points:
+   *    1. API presign endpoint (fast rejection)
+   *    2. Lambda after upload (content-based verification)
+   *    Example: ARRAY['image/jpeg', 'image/png', 'image/webp']
+   */
+  allowed_mime_types?: InputMaybe<Array<Scalars['String']['input']>>;
+  /**
+   * Semantic code for the entity type. Use lowercase_snake_case.
+   *    Examples: organization_logo, contact_avatar, testimonial_video.
+   *    This value is stored in media.entity_type (FK target).
+   *    UNIQUE constraint allows foreign key references.
+   */
+  code?: InputMaybe<Scalars['String']['input']>;
+  /** Timestamp when this entity type was created. For audit purposes. */
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /**
+   * User who created this entity type. NULL for seed data inserted by migrations.
+   *    References users.id.
+   */
+  created_by?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Detailed description of what this media type is used for.
+   *    Helps developers understand the purpose and context.
+   */
+  description?: InputMaybe<Scalars['String']['input']>;
+  /** Human-readable name shown in UI. Example: "Organization Logo" */
+  display_name?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Opaque unique identifier (NanoID 12-char). Following project convention
+   *    that IDs should be meaningless. Use `code` for semantic lookups.
+   */
+  id?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Whether this entity type is currently enabled for uploads.
+   *    Set to false to disable without deleting (preserves existing references).
+   *    Use for feature flags or deprecating entity types.
+   */
+  is_active?: InputMaybe<Scalars['Boolean']['input']>;
+  /**
+   * Maximum allowed file size in bytes. Enforced at:
+   *    1. API presign endpoint (rejects before upload)
+   *    2. Lambda validation (rejects after upload, deletes file)
+   *    Common values: 2MB=2097152, 5MB=5242880, 10MB=10485760, 500MB=524288000
+   */
+  max_file_size_bytes?: InputMaybe<Scalars['bigint']['input']>;
+  media?: InputMaybe<Media_Arr_Rel_Insert_Input>;
+  /**
+   * The column in target_table that entity_id references. Usually "id".
+   *    Allows flexibility for tables with non-standard PK names.
+   */
+  target_column?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * The database table that media.entity_id references for this type.
+   *    Example: "organizations" means entity_id is an organizations.id value.
+   *    Used for documentation; actual FK validation is application-level.
+   */
+  target_table?: InputMaybe<Scalars['String']['input']>;
+  /** Timestamp of last modification. Auto-updated by trigger. */
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /**
+   * User who last modified this entity type. Set by application on updates.
+   *    References users.id.
+   */
+  updated_by?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** aggregate max on columns */
+export type Media_Entity_Types_Max_Fields = {
+  __typename?: 'media_entity_types_max_fields';
+  /**
+   * PostgreSQL array of MIME types allowed for uploads of this entity type.
+   *    Validated at two points:
+   *    1. API presign endpoint (fast rejection)
+   *    2. Lambda after upload (content-based verification)
+   *    Example: ARRAY['image/jpeg', 'image/png', 'image/webp']
+   */
+  allowed_mime_types: Maybe<Array<Scalars['String']['output']>>;
+  /**
+   * Semantic code for the entity type. Use lowercase_snake_case.
+   *    Examples: organization_logo, contact_avatar, testimonial_video.
+   *    This value is stored in media.entity_type (FK target).
+   *    UNIQUE constraint allows foreign key references.
+   */
+  code: Maybe<Scalars['String']['output']>;
+  /** Timestamp when this entity type was created. For audit purposes. */
+  created_at: Maybe<Scalars['timestamptz']['output']>;
+  /**
+   * User who created this entity type. NULL for seed data inserted by migrations.
+   *    References users.id.
+   */
+  created_by: Maybe<Scalars['String']['output']>;
+  /**
+   * Detailed description of what this media type is used for.
+   *    Helps developers understand the purpose and context.
+   */
+  description: Maybe<Scalars['String']['output']>;
+  /** Human-readable name shown in UI. Example: "Organization Logo" */
+  display_name: Maybe<Scalars['String']['output']>;
+  /**
+   * Opaque unique identifier (NanoID 12-char). Following project convention
+   *    that IDs should be meaningless. Use `code` for semantic lookups.
+   */
+  id: Maybe<Scalars['String']['output']>;
+  /**
+   * Maximum allowed file size in bytes. Enforced at:
+   *    1. API presign endpoint (rejects before upload)
+   *    2. Lambda validation (rejects after upload, deletes file)
+   *    Common values: 2MB=2097152, 5MB=5242880, 10MB=10485760, 500MB=524288000
+   */
+  max_file_size_bytes: Maybe<Scalars['bigint']['output']>;
+  /**
+   * The column in target_table that entity_id references. Usually "id".
+   *    Allows flexibility for tables with non-standard PK names.
+   */
+  target_column: Maybe<Scalars['String']['output']>;
+  /**
+   * The database table that media.entity_id references for this type.
+   *    Example: "organizations" means entity_id is an organizations.id value.
+   *    Used for documentation; actual FK validation is application-level.
+   */
+  target_table: Maybe<Scalars['String']['output']>;
+  /** Timestamp of last modification. Auto-updated by trigger. */
+  updated_at: Maybe<Scalars['timestamptz']['output']>;
+  /**
+   * User who last modified this entity type. Set by application on updates.
+   *    References users.id.
+   */
+  updated_by: Maybe<Scalars['String']['output']>;
+};
+
+/** aggregate min on columns */
+export type Media_Entity_Types_Min_Fields = {
+  __typename?: 'media_entity_types_min_fields';
+  /**
+   * PostgreSQL array of MIME types allowed for uploads of this entity type.
+   *    Validated at two points:
+   *    1. API presign endpoint (fast rejection)
+   *    2. Lambda after upload (content-based verification)
+   *    Example: ARRAY['image/jpeg', 'image/png', 'image/webp']
+   */
+  allowed_mime_types: Maybe<Array<Scalars['String']['output']>>;
+  /**
+   * Semantic code for the entity type. Use lowercase_snake_case.
+   *    Examples: organization_logo, contact_avatar, testimonial_video.
+   *    This value is stored in media.entity_type (FK target).
+   *    UNIQUE constraint allows foreign key references.
+   */
+  code: Maybe<Scalars['String']['output']>;
+  /** Timestamp when this entity type was created. For audit purposes. */
+  created_at: Maybe<Scalars['timestamptz']['output']>;
+  /**
+   * User who created this entity type. NULL for seed data inserted by migrations.
+   *    References users.id.
+   */
+  created_by: Maybe<Scalars['String']['output']>;
+  /**
+   * Detailed description of what this media type is used for.
+   *    Helps developers understand the purpose and context.
+   */
+  description: Maybe<Scalars['String']['output']>;
+  /** Human-readable name shown in UI. Example: "Organization Logo" */
+  display_name: Maybe<Scalars['String']['output']>;
+  /**
+   * Opaque unique identifier (NanoID 12-char). Following project convention
+   *    that IDs should be meaningless. Use `code` for semantic lookups.
+   */
+  id: Maybe<Scalars['String']['output']>;
+  /**
+   * Maximum allowed file size in bytes. Enforced at:
+   *    1. API presign endpoint (rejects before upload)
+   *    2. Lambda validation (rejects after upload, deletes file)
+   *    Common values: 2MB=2097152, 5MB=5242880, 10MB=10485760, 500MB=524288000
+   */
+  max_file_size_bytes: Maybe<Scalars['bigint']['output']>;
+  /**
+   * The column in target_table that entity_id references. Usually "id".
+   *    Allows flexibility for tables with non-standard PK names.
+   */
+  target_column: Maybe<Scalars['String']['output']>;
+  /**
+   * The database table that media.entity_id references for this type.
+   *    Example: "organizations" means entity_id is an organizations.id value.
+   *    Used for documentation; actual FK validation is application-level.
+   */
+  target_table: Maybe<Scalars['String']['output']>;
+  /** Timestamp of last modification. Auto-updated by trigger. */
+  updated_at: Maybe<Scalars['timestamptz']['output']>;
+  /**
+   * User who last modified this entity type. Set by application on updates.
+   *    References users.id.
+   */
+  updated_by: Maybe<Scalars['String']['output']>;
+};
+
+/** response of any mutation on the table "media_entity_types" */
+export type Media_Entity_Types_Mutation_Response = {
+  __typename?: 'media_entity_types_mutation_response';
+  /** number of rows affected by the mutation */
+  affected_rows: Scalars['Int']['output'];
+  /** data from the rows affected by the mutation */
+  returning: Array<Media_Entity_Types>;
+};
+
+/** input type for inserting object relation for remote table "media_entity_types" */
+export type Media_Entity_Types_Obj_Rel_Insert_Input = {
+  data: Media_Entity_Types_Insert_Input;
+  /** upsert condition */
+  on_conflict?: InputMaybe<Media_Entity_Types_On_Conflict>;
+};
+
+/** on_conflict condition type for table "media_entity_types" */
+export type Media_Entity_Types_On_Conflict = {
+  constraint: Media_Entity_Types_Constraint;
+  update_columns?: Array<Media_Entity_Types_Update_Column>;
+  where?: InputMaybe<Media_Entity_Types_Bool_Exp>;
+};
+
+/** Ordering options when selecting data from "media_entity_types". */
+export type Media_Entity_Types_Order_By = {
+  allowed_mime_types?: InputMaybe<Order_By>;
+  code?: InputMaybe<Order_By>;
+  created_at?: InputMaybe<Order_By>;
+  created_by?: InputMaybe<Order_By>;
+  description?: InputMaybe<Order_By>;
+  display_name?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
+  is_active?: InputMaybe<Order_By>;
+  max_file_size_bytes?: InputMaybe<Order_By>;
+  media_aggregate?: InputMaybe<Media_Aggregate_Order_By>;
+  target_column?: InputMaybe<Order_By>;
+  target_table?: InputMaybe<Order_By>;
+  updated_at?: InputMaybe<Order_By>;
+  updated_by?: InputMaybe<Order_By>;
+};
+
+/** primary key columns input for table: media_entity_types */
+export type Media_Entity_Types_Pk_Columns_Input = {
+  /**
+   * Opaque unique identifier (NanoID 12-char). Following project convention
+   *    that IDs should be meaningless. Use `code` for semantic lookups.
+   */
+  id: Scalars['String']['input'];
+};
+
+/** select columns of table "media_entity_types" */
+export const Media_Entity_Types_Select_Column = {
+  /** column name */
+  AllowedMimeTypes: 'allowed_mime_types',
+  /** column name */
+  Code: 'code',
+  /** column name */
+  CreatedAt: 'created_at',
+  /** column name */
+  CreatedBy: 'created_by',
+  /** column name */
+  Description: 'description',
+  /** column name */
+  DisplayName: 'display_name',
+  /** column name */
+  Id: 'id',
+  /** column name */
+  IsActive: 'is_active',
+  /** column name */
+  MaxFileSizeBytes: 'max_file_size_bytes',
+  /** column name */
+  TargetColumn: 'target_column',
+  /** column name */
+  TargetTable: 'target_table',
+  /** column name */
+  UpdatedAt: 'updated_at',
+  /** column name */
+  UpdatedBy: 'updated_by'
+} as const;
+
+export type Media_Entity_Types_Select_Column = typeof Media_Entity_Types_Select_Column[keyof typeof Media_Entity_Types_Select_Column];
+/** input type for updating data in table "media_entity_types" */
+export type Media_Entity_Types_Set_Input = {
+  /**
+   * PostgreSQL array of MIME types allowed for uploads of this entity type.
+   *    Validated at two points:
+   *    1. API presign endpoint (fast rejection)
+   *    2. Lambda after upload (content-based verification)
+   *    Example: ARRAY['image/jpeg', 'image/png', 'image/webp']
+   */
+  allowed_mime_types?: InputMaybe<Array<Scalars['String']['input']>>;
+  /**
+   * Semantic code for the entity type. Use lowercase_snake_case.
+   *    Examples: organization_logo, contact_avatar, testimonial_video.
+   *    This value is stored in media.entity_type (FK target).
+   *    UNIQUE constraint allows foreign key references.
+   */
+  code?: InputMaybe<Scalars['String']['input']>;
+  /** Timestamp when this entity type was created. For audit purposes. */
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /**
+   * User who created this entity type. NULL for seed data inserted by migrations.
+   *    References users.id.
+   */
+  created_by?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Detailed description of what this media type is used for.
+   *    Helps developers understand the purpose and context.
+   */
+  description?: InputMaybe<Scalars['String']['input']>;
+  /** Human-readable name shown in UI. Example: "Organization Logo" */
+  display_name?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Opaque unique identifier (NanoID 12-char). Following project convention
+   *    that IDs should be meaningless. Use `code` for semantic lookups.
+   */
+  id?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Whether this entity type is currently enabled for uploads.
+   *    Set to false to disable without deleting (preserves existing references).
+   *    Use for feature flags or deprecating entity types.
+   */
+  is_active?: InputMaybe<Scalars['Boolean']['input']>;
+  /**
+   * Maximum allowed file size in bytes. Enforced at:
+   *    1. API presign endpoint (rejects before upload)
+   *    2. Lambda validation (rejects after upload, deletes file)
+   *    Common values: 2MB=2097152, 5MB=5242880, 10MB=10485760, 500MB=524288000
+   */
+  max_file_size_bytes?: InputMaybe<Scalars['bigint']['input']>;
+  /**
+   * The column in target_table that entity_id references. Usually "id".
+   *    Allows flexibility for tables with non-standard PK names.
+   */
+  target_column?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * The database table that media.entity_id references for this type.
+   *    Example: "organizations" means entity_id is an organizations.id value.
+   *    Used for documentation; actual FK validation is application-level.
+   */
+  target_table?: InputMaybe<Scalars['String']['input']>;
+  /** Timestamp of last modification. Auto-updated by trigger. */
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /**
+   * User who last modified this entity type. Set by application on updates.
+   *    References users.id.
+   */
+  updated_by?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** aggregate stddev on columns */
+export type Media_Entity_Types_Stddev_Fields = {
+  __typename?: 'media_entity_types_stddev_fields';
+  /**
+   * Maximum allowed file size in bytes. Enforced at:
+   *    1. API presign endpoint (rejects before upload)
+   *    2. Lambda validation (rejects after upload, deletes file)
+   *    Common values: 2MB=2097152, 5MB=5242880, 10MB=10485760, 500MB=524288000
+   */
+  max_file_size_bytes: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate stddev_pop on columns */
+export type Media_Entity_Types_Stddev_Pop_Fields = {
+  __typename?: 'media_entity_types_stddev_pop_fields';
+  /**
+   * Maximum allowed file size in bytes. Enforced at:
+   *    1. API presign endpoint (rejects before upload)
+   *    2. Lambda validation (rejects after upload, deletes file)
+   *    Common values: 2MB=2097152, 5MB=5242880, 10MB=10485760, 500MB=524288000
+   */
+  max_file_size_bytes: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate stddev_samp on columns */
+export type Media_Entity_Types_Stddev_Samp_Fields = {
+  __typename?: 'media_entity_types_stddev_samp_fields';
+  /**
+   * Maximum allowed file size in bytes. Enforced at:
+   *    1. API presign endpoint (rejects before upload)
+   *    2. Lambda validation (rejects after upload, deletes file)
+   *    Common values: 2MB=2097152, 5MB=5242880, 10MB=10485760, 500MB=524288000
+   */
+  max_file_size_bytes: Maybe<Scalars['Float']['output']>;
+};
+
+/** Streaming cursor of the table "media_entity_types" */
+export type Media_Entity_Types_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Media_Entity_Types_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type Media_Entity_Types_Stream_Cursor_Value_Input = {
+  /**
+   * PostgreSQL array of MIME types allowed for uploads of this entity type.
+   *    Validated at two points:
+   *    1. API presign endpoint (fast rejection)
+   *    2. Lambda after upload (content-based verification)
+   *    Example: ARRAY['image/jpeg', 'image/png', 'image/webp']
+   */
+  allowed_mime_types?: InputMaybe<Array<Scalars['String']['input']>>;
+  /**
+   * Semantic code for the entity type. Use lowercase_snake_case.
+   *    Examples: organization_logo, contact_avatar, testimonial_video.
+   *    This value is stored in media.entity_type (FK target).
+   *    UNIQUE constraint allows foreign key references.
+   */
+  code?: InputMaybe<Scalars['String']['input']>;
+  /** Timestamp when this entity type was created. For audit purposes. */
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /**
+   * User who created this entity type. NULL for seed data inserted by migrations.
+   *    References users.id.
+   */
+  created_by?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Detailed description of what this media type is used for.
+   *    Helps developers understand the purpose and context.
+   */
+  description?: InputMaybe<Scalars['String']['input']>;
+  /** Human-readable name shown in UI. Example: "Organization Logo" */
+  display_name?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Opaque unique identifier (NanoID 12-char). Following project convention
+   *    that IDs should be meaningless. Use `code` for semantic lookups.
+   */
+  id?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Whether this entity type is currently enabled for uploads.
+   *    Set to false to disable without deleting (preserves existing references).
+   *    Use for feature flags or deprecating entity types.
+   */
+  is_active?: InputMaybe<Scalars['Boolean']['input']>;
+  /**
+   * Maximum allowed file size in bytes. Enforced at:
+   *    1. API presign endpoint (rejects before upload)
+   *    2. Lambda validation (rejects after upload, deletes file)
+   *    Common values: 2MB=2097152, 5MB=5242880, 10MB=10485760, 500MB=524288000
+   */
+  max_file_size_bytes?: InputMaybe<Scalars['bigint']['input']>;
+  /**
+   * The column in target_table that entity_id references. Usually "id".
+   *    Allows flexibility for tables with non-standard PK names.
+   */
+  target_column?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * The database table that media.entity_id references for this type.
+   *    Example: "organizations" means entity_id is an organizations.id value.
+   *    Used for documentation; actual FK validation is application-level.
+   */
+  target_table?: InputMaybe<Scalars['String']['input']>;
+  /** Timestamp of last modification. Auto-updated by trigger. */
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /**
+   * User who last modified this entity type. Set by application on updates.
+   *    References users.id.
+   */
+  updated_by?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** aggregate sum on columns */
+export type Media_Entity_Types_Sum_Fields = {
+  __typename?: 'media_entity_types_sum_fields';
+  /**
+   * Maximum allowed file size in bytes. Enforced at:
+   *    1. API presign endpoint (rejects before upload)
+   *    2. Lambda validation (rejects after upload, deletes file)
+   *    Common values: 2MB=2097152, 5MB=5242880, 10MB=10485760, 500MB=524288000
+   */
+  max_file_size_bytes: Maybe<Scalars['bigint']['output']>;
+};
+
+/** update columns of table "media_entity_types" */
+export const Media_Entity_Types_Update_Column = {
+  /** column name */
+  AllowedMimeTypes: 'allowed_mime_types',
+  /** column name */
+  Code: 'code',
+  /** column name */
+  CreatedAt: 'created_at',
+  /** column name */
+  CreatedBy: 'created_by',
+  /** column name */
+  Description: 'description',
+  /** column name */
+  DisplayName: 'display_name',
+  /** column name */
+  Id: 'id',
+  /** column name */
+  IsActive: 'is_active',
+  /** column name */
+  MaxFileSizeBytes: 'max_file_size_bytes',
+  /** column name */
+  TargetColumn: 'target_column',
+  /** column name */
+  TargetTable: 'target_table',
+  /** column name */
+  UpdatedAt: 'updated_at',
+  /** column name */
+  UpdatedBy: 'updated_by'
+} as const;
+
+export type Media_Entity_Types_Update_Column = typeof Media_Entity_Types_Update_Column[keyof typeof Media_Entity_Types_Update_Column];
+export type Media_Entity_Types_Updates = {
+  /** increments the numeric columns with given value of the filtered values */
+  _inc?: InputMaybe<Media_Entity_Types_Inc_Input>;
+  /** sets the columns of the filtered rows to the given values */
+  _set?: InputMaybe<Media_Entity_Types_Set_Input>;
+  /** filter the rows which have to be updated */
+  where: Media_Entity_Types_Bool_Exp;
+};
+
+/** aggregate var_pop on columns */
+export type Media_Entity_Types_Var_Pop_Fields = {
+  __typename?: 'media_entity_types_var_pop_fields';
+  /**
+   * Maximum allowed file size in bytes. Enforced at:
+   *    1. API presign endpoint (rejects before upload)
+   *    2. Lambda validation (rejects after upload, deletes file)
+   *    Common values: 2MB=2097152, 5MB=5242880, 10MB=10485760, 500MB=524288000
+   */
+  max_file_size_bytes: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate var_samp on columns */
+export type Media_Entity_Types_Var_Samp_Fields = {
+  __typename?: 'media_entity_types_var_samp_fields';
+  /**
+   * Maximum allowed file size in bytes. Enforced at:
+   *    1. API presign endpoint (rejects before upload)
+   *    2. Lambda validation (rejects after upload, deletes file)
+   *    Common values: 2MB=2097152, 5MB=5242880, 10MB=10485760, 500MB=524288000
+   */
+  max_file_size_bytes: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate variance on columns */
+export type Media_Entity_Types_Variance_Fields = {
+  __typename?: 'media_entity_types_variance_fields';
+  /**
+   * Maximum allowed file size in bytes. Enforced at:
+   *    1. API presign endpoint (rejects before upload)
+   *    2. Lambda validation (rejects after upload, deletes file)
+   *    Common values: 2MB=2097152, 5MB=5242880, 10MB=10485760, 500MB=524288000
+   */
+  max_file_size_bytes: Maybe<Scalars['Float']['output']>;
+};
+
+/** input type for incrementing numeric columns in table "media" */
+export type Media_Inc_Input = {
+  /**
+   * Duration of video in seconds. Reserved for future video support.
+   *    NULL for images.
+   */
+  duration_seconds?: InputMaybe<Scalars['numeric']['input']>;
+  /**
+   * File size in bytes. Used for quota tracking and validation against
+   *    media_entity_types.max_file_size_bytes.
+   */
+  file_size_bytes?: InputMaybe<Scalars['bigint']['input']>;
+  /**
+   * Height of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  height?: InputMaybe<Scalars['Int']['input']>;
+  /**
+   * Width of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  width?: InputMaybe<Scalars['Int']['input']>;
+};
+
+/** input type for inserting data into table "media" */
+export type Media_Insert_Input = {
+  /** Timestamp when the media record was created (upload initiated). */
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /**
+   * Duration of video in seconds. Reserved for future video support.
+   *    NULL for images.
+   */
+  duration_seconds?: InputMaybe<Scalars['numeric']['input']>;
+  /**
+   * ID of the entity this media is associated with.
+   *    Nullable for pending uploads (entity may not exist yet).
+   *    The target table is defined in media_entity_types.target_table.
+   */
+  entity_id?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Type of entity this media is associated with.
+   *    References media_entity_types.code (not id).
+   *    Examples: organization_logo, contact_avatar, testimonial_video.
+   */
+  entity_type?: InputMaybe<Scalars['String']['input']>;
+  entity_type_config?: InputMaybe<Media_Entity_Types_Obj_Rel_Insert_Input>;
+  /**
+   * Error details when status is failed.
+   *    Examples: "File size exceeds limit", "Invalid MIME type", etc.
+   */
+  error_message?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * File size in bytes. Used for quota tracking and validation against
+   *    media_entity_types.max_file_size_bytes.
+   */
+  file_size_bytes?: InputMaybe<Scalars['bigint']['input']>;
+  /**
+   * Original filename from the upload. Preserved for display purposes.
+   *    The actual storage path uses a sanitized, unique name.
+   */
+  filename?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Height of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  height?: InputMaybe<Scalars['Int']['input']>;
+  /**
+   * Opaque unique identifier (NanoID 12-char). This ID is embedded in the S3 path
+   *    to correlate presigned URL with webhook callback.
+   */
+  id?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * MIME type of the file (e.g., image/png, video/mp4).
+   *    Validated against media_entity_types.allowed_mime_types.
+   */
+  mime_type?: InputMaybe<Scalars['String']['input']>;
+  organization?: InputMaybe<Organizations_Obj_Rel_Insert_Input>;
+  /**
+   * Organization that owns this media. Used for RLS, quota tracking, and data export.
+   *    All media queries should filter by organization_id.
+   */
+  organization_id?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * JSONB for provider-specific metadata.
+   *    Examples: ImageKit file_id, CloudFront invalidation_id, virus scan results.
+   *    This is appropriate use of JSONB: truly dynamic, provider-specific data.
+   */
+  processing_metadata?: InputMaybe<Scalars['jsonb']['input']>;
+  /**
+   * Processing status of the media file.
+   *    - pending: Upload initiated, waiting for file
+   *    - processing: File received, being validated
+   *    - ready: Validation passed, file is available
+   *    - failed: Validation failed, see error_message
+   *    - deleted: Soft deleted, file may be retained for backup
+   */
+  status?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Bucket/container name where the file is stored.
+   *    Environment-specific: testimonials-dev-uploads, testimonials-prod-uploads, etc.
+   */
+  storage_bucket?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Full object path within the bucket. This is the portable key.
+   *    Format: {org_id}/{entity_type}/{year}/{month}/{day}/{media_id}_{timestamp}.{ext}
+   *    Example: org_abc/organization_logo/2025/01/05/med_xyz_20250105T143022.png
+   */
+  storage_path?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Storage provider identifier. Default is aws_s3.
+   *    Other possible values: gcs (Google Cloud), azure_blob, etc.
+   *    Used by CDN adapter to construct URLs.
+   */
+  storage_provider?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * AWS region or equivalent for other providers.
+   *    Used for constructing direct S3 URLs if needed.
+   */
+  storage_region?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Storage path for video thumbnail. Reserved for future video support.
+   *    Lambda generates thumbnail and stores path here.
+   */
+  thumbnail_path?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Timestamp of last modification. Auto-updated by trigger.
+   *    Changes when status updates, processing completes, etc.
+   */
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /**
+   * User who initiated the upload. NULL for anonymous uploads
+   *    (e.g., form submissions by external customers).
+   *    References users.id.
+   */
+  uploaded_by?: InputMaybe<Scalars['String']['input']>;
+  uploader?: InputMaybe<Users_Obj_Rel_Insert_Input>;
+  /**
+   * Width of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  width?: InputMaybe<Scalars['Int']['input']>;
+};
+
+/** aggregate max on columns */
+export type Media_Max_Fields = {
+  __typename?: 'media_max_fields';
+  /** Timestamp when the media record was created (upload initiated). */
+  created_at: Maybe<Scalars['timestamptz']['output']>;
+  /**
+   * Duration of video in seconds. Reserved for future video support.
+   *    NULL for images.
+   */
+  duration_seconds: Maybe<Scalars['numeric']['output']>;
+  /**
+   * ID of the entity this media is associated with.
+   *    Nullable for pending uploads (entity may not exist yet).
+   *    The target table is defined in media_entity_types.target_table.
+   */
+  entity_id: Maybe<Scalars['String']['output']>;
+  /**
+   * Type of entity this media is associated with.
+   *    References media_entity_types.code (not id).
+   *    Examples: organization_logo, contact_avatar, testimonial_video.
+   */
+  entity_type: Maybe<Scalars['String']['output']>;
+  /**
+   * Error details when status is failed.
+   *    Examples: "File size exceeds limit", "Invalid MIME type", etc.
+   */
+  error_message: Maybe<Scalars['String']['output']>;
+  /**
+   * File size in bytes. Used for quota tracking and validation against
+   *    media_entity_types.max_file_size_bytes.
+   */
+  file_size_bytes: Maybe<Scalars['bigint']['output']>;
+  /**
+   * Original filename from the upload. Preserved for display purposes.
+   *    The actual storage path uses a sanitized, unique name.
+   */
+  filename: Maybe<Scalars['String']['output']>;
+  /**
+   * Height of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  height: Maybe<Scalars['Int']['output']>;
+  /**
+   * Opaque unique identifier (NanoID 12-char). This ID is embedded in the S3 path
+   *    to correlate presigned URL with webhook callback.
+   */
+  id: Maybe<Scalars['String']['output']>;
+  /**
+   * MIME type of the file (e.g., image/png, video/mp4).
+   *    Validated against media_entity_types.allowed_mime_types.
+   */
+  mime_type: Maybe<Scalars['String']['output']>;
+  /**
+   * Organization that owns this media. Used for RLS, quota tracking, and data export.
+   *    All media queries should filter by organization_id.
+   */
+  organization_id: Maybe<Scalars['String']['output']>;
+  /**
+   * Processing status of the media file.
+   *    - pending: Upload initiated, waiting for file
+   *    - processing: File received, being validated
+   *    - ready: Validation passed, file is available
+   *    - failed: Validation failed, see error_message
+   *    - deleted: Soft deleted, file may be retained for backup
+   */
+  status: Maybe<Scalars['String']['output']>;
+  /**
+   * Bucket/container name where the file is stored.
+   *    Environment-specific: testimonials-dev-uploads, testimonials-prod-uploads, etc.
+   */
+  storage_bucket: Maybe<Scalars['String']['output']>;
+  /**
+   * Full object path within the bucket. This is the portable key.
+   *    Format: {org_id}/{entity_type}/{year}/{month}/{day}/{media_id}_{timestamp}.{ext}
+   *    Example: org_abc/organization_logo/2025/01/05/med_xyz_20250105T143022.png
+   */
+  storage_path: Maybe<Scalars['String']['output']>;
+  /**
+   * Storage provider identifier. Default is aws_s3.
+   *    Other possible values: gcs (Google Cloud), azure_blob, etc.
+   *    Used by CDN adapter to construct URLs.
+   */
+  storage_provider: Maybe<Scalars['String']['output']>;
+  /**
+   * AWS region or equivalent for other providers.
+   *    Used for constructing direct S3 URLs if needed.
+   */
+  storage_region: Maybe<Scalars['String']['output']>;
+  /**
+   * Storage path for video thumbnail. Reserved for future video support.
+   *    Lambda generates thumbnail and stores path here.
+   */
+  thumbnail_path: Maybe<Scalars['String']['output']>;
+  /**
+   * Timestamp of last modification. Auto-updated by trigger.
+   *    Changes when status updates, processing completes, etc.
+   */
+  updated_at: Maybe<Scalars['timestamptz']['output']>;
+  /**
+   * User who initiated the upload. NULL for anonymous uploads
+   *    (e.g., form submissions by external customers).
+   *    References users.id.
+   */
+  uploaded_by: Maybe<Scalars['String']['output']>;
+  /**
+   * Width of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  width: Maybe<Scalars['Int']['output']>;
+};
+
+/** order by max() on columns of table "media" */
+export type Media_Max_Order_By = {
+  /** Timestamp when the media record was created (upload initiated). */
+  created_at?: InputMaybe<Order_By>;
+  /**
+   * Duration of video in seconds. Reserved for future video support.
+   *    NULL for images.
+   */
+  duration_seconds?: InputMaybe<Order_By>;
+  /**
+   * ID of the entity this media is associated with.
+   *    Nullable for pending uploads (entity may not exist yet).
+   *    The target table is defined in media_entity_types.target_table.
+   */
+  entity_id?: InputMaybe<Order_By>;
+  /**
+   * Type of entity this media is associated with.
+   *    References media_entity_types.code (not id).
+   *    Examples: organization_logo, contact_avatar, testimonial_video.
+   */
+  entity_type?: InputMaybe<Order_By>;
+  /**
+   * Error details when status is failed.
+   *    Examples: "File size exceeds limit", "Invalid MIME type", etc.
+   */
+  error_message?: InputMaybe<Order_By>;
+  /**
+   * File size in bytes. Used for quota tracking and validation against
+   *    media_entity_types.max_file_size_bytes.
+   */
+  file_size_bytes?: InputMaybe<Order_By>;
+  /**
+   * Original filename from the upload. Preserved for display purposes.
+   *    The actual storage path uses a sanitized, unique name.
+   */
+  filename?: InputMaybe<Order_By>;
+  /**
+   * Height of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  height?: InputMaybe<Order_By>;
+  /**
+   * Opaque unique identifier (NanoID 12-char). This ID is embedded in the S3 path
+   *    to correlate presigned URL with webhook callback.
+   */
+  id?: InputMaybe<Order_By>;
+  /**
+   * MIME type of the file (e.g., image/png, video/mp4).
+   *    Validated against media_entity_types.allowed_mime_types.
+   */
+  mime_type?: InputMaybe<Order_By>;
+  /**
+   * Organization that owns this media. Used for RLS, quota tracking, and data export.
+   *    All media queries should filter by organization_id.
+   */
+  organization_id?: InputMaybe<Order_By>;
+  /**
+   * Processing status of the media file.
+   *    - pending: Upload initiated, waiting for file
+   *    - processing: File received, being validated
+   *    - ready: Validation passed, file is available
+   *    - failed: Validation failed, see error_message
+   *    - deleted: Soft deleted, file may be retained for backup
+   */
+  status?: InputMaybe<Order_By>;
+  /**
+   * Bucket/container name where the file is stored.
+   *    Environment-specific: testimonials-dev-uploads, testimonials-prod-uploads, etc.
+   */
+  storage_bucket?: InputMaybe<Order_By>;
+  /**
+   * Full object path within the bucket. This is the portable key.
+   *    Format: {org_id}/{entity_type}/{year}/{month}/{day}/{media_id}_{timestamp}.{ext}
+   *    Example: org_abc/organization_logo/2025/01/05/med_xyz_20250105T143022.png
+   */
+  storage_path?: InputMaybe<Order_By>;
+  /**
+   * Storage provider identifier. Default is aws_s3.
+   *    Other possible values: gcs (Google Cloud), azure_blob, etc.
+   *    Used by CDN adapter to construct URLs.
+   */
+  storage_provider?: InputMaybe<Order_By>;
+  /**
+   * AWS region or equivalent for other providers.
+   *    Used for constructing direct S3 URLs if needed.
+   */
+  storage_region?: InputMaybe<Order_By>;
+  /**
+   * Storage path for video thumbnail. Reserved for future video support.
+   *    Lambda generates thumbnail and stores path here.
+   */
+  thumbnail_path?: InputMaybe<Order_By>;
+  /**
+   * Timestamp of last modification. Auto-updated by trigger.
+   *    Changes when status updates, processing completes, etc.
+   */
+  updated_at?: InputMaybe<Order_By>;
+  /**
+   * User who initiated the upload. NULL for anonymous uploads
+   *    (e.g., form submissions by external customers).
+   *    References users.id.
+   */
+  uploaded_by?: InputMaybe<Order_By>;
+  /**
+   * Width of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  width?: InputMaybe<Order_By>;
+};
+
+/** aggregate min on columns */
+export type Media_Min_Fields = {
+  __typename?: 'media_min_fields';
+  /** Timestamp when the media record was created (upload initiated). */
+  created_at: Maybe<Scalars['timestamptz']['output']>;
+  /**
+   * Duration of video in seconds. Reserved for future video support.
+   *    NULL for images.
+   */
+  duration_seconds: Maybe<Scalars['numeric']['output']>;
+  /**
+   * ID of the entity this media is associated with.
+   *    Nullable for pending uploads (entity may not exist yet).
+   *    The target table is defined in media_entity_types.target_table.
+   */
+  entity_id: Maybe<Scalars['String']['output']>;
+  /**
+   * Type of entity this media is associated with.
+   *    References media_entity_types.code (not id).
+   *    Examples: organization_logo, contact_avatar, testimonial_video.
+   */
+  entity_type: Maybe<Scalars['String']['output']>;
+  /**
+   * Error details when status is failed.
+   *    Examples: "File size exceeds limit", "Invalid MIME type", etc.
+   */
+  error_message: Maybe<Scalars['String']['output']>;
+  /**
+   * File size in bytes. Used for quota tracking and validation against
+   *    media_entity_types.max_file_size_bytes.
+   */
+  file_size_bytes: Maybe<Scalars['bigint']['output']>;
+  /**
+   * Original filename from the upload. Preserved for display purposes.
+   *    The actual storage path uses a sanitized, unique name.
+   */
+  filename: Maybe<Scalars['String']['output']>;
+  /**
+   * Height of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  height: Maybe<Scalars['Int']['output']>;
+  /**
+   * Opaque unique identifier (NanoID 12-char). This ID is embedded in the S3 path
+   *    to correlate presigned URL with webhook callback.
+   */
+  id: Maybe<Scalars['String']['output']>;
+  /**
+   * MIME type of the file (e.g., image/png, video/mp4).
+   *    Validated against media_entity_types.allowed_mime_types.
+   */
+  mime_type: Maybe<Scalars['String']['output']>;
+  /**
+   * Organization that owns this media. Used for RLS, quota tracking, and data export.
+   *    All media queries should filter by organization_id.
+   */
+  organization_id: Maybe<Scalars['String']['output']>;
+  /**
+   * Processing status of the media file.
+   *    - pending: Upload initiated, waiting for file
+   *    - processing: File received, being validated
+   *    - ready: Validation passed, file is available
+   *    - failed: Validation failed, see error_message
+   *    - deleted: Soft deleted, file may be retained for backup
+   */
+  status: Maybe<Scalars['String']['output']>;
+  /**
+   * Bucket/container name where the file is stored.
+   *    Environment-specific: testimonials-dev-uploads, testimonials-prod-uploads, etc.
+   */
+  storage_bucket: Maybe<Scalars['String']['output']>;
+  /**
+   * Full object path within the bucket. This is the portable key.
+   *    Format: {org_id}/{entity_type}/{year}/{month}/{day}/{media_id}_{timestamp}.{ext}
+   *    Example: org_abc/organization_logo/2025/01/05/med_xyz_20250105T143022.png
+   */
+  storage_path: Maybe<Scalars['String']['output']>;
+  /**
+   * Storage provider identifier. Default is aws_s3.
+   *    Other possible values: gcs (Google Cloud), azure_blob, etc.
+   *    Used by CDN adapter to construct URLs.
+   */
+  storage_provider: Maybe<Scalars['String']['output']>;
+  /**
+   * AWS region or equivalent for other providers.
+   *    Used for constructing direct S3 URLs if needed.
+   */
+  storage_region: Maybe<Scalars['String']['output']>;
+  /**
+   * Storage path for video thumbnail. Reserved for future video support.
+   *    Lambda generates thumbnail and stores path here.
+   */
+  thumbnail_path: Maybe<Scalars['String']['output']>;
+  /**
+   * Timestamp of last modification. Auto-updated by trigger.
+   *    Changes when status updates, processing completes, etc.
+   */
+  updated_at: Maybe<Scalars['timestamptz']['output']>;
+  /**
+   * User who initiated the upload. NULL for anonymous uploads
+   *    (e.g., form submissions by external customers).
+   *    References users.id.
+   */
+  uploaded_by: Maybe<Scalars['String']['output']>;
+  /**
+   * Width of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  width: Maybe<Scalars['Int']['output']>;
+};
+
+/** order by min() on columns of table "media" */
+export type Media_Min_Order_By = {
+  /** Timestamp when the media record was created (upload initiated). */
+  created_at?: InputMaybe<Order_By>;
+  /**
+   * Duration of video in seconds. Reserved for future video support.
+   *    NULL for images.
+   */
+  duration_seconds?: InputMaybe<Order_By>;
+  /**
+   * ID of the entity this media is associated with.
+   *    Nullable for pending uploads (entity may not exist yet).
+   *    The target table is defined in media_entity_types.target_table.
+   */
+  entity_id?: InputMaybe<Order_By>;
+  /**
+   * Type of entity this media is associated with.
+   *    References media_entity_types.code (not id).
+   *    Examples: organization_logo, contact_avatar, testimonial_video.
+   */
+  entity_type?: InputMaybe<Order_By>;
+  /**
+   * Error details when status is failed.
+   *    Examples: "File size exceeds limit", "Invalid MIME type", etc.
+   */
+  error_message?: InputMaybe<Order_By>;
+  /**
+   * File size in bytes. Used for quota tracking and validation against
+   *    media_entity_types.max_file_size_bytes.
+   */
+  file_size_bytes?: InputMaybe<Order_By>;
+  /**
+   * Original filename from the upload. Preserved for display purposes.
+   *    The actual storage path uses a sanitized, unique name.
+   */
+  filename?: InputMaybe<Order_By>;
+  /**
+   * Height of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  height?: InputMaybe<Order_By>;
+  /**
+   * Opaque unique identifier (NanoID 12-char). This ID is embedded in the S3 path
+   *    to correlate presigned URL with webhook callback.
+   */
+  id?: InputMaybe<Order_By>;
+  /**
+   * MIME type of the file (e.g., image/png, video/mp4).
+   *    Validated against media_entity_types.allowed_mime_types.
+   */
+  mime_type?: InputMaybe<Order_By>;
+  /**
+   * Organization that owns this media. Used for RLS, quota tracking, and data export.
+   *    All media queries should filter by organization_id.
+   */
+  organization_id?: InputMaybe<Order_By>;
+  /**
+   * Processing status of the media file.
+   *    - pending: Upload initiated, waiting for file
+   *    - processing: File received, being validated
+   *    - ready: Validation passed, file is available
+   *    - failed: Validation failed, see error_message
+   *    - deleted: Soft deleted, file may be retained for backup
+   */
+  status?: InputMaybe<Order_By>;
+  /**
+   * Bucket/container name where the file is stored.
+   *    Environment-specific: testimonials-dev-uploads, testimonials-prod-uploads, etc.
+   */
+  storage_bucket?: InputMaybe<Order_By>;
+  /**
+   * Full object path within the bucket. This is the portable key.
+   *    Format: {org_id}/{entity_type}/{year}/{month}/{day}/{media_id}_{timestamp}.{ext}
+   *    Example: org_abc/organization_logo/2025/01/05/med_xyz_20250105T143022.png
+   */
+  storage_path?: InputMaybe<Order_By>;
+  /**
+   * Storage provider identifier. Default is aws_s3.
+   *    Other possible values: gcs (Google Cloud), azure_blob, etc.
+   *    Used by CDN adapter to construct URLs.
+   */
+  storage_provider?: InputMaybe<Order_By>;
+  /**
+   * AWS region or equivalent for other providers.
+   *    Used for constructing direct S3 URLs if needed.
+   */
+  storage_region?: InputMaybe<Order_By>;
+  /**
+   * Storage path for video thumbnail. Reserved for future video support.
+   *    Lambda generates thumbnail and stores path here.
+   */
+  thumbnail_path?: InputMaybe<Order_By>;
+  /**
+   * Timestamp of last modification. Auto-updated by trigger.
+   *    Changes when status updates, processing completes, etc.
+   */
+  updated_at?: InputMaybe<Order_By>;
+  /**
+   * User who initiated the upload. NULL for anonymous uploads
+   *    (e.g., form submissions by external customers).
+   *    References users.id.
+   */
+  uploaded_by?: InputMaybe<Order_By>;
+  /**
+   * Width of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  width?: InputMaybe<Order_By>;
+};
+
+/** response of any mutation on the table "media" */
+export type Media_Mutation_Response = {
+  __typename?: 'media_mutation_response';
+  /** number of rows affected by the mutation */
+  affected_rows: Scalars['Int']['output'];
+  /** data from the rows affected by the mutation */
+  returning: Array<Media>;
+};
+
+/** input type for inserting object relation for remote table "media" */
+export type Media_Obj_Rel_Insert_Input = {
+  data: Media_Insert_Input;
+  /** upsert condition */
+  on_conflict?: InputMaybe<Media_On_Conflict>;
+};
+
+/** on_conflict condition type for table "media" */
+export type Media_On_Conflict = {
+  constraint: Media_Constraint;
+  update_columns?: Array<Media_Update_Column>;
+  where?: InputMaybe<Media_Bool_Exp>;
+};
+
+/** Ordering options when selecting data from "media". */
+export type Media_Order_By = {
+  created_at?: InputMaybe<Order_By>;
+  duration_seconds?: InputMaybe<Order_By>;
+  entity_id?: InputMaybe<Order_By>;
+  entity_type?: InputMaybe<Order_By>;
+  entity_type_config?: InputMaybe<Media_Entity_Types_Order_By>;
+  error_message?: InputMaybe<Order_By>;
+  file_size_bytes?: InputMaybe<Order_By>;
+  filename?: InputMaybe<Order_By>;
+  height?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
+  mime_type?: InputMaybe<Order_By>;
+  organization?: InputMaybe<Organizations_Order_By>;
+  organization_id?: InputMaybe<Order_By>;
+  processing_metadata?: InputMaybe<Order_By>;
+  status?: InputMaybe<Order_By>;
+  storage_bucket?: InputMaybe<Order_By>;
+  storage_path?: InputMaybe<Order_By>;
+  storage_provider?: InputMaybe<Order_By>;
+  storage_region?: InputMaybe<Order_By>;
+  thumbnail_path?: InputMaybe<Order_By>;
+  updated_at?: InputMaybe<Order_By>;
+  uploaded_by?: InputMaybe<Order_By>;
+  uploader?: InputMaybe<Users_Order_By>;
+  width?: InputMaybe<Order_By>;
+};
+
+/** primary key columns input for table: media */
+export type Media_Pk_Columns_Input = {
+  /**
+   * Opaque unique identifier (NanoID 12-char). This ID is embedded in the S3 path
+   *    to correlate presigned URL with webhook callback.
+   */
+  id: Scalars['String']['input'];
+};
+
+/** prepend existing jsonb value of filtered columns with new jsonb value */
+export type Media_Prepend_Input = {
+  /**
+   * JSONB for provider-specific metadata.
+   *    Examples: ImageKit file_id, CloudFront invalidation_id, virus scan results.
+   *    This is appropriate use of JSONB: truly dynamic, provider-specific data.
+   */
+  processing_metadata?: InputMaybe<Scalars['jsonb']['input']>;
+};
+
+/** select columns of table "media" */
+export const Media_Select_Column = {
+  /** column name */
+  CreatedAt: 'created_at',
+  /** column name */
+  DurationSeconds: 'duration_seconds',
+  /** column name */
+  EntityId: 'entity_id',
+  /** column name */
+  EntityType: 'entity_type',
+  /** column name */
+  ErrorMessage: 'error_message',
+  /** column name */
+  FileSizeBytes: 'file_size_bytes',
+  /** column name */
+  Filename: 'filename',
+  /** column name */
+  Height: 'height',
+  /** column name */
+  Id: 'id',
+  /** column name */
+  MimeType: 'mime_type',
+  /** column name */
+  OrganizationId: 'organization_id',
+  /** column name */
+  ProcessingMetadata: 'processing_metadata',
+  /** column name */
+  Status: 'status',
+  /** column name */
+  StorageBucket: 'storage_bucket',
+  /** column name */
+  StoragePath: 'storage_path',
+  /** column name */
+  StorageProvider: 'storage_provider',
+  /** column name */
+  StorageRegion: 'storage_region',
+  /** column name */
+  ThumbnailPath: 'thumbnail_path',
+  /** column name */
+  UpdatedAt: 'updated_at',
+  /** column name */
+  UploadedBy: 'uploaded_by',
+  /** column name */
+  Width: 'width'
+} as const;
+
+export type Media_Select_Column = typeof Media_Select_Column[keyof typeof Media_Select_Column];
+/** input type for updating data in table "media" */
+export type Media_Set_Input = {
+  /** Timestamp when the media record was created (upload initiated). */
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /**
+   * Duration of video in seconds. Reserved for future video support.
+   *    NULL for images.
+   */
+  duration_seconds?: InputMaybe<Scalars['numeric']['input']>;
+  /**
+   * ID of the entity this media is associated with.
+   *    Nullable for pending uploads (entity may not exist yet).
+   *    The target table is defined in media_entity_types.target_table.
+   */
+  entity_id?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Type of entity this media is associated with.
+   *    References media_entity_types.code (not id).
+   *    Examples: organization_logo, contact_avatar, testimonial_video.
+   */
+  entity_type?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Error details when status is failed.
+   *    Examples: "File size exceeds limit", "Invalid MIME type", etc.
+   */
+  error_message?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * File size in bytes. Used for quota tracking and validation against
+   *    media_entity_types.max_file_size_bytes.
+   */
+  file_size_bytes?: InputMaybe<Scalars['bigint']['input']>;
+  /**
+   * Original filename from the upload. Preserved for display purposes.
+   *    The actual storage path uses a sanitized, unique name.
+   */
+  filename?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Height of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  height?: InputMaybe<Scalars['Int']['input']>;
+  /**
+   * Opaque unique identifier (NanoID 12-char). This ID is embedded in the S3 path
+   *    to correlate presigned URL with webhook callback.
+   */
+  id?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * MIME type of the file (e.g., image/png, video/mp4).
+   *    Validated against media_entity_types.allowed_mime_types.
+   */
+  mime_type?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Organization that owns this media. Used for RLS, quota tracking, and data export.
+   *    All media queries should filter by organization_id.
+   */
+  organization_id?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * JSONB for provider-specific metadata.
+   *    Examples: ImageKit file_id, CloudFront invalidation_id, virus scan results.
+   *    This is appropriate use of JSONB: truly dynamic, provider-specific data.
+   */
+  processing_metadata?: InputMaybe<Scalars['jsonb']['input']>;
+  /**
+   * Processing status of the media file.
+   *    - pending: Upload initiated, waiting for file
+   *    - processing: File received, being validated
+   *    - ready: Validation passed, file is available
+   *    - failed: Validation failed, see error_message
+   *    - deleted: Soft deleted, file may be retained for backup
+   */
+  status?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Bucket/container name where the file is stored.
+   *    Environment-specific: testimonials-dev-uploads, testimonials-prod-uploads, etc.
+   */
+  storage_bucket?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Full object path within the bucket. This is the portable key.
+   *    Format: {org_id}/{entity_type}/{year}/{month}/{day}/{media_id}_{timestamp}.{ext}
+   *    Example: org_abc/organization_logo/2025/01/05/med_xyz_20250105T143022.png
+   */
+  storage_path?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Storage provider identifier. Default is aws_s3.
+   *    Other possible values: gcs (Google Cloud), azure_blob, etc.
+   *    Used by CDN adapter to construct URLs.
+   */
+  storage_provider?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * AWS region or equivalent for other providers.
+   *    Used for constructing direct S3 URLs if needed.
+   */
+  storage_region?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Storage path for video thumbnail. Reserved for future video support.
+   *    Lambda generates thumbnail and stores path here.
+   */
+  thumbnail_path?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Timestamp of last modification. Auto-updated by trigger.
+   *    Changes when status updates, processing completes, etc.
+   */
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /**
+   * User who initiated the upload. NULL for anonymous uploads
+   *    (e.g., form submissions by external customers).
+   *    References users.id.
+   */
+  uploaded_by?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Width of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  width?: InputMaybe<Scalars['Int']['input']>;
+};
+
+/** aggregate stddev on columns */
+export type Media_Stddev_Fields = {
+  __typename?: 'media_stddev_fields';
+  /**
+   * Duration of video in seconds. Reserved for future video support.
+   *    NULL for images.
+   */
+  duration_seconds: Maybe<Scalars['Float']['output']>;
+  /**
+   * File size in bytes. Used for quota tracking and validation against
+   *    media_entity_types.max_file_size_bytes.
+   */
+  file_size_bytes: Maybe<Scalars['Float']['output']>;
+  /**
+   * Height of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  height: Maybe<Scalars['Float']['output']>;
+  /**
+   * Width of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  width: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by stddev() on columns of table "media" */
+export type Media_Stddev_Order_By = {
+  /**
+   * Duration of video in seconds. Reserved for future video support.
+   *    NULL for images.
+   */
+  duration_seconds?: InputMaybe<Order_By>;
+  /**
+   * File size in bytes. Used for quota tracking and validation against
+   *    media_entity_types.max_file_size_bytes.
+   */
+  file_size_bytes?: InputMaybe<Order_By>;
+  /**
+   * Height of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  height?: InputMaybe<Order_By>;
+  /**
+   * Width of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  width?: InputMaybe<Order_By>;
+};
+
+/** aggregate stddev_pop on columns */
+export type Media_Stddev_Pop_Fields = {
+  __typename?: 'media_stddev_pop_fields';
+  /**
+   * Duration of video in seconds. Reserved for future video support.
+   *    NULL for images.
+   */
+  duration_seconds: Maybe<Scalars['Float']['output']>;
+  /**
+   * File size in bytes. Used for quota tracking and validation against
+   *    media_entity_types.max_file_size_bytes.
+   */
+  file_size_bytes: Maybe<Scalars['Float']['output']>;
+  /**
+   * Height of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  height: Maybe<Scalars['Float']['output']>;
+  /**
+   * Width of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  width: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by stddev_pop() on columns of table "media" */
+export type Media_Stddev_Pop_Order_By = {
+  /**
+   * Duration of video in seconds. Reserved for future video support.
+   *    NULL for images.
+   */
+  duration_seconds?: InputMaybe<Order_By>;
+  /**
+   * File size in bytes. Used for quota tracking and validation against
+   *    media_entity_types.max_file_size_bytes.
+   */
+  file_size_bytes?: InputMaybe<Order_By>;
+  /**
+   * Height of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  height?: InputMaybe<Order_By>;
+  /**
+   * Width of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  width?: InputMaybe<Order_By>;
+};
+
+/** aggregate stddev_samp on columns */
+export type Media_Stddev_Samp_Fields = {
+  __typename?: 'media_stddev_samp_fields';
+  /**
+   * Duration of video in seconds. Reserved for future video support.
+   *    NULL for images.
+   */
+  duration_seconds: Maybe<Scalars['Float']['output']>;
+  /**
+   * File size in bytes. Used for quota tracking and validation against
+   *    media_entity_types.max_file_size_bytes.
+   */
+  file_size_bytes: Maybe<Scalars['Float']['output']>;
+  /**
+   * Height of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  height: Maybe<Scalars['Float']['output']>;
+  /**
+   * Width of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  width: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by stddev_samp() on columns of table "media" */
+export type Media_Stddev_Samp_Order_By = {
+  /**
+   * Duration of video in seconds. Reserved for future video support.
+   *    NULL for images.
+   */
+  duration_seconds?: InputMaybe<Order_By>;
+  /**
+   * File size in bytes. Used for quota tracking and validation against
+   *    media_entity_types.max_file_size_bytes.
+   */
+  file_size_bytes?: InputMaybe<Order_By>;
+  /**
+   * Height of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  height?: InputMaybe<Order_By>;
+  /**
+   * Width of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  width?: InputMaybe<Order_By>;
+};
+
+/** Streaming cursor of the table "media" */
+export type Media_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Media_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type Media_Stream_Cursor_Value_Input = {
+  /** Timestamp when the media record was created (upload initiated). */
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /**
+   * Duration of video in seconds. Reserved for future video support.
+   *    NULL for images.
+   */
+  duration_seconds?: InputMaybe<Scalars['numeric']['input']>;
+  /**
+   * ID of the entity this media is associated with.
+   *    Nullable for pending uploads (entity may not exist yet).
+   *    The target table is defined in media_entity_types.target_table.
+   */
+  entity_id?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Type of entity this media is associated with.
+   *    References media_entity_types.code (not id).
+   *    Examples: organization_logo, contact_avatar, testimonial_video.
+   */
+  entity_type?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Error details when status is failed.
+   *    Examples: "File size exceeds limit", "Invalid MIME type", etc.
+   */
+  error_message?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * File size in bytes. Used for quota tracking and validation against
+   *    media_entity_types.max_file_size_bytes.
+   */
+  file_size_bytes?: InputMaybe<Scalars['bigint']['input']>;
+  /**
+   * Original filename from the upload. Preserved for display purposes.
+   *    The actual storage path uses a sanitized, unique name.
+   */
+  filename?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Height of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  height?: InputMaybe<Scalars['Int']['input']>;
+  /**
+   * Opaque unique identifier (NanoID 12-char). This ID is embedded in the S3 path
+   *    to correlate presigned URL with webhook callback.
+   */
+  id?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * MIME type of the file (e.g., image/png, video/mp4).
+   *    Validated against media_entity_types.allowed_mime_types.
+   */
+  mime_type?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Organization that owns this media. Used for RLS, quota tracking, and data export.
+   *    All media queries should filter by organization_id.
+   */
+  organization_id?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * JSONB for provider-specific metadata.
+   *    Examples: ImageKit file_id, CloudFront invalidation_id, virus scan results.
+   *    This is appropriate use of JSONB: truly dynamic, provider-specific data.
+   */
+  processing_metadata?: InputMaybe<Scalars['jsonb']['input']>;
+  /**
+   * Processing status of the media file.
+   *    - pending: Upload initiated, waiting for file
+   *    - processing: File received, being validated
+   *    - ready: Validation passed, file is available
+   *    - failed: Validation failed, see error_message
+   *    - deleted: Soft deleted, file may be retained for backup
+   */
+  status?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Bucket/container name where the file is stored.
+   *    Environment-specific: testimonials-dev-uploads, testimonials-prod-uploads, etc.
+   */
+  storage_bucket?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Full object path within the bucket. This is the portable key.
+   *    Format: {org_id}/{entity_type}/{year}/{month}/{day}/{media_id}_{timestamp}.{ext}
+   *    Example: org_abc/organization_logo/2025/01/05/med_xyz_20250105T143022.png
+   */
+  storage_path?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Storage provider identifier. Default is aws_s3.
+   *    Other possible values: gcs (Google Cloud), azure_blob, etc.
+   *    Used by CDN adapter to construct URLs.
+   */
+  storage_provider?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * AWS region or equivalent for other providers.
+   *    Used for constructing direct S3 URLs if needed.
+   */
+  storage_region?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Storage path for video thumbnail. Reserved for future video support.
+   *    Lambda generates thumbnail and stores path here.
+   */
+  thumbnail_path?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Timestamp of last modification. Auto-updated by trigger.
+   *    Changes when status updates, processing completes, etc.
+   */
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /**
+   * User who initiated the upload. NULL for anonymous uploads
+   *    (e.g., form submissions by external customers).
+   *    References users.id.
+   */
+  uploaded_by?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Width of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  width?: InputMaybe<Scalars['Int']['input']>;
+};
+
+/** aggregate sum on columns */
+export type Media_Sum_Fields = {
+  __typename?: 'media_sum_fields';
+  /**
+   * Duration of video in seconds. Reserved for future video support.
+   *    NULL for images.
+   */
+  duration_seconds: Maybe<Scalars['numeric']['output']>;
+  /**
+   * File size in bytes. Used for quota tracking and validation against
+   *    media_entity_types.max_file_size_bytes.
+   */
+  file_size_bytes: Maybe<Scalars['bigint']['output']>;
+  /**
+   * Height of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  height: Maybe<Scalars['Int']['output']>;
+  /**
+   * Width of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  width: Maybe<Scalars['Int']['output']>;
+};
+
+/** order by sum() on columns of table "media" */
+export type Media_Sum_Order_By = {
+  /**
+   * Duration of video in seconds. Reserved for future video support.
+   *    NULL for images.
+   */
+  duration_seconds?: InputMaybe<Order_By>;
+  /**
+   * File size in bytes. Used for quota tracking and validation against
+   *    media_entity_types.max_file_size_bytes.
+   */
+  file_size_bytes?: InputMaybe<Order_By>;
+  /**
+   * Height of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  height?: InputMaybe<Order_By>;
+  /**
+   * Width of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  width?: InputMaybe<Order_By>;
+};
+
+/** update columns of table "media" */
+export const Media_Update_Column = {
+  /** column name */
+  CreatedAt: 'created_at',
+  /** column name */
+  DurationSeconds: 'duration_seconds',
+  /** column name */
+  EntityId: 'entity_id',
+  /** column name */
+  EntityType: 'entity_type',
+  /** column name */
+  ErrorMessage: 'error_message',
+  /** column name */
+  FileSizeBytes: 'file_size_bytes',
+  /** column name */
+  Filename: 'filename',
+  /** column name */
+  Height: 'height',
+  /** column name */
+  Id: 'id',
+  /** column name */
+  MimeType: 'mime_type',
+  /** column name */
+  OrganizationId: 'organization_id',
+  /** column name */
+  ProcessingMetadata: 'processing_metadata',
+  /** column name */
+  Status: 'status',
+  /** column name */
+  StorageBucket: 'storage_bucket',
+  /** column name */
+  StoragePath: 'storage_path',
+  /** column name */
+  StorageProvider: 'storage_provider',
+  /** column name */
+  StorageRegion: 'storage_region',
+  /** column name */
+  ThumbnailPath: 'thumbnail_path',
+  /** column name */
+  UpdatedAt: 'updated_at',
+  /** column name */
+  UploadedBy: 'uploaded_by',
+  /** column name */
+  Width: 'width'
+} as const;
+
+export type Media_Update_Column = typeof Media_Update_Column[keyof typeof Media_Update_Column];
+export type Media_Updates = {
+  /** append existing jsonb value of filtered columns with new jsonb value */
+  _append?: InputMaybe<Media_Append_Input>;
+  /** delete the field or element with specified path (for JSON arrays, negative integers count from the end) */
+  _delete_at_path?: InputMaybe<Media_Delete_At_Path_Input>;
+  /** delete the array element with specified index (negative integers count from the end). throws an error if top level container is not an array */
+  _delete_elem?: InputMaybe<Media_Delete_Elem_Input>;
+  /** delete key/value pair or string element. key/value pairs are matched based on their key value */
+  _delete_key?: InputMaybe<Media_Delete_Key_Input>;
+  /** increments the numeric columns with given value of the filtered values */
+  _inc?: InputMaybe<Media_Inc_Input>;
+  /** prepend existing jsonb value of filtered columns with new jsonb value */
+  _prepend?: InputMaybe<Media_Prepend_Input>;
+  /** sets the columns of the filtered rows to the given values */
+  _set?: InputMaybe<Media_Set_Input>;
+  /** filter the rows which have to be updated */
+  where: Media_Bool_Exp;
+};
+
+/** aggregate var_pop on columns */
+export type Media_Var_Pop_Fields = {
+  __typename?: 'media_var_pop_fields';
+  /**
+   * Duration of video in seconds. Reserved for future video support.
+   *    NULL for images.
+   */
+  duration_seconds: Maybe<Scalars['Float']['output']>;
+  /**
+   * File size in bytes. Used for quota tracking and validation against
+   *    media_entity_types.max_file_size_bytes.
+   */
+  file_size_bytes: Maybe<Scalars['Float']['output']>;
+  /**
+   * Height of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  height: Maybe<Scalars['Float']['output']>;
+  /**
+   * Width of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  width: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by var_pop() on columns of table "media" */
+export type Media_Var_Pop_Order_By = {
+  /**
+   * Duration of video in seconds. Reserved for future video support.
+   *    NULL for images.
+   */
+  duration_seconds?: InputMaybe<Order_By>;
+  /**
+   * File size in bytes. Used for quota tracking and validation against
+   *    media_entity_types.max_file_size_bytes.
+   */
+  file_size_bytes?: InputMaybe<Order_By>;
+  /**
+   * Height of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  height?: InputMaybe<Order_By>;
+  /**
+   * Width of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  width?: InputMaybe<Order_By>;
+};
+
+/** aggregate var_samp on columns */
+export type Media_Var_Samp_Fields = {
+  __typename?: 'media_var_samp_fields';
+  /**
+   * Duration of video in seconds. Reserved for future video support.
+   *    NULL for images.
+   */
+  duration_seconds: Maybe<Scalars['Float']['output']>;
+  /**
+   * File size in bytes. Used for quota tracking and validation against
+   *    media_entity_types.max_file_size_bytes.
+   */
+  file_size_bytes: Maybe<Scalars['Float']['output']>;
+  /**
+   * Height of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  height: Maybe<Scalars['Float']['output']>;
+  /**
+   * Width of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  width: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by var_samp() on columns of table "media" */
+export type Media_Var_Samp_Order_By = {
+  /**
+   * Duration of video in seconds. Reserved for future video support.
+   *    NULL for images.
+   */
+  duration_seconds?: InputMaybe<Order_By>;
+  /**
+   * File size in bytes. Used for quota tracking and validation against
+   *    media_entity_types.max_file_size_bytes.
+   */
+  file_size_bytes?: InputMaybe<Order_By>;
+  /**
+   * Height of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  height?: InputMaybe<Order_By>;
+  /**
+   * Width of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  width?: InputMaybe<Order_By>;
+};
+
+/** aggregate variance on columns */
+export type Media_Variance_Fields = {
+  __typename?: 'media_variance_fields';
+  /**
+   * Duration of video in seconds. Reserved for future video support.
+   *    NULL for images.
+   */
+  duration_seconds: Maybe<Scalars['Float']['output']>;
+  /**
+   * File size in bytes. Used for quota tracking and validation against
+   *    media_entity_types.max_file_size_bytes.
+   */
+  file_size_bytes: Maybe<Scalars['Float']['output']>;
+  /**
+   * Height of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  height: Maybe<Scalars['Float']['output']>;
+  /**
+   * Width of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  width: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by variance() on columns of table "media" */
+export type Media_Variance_Order_By = {
+  /**
+   * Duration of video in seconds. Reserved for future video support.
+   *    NULL for images.
+   */
+  duration_seconds?: InputMaybe<Order_By>;
+  /**
+   * File size in bytes. Used for quota tracking and validation against
+   *    media_entity_types.max_file_size_bytes.
+   */
+  file_size_bytes?: InputMaybe<Order_By>;
+  /**
+   * Height of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  height?: InputMaybe<Order_By>;
+  /**
+   * Width of image/video in pixels. Populated by Lambda after processing.
+   *    NULL for non-image files.
+   */
+  width?: InputMaybe<Order_By>;
+};
+
 /** mutation root */
 export type Mutation_Root = {
   __typename?: 'mutation_root';
+  /** delete data from the table: "contacts" */
+  delete_contacts: Maybe<Contacts_Mutation_Response>;
+  /** delete single row from the table: "contacts" */
+  delete_contacts_by_pk: Maybe<Contacts>;
+  /** delete data from the table: "flows" */
+  delete_flows: Maybe<Flows_Mutation_Response>;
+  /** delete single row from the table: "flows" */
+  delete_flows_by_pk: Maybe<Flows>;
   /** delete data from the table: "form_question_responses" */
   delete_form_question_responses: Maybe<Form_Question_Responses_Mutation_Response>;
   /** delete single row from the table: "form_question_responses" */
@@ -2883,6 +7442,10 @@ export type Mutation_Root = {
   delete_form_questions: Maybe<Form_Questions_Mutation_Response>;
   /** delete single row from the table: "form_questions" */
   delete_form_questions_by_pk: Maybe<Form_Questions>;
+  /** delete data from the table: "form_steps" */
+  delete_form_steps: Maybe<Form_Steps_Mutation_Response>;
+  /** delete single row from the table: "form_steps" */
+  delete_form_steps_by_pk: Maybe<Form_Steps>;
   /** delete data from the table: "form_submissions" */
   delete_form_submissions: Maybe<Form_Submissions_Mutation_Response>;
   /** delete single row from the table: "form_submissions" */
@@ -2891,6 +7454,14 @@ export type Mutation_Root = {
   delete_forms: Maybe<Forms_Mutation_Response>;
   /** delete single row from the table: "forms" */
   delete_forms_by_pk: Maybe<Forms>;
+  /** delete data from the table: "media" */
+  delete_media: Maybe<Media_Mutation_Response>;
+  /** delete single row from the table: "media" */
+  delete_media_by_pk: Maybe<Media>;
+  /** delete data from the table: "media_entity_types" */
+  delete_media_entity_types: Maybe<Media_Entity_Types_Mutation_Response>;
+  /** delete single row from the table: "media_entity_types" */
+  delete_media_entity_types_by_pk: Maybe<Media_Entity_Types>;
   /** delete data from the table: "organization_plans" */
   delete_organization_plans: Maybe<Organization_Plans_Mutation_Response>;
   /** delete single row from the table: "organization_plans" */
@@ -2947,6 +7518,14 @@ export type Mutation_Root = {
   delete_widgets: Maybe<Widgets_Mutation_Response>;
   /** delete single row from the table: "widgets" */
   delete_widgets_by_pk: Maybe<Widgets>;
+  /** insert data into the table: "contacts" */
+  insert_contacts: Maybe<Contacts_Mutation_Response>;
+  /** insert a single row into the table: "contacts" */
+  insert_contacts_one: Maybe<Contacts>;
+  /** insert data into the table: "flows" */
+  insert_flows: Maybe<Flows_Mutation_Response>;
+  /** insert a single row into the table: "flows" */
+  insert_flows_one: Maybe<Flows>;
   /** insert data into the table: "form_question_responses" */
   insert_form_question_responses: Maybe<Form_Question_Responses_Mutation_Response>;
   /** insert a single row into the table: "form_question_responses" */
@@ -2955,6 +7534,10 @@ export type Mutation_Root = {
   insert_form_questions: Maybe<Form_Questions_Mutation_Response>;
   /** insert a single row into the table: "form_questions" */
   insert_form_questions_one: Maybe<Form_Questions>;
+  /** insert data into the table: "form_steps" */
+  insert_form_steps: Maybe<Form_Steps_Mutation_Response>;
+  /** insert a single row into the table: "form_steps" */
+  insert_form_steps_one: Maybe<Form_Steps>;
   /** insert data into the table: "form_submissions" */
   insert_form_submissions: Maybe<Form_Submissions_Mutation_Response>;
   /** insert a single row into the table: "form_submissions" */
@@ -2963,6 +7546,14 @@ export type Mutation_Root = {
   insert_forms: Maybe<Forms_Mutation_Response>;
   /** insert a single row into the table: "forms" */
   insert_forms_one: Maybe<Forms>;
+  /** insert data into the table: "media" */
+  insert_media: Maybe<Media_Mutation_Response>;
+  /** insert data into the table: "media_entity_types" */
+  insert_media_entity_types: Maybe<Media_Entity_Types_Mutation_Response>;
+  /** insert a single row into the table: "media_entity_types" */
+  insert_media_entity_types_one: Maybe<Media_Entity_Types>;
+  /** insert a single row into the table: "media" */
+  insert_media_one: Maybe<Media>;
   /** insert data into the table: "organization_plans" */
   insert_organization_plans: Maybe<Organization_Plans_Mutation_Response>;
   /** insert a single row into the table: "organization_plans" */
@@ -3019,6 +7610,18 @@ export type Mutation_Root = {
   insert_widgets: Maybe<Widgets_Mutation_Response>;
   /** insert a single row into the table: "widgets" */
   insert_widgets_one: Maybe<Widgets>;
+  /** update data of the table: "contacts" */
+  update_contacts: Maybe<Contacts_Mutation_Response>;
+  /** update single row of the table: "contacts" */
+  update_contacts_by_pk: Maybe<Contacts>;
+  /** update multiples rows of table: "contacts" */
+  update_contacts_many: Maybe<Array<Maybe<Contacts_Mutation_Response>>>;
+  /** update data of the table: "flows" */
+  update_flows: Maybe<Flows_Mutation_Response>;
+  /** update single row of the table: "flows" */
+  update_flows_by_pk: Maybe<Flows>;
+  /** update multiples rows of table: "flows" */
+  update_flows_many: Maybe<Array<Maybe<Flows_Mutation_Response>>>;
   /** update data of the table: "form_question_responses" */
   update_form_question_responses: Maybe<Form_Question_Responses_Mutation_Response>;
   /** update single row of the table: "form_question_responses" */
@@ -3031,6 +7634,12 @@ export type Mutation_Root = {
   update_form_questions_by_pk: Maybe<Form_Questions>;
   /** update multiples rows of table: "form_questions" */
   update_form_questions_many: Maybe<Array<Maybe<Form_Questions_Mutation_Response>>>;
+  /** update data of the table: "form_steps" */
+  update_form_steps: Maybe<Form_Steps_Mutation_Response>;
+  /** update single row of the table: "form_steps" */
+  update_form_steps_by_pk: Maybe<Form_Steps>;
+  /** update multiples rows of table: "form_steps" */
+  update_form_steps_many: Maybe<Array<Maybe<Form_Steps_Mutation_Response>>>;
   /** update data of the table: "form_submissions" */
   update_form_submissions: Maybe<Form_Submissions_Mutation_Response>;
   /** update single row of the table: "form_submissions" */
@@ -3043,6 +7652,18 @@ export type Mutation_Root = {
   update_forms_by_pk: Maybe<Forms>;
   /** update multiples rows of table: "forms" */
   update_forms_many: Maybe<Array<Maybe<Forms_Mutation_Response>>>;
+  /** update data of the table: "media" */
+  update_media: Maybe<Media_Mutation_Response>;
+  /** update single row of the table: "media" */
+  update_media_by_pk: Maybe<Media>;
+  /** update data of the table: "media_entity_types" */
+  update_media_entity_types: Maybe<Media_Entity_Types_Mutation_Response>;
+  /** update single row of the table: "media_entity_types" */
+  update_media_entity_types_by_pk: Maybe<Media_Entity_Types>;
+  /** update multiples rows of table: "media_entity_types" */
+  update_media_entity_types_many: Maybe<Array<Maybe<Media_Entity_Types_Mutation_Response>>>;
+  /** update multiples rows of table: "media" */
+  update_media_many: Maybe<Array<Maybe<Media_Mutation_Response>>>;
   /** update data of the table: "organization_plans" */
   update_organization_plans: Maybe<Organization_Plans_Mutation_Response>;
   /** update single row of the table: "organization_plans" */
@@ -3131,6 +7752,30 @@ export type Mutation_Root = {
 
 
 /** mutation root */
+export type Mutation_RootDelete_ContactsArgs = {
+  where: Contacts_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootDelete_Contacts_By_PkArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+/** mutation root */
+export type Mutation_RootDelete_FlowsArgs = {
+  where: Flows_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootDelete_Flows_By_PkArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+/** mutation root */
 export type Mutation_RootDelete_Form_Question_ResponsesArgs = {
   where: Form_Question_Responses_Bool_Exp;
 };
@@ -3155,6 +7800,18 @@ export type Mutation_RootDelete_Form_Questions_By_PkArgs = {
 
 
 /** mutation root */
+export type Mutation_RootDelete_Form_StepsArgs = {
+  where: Form_Steps_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootDelete_Form_Steps_By_PkArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+/** mutation root */
 export type Mutation_RootDelete_Form_SubmissionsArgs = {
   where: Form_Submissions_Bool_Exp;
 };
@@ -3174,6 +7831,30 @@ export type Mutation_RootDelete_FormsArgs = {
 
 /** mutation root */
 export type Mutation_RootDelete_Forms_By_PkArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+/** mutation root */
+export type Mutation_RootDelete_MediaArgs = {
+  where: Media_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootDelete_Media_By_PkArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+/** mutation root */
+export type Mutation_RootDelete_Media_Entity_TypesArgs = {
+  where: Media_Entity_Types_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootDelete_Media_Entity_Types_By_PkArgs = {
   id: Scalars['String']['input'];
 };
 
@@ -3347,6 +8028,34 @@ export type Mutation_RootDelete_Widgets_By_PkArgs = {
 
 
 /** mutation root */
+export type Mutation_RootInsert_ContactsArgs = {
+  objects: Array<Contacts_Insert_Input>;
+  on_conflict?: InputMaybe<Contacts_On_Conflict>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_Contacts_OneArgs = {
+  object: Contacts_Insert_Input;
+  on_conflict?: InputMaybe<Contacts_On_Conflict>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_FlowsArgs = {
+  objects: Array<Flows_Insert_Input>;
+  on_conflict?: InputMaybe<Flows_On_Conflict>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_Flows_OneArgs = {
+  object: Flows_Insert_Input;
+  on_conflict?: InputMaybe<Flows_On_Conflict>;
+};
+
+
+/** mutation root */
 export type Mutation_RootInsert_Form_Question_ResponsesArgs = {
   objects: Array<Form_Question_Responses_Insert_Input>;
   on_conflict?: InputMaybe<Form_Question_Responses_On_Conflict>;
@@ -3375,6 +8084,20 @@ export type Mutation_RootInsert_Form_Questions_OneArgs = {
 
 
 /** mutation root */
+export type Mutation_RootInsert_Form_StepsArgs = {
+  objects: Array<Form_Steps_Insert_Input>;
+  on_conflict?: InputMaybe<Form_Steps_On_Conflict>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_Form_Steps_OneArgs = {
+  object: Form_Steps_Insert_Input;
+  on_conflict?: InputMaybe<Form_Steps_On_Conflict>;
+};
+
+
+/** mutation root */
 export type Mutation_RootInsert_Form_SubmissionsArgs = {
   objects: Array<Form_Submissions_Insert_Input>;
   on_conflict?: InputMaybe<Form_Submissions_On_Conflict>;
@@ -3399,6 +8122,34 @@ export type Mutation_RootInsert_FormsArgs = {
 export type Mutation_RootInsert_Forms_OneArgs = {
   object: Forms_Insert_Input;
   on_conflict?: InputMaybe<Forms_On_Conflict>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_MediaArgs = {
+  objects: Array<Media_Insert_Input>;
+  on_conflict?: InputMaybe<Media_On_Conflict>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_Media_Entity_TypesArgs = {
+  objects: Array<Media_Entity_Types_Insert_Input>;
+  on_conflict?: InputMaybe<Media_Entity_Types_On_Conflict>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_Media_Entity_Types_OneArgs = {
+  object: Media_Entity_Types_Insert_Input;
+  on_conflict?: InputMaybe<Media_Entity_Types_On_Conflict>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_Media_OneArgs = {
+  object: Media_Insert_Input;
+  on_conflict?: InputMaybe<Media_On_Conflict>;
 };
 
 
@@ -3599,6 +8350,60 @@ export type Mutation_RootInsert_Widgets_OneArgs = {
 
 
 /** mutation root */
+export type Mutation_RootUpdate_ContactsArgs = {
+  _inc?: InputMaybe<Contacts_Inc_Input>;
+  _set?: InputMaybe<Contacts_Set_Input>;
+  where: Contacts_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Contacts_By_PkArgs = {
+  _inc?: InputMaybe<Contacts_Inc_Input>;
+  _set?: InputMaybe<Contacts_Set_Input>;
+  pk_columns: Contacts_Pk_Columns_Input;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Contacts_ManyArgs = {
+  updates: Array<Contacts_Updates>;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_FlowsArgs = {
+  _append?: InputMaybe<Flows_Append_Input>;
+  _delete_at_path?: InputMaybe<Flows_Delete_At_Path_Input>;
+  _delete_elem?: InputMaybe<Flows_Delete_Elem_Input>;
+  _delete_key?: InputMaybe<Flows_Delete_Key_Input>;
+  _inc?: InputMaybe<Flows_Inc_Input>;
+  _prepend?: InputMaybe<Flows_Prepend_Input>;
+  _set?: InputMaybe<Flows_Set_Input>;
+  where: Flows_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Flows_By_PkArgs = {
+  _append?: InputMaybe<Flows_Append_Input>;
+  _delete_at_path?: InputMaybe<Flows_Delete_At_Path_Input>;
+  _delete_elem?: InputMaybe<Flows_Delete_Elem_Input>;
+  _delete_key?: InputMaybe<Flows_Delete_Key_Input>;
+  _inc?: InputMaybe<Flows_Inc_Input>;
+  _prepend?: InputMaybe<Flows_Prepend_Input>;
+  _set?: InputMaybe<Flows_Set_Input>;
+  pk_columns: Flows_Pk_Columns_Input;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Flows_ManyArgs = {
+  updates: Array<Flows_Updates>;
+};
+
+
+/** mutation root */
 export type Mutation_RootUpdate_Form_Question_ResponsesArgs = {
   _append?: InputMaybe<Form_Question_Responses_Append_Input>;
   _delete_at_path?: InputMaybe<Form_Question_Responses_Delete_At_Path_Input>;
@@ -3653,6 +8458,38 @@ export type Mutation_RootUpdate_Form_Questions_ManyArgs = {
 
 
 /** mutation root */
+export type Mutation_RootUpdate_Form_StepsArgs = {
+  _append?: InputMaybe<Form_Steps_Append_Input>;
+  _delete_at_path?: InputMaybe<Form_Steps_Delete_At_Path_Input>;
+  _delete_elem?: InputMaybe<Form_Steps_Delete_Elem_Input>;
+  _delete_key?: InputMaybe<Form_Steps_Delete_Key_Input>;
+  _inc?: InputMaybe<Form_Steps_Inc_Input>;
+  _prepend?: InputMaybe<Form_Steps_Prepend_Input>;
+  _set?: InputMaybe<Form_Steps_Set_Input>;
+  where: Form_Steps_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Form_Steps_By_PkArgs = {
+  _append?: InputMaybe<Form_Steps_Append_Input>;
+  _delete_at_path?: InputMaybe<Form_Steps_Delete_At_Path_Input>;
+  _delete_elem?: InputMaybe<Form_Steps_Delete_Elem_Input>;
+  _delete_key?: InputMaybe<Form_Steps_Delete_Key_Input>;
+  _inc?: InputMaybe<Form_Steps_Inc_Input>;
+  _prepend?: InputMaybe<Form_Steps_Prepend_Input>;
+  _set?: InputMaybe<Form_Steps_Set_Input>;
+  pk_columns: Form_Steps_Pk_Columns_Input;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Form_Steps_ManyArgs = {
+  updates: Array<Form_Steps_Updates>;
+};
+
+
+/** mutation root */
 export type Mutation_RootUpdate_Form_SubmissionsArgs = {
   _set?: InputMaybe<Form_Submissions_Set_Input>;
   where: Form_Submissions_Bool_Exp;
@@ -3699,6 +8536,60 @@ export type Mutation_RootUpdate_Forms_By_PkArgs = {
 /** mutation root */
 export type Mutation_RootUpdate_Forms_ManyArgs = {
   updates: Array<Forms_Updates>;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_MediaArgs = {
+  _append?: InputMaybe<Media_Append_Input>;
+  _delete_at_path?: InputMaybe<Media_Delete_At_Path_Input>;
+  _delete_elem?: InputMaybe<Media_Delete_Elem_Input>;
+  _delete_key?: InputMaybe<Media_Delete_Key_Input>;
+  _inc?: InputMaybe<Media_Inc_Input>;
+  _prepend?: InputMaybe<Media_Prepend_Input>;
+  _set?: InputMaybe<Media_Set_Input>;
+  where: Media_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Media_By_PkArgs = {
+  _append?: InputMaybe<Media_Append_Input>;
+  _delete_at_path?: InputMaybe<Media_Delete_At_Path_Input>;
+  _delete_elem?: InputMaybe<Media_Delete_Elem_Input>;
+  _delete_key?: InputMaybe<Media_Delete_Key_Input>;
+  _inc?: InputMaybe<Media_Inc_Input>;
+  _prepend?: InputMaybe<Media_Prepend_Input>;
+  _set?: InputMaybe<Media_Set_Input>;
+  pk_columns: Media_Pk_Columns_Input;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Media_Entity_TypesArgs = {
+  _inc?: InputMaybe<Media_Entity_Types_Inc_Input>;
+  _set?: InputMaybe<Media_Entity_Types_Set_Input>;
+  where: Media_Entity_Types_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Media_Entity_Types_By_PkArgs = {
+  _inc?: InputMaybe<Media_Entity_Types_Inc_Input>;
+  _set?: InputMaybe<Media_Entity_Types_Set_Input>;
+  pk_columns: Media_Entity_Types_Pk_Columns_Input;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Media_Entity_Types_ManyArgs = {
+  updates: Array<Media_Entity_Types_Updates>;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Media_ManyArgs = {
+  updates: Array<Media_Updates>;
 };
 
 
@@ -4035,6 +8926,19 @@ export type Mutation_RootUpdate_Widgets_By_PkArgs = {
 /** mutation root */
 export type Mutation_RootUpdate_Widgets_ManyArgs = {
   updates: Array<Widgets_Updates>;
+};
+
+/** Boolean expression to compare columns of type "numeric". All fields are combined with logical 'AND'. */
+export type Numeric_Comparison_Exp = {
+  _eq?: InputMaybe<Scalars['numeric']['input']>;
+  _gt?: InputMaybe<Scalars['numeric']['input']>;
+  _gte?: InputMaybe<Scalars['numeric']['input']>;
+  _in?: InputMaybe<Array<Scalars['numeric']['input']>>;
+  _is_null?: InputMaybe<Scalars['Boolean']['input']>;
+  _lt?: InputMaybe<Scalars['numeric']['input']>;
+  _lte?: InputMaybe<Scalars['numeric']['input']>;
+  _neq?: InputMaybe<Scalars['numeric']['input']>;
+  _nin?: InputMaybe<Array<Scalars['numeric']['input']>>;
 };
 
 /** column ordering options */
@@ -5445,8 +10349,16 @@ export type Organizations = {
   id: Scalars['String']['output'];
   /** Soft delete flag - false means organization is deactivated */
   is_active: Scalars['Boolean']['output'];
-  /** Organization logo image URL */
-  logo_url: Maybe<Scalars['String']['output']>;
+  /** An object relationship */
+  logo: Maybe<Media>;
+  /**
+   * Reference to the current organization logo in the media table.
+   *  When a new logo is uploaded and reaches "ready" status, this field
+   *  is updated to point to the new media record. The logo relationship
+   *  provides access to storage_path, dimensions, mime_type, and status.
+   *  NULL means no logo is set.
+   */
+  logo_id: Maybe<Scalars['String']['output']>;
   /** An array relationship */
   members: Array<Organization_Roles>;
   /** An aggregate relationship */
@@ -5662,7 +10574,8 @@ export type Organizations_Bool_Exp = {
   forms_aggregate?: InputMaybe<Forms_Aggregate_Bool_Exp>;
   id?: InputMaybe<String_Comparison_Exp>;
   is_active?: InputMaybe<Boolean_Comparison_Exp>;
-  logo_url?: InputMaybe<String_Comparison_Exp>;
+  logo?: InputMaybe<Media_Bool_Exp>;
+  logo_id?: InputMaybe<String_Comparison_Exp>;
   members?: InputMaybe<Organization_Roles_Bool_Exp>;
   members_aggregate?: InputMaybe<Organization_Roles_Aggregate_Bool_Exp>;
   name?: InputMaybe<String_Comparison_Exp>;
@@ -5719,8 +10632,15 @@ export type Organizations_Insert_Input = {
   id?: InputMaybe<Scalars['String']['input']>;
   /** Soft delete flag - false means organization is deactivated */
   is_active?: InputMaybe<Scalars['Boolean']['input']>;
-  /** Organization logo image URL */
-  logo_url?: InputMaybe<Scalars['String']['input']>;
+  logo?: InputMaybe<Media_Obj_Rel_Insert_Input>;
+  /**
+   * Reference to the current organization logo in the media table.
+   *  When a new logo is uploaded and reaches "ready" status, this field
+   *  is updated to point to the new media record. The logo relationship
+   *  provides access to storage_path, dimensions, mime_type, and status.
+   *  NULL means no logo is set.
+   */
+  logo_id?: InputMaybe<Scalars['String']['input']>;
   members?: InputMaybe<Organization_Roles_Arr_Rel_Insert_Input>;
   /** Organization display name */
   name?: InputMaybe<Scalars['String']['input']>;
@@ -5746,8 +10666,14 @@ export type Organizations_Max_Fields = {
   created_by: Maybe<Scalars['String']['output']>;
   /** Primary key (NanoID 12-char) */
   id: Maybe<Scalars['String']['output']>;
-  /** Organization logo image URL */
-  logo_url: Maybe<Scalars['String']['output']>;
+  /**
+   * Reference to the current organization logo in the media table.
+   *  When a new logo is uploaded and reaches "ready" status, this field
+   *  is updated to point to the new media record. The logo relationship
+   *  provides access to storage_path, dimensions, mime_type, and status.
+   *  NULL means no logo is set.
+   */
+  logo_id: Maybe<Scalars['String']['output']>;
   /** Organization display name */
   name: Maybe<Scalars['String']['output']>;
   /** Organization configuration state: pending_setup for auto-created orgs, completed after user setup */
@@ -5766,8 +10692,14 @@ export type Organizations_Max_Order_By = {
   created_by?: InputMaybe<Order_By>;
   /** Primary key (NanoID 12-char) */
   id?: InputMaybe<Order_By>;
-  /** Organization logo image URL */
-  logo_url?: InputMaybe<Order_By>;
+  /**
+   * Reference to the current organization logo in the media table.
+   *  When a new logo is uploaded and reaches "ready" status, this field
+   *  is updated to point to the new media record. The logo relationship
+   *  provides access to storage_path, dimensions, mime_type, and status.
+   *  NULL means no logo is set.
+   */
+  logo_id?: InputMaybe<Order_By>;
   /** Organization display name */
   name?: InputMaybe<Order_By>;
   /** Organization configuration state: pending_setup for auto-created orgs, completed after user setup */
@@ -5787,8 +10719,14 @@ export type Organizations_Min_Fields = {
   created_by: Maybe<Scalars['String']['output']>;
   /** Primary key (NanoID 12-char) */
   id: Maybe<Scalars['String']['output']>;
-  /** Organization logo image URL */
-  logo_url: Maybe<Scalars['String']['output']>;
+  /**
+   * Reference to the current organization logo in the media table.
+   *  When a new logo is uploaded and reaches "ready" status, this field
+   *  is updated to point to the new media record. The logo relationship
+   *  provides access to storage_path, dimensions, mime_type, and status.
+   *  NULL means no logo is set.
+   */
+  logo_id: Maybe<Scalars['String']['output']>;
   /** Organization display name */
   name: Maybe<Scalars['String']['output']>;
   /** Organization configuration state: pending_setup for auto-created orgs, completed after user setup */
@@ -5807,8 +10745,14 @@ export type Organizations_Min_Order_By = {
   created_by?: InputMaybe<Order_By>;
   /** Primary key (NanoID 12-char) */
   id?: InputMaybe<Order_By>;
-  /** Organization logo image URL */
-  logo_url?: InputMaybe<Order_By>;
+  /**
+   * Reference to the current organization logo in the media table.
+   *  When a new logo is uploaded and reaches "ready" status, this field
+   *  is updated to point to the new media record. The logo relationship
+   *  provides access to storage_path, dimensions, mime_type, and status.
+   *  NULL means no logo is set.
+   */
+  logo_id?: InputMaybe<Order_By>;
   /** Organization display name */
   name?: InputMaybe<Order_By>;
   /** Organization configuration state: pending_setup for auto-created orgs, completed after user setup */
@@ -5850,7 +10794,8 @@ export type Organizations_Order_By = {
   forms_aggregate?: InputMaybe<Forms_Aggregate_Order_By>;
   id?: InputMaybe<Order_By>;
   is_active?: InputMaybe<Order_By>;
-  logo_url?: InputMaybe<Order_By>;
+  logo?: InputMaybe<Media_Order_By>;
+  logo_id?: InputMaybe<Order_By>;
   members_aggregate?: InputMaybe<Organization_Roles_Aggregate_Order_By>;
   name?: InputMaybe<Order_By>;
   plans_aggregate?: InputMaybe<Organization_Plans_Aggregate_Order_By>;
@@ -5885,7 +10830,7 @@ export const Organizations_Select_Column = {
   /** column name */
   IsActive: 'is_active',
   /** column name */
-  LogoUrl: 'logo_url',
+  LogoId: 'logo_id',
   /** column name */
   Name: 'name',
   /** column name */
@@ -5923,8 +10868,14 @@ export type Organizations_Set_Input = {
   id?: InputMaybe<Scalars['String']['input']>;
   /** Soft delete flag - false means organization is deactivated */
   is_active?: InputMaybe<Scalars['Boolean']['input']>;
-  /** Organization logo image URL */
-  logo_url?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Reference to the current organization logo in the media table.
+   *  When a new logo is uploaded and reaches "ready" status, this field
+   *  is updated to point to the new media record. The logo relationship
+   *  provides access to storage_path, dimensions, mime_type, and status.
+   *  NULL means no logo is set.
+   */
+  logo_id?: InputMaybe<Scalars['String']['input']>;
   /** Organization display name */
   name?: InputMaybe<Scalars['String']['input']>;
   /** UI preferences only (theme, locale) - not business logic */
@@ -5955,8 +10906,14 @@ export type Organizations_Stream_Cursor_Value_Input = {
   id?: InputMaybe<Scalars['String']['input']>;
   /** Soft delete flag - false means organization is deactivated */
   is_active?: InputMaybe<Scalars['Boolean']['input']>;
-  /** Organization logo image URL */
-  logo_url?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Reference to the current organization logo in the media table.
+   *  When a new logo is uploaded and reaches "ready" status, this field
+   *  is updated to point to the new media record. The logo relationship
+   *  provides access to storage_path, dimensions, mime_type, and status.
+   *  NULL means no logo is set.
+   */
+  logo_id?: InputMaybe<Scalars['String']['input']>;
   /** Organization display name */
   name?: InputMaybe<Scalars['String']['input']>;
   /** UI preferences only (theme, locale) - not business logic */
@@ -5980,7 +10937,7 @@ export const Organizations_Update_Column = {
   /** column name */
   IsActive: 'is_active',
   /** column name */
-  LogoUrl: 'logo_url',
+  LogoId: 'logo_id',
   /** column name */
   Name: 'name',
   /** column name */
@@ -7447,6 +12404,18 @@ export type Plans_Variance_Fields = {
 
 export type Query_Root = {
   __typename?: 'query_root';
+  /** An array relationship */
+  contacts: Array<Contacts>;
+  /** An aggregate relationship */
+  contacts_aggregate: Contacts_Aggregate;
+  /** fetch data from the table: "contacts" using primary key columns */
+  contacts_by_pk: Maybe<Contacts>;
+  /** An array relationship */
+  flows: Array<Flows>;
+  /** An aggregate relationship */
+  flows_aggregate: Flows_Aggregate;
+  /** fetch data from the table: "flows" using primary key columns */
+  flows_by_pk: Maybe<Flows>;
   /** fetch data from the table: "form_question_responses" */
   form_question_responses: Array<Form_Question_Responses>;
   /** fetch aggregated fields from the table: "form_question_responses" */
@@ -7459,6 +12428,12 @@ export type Query_Root = {
   form_questions_aggregate: Form_Questions_Aggregate;
   /** fetch data from the table: "form_questions" using primary key columns */
   form_questions_by_pk: Maybe<Form_Questions>;
+  /** fetch data from the table: "form_steps" */
+  form_steps: Array<Form_Steps>;
+  /** fetch aggregated fields from the table: "form_steps" */
+  form_steps_aggregate: Form_Steps_Aggregate;
+  /** fetch data from the table: "form_steps" using primary key columns */
+  form_steps_by_pk: Maybe<Form_Steps>;
   /** fetch data from the table: "form_submissions" */
   form_submissions: Array<Form_Submissions>;
   /** fetch aggregated fields from the table: "form_submissions" */
@@ -7471,6 +12446,18 @@ export type Query_Root = {
   forms_aggregate: Forms_Aggregate;
   /** fetch data from the table: "forms" using primary key columns */
   forms_by_pk: Maybe<Forms>;
+  /** An array relationship */
+  media: Array<Media>;
+  /** An aggregate relationship */
+  media_aggregate: Media_Aggregate;
+  /** fetch data from the table: "media" using primary key columns */
+  media_by_pk: Maybe<Media>;
+  /** fetch data from the table: "media_entity_types" */
+  media_entity_types: Array<Media_Entity_Types>;
+  /** fetch aggregated fields from the table: "media_entity_types" */
+  media_entity_types_aggregate: Media_Entity_Types_Aggregate;
+  /** fetch data from the table: "media_entity_types" using primary key columns */
+  media_entity_types_by_pk: Maybe<Media_Entity_Types>;
   /** An array relationship */
   organization_plans: Array<Organization_Plans>;
   /** An aggregate relationship */
@@ -7558,6 +12545,52 @@ export type Query_Root = {
 };
 
 
+export type Query_RootContactsArgs = {
+  distinct_on?: InputMaybe<Array<Contacts_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Contacts_Order_By>>;
+  where?: InputMaybe<Contacts_Bool_Exp>;
+};
+
+
+export type Query_RootContacts_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Contacts_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Contacts_Order_By>>;
+  where?: InputMaybe<Contacts_Bool_Exp>;
+};
+
+
+export type Query_RootContacts_By_PkArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+export type Query_RootFlowsArgs = {
+  distinct_on?: InputMaybe<Array<Flows_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Flows_Order_By>>;
+  where?: InputMaybe<Flows_Bool_Exp>;
+};
+
+
+export type Query_RootFlows_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Flows_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Flows_Order_By>>;
+  where?: InputMaybe<Flows_Bool_Exp>;
+};
+
+
+export type Query_RootFlows_By_PkArgs = {
+  id: Scalars['String']['input'];
+};
+
+
 export type Query_RootForm_Question_ResponsesArgs = {
   distinct_on?: InputMaybe<Array<Form_Question_Responses_Select_Column>>;
   limit?: InputMaybe<Scalars['Int']['input']>;
@@ -7604,6 +12637,29 @@ export type Query_RootForm_Questions_By_PkArgs = {
 };
 
 
+export type Query_RootForm_StepsArgs = {
+  distinct_on?: InputMaybe<Array<Form_Steps_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Form_Steps_Order_By>>;
+  where?: InputMaybe<Form_Steps_Bool_Exp>;
+};
+
+
+export type Query_RootForm_Steps_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Form_Steps_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Form_Steps_Order_By>>;
+  where?: InputMaybe<Form_Steps_Bool_Exp>;
+};
+
+
+export type Query_RootForm_Steps_By_PkArgs = {
+  id: Scalars['String']['input'];
+};
+
+
 export type Query_RootForm_SubmissionsArgs = {
   distinct_on?: InputMaybe<Array<Form_Submissions_Select_Column>>;
   limit?: InputMaybe<Scalars['Int']['input']>;
@@ -7646,6 +12702,52 @@ export type Query_RootForms_AggregateArgs = {
 
 
 export type Query_RootForms_By_PkArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+export type Query_RootMediaArgs = {
+  distinct_on?: InputMaybe<Array<Media_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Media_Order_By>>;
+  where?: InputMaybe<Media_Bool_Exp>;
+};
+
+
+export type Query_RootMedia_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Media_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Media_Order_By>>;
+  where?: InputMaybe<Media_Bool_Exp>;
+};
+
+
+export type Query_RootMedia_By_PkArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+export type Query_RootMedia_Entity_TypesArgs = {
+  distinct_on?: InputMaybe<Array<Media_Entity_Types_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Media_Entity_Types_Order_By>>;
+  where?: InputMaybe<Media_Entity_Types_Bool_Exp>;
+};
+
+
+export type Query_RootMedia_Entity_Types_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Media_Entity_Types_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Media_Entity_Types_Order_By>>;
+  where?: InputMaybe<Media_Entity_Types_Bool_Exp>;
+};
+
+
+export type Query_RootMedia_Entity_Types_By_PkArgs = {
   id: Scalars['String']['input'];
 };
 
@@ -8524,6 +13626,8 @@ export type Question_Types = {
   description: Maybe<Scalars['String']['output']>;
   /** Order in form builder type picker. Lower = appears first */
   display_order: Scalars['smallint']['output'];
+  /** Heroicons icon name for form builder UI (e.g., minus, star, calendar) */
+  icon: Maybe<Scalars['String']['output']>;
   /** Primary key - NanoID 12-char unique identifier */
   id: Scalars['String']['output'];
   /** Vue component name for rendering (TextInput, StarRating). Maps to frontend */
@@ -8651,6 +13755,7 @@ export type Question_Types_Bool_Exp = {
   default_min_value?: InputMaybe<Int_Comparison_Exp>;
   description?: InputMaybe<String_Comparison_Exp>;
   display_order?: InputMaybe<Smallint_Comparison_Exp>;
+  icon?: InputMaybe<String_Comparison_Exp>;
   id?: InputMaybe<String_Comparison_Exp>;
   input_component?: InputMaybe<String_Comparison_Exp>;
   is_active?: InputMaybe<Boolean_Comparison_Exp>;
@@ -8704,6 +13809,8 @@ export type Question_Types_Insert_Input = {
   description?: InputMaybe<Scalars['String']['input']>;
   /** Order in form builder type picker. Lower = appears first */
   display_order?: InputMaybe<Scalars['smallint']['input']>;
+  /** Heroicons icon name for form builder UI (e.g., minus, star, calendar) */
+  icon?: InputMaybe<Scalars['String']['input']>;
   /** Primary key - NanoID 12-char unique identifier */
   id?: InputMaybe<Scalars['String']['input']>;
   /** Vue component name for rendering (TextInput, StarRating). Maps to frontend */
@@ -8750,6 +13857,8 @@ export type Question_Types_Max_Fields = {
   description: Maybe<Scalars['String']['output']>;
   /** Order in form builder type picker. Lower = appears first */
   display_order: Maybe<Scalars['smallint']['output']>;
+  /** Heroicons icon name for form builder UI (e.g., minus, star, calendar) */
+  icon: Maybe<Scalars['String']['output']>;
   /** Primary key - NanoID 12-char unique identifier */
   id: Maybe<Scalars['String']['output']>;
   /** Vue component name for rendering (TextInput, StarRating). Maps to frontend */
@@ -8777,6 +13886,8 @@ export type Question_Types_Min_Fields = {
   description: Maybe<Scalars['String']['output']>;
   /** Order in form builder type picker. Lower = appears first */
   display_order: Maybe<Scalars['smallint']['output']>;
+  /** Heroicons icon name for form builder UI (e.g., minus, star, calendar) */
+  icon: Maybe<Scalars['String']['output']>;
   /** Primary key - NanoID 12-char unique identifier */
   id: Maybe<Scalars['String']['output']>;
   /** Vue component name for rendering (TextInput, StarRating). Maps to frontend */
@@ -8820,6 +13931,7 @@ export type Question_Types_Order_By = {
   default_min_value?: InputMaybe<Order_By>;
   description?: InputMaybe<Order_By>;
   display_order?: InputMaybe<Order_By>;
+  icon?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
   input_component?: InputMaybe<Order_By>;
   is_active?: InputMaybe<Order_By>;
@@ -8858,6 +13970,8 @@ export const Question_Types_Select_Column = {
   Description: 'description',
   /** column name */
   DisplayOrder: 'display_order',
+  /** column name */
+  Icon: 'icon',
   /** column name */
   Id: 'id',
   /** column name */
@@ -8903,6 +14017,8 @@ export type Question_Types_Set_Input = {
   description?: InputMaybe<Scalars['String']['input']>;
   /** Order in form builder type picker. Lower = appears first */
   display_order?: InputMaybe<Scalars['smallint']['input']>;
+  /** Heroicons icon name for form builder UI (e.g., minus, star, calendar) */
+  icon?: InputMaybe<Scalars['String']['input']>;
   /** Primary key - NanoID 12-char unique identifier */
   id?: InputMaybe<Scalars['String']['input']>;
   /** Vue component name for rendering (TextInput, StarRating). Maps to frontend */
@@ -8988,6 +14104,8 @@ export type Question_Types_Stream_Cursor_Value_Input = {
   description?: InputMaybe<Scalars['String']['input']>;
   /** Order in form builder type picker. Lower = appears first */
   display_order?: InputMaybe<Scalars['smallint']['input']>;
+  /** Heroicons icon name for form builder UI (e.g., minus, star, calendar) */
+  icon?: InputMaybe<Scalars['String']['input']>;
   /** Primary key - NanoID 12-char unique identifier */
   id?: InputMaybe<Scalars['String']['input']>;
   /** Vue component name for rendering (TextInput, StarRating). Maps to frontend */
@@ -9043,6 +14161,8 @@ export const Question_Types_Update_Column = {
   Description: 'description',
   /** column name */
   DisplayOrder: 'display_order',
+  /** column name */
+  Icon: 'icon',
   /** column name */
   Id: 'id',
   /** column name */
@@ -9500,6 +14620,22 @@ export type Smallint_Comparison_Exp = {
 
 export type Subscription_Root = {
   __typename?: 'subscription_root';
+  /** An array relationship */
+  contacts: Array<Contacts>;
+  /** An aggregate relationship */
+  contacts_aggregate: Contacts_Aggregate;
+  /** fetch data from the table: "contacts" using primary key columns */
+  contacts_by_pk: Maybe<Contacts>;
+  /** fetch data from the table in a streaming manner: "contacts" */
+  contacts_stream: Array<Contacts>;
+  /** An array relationship */
+  flows: Array<Flows>;
+  /** An aggregate relationship */
+  flows_aggregate: Flows_Aggregate;
+  /** fetch data from the table: "flows" using primary key columns */
+  flows_by_pk: Maybe<Flows>;
+  /** fetch data from the table in a streaming manner: "flows" */
+  flows_stream: Array<Flows>;
   /** fetch data from the table: "form_question_responses" */
   form_question_responses: Array<Form_Question_Responses>;
   /** fetch aggregated fields from the table: "form_question_responses" */
@@ -9516,6 +14652,14 @@ export type Subscription_Root = {
   form_questions_by_pk: Maybe<Form_Questions>;
   /** fetch data from the table in a streaming manner: "form_questions" */
   form_questions_stream: Array<Form_Questions>;
+  /** fetch data from the table: "form_steps" */
+  form_steps: Array<Form_Steps>;
+  /** fetch aggregated fields from the table: "form_steps" */
+  form_steps_aggregate: Form_Steps_Aggregate;
+  /** fetch data from the table: "form_steps" using primary key columns */
+  form_steps_by_pk: Maybe<Form_Steps>;
+  /** fetch data from the table in a streaming manner: "form_steps" */
+  form_steps_stream: Array<Form_Steps>;
   /** fetch data from the table: "form_submissions" */
   form_submissions: Array<Form_Submissions>;
   /** fetch aggregated fields from the table: "form_submissions" */
@@ -9532,6 +14676,22 @@ export type Subscription_Root = {
   forms_by_pk: Maybe<Forms>;
   /** fetch data from the table in a streaming manner: "forms" */
   forms_stream: Array<Forms>;
+  /** An array relationship */
+  media: Array<Media>;
+  /** An aggregate relationship */
+  media_aggregate: Media_Aggregate;
+  /** fetch data from the table: "media" using primary key columns */
+  media_by_pk: Maybe<Media>;
+  /** fetch data from the table: "media_entity_types" */
+  media_entity_types: Array<Media_Entity_Types>;
+  /** fetch aggregated fields from the table: "media_entity_types" */
+  media_entity_types_aggregate: Media_Entity_Types_Aggregate;
+  /** fetch data from the table: "media_entity_types" using primary key columns */
+  media_entity_types_by_pk: Maybe<Media_Entity_Types>;
+  /** fetch data from the table in a streaming manner: "media_entity_types" */
+  media_entity_types_stream: Array<Media_Entity_Types>;
+  /** fetch data from the table in a streaming manner: "media" */
+  media_stream: Array<Media>;
   /** An array relationship */
   organization_plans: Array<Organization_Plans>;
   /** An aggregate relationship */
@@ -9647,6 +14807,66 @@ export type Subscription_Root = {
 };
 
 
+export type Subscription_RootContactsArgs = {
+  distinct_on?: InputMaybe<Array<Contacts_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Contacts_Order_By>>;
+  where?: InputMaybe<Contacts_Bool_Exp>;
+};
+
+
+export type Subscription_RootContacts_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Contacts_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Contacts_Order_By>>;
+  where?: InputMaybe<Contacts_Bool_Exp>;
+};
+
+
+export type Subscription_RootContacts_By_PkArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+export type Subscription_RootContacts_StreamArgs = {
+  batch_size: Scalars['Int']['input'];
+  cursor: Array<InputMaybe<Contacts_Stream_Cursor_Input>>;
+  where?: InputMaybe<Contacts_Bool_Exp>;
+};
+
+
+export type Subscription_RootFlowsArgs = {
+  distinct_on?: InputMaybe<Array<Flows_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Flows_Order_By>>;
+  where?: InputMaybe<Flows_Bool_Exp>;
+};
+
+
+export type Subscription_RootFlows_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Flows_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Flows_Order_By>>;
+  where?: InputMaybe<Flows_Bool_Exp>;
+};
+
+
+export type Subscription_RootFlows_By_PkArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+export type Subscription_RootFlows_StreamArgs = {
+  batch_size: Scalars['Int']['input'];
+  cursor: Array<InputMaybe<Flows_Stream_Cursor_Input>>;
+  where?: InputMaybe<Flows_Bool_Exp>;
+};
+
+
 export type Subscription_RootForm_Question_ResponsesArgs = {
   distinct_on?: InputMaybe<Array<Form_Question_Responses_Select_Column>>;
   limit?: InputMaybe<Scalars['Int']['input']>;
@@ -9707,6 +14927,36 @@ export type Subscription_RootForm_Questions_StreamArgs = {
 };
 
 
+export type Subscription_RootForm_StepsArgs = {
+  distinct_on?: InputMaybe<Array<Form_Steps_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Form_Steps_Order_By>>;
+  where?: InputMaybe<Form_Steps_Bool_Exp>;
+};
+
+
+export type Subscription_RootForm_Steps_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Form_Steps_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Form_Steps_Order_By>>;
+  where?: InputMaybe<Form_Steps_Bool_Exp>;
+};
+
+
+export type Subscription_RootForm_Steps_By_PkArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+export type Subscription_RootForm_Steps_StreamArgs = {
+  batch_size: Scalars['Int']['input'];
+  cursor: Array<InputMaybe<Form_Steps_Stream_Cursor_Input>>;
+  where?: InputMaybe<Form_Steps_Bool_Exp>;
+};
+
+
 export type Subscription_RootForm_SubmissionsArgs = {
   distinct_on?: InputMaybe<Array<Form_Submissions_Select_Column>>;
   limit?: InputMaybe<Scalars['Int']['input']>;
@@ -9764,6 +15014,66 @@ export type Subscription_RootForms_StreamArgs = {
   batch_size: Scalars['Int']['input'];
   cursor: Array<InputMaybe<Forms_Stream_Cursor_Input>>;
   where?: InputMaybe<Forms_Bool_Exp>;
+};
+
+
+export type Subscription_RootMediaArgs = {
+  distinct_on?: InputMaybe<Array<Media_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Media_Order_By>>;
+  where?: InputMaybe<Media_Bool_Exp>;
+};
+
+
+export type Subscription_RootMedia_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Media_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Media_Order_By>>;
+  where?: InputMaybe<Media_Bool_Exp>;
+};
+
+
+export type Subscription_RootMedia_By_PkArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+export type Subscription_RootMedia_Entity_TypesArgs = {
+  distinct_on?: InputMaybe<Array<Media_Entity_Types_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Media_Entity_Types_Order_By>>;
+  where?: InputMaybe<Media_Entity_Types_Bool_Exp>;
+};
+
+
+export type Subscription_RootMedia_Entity_Types_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Media_Entity_Types_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Media_Entity_Types_Order_By>>;
+  where?: InputMaybe<Media_Entity_Types_Bool_Exp>;
+};
+
+
+export type Subscription_RootMedia_Entity_Types_By_PkArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+export type Subscription_RootMedia_Entity_Types_StreamArgs = {
+  batch_size: Scalars['Int']['input'];
+  cursor: Array<InputMaybe<Media_Entity_Types_Stream_Cursor_Input>>;
+  where?: InputMaybe<Media_Entity_Types_Bool_Exp>;
+};
+
+
+export type Subscription_RootMedia_StreamArgs = {
+  batch_size: Scalars['Int']['input'];
+  cursor: Array<InputMaybe<Media_Stream_Cursor_Input>>;
+  where?: InputMaybe<Media_Bool_Exp>;
 };
 
 
@@ -13129,6 +18439,70 @@ export type Widgets_Variance_Order_By = {
   max_display?: InputMaybe<Order_By>;
 };
 
+export type CreateTestFlowMutationVariables = Exact<{
+  form_id: Scalars['String']['input'];
+  organization_id: Scalars['String']['input'];
+  name: Scalars['String']['input'];
+  flow_type: Scalars['String']['input'];
+  is_primary: Scalars['Boolean']['input'];
+  display_order: Scalars['smallint']['input'];
+}>;
+
+
+export type CreateTestFlowMutation = { __typename?: 'mutation_root', insert_flows_one: { __typename?: 'flows', id: string } | null };
+
+export type CleanupOldTestFormsMutationVariables = Exact<{
+  organization_id: Scalars['String']['input'];
+  cutoff_time: Scalars['timestamptz']['input'];
+}>;
+
+
+export type CleanupOldTestFormsMutation = { __typename?: 'mutation_root', update_forms: { __typename?: 'forms_mutation_response', affected_rows: number } | null };
+
+export type CreateTestFormMutationVariables = Exact<{
+  organization_id: Scalars['String']['input'];
+  name: Scalars['String']['input'];
+  status: Scalars['String']['input'];
+  created_by: Scalars['String']['input'];
+  product_name: Scalars['String']['input'];
+  product_description: Scalars['String']['input'];
+}>;
+
+
+export type CreateTestFormMutation = { __typename?: 'mutation_root', insert_forms_one: { __typename?: 'forms', id: string, name: string } | null };
+
+export type SoftDeleteTestFormMutationVariables = Exact<{
+  id: Scalars['String']['input'];
+}>;
+
+
+export type SoftDeleteTestFormMutation = { __typename?: 'mutation_root', update_forms_by_pk: { __typename?: 'forms', id: string, is_active: boolean } | null };
+
+export type CreateTestFormQuestionMutationVariables = Exact<{
+  step_id: Scalars['String']['input'];
+  organization_id: Scalars['String']['input'];
+  question_type_id: Scalars['String']['input'];
+  question_text: Scalars['String']['input'];
+  question_key: Scalars['String']['input'];
+  display_order: Scalars['smallint']['input'];
+  is_required: Scalars['Boolean']['input'];
+  is_active: Scalars['Boolean']['input'];
+}>;
+
+
+export type CreateTestFormQuestionMutation = { __typename?: 'mutation_root', insert_form_questions_one: { __typename?: 'form_questions', id: string } | null };
+
+export type CreateTestFormStepMutationVariables = Exact<{
+  flow_id: Scalars['String']['input'];
+  organization_id: Scalars['String']['input'];
+  step_type: Scalars['String']['input'];
+  step_order: Scalars['smallint']['input'];
+  is_active: Scalars['Boolean']['input'];
+}>;
+
+
+export type CreateTestFormStepMutation = { __typename?: 'mutation_root', insert_form_steps_one: { __typename?: 'form_steps', id: string } | null };
+
 export type CreateOrganizationMutationVariables = Exact<{
   name: Scalars['String']['input'];
   slug: Scalars['String']['input'];
@@ -13151,7 +18525,7 @@ export type FindOrganizationBySlugQueryVariables = Exact<{
 }>;
 
 
-export type FindOrganizationBySlugQuery = { __typename?: 'query_root', organizations: Array<{ __typename?: 'organizations', id: string, name: string, slug: string, is_active: boolean }> };
+export type FindOrganizationBySlugQuery = { __typename?: 'query_root', organizations: Array<{ __typename?: 'organizations', id: string, name: string, slug: string, is_active: boolean, created_by: string | null }> };
 
 export type GetOrganizationPlanQuestionTypesQueryVariables = Exact<{
   organizationId: Scalars['String']['input'];
@@ -13295,6 +18669,61 @@ export type UpdateIdentityMutationVariables = Exact<{
 export type UpdateIdentityMutation = { __typename?: 'mutation_root', update_user_identities_by_pk: { __typename?: 'user_identities', id: string, user_id: string, provider: string } | null };
 
 
+export const CreateTestFlowDocument = `
+    mutation CreateTestFlow($form_id: String!, $organization_id: String!, $name: String!, $flow_type: String!, $is_primary: Boolean!, $display_order: smallint!) {
+  insert_flows_one(
+    object: {form_id: $form_id, organization_id: $organization_id, name: $name, flow_type: $flow_type, is_primary: $is_primary, display_order: $display_order}
+  ) {
+    id
+  }
+}
+    `;
+export const CleanupOldTestFormsDocument = `
+    mutation CleanupOldTestForms($organization_id: String!, $cutoff_time: timestamptz!) {
+  update_forms(
+    where: {organization_id: {_eq: $organization_id}, name: {_like: "E2E Test Form%"}, created_at: {_lt: $cutoff_time}, is_active: {_eq: true}}
+    _set: {is_active: false}
+  ) {
+    affected_rows
+  }
+}
+    `;
+export const CreateTestFormDocument = `
+    mutation CreateTestForm($organization_id: String!, $name: String!, $status: String!, $created_by: String!, $product_name: String!, $product_description: String!) {
+  insert_forms_one(
+    object: {organization_id: $organization_id, name: $name, status: $status, created_by: $created_by, product_name: $product_name, product_description: $product_description, is_active: true}
+  ) {
+    id
+    name
+  }
+}
+    `;
+export const SoftDeleteTestFormDocument = `
+    mutation SoftDeleteTestForm($id: String!) {
+  update_forms_by_pk(pk_columns: {id: $id}, _set: {is_active: false}) {
+    id
+    is_active
+  }
+}
+    `;
+export const CreateTestFormQuestionDocument = `
+    mutation CreateTestFormQuestion($step_id: String!, $organization_id: String!, $question_type_id: String!, $question_text: String!, $question_key: String!, $display_order: smallint!, $is_required: Boolean!, $is_active: Boolean!) {
+  insert_form_questions_one(
+    object: {step_id: $step_id, organization_id: $organization_id, question_type_id: $question_type_id, question_text: $question_text, question_key: $question_key, display_order: $display_order, is_required: $is_required, is_active: $is_active}
+  ) {
+    id
+  }
+}
+    `;
+export const CreateTestFormStepDocument = `
+    mutation CreateTestFormStep($flow_id: String!, $organization_id: String!, $step_type: String!, $step_order: smallint!, $is_active: Boolean!) {
+  insert_form_steps_one(
+    object: {flow_id: $flow_id, organization_id: $organization_id, step_type: $step_type, step_order: $step_order, is_active: $is_active}
+  ) {
+    id
+  }
+}
+    `;
 export const CreateOrganizationDocument = `
     mutation CreateOrganization($name: String!, $slug: String!, $created_by: String!, $setup_status: organization_setup_status = completed) {
   insert_organizations_one(
@@ -13327,6 +18756,7 @@ export const FindOrganizationBySlugDocument = `
     name
     slug
     is_active
+    created_by
   }
 }
     `;
@@ -13591,6 +19021,24 @@ const defaultWrapper: SdkFunctionWrapper = (action, _operationName, _operationTy
 
 export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = defaultWrapper) {
   return {
+    CreateTestFlow(variables: CreateTestFlowMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<CreateTestFlowMutation> {
+      return withWrapper((wrappedRequestHeaders) => client.request<CreateTestFlowMutation>({ document: CreateTestFlowDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'CreateTestFlow', 'mutation', variables);
+    },
+    CleanupOldTestForms(variables: CleanupOldTestFormsMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<CleanupOldTestFormsMutation> {
+      return withWrapper((wrappedRequestHeaders) => client.request<CleanupOldTestFormsMutation>({ document: CleanupOldTestFormsDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'CleanupOldTestForms', 'mutation', variables);
+    },
+    CreateTestForm(variables: CreateTestFormMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<CreateTestFormMutation> {
+      return withWrapper((wrappedRequestHeaders) => client.request<CreateTestFormMutation>({ document: CreateTestFormDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'CreateTestForm', 'mutation', variables);
+    },
+    SoftDeleteTestForm(variables: SoftDeleteTestFormMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<SoftDeleteTestFormMutation> {
+      return withWrapper((wrappedRequestHeaders) => client.request<SoftDeleteTestFormMutation>({ document: SoftDeleteTestFormDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'SoftDeleteTestForm', 'mutation', variables);
+    },
+    CreateTestFormQuestion(variables: CreateTestFormQuestionMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<CreateTestFormQuestionMutation> {
+      return withWrapper((wrappedRequestHeaders) => client.request<CreateTestFormQuestionMutation>({ document: CreateTestFormQuestionDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'CreateTestFormQuestion', 'mutation', variables);
+    },
+    CreateTestFormStep(variables: CreateTestFormStepMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<CreateTestFormStepMutation> {
+      return withWrapper((wrappedRequestHeaders) => client.request<CreateTestFormStepMutation>({ document: CreateTestFormStepDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'CreateTestFormStep', 'mutation', variables);
+    },
     CreateOrganization(variables: CreateOrganizationMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<CreateOrganizationMutation> {
       return withWrapper((wrappedRequestHeaders) => client.request<CreateOrganizationMutation>({ document: CreateOrganizationDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'CreateOrganization', 'mutation', variables);
     },

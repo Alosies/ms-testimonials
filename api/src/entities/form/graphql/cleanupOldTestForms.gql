@@ -1,0 +1,13 @@
+mutation CleanupOldTestForms($organization_id: String!, $cutoff_time: timestamptz!) {
+  update_forms(
+    where: {
+      organization_id: { _eq: $organization_id }
+      name: { _like: "E2E Test Form%" }
+      created_at: { _lt: $cutoff_time }
+      is_active: { _eq: true }
+    }
+    _set: { is_active: false }
+  ) {
+    affected_rows
+  }
+}

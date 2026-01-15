@@ -1,0 +1,23 @@
+mutation CreateTestForm(
+  $organization_id: String!
+  $name: String!
+  $status: String!
+  $created_by: String!
+  $product_name: String!
+  $product_description: String!
+) {
+  insert_forms_one(
+    object: {
+      organization_id: $organization_id
+      name: $name
+      status: $status
+      created_by: $created_by
+      product_name: $product_name
+      product_description: $product_description
+      is_active: true
+    }
+  ) {
+    id
+    name
+  }
+}

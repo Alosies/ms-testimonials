@@ -1,0 +1,25 @@
+mutation CreateTestFormQuestion(
+  $step_id: String!
+  $organization_id: String!
+  $question_type_id: String!
+  $question_text: String!
+  $question_key: String!
+  $display_order: smallint!
+  $is_required: Boolean!
+  $is_active: Boolean!
+) {
+  insert_form_questions_one(
+    object: {
+      step_id: $step_id
+      organization_id: $organization_id
+      question_type_id: $question_type_id
+      question_text: $question_text
+      question_key: $question_key
+      display_order: $display_order
+      is_required: $is_required
+      is_active: $is_active
+    }
+  ) {
+    id
+  }
+}

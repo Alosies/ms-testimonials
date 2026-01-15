@@ -1,0 +1,21 @@
+mutation CreateTestFlow(
+  $form_id: String!
+  $organization_id: String!
+  $name: String!
+  $flow_type: String!
+  $is_primary: Boolean!
+  $display_order: smallint!
+) {
+  insert_flows_one(
+    object: {
+      form_id: $form_id
+      organization_id: $organization_id
+      name: $name
+      flow_type: $flow_type
+      is_primary: $is_primary
+      display_order: $display_order
+    }
+  ) {
+    id
+  }
+}
