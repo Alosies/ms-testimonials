@@ -11,9 +11,6 @@ import {
   CreateTestFormStepDocument,
   // Question operations
   CreateTestFormQuestionDocument,
-  // Organization operations
-  FindOrganizationBySlugDocument,
-  FindOrganizationByIdDocument,
   // Types
   type CreateTestFormMutation,
   type SoftDeleteTestFormMutation,
@@ -21,14 +18,14 @@ import {
   type CreateTestFlowMutation,
   type CreateTestFormStepMutation,
   type CreateTestFormQuestionMutation,
-  type FindOrganizationBySlugQuery,
-  type FindOrganizationByIdQuery,
 } from '@/graphql/generated/operations';
 
 /**
  * Test data service for E2E testing
- * Creates and manages test forms with steps and questions
- * All operations use admin client to bypass RLS
+ *
+ * Creates and manages test forms with steps and questions.
+ * All operations use admin client to bypass RLS.
+ * User/org IDs come from environment variables - no DB lookups needed.
  */
 
 // ============================================================================
@@ -40,13 +37,6 @@ interface TestFormResult {
   flowId: string;
   stepIds: string[];
   questionIds: string[];
-}
-
-interface OrganizationResult {
-  id: string;
-  name: string;
-  slug: string;
-  created_by: string | null;
 }
 
 // Question type IDs from database (seed data)
@@ -61,52 +51,17 @@ const QUESTION_TYPE_IDS = {
 // ============================================================================
 
 /**
- * Get organization by slug
- * @param slug - Organization slug (URL-friendly identifier)
- * @returns Organization data or null if not found
- */
-export async function getOrganizationBySlug(slug: string): Promise<OrganizationResult | null> {
-  const { data, error } = await executeGraphQLAsAdmin<FindOrganizationBySlugQuery>(
-    FindOrganizationBySlugDocument,
-    { slug }
-  );
-
-  if (error || !data?.organizations || data.organizations.length === 0) {
-    return null;
-  }
-
-  return data.organizations[0];
-}
-
-/**
- * Get organization by ID
- * @param id - Organization ID
- * @returns Organization data or null if not found
- */
-export async function getOrganizationById(id: string): Promise<OrganizationResult | null> {
-  const { data, error } = await executeGraphQLAsAdmin<FindOrganizationByIdQuery>(
-    FindOrganizationByIdDocument,
-    { id }
-  );
-
-  if (error || !data?.organizations_by_pk) {
-    return null;
-  }
-
-  return data.organizations_by_pk;
-}
-
-/**
  * Create a test form with a flow, steps, and questions
+ *
  * Creates a complete form structure suitable for E2E testing:
  * - 1 form with "E2E Test Form" prefix
  * - 1 primary flow
- * - 3 steps: welcome, question (with rating), thank_you
- * - 1 rating question on the question step
+ * - 3 steps: welcome, rating, thank_you
+ * - 1 rating question on the rating step
  *
- * @param organizationId - Organization ID to create form under
+ * @param organizationId - Organization ID (from TEST_ORGANIZATION_ID env var)
  * @param name - Form name (will be prefixed with "E2E Test Form - ")
- * @param createdBy - User ID to set as form creator
+ * @param createdBy - User ID (from TEST_USER_ID env var)
  * @returns Object containing all created entity IDs
  */
 export async function createTestFormWithSteps(
@@ -165,7 +120,7 @@ export async function createTestFormWithSteps(
     is_active: true,
   });
 
-  // Question step (will hold the rating question)
+  // Rating step
   await executeGraphQLAsAdmin<CreateTestFormStepMutation>(CreateTestFormStepDocument, {
     id: questionStepId,
     flow_id: flowId,
@@ -185,7 +140,7 @@ export async function createTestFormWithSteps(
     is_active: true,
   });
 
-  // 4. Create a rating question on the question step
+  // 4. Create a rating question on the rating step
   await executeGraphQLAsAdmin<CreateTestFormQuestionMutation>(CreateTestFormQuestionDocument, {
     id: ratingQuestionId,
     step_id: questionStepId,
@@ -208,7 +163,6 @@ export async function createTestFormWithSteps(
 
 /**
  * Soft delete a test form by setting is_active to false
- * This preserves data for historical analysis while hiding the form
  *
  * @param formId - Form ID to soft delete
  * @returns true if form was deleted, false otherwise
@@ -229,6 +183,7 @@ export async function deleteTestForm(formId: string): Promise<boolean> {
 
 /**
  * Clean up old E2E test data by soft-deleting forms older than specified hours
+ *
  * Only affects forms with names starting with "E2E Test Form"
  *
  * @param organizationId - Organization ID to clean up

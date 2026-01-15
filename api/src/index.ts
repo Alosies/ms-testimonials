@@ -14,7 +14,7 @@ import formRoutes from '@/routes/forms';
 import widgetRoutes from '@/routes/widgets';
 import aiRoutes from '@/routes/ai';
 import mediaRoutes from '@/routes/media';
-import { createTestRoutes } from '@/routes/test';
+import { createE2ERoutes } from '@/routes/e2e';
 
 const app = new OpenAPIHono();
 
@@ -59,8 +59,8 @@ app.route('/widgets', widgetRoutes);
 app.route('/ai', aiRoutes);
 app.route('/media', mediaRoutes);
 
-// Test routes (only active when TEST_API_SECRET is configured)
-app.route('/test', createTestRoutes());
+// E2E testing support routes (only active when E2E_API_SECRET is configured)
+app.route('/e2e', createE2ERoutes());
 
 // OpenAPI Documentation
 app.doc('/openapi.json', {
