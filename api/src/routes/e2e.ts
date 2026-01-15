@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { env } from '@/shared/config/env';
-import { e2eAuthMiddleware, isE2EConfigured } from '@/shared/middleware/e2e';
+import { e2eAuthMiddleware, isE2EConfigured } from '@/features/e2e-support/middleware/e2e';
 import { createForm, deleteForm, getOrganization, cleanup } from '@/features/e2e-support';
 
 /**
