@@ -58,9 +58,10 @@ function handleGenerate() {
     <!-- Focus Area Tags -->
     <div class="flex flex-wrap justify-center gap-2">
       <FocusAreaTag
-        v-for="area in focusAreas"
+        v-for="(area, index) in focusAreas"
         :key="area"
         :label="area"
+        :index="index"
         :is-selected="isAreaSelected(area)"
         @toggle="wizard.toggleFocusArea(area)"
       />

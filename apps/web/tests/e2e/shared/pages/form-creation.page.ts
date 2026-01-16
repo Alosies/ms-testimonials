@@ -10,7 +10,7 @@
  * 6. Navigate to Form Studio
  */
 import { Page } from '@playwright/test';
-import { studioTestIds } from '@/shared/constants/testIds';
+import { studioTestIds, wizardTestIds } from '@/shared/constants/testIds';
 
 export function createFormCreationPage(page: Page) {
   return {
@@ -19,7 +19,7 @@ export function createFormCreationPage(page: Page) {
     /**
      * Navigate to the form creation wizard
      */
-    async goto(orgSlug: string) {
+    async gotoFormCreationRoute(orgSlug: string) {
       await page.goto(`/${orgSlug}/forms/creating`);
       // Wait for first step to load
       await page.getByRole('heading', { name: /what are you collecting/i }).waitFor({ timeout: 10000 });
@@ -54,10 +54,11 @@ export function createFormCreationPage(page: Page) {
     },
 
     /**
-     * Step 3: Select focus areas (optional, can select multiple)
+     * Step 3: Select focus area by index (optional, can select multiple)
+     * @param index - 0-based index of the focus area chip
      */
-    async selectFocusArea(area: string) {
-      await page.getByRole('button', { name: new RegExp(area, 'i') }).click();
+    async selectFocusAreaByIndex(index: number) {
+      await page.getByTestId(wizardTestIds.focusAreaChip(index)).click();
     },
 
     /**
@@ -106,7 +107,7 @@ export function createFormCreationPage(page: Page) {
       } = options;
 
       // Navigate to creation wizard
-      await this.goto(orgSlug);
+      await this.gotoFormCreationRoute(orgSlug);
 
       // Step 1: Select category and enter name
       await this.selectCategory(category);
@@ -118,8 +119,12 @@ export function createFormCreationPage(page: Page) {
       await this.enterDescription(description);
       await this.clickContinue();
 
-      // Step 3: Focus areas - skip selection, just generate
+      // Step 3: Focus areas - select a few then generate
       await page.getByRole('heading', { name: /what should testimonials/i }).waitFor({ timeout: 5000 });
+      // Select first 3 focus areas (indices 0, 1, 2)
+      await this.selectFocusAreaByIndex(0);
+      await this.selectFocusAreaByIndex(1);
+      await this.selectFocusAreaByIndex(2);
       await this.clickGenerateWithAI();
 
       // Wait for AI generation
