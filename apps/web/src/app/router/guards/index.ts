@@ -69,7 +69,8 @@ export function setupAuthGuards(router: Router) {
     // Handle post-login redirect: when navigating FROM auth pages after login
     // This catches the case where user just logged in and orgSlug might not be ready
     // Skip if already going to the correct org dashboard to prevent infinite loops
-    if (from.path.startsWith('/auth/') && hasUser) {
+    // Skip for logout page - user is intentionally signing out
+    if (from.path.startsWith('/auth/') && !from.path.includes('/logout') && hasUser) {
       const targetOrgDashboard = `/${orgSlug}/dashboard`
       if (orgSlug && to.path !== targetOrgDashboard) {
         return next(targetOrgDashboard)

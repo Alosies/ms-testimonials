@@ -1,3 +1,3 @@
 export { useCurrentContextStore } from './store';
-export { useCurrentContext } from './composables';
+export { useCurrentContext, useAuthRedirect } from './composables';
 export type * from './models';
