@@ -1,6 +1,6 @@
 import type { Context } from 'hono';
 import { env } from '@/shared/config/env';
-import { createTestFormWithSteps } from '@/services/e2e-data';
+import { createTestFormWithSteps, deleteTestForm } from './crud';
 
 /**
  * POST /e2e/forms
@@ -33,5 +33,32 @@ export async function createForm(c: Context) {
   } catch (error) {
     console.error('[E2E] Create form error:', error);
     return c.json({ error: 'Failed to create form' }, 500);
+  }
+}
+
+/**
+ * DELETE /e2e/forms/:id
+ * Soft delete a test form
+ */
+export async function deleteForm(c: Context) {
+  try {
+    const formId = c.req.param('id');
+
+    if (!formId) {
+      return c.json({ error: 'Form ID is required' }, 400);
+    }
+
+    console.log(`[E2E] Deleting form ${formId}`);
+
+    const deleted = await deleteTestForm(formId);
+
+    if (!deleted) {
+      return c.json({ error: 'Form not found' }, 404);
+    }
+
+    return c.json({ success: true, formId });
+  } catch (error) {
+    console.error('[E2E] Delete form error:', error);
+    return c.json({ error: 'Failed to delete form' }, 500);
   }
 }

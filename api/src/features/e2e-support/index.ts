@@ -1,4 +1,9 @@
-export { createForm } from './createForm';
-export { deleteForm } from './deleteForm';
-export { getOrganization } from './getOrganization';
+/**
+ * E2E Support Feature
+ *
+ * Provides API endpoints for E2E testing infrastructure.
+ */
+
+export { createForm, deleteForm } from './forms';
+export { getOrganization } from './organizations';
 export { cleanup } from './cleanup';
