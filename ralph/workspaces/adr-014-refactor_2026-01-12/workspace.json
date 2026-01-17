@@ -1,0 +1,17 @@
+{
+  "feature": "adr-014-refactor",
+  "createdAt": "2026-01-12T12:00:00Z",
+  "createdBy": "yellow",
+  "primaryAgent": "yellow",
+  "status": "active",
+  "sourceDocument": "docs/adr/014-fsd-composables-refactoring/adr.md",
+  "handoffs": [],
+  "phases": {
+    "phase1": { "status": "complete", "description": "Move types to entity layers" },
+    "phase2": { "status": "pending", "description": "Step type registry (OCP fix)" },
+    "phase3": { "status": "pending", "description": "Focused composables (ISP fix)" },
+    "phase4": { "status": "pending", "description": "Multi-entity functions" },
+    "phase5": { "status": "pending", "description": "Split timeline editor (SRP fix)" },
+    "phase6": { "status": "pending", "description": "Unified save mechanism" }
+  }
+}
