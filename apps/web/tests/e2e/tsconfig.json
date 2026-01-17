@@ -5,9 +5,13 @@
     "moduleResolution": "bundler",
     "strict": true,
     "skipLibCheck": true,
-    "baseUrl": "../..",
+    "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["../../src/*"],
+      "@e2e/*": ["./*"],
+      "@e2e/entities/*": ["./entities/*"],
+      "@e2e/shared/*": ["./shared/*"],
+      "@e2e/features/*": ["./features/*"]
     }
   },
   "include": ["./**/*.ts"]
