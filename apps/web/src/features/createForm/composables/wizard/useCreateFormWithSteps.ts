@@ -1,6 +1,6 @@
 import { ref, toRefs, computed, readonly, type DeepReadonly } from 'vue';
 import { getErrorMessage } from '@/shared/api';
-import type { AIQuestion, StepContent, FlowMembership } from '@/shared/api';
+import type { AIQuestion } from '@/shared/api';
 import type { WizardAIContext } from './useFormWizard';
 import { useCreateForm, useUpdateForm, serializeBranchingConfig } from '@/entities/form';
 import type { BranchingConfig } from '@/entities/form';
@@ -11,9 +11,11 @@ import { useCreateFormSteps, useUpdateFormStepAutoSave } from '@/entities/formSt
 import { useGetQuestionTypes } from '@/entities/questionType';
 import { useCurrentContextStore } from '@/shared/currentContext';
 import {
-  getDefaultWelcomeContent,
-  getDefaultThankYouContent,
-} from '../../constants/wizardConfig';
+  buildStepsFromQuestions,
+  stripInternalFields,
+  mapQuestionsToSteps,
+  getBranchFlowUpdates,
+} from '../../functions';
 
 // ============================================================================
 // Types
@@ -46,6 +48,8 @@ export interface CreateFormWithStepsResult {
  * 5. Create branch flows WITH branch_question_id (constraint satisfied!)
  * 6. Update branch steps to point to their actual branch flows
  * 7. Update form branching_config
+ *
+ * ADR-014: Uses buildStepsFromQuestions from functions layer for step building
  */
 export function useCreateFormWithSteps() {
   const { createForm } = useCreateForm();
@@ -140,20 +144,19 @@ export function useCreateFormWithSteps() {
         throw new Error('Failed to create shared flow');
       }
 
-      // 4. Build step inputs - ALL steps point to shared flow initially
-      // We'll update branch flow steps after creating branch flows
-      const stepInputs = buildFormSteps(
-        currentOrganizationId.value!,
-        currentUserId.value!,
-        params.conceptName,
-        params.questions,
-        params.aiContext?.step_content ?? null,
-        sharedFlow.id // All steps go to shared flow initially
-      );
+      // 4. Build step inputs using extracted function (ADR-014)
+      const { steps: stepInputs } = buildStepsFromQuestions({
+        organizationId: currentOrganizationId.value!,
+        userId: currentUserId.value!,
+        conceptName: params.conceptName,
+        questions: params.questions,
+        stepContent: params.aiContext?.step_content ?? null,
+        sharedFlowId: sharedFlow.id,
+      });
 
       // 5. Create steps (ADR-013 order: step → question)
       // Strip internal tracking fields before sending to API
-      const apiStepInputs = stepInputs.map(({ _originalQuestionIndex, _flowMembership, _intendedStepOrder, ...rest }) => rest);
+      const apiStepInputs = stripInternalFields(stepInputs);
       const createdSteps = await createFormSteps({
         inputs: apiStepInputs,
       });
@@ -163,17 +166,7 @@ export function useCreateFormWithSteps() {
       }
 
       // 6. Create questions with step_id (ADR-013: questions reference steps)
-      const questionStepMap = new Map<number, string>(); // originalQuestionIndex -> stepId
-
-      for (let stepIdx = 0; stepIdx < stepInputs.length; stepIdx++) {
-        const stepInput = stepInputs[stepIdx];
-        if (stepInput.step_type === 'question' || stepInput.step_type === 'rating') {
-          const originalQuestionIdx = stepInput._originalQuestionIndex;
-          if (originalQuestionIdx !== undefined) {
-            questionStepMap.set(originalQuestionIdx, createdSteps[stepIdx].id);
-          }
-        }
-      }
+      const questionStepMap = mapQuestionsToSteps(stepInputs, createdSteps);
 
       // Build question inputs with step_id
       const questionInputs = params.questions.map((q, index) => {
@@ -254,37 +247,25 @@ export function useCreateFormWithSteps() {
 
       // 8. Update branch steps to point to their actual branch flows with correct step_order
       if (testimonialFlow && improvementFlow) {
-        const updatePromises: Promise<unknown>[] = [];
+        const branchUpdates = getBranchFlowUpdates(
+          stepInputs,
+          createdSteps,
+          testimonialFlow.id,
+          improvementFlow.id
+        );
 
-        for (let stepIdx = 0; stepIdx < stepInputs.length; stepIdx++) {
-          const stepInput = stepInputs[stepIdx];
-          const createdStep = createdSteps[stepIdx];
-
-          if (stepInput._flowMembership === 'testimonial') {
-            updatePromises.push(
+        if (branchUpdates.length > 0) {
+          await Promise.all(
+            branchUpdates.map(update =>
               updateFormStepAutoSave({
-                id: createdStep.id,
+                id: update.stepId,
                 changes: {
-                  flow_id: testimonialFlow.id,
-                  step_order: stepInput._intendedStepOrder ?? 0,
+                  flow_id: update.flowId,
+                  step_order: update.stepOrder,
                 },
               })
-            );
-          } else if (stepInput._flowMembership === 'improvement') {
-            updatePromises.push(
-              updateFormStepAutoSave({
-                id: createdStep.id,
-                changes: {
-                  flow_id: improvementFlow.id,
-                  step_order: stepInput._intendedStepOrder ?? 0,
-                },
-              })
-            );
-          }
-        }
-
-        if (updatePromises.length > 0) {
-          await Promise.all(updatePromises);
+            )
+          );
         }
       }
 
@@ -318,172 +299,6 @@ export function useCreateFormWithSteps() {
     } finally {
       isCreating.value = false;
     }
-  }
-
-  /**
-   * Step input type for creating form steps (ADR-013: no question_id)
-   */
-  interface FormStepInput {
-    organization_id: string;
-    created_by: string;
-    step_type: string;
-    step_order: number;
-    content: Record<string, unknown>;
-    flow_id: string;
-    flow_membership: FlowMembership;
-    is_active: boolean;
-    _originalQuestionIndex?: number; // Internal tracking, not sent to API
-    _flowMembership?: FlowMembership; // Internal: actual intended flow membership
-    _intendedStepOrder?: number; // Internal: step_order within intended flow
-  }
-
-  /**
-   * Build form steps array for insertion with branching support
-   *
-   * ADR-013: Steps no longer have question_id - questions reference steps
-   *
-   * All steps initially point to sharedFlowId. Branch flow steps will be
-   * updated to their actual flow_id after branch flows are created.
-   */
-  function buildFormSteps(
-    organizationId: string,
-    userId: string,
-    conceptName: string,
-    originalQuestions: DeepReadonly<AIQuestion[]>,
-    stepContent: DeepReadonly<StepContent> | null,
-    sharedFlowId: string // All steps go here initially
-  ): FormStepInput[] {
-    const steps: FormStepInput[] = [];
-
-    // Global step order counter - ALL steps go to shared flow initially
-    // so we need unique step_order values across the entire form
-    let globalStepOrder = 0;
-
-    // Also track per-flow ordering for when steps get moved to their actual flows
-    const flowStepOrder = {
-      shared: 0,
-      testimonial: 0,
-      improvement: 0,
-    };
-
-    // Helper to create a step
-    // Uses global order for initial creation, stores intended flow order for later update
-    const createStep = (
-      stepType: string,
-      flowMembership: FlowMembership,
-      content: Record<string, unknown>,
-      originalQuestionIndex?: number
-    ): FormStepInput => {
-      const intendedOrder = flowStepOrder[flowMembership]++;
-      return {
-        organization_id: organizationId,
-        created_by: userId,
-        step_type: stepType,
-        step_order: globalStepOrder++, // Use global order for shared flow
-        content,
-        flow_id: sharedFlowId, // All go to shared initially
-        flow_membership: flowMembership,
-        is_active: true,
-        _originalQuestionIndex: originalQuestionIndex,
-        _flowMembership: flowMembership, // Track actual intended flow
-        _intendedStepOrder: intendedOrder, // Track intended order within actual flow
-      };
-    };
-
-    // =========================================================================
-    // 1. Welcome step (shared)
-    // =========================================================================
-    const welcomeContent = getDefaultWelcomeContent(conceptName);
-    steps.push(createStep('welcome', 'shared', welcomeContent));
-
-    // =========================================================================
-    // 2. Question/Rating steps grouped by flow_membership
-    // =========================================================================
-
-    // 2a. Shared questions (including branch point)
-    for (let i = 0; i < originalQuestions.length; i++) {
-      const originalQuestion = originalQuestions[i];
-      if (originalQuestion.flow_membership !== 'shared') continue;
-
-      const isRating = originalQuestion.question_type_id.startsWith('rating');
-      const stepType = isRating ? 'rating' : 'question';
-
-      steps.push(createStep(stepType, 'shared', {}, i));
-    }
-
-    // =========================================================================
-    // 3. Testimonial flow steps
-    // =========================================================================
-
-    // 3a. Testimonial questions
-    for (let i = 0; i < originalQuestions.length; i++) {
-      const originalQuestion = originalQuestions[i];
-      if (originalQuestion.flow_membership !== 'testimonial') continue;
-
-      steps.push(createStep('question', 'testimonial', {}, i));
-    }
-
-    // 3b. Consent step (testimonial flow only)
-    const consentContent = stepContent?.consent
-      ? {
-          title: stepContent.consent.title,
-          description: stepContent.consent.description,
-          options: {
-            public: {
-              label: stepContent.consent.public_label,
-              description: stepContent.consent.public_description,
-            },
-            private: {
-              label: stepContent.consent.private_label,
-              description: stepContent.consent.private_description,
-            },
-          },
-        }
-      : {
-          title: 'One last thing...',
-          description: 'Would you like us to share your testimonial publicly?',
-          options: {
-            public: {
-              label: 'Yes, share publicly',
-              description: 'Your testimonial may be featured on our website',
-            },
-            private: {
-              label: 'Keep it private',
-              description: 'Only the team will see your feedback',
-            },
-          },
-        };
-    steps.push(createStep('consent', 'testimonial', consentContent));
-
-    // 3c. Thank you step (testimonial flow)
-    const testimonialThankYouContent = getDefaultThankYouContent();
-    steps.push(createStep('thank_you', 'testimonial', testimonialThankYouContent));
-
-    // =========================================================================
-    // 4. Improvement flow steps
-    // =========================================================================
-
-    // 4a. Improvement questions
-    for (let i = 0; i < originalQuestions.length; i++) {
-      const originalQuestion = originalQuestions[i];
-      if (originalQuestion.flow_membership !== 'improvement') continue;
-
-      steps.push(createStep('question', 'improvement', {}, i));
-    }
-
-    // 4b. Thank you step (improvement flow)
-    const improvementThankYouContent = stepContent?.improvement_thank_you
-      ? {
-          title: stepContent.improvement_thank_you.title,
-          subtitle: stepContent.improvement_thank_you.message,
-        }
-      : {
-          title: 'Thank you for your feedback',
-          subtitle: 'We take your feedback seriously and will work to improve.',
-        };
-    steps.push(createStep('thank_you', 'improvement', improvementThankYouContent));
-
-    return steps;
   }
 
   return {
