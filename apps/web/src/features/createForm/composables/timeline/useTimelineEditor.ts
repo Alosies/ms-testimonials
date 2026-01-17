@@ -3,16 +3,54 @@ import { createSharedComposable } from '@vueuse/core';
 import type { FormStep, StepType, FormContext } from '@/shared/stepCards';
 import { useConfirmationModal } from '@/shared/widgets/ConfirmationModal';
 import { useStepState } from './useStepState';
-import { useTimelineSelection } from './useTimelineSelection';
+import { useTimelineSelectionFactory } from './useTimelineSelection';
 import { useTimelineStepCrud } from './useTimelineStepCrud';
 import { useTimelineBranching } from './useTimelineBranching';
 import { useTimelineDesignConfig } from './useTimelineDesignConfig';
 
 /**
- * Timeline Editor - Shared Composable
+ * Timeline Editor - Shared Composable (Legacy Orchestrator)
  *
  * Single source of truth for form timeline editing STATE.
  * Uses createSharedComposable for singleton pattern with full type safety.
+ *
+ * ## ADR-014 Migration Path
+ *
+ * ### Current: Phase 3 (ISP facade) → Phase 5 (SRP singletons)
+ *
+ * This composable is transitional. New code should use Phase 5 singletons:
+ *
+ * | Phase 3 Facade | Phase 5 Singleton | Use Case |
+ * |----------------|-------------------|----------|
+ * | useTimelineReader | useTimelineState + useTimelineComputed | Read-only display |
+ * | useTimelineMutator | useTimelineStepOps (local + persist) | Edit operations |
+ * | useTimelineControl | useTimelineSelection + useTimelinePersistence | Navigation/workflow |
+ *
+ * ### Phase 7: Full Migration (Future)
+ *
+ * In Phase 7, the Phase 3 facades (Reader/Mutator/Control) will be refactored to
+ * compose from Phase 5 singletons directly instead of wrapping this editor.
+ * This editor will then be deprecated and eventually removed.
+ *
+ * **Migration steps for components:**
+ * ```ts
+ * // BEFORE (Phase 3 - wraps useTimelineEditor)
+ * const { steps, currentStep } = useTimelineReader();
+ *
+ * // AFTER (Phase 5 - direct singleton access)
+ * const state = useTimelineState();
+ * const computed = useTimelineComputed();
+ * // steps: state.steps, currentStep: state.currentStep
+ * ```
+ *
+ * ### Phase 5 SRP composables (use these directly in new code):
+ * - `useTimelineState` - core steps/selection state singleton
+ * - `useTimelineSelection` - selection logic
+ * - `useTimelineStepOps` - step CRUD operations (local + persist)
+ * - `useTimelinePersistence` - save coordination
+ * - `useTimelineComputed` - derived computations (flow groupings, etc.)
+ *
+ * ## Current Architecture
  *
  * Composes smaller modules for maintainability:
  * - useStepState: Step array and dirty state management
@@ -21,6 +59,8 @@ import { useTimelineDesignConfig } from './useTimelineDesignConfig';
  * - useTimelineBranching: Conditional flow branching
  * - useTimelineDesignConfig: Form design customization
  *
+ * @deprecated Prefer focused composables (useTimelineReader, useTimelineMutator, etc.)
+ *             for new code. This composable remains for backward compatibility.
  * @see useScrollSnapNavigation - Handles keyboard nav and scroll detection
  * @see FormStudioPage.vue - Sets up scroll navigation with this editor's state
  */
@@ -34,7 +74,7 @@ export const useTimelineEditor = createSharedComposable(() => {
   const formContext = ref<FormContext>({});
 
   // Confirmation modal for deletion protection
-  const { showBlockedMessage } = useConfirmationModal();
+  const { showBlockedMessage, showConfirmation } = useConfirmationModal();
 
   // ============================================
   // Composed Modules
@@ -42,7 +82,7 @@ export const useTimelineEditor = createSharedComposable(() => {
   const stepState = useStepState();
   const { steps, originalSteps, isDirty, hasSteps, setStepsCore, markClean, markStepSaved, markStepSavedByOrder, getStepById, resetStepState } = stepState;
 
-  const selection = useTimelineSelection({ steps });
+  const selection = useTimelineSelectionFactory({ steps });
   const { selectedIndex, selectedStep, canGoNext, canGoPrev, selectStep: selectStepCore, selectStepById: selectStepByIdCore, resetSelection } = selection;
 
   // ADR-013: formId removed from StepCrudDeps (steps belong to flows)
@@ -173,6 +213,13 @@ export const useTimelineEditor = createSharedComposable(() => {
 
   function handleRemoveStep(index: number) {
     const stepToRemove = steps.value[index];
+    if (!stepToRemove) return;
+
+    // Get step name from question text (for rating steps) or content title
+    const stepName =
+      stepToRemove.question?.questionText ||
+      (stepToRemove.content as { title?: string })?.title ||
+      `Step ${index + 1}`;
 
     // ADR-009 Phase 2: Prevent deletion of branch point step
     // The branch point question is referenced by flows.branch_question_id with FK RESTRICT,
@@ -180,13 +227,8 @@ export const useTimelineEditor = createSharedComposable(() => {
     if (
       branching.isBranchingEnabled.value &&
       branching.branchPointStep.value &&
-      stepToRemove?.id === branching.branchPointStep.value.id
+      stepToRemove.id === branching.branchPointStep.value.id
     ) {
-      // Get step name from question text (for rating steps) or content title
-      const stepName =
-        stepToRemove.question?.questionText ||
-        (stepToRemove.content as { title?: string })?.title ||
-        'Rating Step';
       showBlockedMessage({
         actionType: 'delete_step_blocked',
         entityName: stepName,
@@ -194,10 +236,17 @@ export const useTimelineEditor = createSharedComposable(() => {
       return;
     }
 
-    stepCrud.removeStep(index);
-    if (selectedIndex.value >= steps.value.length) {
-      selectStep(Math.max(0, steps.value.length - 1));
-    }
+    // Show confirmation modal before deletion
+    showConfirmation({
+      actionType: 'delete_step',
+      entityName: stepName,
+      onConfirm: () => {
+        stepCrud.removeStep(index);
+        if (selectedIndex.value >= steps.value.length) {
+          selectStep(Math.max(0, steps.value.length - 1));
+        }
+      },
+    });
   }
 
   function handleCloseEditor() {
@@ -225,17 +274,20 @@ export const useTimelineEditor = createSharedComposable(() => {
    */
   async function handleRemoveStepWithPersist(index: number): Promise<void> {
     const stepToRemove = steps.value[index];
+    if (!stepToRemove) return;
+
+    // Get step name from question text (for rating steps) or content title
+    const stepName =
+      stepToRemove.question?.questionText ||
+      (stepToRemove.content as { title?: string })?.title ||
+      `Step ${index + 1}`;
 
     // ADR-009 Phase 2: Prevent deletion of branch point step
     if (
       branching.isBranchingEnabled.value &&
       branching.branchPointStep.value &&
-      stepToRemove?.id === branching.branchPointStep.value.id
+      stepToRemove.id === branching.branchPointStep.value.id
     ) {
-      const stepName =
-        stepToRemove.question?.questionText ||
-        (stepToRemove.content as { title?: string })?.title ||
-        'Rating Step';
       showBlockedMessage({
         actionType: 'delete_step_blocked',
         entityName: stepName,
@@ -243,10 +295,17 @@ export const useTimelineEditor = createSharedComposable(() => {
       return;
     }
 
-    await stepCrud.removeStepWithPersist(index);
-    if (selectedIndex.value >= steps.value.length) {
-      selectStep(Math.max(0, steps.value.length - 1));
-    }
+    // Show confirmation modal before deletion
+    showConfirmation({
+      actionType: 'delete_step',
+      entityName: stepName,
+      onConfirm: async () => {
+        await stepCrud.removeStepWithPersist(index);
+        if (selectedIndex.value >= steps.value.length) {
+          selectStep(Math.max(0, steps.value.length - 1));
+        }
+      },
+    });
   }
 
   /**

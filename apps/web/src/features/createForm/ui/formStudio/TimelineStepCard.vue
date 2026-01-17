@@ -24,6 +24,9 @@ import {
 import { OrganizationLogo } from '@/entities/organization';
 import TimelineConnector from './TimelineConnector.vue';
 import { studioTestIds } from '@/shared/constants/testIds';
+import { usePlatform } from '@/shared/composables';
+
+const { modifierKey } = usePlatform();
 
 const props = defineProps<{
   step: FormStep;
@@ -138,7 +141,7 @@ function handleInsert(type: StepType) {
           @click.stop="emit('edit', index)"
         >
           <Icon icon="heroicons:pencil" class="h-4 w-4 text-muted-foreground" />
-          <Kbd size="sm">E</Kbd>
+          <Kbd>E</Kbd>
         </button>
         <button
           class="flex items-center gap-1.5 px-2 py-1 rounded-md hover:bg-destructive/10 transition-colors"
@@ -146,7 +149,7 @@ function handleInsert(type: StepType) {
           @click.stop="emit('remove', index)"
         >
           <Icon icon="heroicons:trash" class="h-4 w-4 text-muted-foreground hover:text-destructive" />
-          <Kbd size="sm">⌫</Kbd>
+          <Kbd>{{ modifierKey }}</Kbd><Kbd>D</Kbd>
         </button>
       </div>
 

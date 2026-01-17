@@ -14,6 +14,7 @@ export type ConfirmationActionType =
   | 'delete_widget'
   | 'delete_testimonial'
   | 'delete_question'
+  | 'delete_step'
   | 'delete_step_blocked'
   | 'archive_testimonial'
   | 'reject_testimonial'

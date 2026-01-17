@@ -37,6 +37,14 @@ export const CONFIRMATION_MESSAGES: Record<
     warningText: 'will be permanently deleted.',
     intent: 'danger',
   },
+  delete_step: {
+    title: 'Delete Step',
+    message:
+      'Are you sure you want to delete this step? This action cannot be undone.',
+    confirmText: 'Delete Step',
+    warningText: 'will be permanently deleted.',
+    intent: 'danger',
+  },
   delete_step_blocked: {
     title: 'Cannot Delete Step',
     message:

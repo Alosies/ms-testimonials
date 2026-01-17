@@ -211,11 +211,15 @@ export function useBranchedKeyboardNavigation(deps: BranchedNavigationDeps): Bra
   }
 
   /**
-   * Handle Remove/Delete action (D or Backspace key)
+   * Handle Remove/Delete action (Cmd+D or Ctrl+D)
+   * Requires modifier key to prevent accidental deletion.
    */
   function handleKeyRemove(e: KeyboardEvent): void {
     if (isInputFocused()) return;
     if (!onRemoveStep) return;
+
+    // Require Cmd (Mac) or Ctrl (Windows/Linux) modifier
+    if (!e.metaKey && !e.ctrlKey) return;
 
     const index = selectedIndex.value;
     if (index === -1) return;
@@ -230,7 +234,7 @@ export function useBranchedKeyboardNavigation(deps: BranchedNavigationDeps): Bra
   onKeyStroke(['ArrowLeft', 'h'], handleKeyLeft, { eventName: 'keydown' });
   onKeyStroke(['ArrowRight', 'l'], handleKeyRight, { eventName: 'keydown' });
   onKeyStroke(['e'], handleKeyEdit, { eventName: 'keydown' });
-  onKeyStroke(['d', 'Backspace'], handleKeyRemove, { eventName: 'keydown' });
+  onKeyStroke(['d'], handleKeyRemove, { eventName: 'keydown' });
 
   return {
     // Exposed state for debugging/UI

@@ -8,6 +8,9 @@ import { Icon } from '@testimonials/icons';
 import { Kbd } from '@testimonials/ui';
 import type { StepType } from '../../models';
 import { studioTestIds } from '@/shared/constants/testIds';
+import { usePlatform } from '@/shared/composables';
+
+const { modifierKey } = usePlatform();
 
 const emit = defineEmits<{
   addStep: [stepType: StepType];
@@ -83,7 +86,7 @@ const emit = defineEmits<{
           <span class="text-muted-foreground/70">Navigate</span>
         </span>
         <span class="flex items-center gap-1.5">
-          <Kbd>⌫</Kbd>
+          <Kbd>{{ modifierKey }}</Kbd><Kbd>D</Kbd>
           <span class="text-muted-foreground/70">Delete</span>
         </span>
       </div>
