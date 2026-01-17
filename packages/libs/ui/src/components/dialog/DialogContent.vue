@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from "vue"
+import { computed, useAttrs } from "vue"
 import type { DialogContentEmits, DialogContentProps } from "reka-ui"
 import type { HTMLAttributes } from "vue"
 import { reactiveOmit } from "@vueuse/core"
@@ -12,6 +12,14 @@ import {
   useForwardPropsEmits,
 } from "reka-ui"
 import { cn } from '@ui/lib/utils'
+
+// Get $attrs to forward to DialogContent (for data-testid, etc.)
+const attrs = useAttrs()
+
+// Disable automatic attribute inheritance since we manually forward to DialogContent
+defineOptions({
+  inheritAttrs: false,
+})
 
 const props = defineProps<DialogContentProps & {
   class?: HTMLAttributes["class"]
@@ -33,7 +41,7 @@ const overlayClasses = computed(() => cn(
   <DialogPortal>
     <DialogOverlay :class="overlayClasses" />
     <DialogContent
-      v-bind="forwarded"
+      v-bind="{ ...forwarded, ...attrs }"
       :class="
         cn(
           'fixed left-1/2 top-1/2 z-50 grid w-full max-w-lg -translate-x-1/2 -translate-y-1/2 gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg',

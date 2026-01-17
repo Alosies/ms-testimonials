@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, useAttrs } from 'vue';
 import {
   DialogClose,
   DialogContent,
@@ -11,6 +11,14 @@ import {
 import { X } from 'lucide-vue-next';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '../../lib/utils';
+
+// Get $attrs to forward to DialogContent (for data-testid, etc.)
+const attrs = useAttrs();
+
+// Disable automatic attribute inheritance since we manually forward to DialogContent
+defineOptions({
+  inheritAttrs: false,
+});
 
 const sheetVariants = cva(
   'fixed z-50 gap-4 bg-white p-6 shadow-lg transition ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:duration-300 data-[state=open]:duration-500',
@@ -85,7 +93,7 @@ const delegatedProps = computed(() => {
     />
     <DialogContent
       :class="cn(sheetVariants({ side, size }), props.class)"
-      v-bind="delegatedProps"
+      v-bind="{ ...delegatedProps, ...attrs }"
       @close-auto-focus="emit('closeAutoFocus', $event)"
       @escape-key-down="emit('escapeKeyDown', $event)"
       @focus-outside="emit('focusOutside', $event)"
