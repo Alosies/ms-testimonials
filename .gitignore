@@ -39,3 +39,4 @@ postgres_data
 
 # Claude Code MCP config (worktree-specific)
 .mcp.json
+apps/web/test-results/
