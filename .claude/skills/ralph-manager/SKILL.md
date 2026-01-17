@@ -1,12 +1,12 @@
 ---
 name: ralph-manager
-description: Create and manage Ralph workspaces from ADRs or specs. Generates PRD tasks, workspace metadata, and progress tracking. Can invoke /ralph-loop plugin directly. Triggers on "workspace", "prd", "create workspace".
-allowed-tools: Bash, Read, Write, Edit, Glob, Grep, AskUserQuestion, TodoWrite, Skill
+description: Create and manage Ralph workspaces from ADRs or specs. Generates PRD tasks, workspace metadata, and progress tracking for ralph-tui execution. Triggers on "workspace", "prd", "create workspace".
+allowed-tools: Bash, Read, Write, Edit, Glob, Grep, AskUserQuestion, TodoWrite
 ---
 
 # Ralph Manager Skill
 
-Create and manage workspaces for Ralph autonomous loops. This skill handles workspace setup and can directly invoke the `/ralph-loop` plugin.
+Create and manage workspaces for Ralph TUI execution. This skill prepares all files needed for `ralph-tui run`.
 
 ## Quick Reference
 
@@ -22,10 +22,19 @@ Create and manage workspaces for Ralph autonomous loops. This skill handles work
 ```
 
 After workspace creation, you'll be asked:
-1. **Start plugin loop** - Invokes `/ralph-loop` automatically
-2. **Show AFK command** - Displays `make ralph-afk` command for terminal
-3. **Review PRD** - Shows the generated prd.json
-4. **Cancel** - Exit without running
+1. **Show run command (Recommended)** - Displays `ralph-tui run` command
+2. **Review PRD** - Shows the generated prd.json
+3. **Cancel** - Exit without running
+
+## Ralph TUI Run Command
+
+When user asks for the command to run ralph-tui, provide this format:
+
+```bash
+ralph-tui run --prd ralph/workspaces/{workspace-folder}/prd.json
+```
+
+The user runs this command in their terminal to start the autonomous execution loop.
 
 ## Directory Structure
 
@@ -42,8 +51,8 @@ ralph/
 ## Workflow
 
 ```
-New:      Parse args → Detect agent → Create workspace → Generate PRD → Ask user → Execute or Show command
-Continue: Validate → Detect agent → Check handoff → Update metadata → Ask user → Execute or Show command
+New:      Parse args → Detect agent → Create workspace → Generate PRD → Ask user → Show run command
+Continue: Validate → Detect agent → Check handoff → Update metadata → Ask user → Show run command
 ```
 
 ## Procedures
@@ -52,7 +61,6 @@ Continue: Validate → Detect agent → Check handoff → Update metadata → As
 |--------|------|
 | Create new workspace | `procedures/new-workspace.md` |
 | Continue existing | `procedures/continue-workspace.md` |
-| Execute loop | `procedures/execute-loop.md` |
 
 ## Schemas
 
@@ -75,40 +83,21 @@ Determine agent from working directory path:
 - `ms-testimonials-green` → `green`
 - `ms-testimonials-blue` → `blue`
 
-## Invoking /ralph-loop
-
-When user selects "Start plugin loop", use the Skill tool:
-
-```
-Skill tool with:
-  skill: "ralph-loop"
-  args: "Read ralph/workspaces/{folder}/prd.json and implement the next task where passes:false. Follow acceptance criteria exactly. Run pnpm typecheck to verify. Update prd.json (set passes:true) and progress.txt when complete. Output <promise>ALL-TASKS-COMPLETE</promise> when all tasks pass." --max-iterations 20 --completion-promise "ALL-TASKS-COMPLETE"
-```
-
 ## Key Rules
 
-1. **One story at a time** - Complete before moving to next
-2. **Always verify** - Run typecheck before marking passes: true
-3. **Update progress.txt** - Log learnings for future iterations
-4. **Record handoffs** - Track agent transitions in workspace.json
-5. **Use skills** - Invoke `/hasura-migrations`, `/graphql-code` as needed
+1. **Generate valid prd.json** - Must be compatible with ralph-tui format
+2. **Record handoffs** - Track agent transitions in workspace.json
+3. **Include acceptance criteria** - Each task needs clear verification steps
 
 ## Cross-Agent Sharing
 
 ```bash
-# After completing story
+# After workspace setup
 git add ralph/workspaces/
-git commit -m "ralph(yellow): complete DB-001 for flows-table"
+git commit -m "ralph(yellow): setup workspace for flows-table"
 git push
 
 # Other agent continues
 git pull
 /ralph-manager --continue ralph/workspaces/flows-table_2026-01-10/
-```
-
-## Completion Signal
-
-When all stories have `passes: true`:
-```
-<promise>ALL-TASKS-COMPLETE</promise>
 ```

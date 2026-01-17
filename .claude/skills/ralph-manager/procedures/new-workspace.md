@@ -157,12 +157,8 @@ Story Overview:
     "multiSelect": false,
     "options": [
       {
-        "label": "Start plugin loop (Recommended)",
-        "description": "Invoke /ralph-loop to begin autonomous execution inside Claude Code"
-      },
-      {
-        "label": "Show AFK command",
-        "description": "Display terminal command for background execution"
+        "label": "Show run command (Recommended)",
+        "description": "Display ralph-tui run command for terminal execution"
       },
       {
         "label": "Review PRD",
@@ -181,25 +177,14 @@ Story Overview:
 
 ## Step 8: Execute Based on Selection
 
-### If "Start plugin loop" selected:
-
-Use the **Skill tool** to invoke `/ralph-loop`:
-
-```json
-{
-  "skill": "ralph-loop",
-  "args": "\"Read ralph/workspaces/{folder-name}/prd.json and implement the next task where passes:false. Follow acceptance criteria exactly. Run pnpm typecheck to verify. Update prd.json (set passes:true) and progress.txt when complete. Output <promise>ALL-TASKS-COMPLETE</promise> when all tasks pass.\" --max-iterations 20 --completion-promise \"ALL-TASKS-COMPLETE\""
-}
-```
-
-### If "Show AFK command" selected:
+### If "Show run command" selected:
 
 Display the command for the user to copy:
 
 ```
-Run this in your terminal for autonomous execution:
+Run this in your terminal to start ralph-tui:
 
-make ralph-afk PRD=ralph/workspaces/{folder-name}/prd.json MAX=10
+ralph-tui run --prd ralph/workspaces/{folder-name}/prd.json
 ```
 
 ### If "Review PRD" selected:

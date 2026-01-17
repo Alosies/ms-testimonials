@@ -59,10 +59,12 @@ import { createStudioActions } from '@e2e/features/form-studio/actions';
 ```typescript
 test('descriptive name', async ({ authedPage, formViaApi }) => {
   const studio = createStudioPage(authedPage);
-  const actions = createStudioActions(studio);
+  // Destructure actions for cleaner code
+  const { setup, select, manage } = createStudioActions(studio);
 
-  await actions.setup.loadWithSteps(formViaApi);
-  await actions.select.selectStep(stepId);
+  await setup.loadWithSteps(formViaApi);
+  await select.selectStep(stepId);
+  await manage.editStep(stepId);
   // ...assertions
 });
 ```
