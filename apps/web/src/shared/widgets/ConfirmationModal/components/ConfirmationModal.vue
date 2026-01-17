@@ -13,6 +13,7 @@ import { Icon } from '@testimonials/icons';
 import { CONFIRMATION_MESSAGES, INTENT_STYLES } from '../constants';
 import { useConfirmationModal } from '../composables';
 import type { ConfirmationIntent } from '../models';
+import { widgetsTestIds } from '@/shared/constants/testIds';
 
 // Component connects to global state internally
 const { modalState, handleConfirm, handleCancel, handleUpdateVisible } = useConfirmationModal();
@@ -54,7 +55,11 @@ const iconName = computed(() => {
 
 <template>
   <Dialog :open="modalState.visible" @update:open="handleUpdateVisible">
-    <DialogContent class="z-[60] sm:max-w-md" overlay-class="z-[60]">
+    <DialogContent
+      class="z-[60] sm:max-w-md"
+      overlay-class="z-[60]"
+      :data-testid="widgetsTestIds.confirmationModal"
+    >
       <DialogHeader>
         <!-- Icon -->
         <div
@@ -64,8 +69,10 @@ const iconName = computed(() => {
           <Icon :icon="iconName" class="h-6 w-6" :class="styles.iconColor" />
         </div>
 
-        <DialogTitle class="text-center">{{ messages.title }}</DialogTitle>
-        <DialogDescription class="text-center">
+        <DialogTitle class="text-center" :data-testid="widgetsTestIds.confirmationModalTitle">
+          {{ messages.title }}
+        </DialogTitle>
+        <DialogDescription class="text-center" :data-testid="widgetsTestIds.confirmationModalMessage">
           {{ messages.message }}
         </DialogDescription>
       </DialogHeader>
@@ -83,11 +90,12 @@ const iconName = computed(() => {
       </div>
 
       <DialogFooter class="mt-4 flex gap-3 sm:justify-center">
-        <!-- Blocked state: Single acknowledge button -->
+        <!-- Blocked state: Single acknowledge button (dismisses modal without action) -->
         <template v-if="modalState.isBlocked">
           <Button
             class="flex-1"
             :class="styles.buttonClass"
+            :data-testid="widgetsTestIds.confirmationModalAcknowledgeButton"
             @click="handleCancel"
           >
             {{ messages.confirmText }}
@@ -100,6 +108,7 @@ const iconName = computed(() => {
             variant="outline"
             class="flex-1"
             :disabled="modalState.isLoading"
+            :data-testid="widgetsTestIds.confirmationModalCancelButton"
             @click="handleCancel"
           >
             Cancel
@@ -108,6 +117,7 @@ const iconName = computed(() => {
             class="flex-1"
             :class="styles.buttonClass"
             :disabled="modalState.isLoading"
+            :data-testid="widgetsTestIds.confirmationModalConfirmButton"
             @click="handleConfirm"
           >
             <Icon
