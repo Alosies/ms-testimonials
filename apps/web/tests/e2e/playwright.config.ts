@@ -23,7 +23,7 @@ export default defineConfig({
   timeout: 60000, // 60s per test
   reporter: [
     ['html', { outputFolder: './test-results/html' }],
-    ['list'],
+    ['list', { printSteps: true }],
   ],
   use: {
     baseURL: process.env.E2E_BASE_URL || PREVIEW_URL,
@@ -37,12 +37,16 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
     },
   ],
-  // Run tests against production build for stability
-  // Build is skipped if already built, preview serves the dist folder
-  webServer: {
-    command: 'pnpm build && pnpm preview',
-    url: PREVIEW_URL,
-    reuseExistingServer: !process.env.CI,
-    timeout: 180000, // 3 min for build + preview startup
-  },
+  // webServer only when E2E_BASE_URL is not set (CLI runs)
+  // VS Code plugin sets E2E_BASE_URL via .vscode/settings.json to use dev server
+  ...(process.env.E2E_BASE_URL
+    ? {}
+    : {
+        webServer: {
+          command: 'pnpm build && pnpm preview',
+          url: PREVIEW_URL,
+          reuseExistingServer: !process.env.CI,
+          timeout: 180000,
+        },
+      }),
 });
