@@ -24,3 +24,17 @@ export { useSaveFormSteps } from './useSaveFormSteps';
 export { useFlowNavigation } from './useFlowNavigation';
 export { useBranchedKeyboardNavigation } from './useBranchedKeyboardNavigation';
 export { useFormStudioData } from './useFormStudioData';
+
+// ADR-014 Phase 3: Focused composables (ISP compliance)
+export { useTimelineReader, type TimelineReader } from './useTimelineReader';
+export { useTimelineMutator, type TimelineMutator } from './useTimelineMutator';
+export { useTimelineControl, type TimelineControl } from './useTimelineControl';
+
+// ADR-014 Phase 5: Split timeline editor (SRP compliance)
+export { useTimelineState, type TimelineState } from './useTimelineState';
+export { useTimelineSelection, type TimelineSelection } from './useTimelineSelection';
+export { useTimelineStepOps, type TimelineStepOps, type StepAddOptions } from './useTimelineStepOps';
+export { useTimelineStepOpsLocal, type TimelineStepOpsLocal } from './useTimelineStepOpsLocal';
+export { useTimelineStepOpsPersist, type TimelineStepOpsPersist } from './useTimelineStepOpsPersist';
+export { useTimelinePersistence, type TimelinePersistence } from './useTimelinePersistence';
+export { useTimelineComputed, type TimelineComputed } from './useTimelineComputed';

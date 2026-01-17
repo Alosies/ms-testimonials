@@ -11,6 +11,7 @@
 import { computed } from 'vue';
 import { createSharedComposable } from '@vueuse/core';
 import { useCreateFormQuestion } from '@/entities/formQuestion';
+import { stepTypeRequiresQuestion } from '@/entities/formStep';
 import { useGetQuestionTypes } from '@/entities/questionType';
 import { useCurrentContextStore } from '@/shared/currentContext';
 import type { StepType, FlowMembership } from '@/shared/stepCards';
@@ -79,10 +80,11 @@ export const useStepQuestionService = createSharedComposable(() => {
   }
 
   /**
-   * Check if a step type requires a question
+   * Check if a step type requires a question.
+   * Uses the step type registry (ADR-014 Phase 2).
    */
   function requiresQuestion(stepType: StepType): boolean {
-    return stepType === 'question' || stepType === 'rating';
+    return stepTypeRequiresQuestion(stepType);
   }
 
   /**

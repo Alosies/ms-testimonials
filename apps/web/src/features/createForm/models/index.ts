@@ -18,6 +18,19 @@ export type {
   BranchedNavigationResult,
 } from './flowNavigation';
 
+// Timeline editor types (ADR-014 Phase 5, CR-002)
+export type {
+  TimelineState,
+  TimelineSelection,
+  TimelineSelectionReturn,
+  StepAddOptions,
+  TimelineStepOps,
+  TimelineStepOpsLocal,
+  TimelineStepOpsPersist,
+  TimelinePersistence,
+  TimelineComputed,
+} from './timeline';
+
 // Help content for properties panel
 export interface HelpContent {
   title: string;
