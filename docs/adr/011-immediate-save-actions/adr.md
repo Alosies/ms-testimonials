@@ -18,6 +18,14 @@
 
 **Proposed** - 2026-01-11
 
+## Updates
+
+### 2026-01-17: Keyboard Shortcut Clarification
+
+- **`⌘D` (Cmd+D) is mapped to DELETE**, not duplicate. The shortcut triggers the delete confirmation modal.
+- **Duplicate step functionality is deferred** - not implemented via keyboard shortcut in the current scope.
+- The "Duplicate Step Sequence" section below describes the planned implementation for a future iteration.
+
 ## Context
 
 ADR-010 establishes a centralized auto-save controller for **typed content** (debounced 500ms). However, many user actions in the form studio are **discrete** (buttons, toggles, dropdowns, drag-drop) and should save immediately without debouncing.

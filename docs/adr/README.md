@@ -43,4 +43,5 @@ Each ADR follows this structure:
 | ADR-012 | *(Deprecated - see ADR-014)* | Deprecated | 2026-01-12 |
 | [ADR-013](./013-form-entities-schema-refactoring/adr.md) | Form Entities Schema Refactoring | Accepted | 2026-01-12 |
 | [ADR-014](./014-fsd-composables-refactoring/adr.md) | FSD Composables Refactoring | In Progress | 2026-01-12 |
-| [ADR-015](./015-e2e-testing-architecture/adr.md) | Modular E2E Testing Architecture | Proposed | 2026-01-12 |
+| [ADR-015](./015-e2e-testing-architecture/adr.md) | Modular E2E Testing Architecture | Accepted | 2026-01-13 |
+| [ADR-016](./016-test-data-api/adr.md) | Test Data API for E2E Testing | Proposed | 2026-01-14 |
