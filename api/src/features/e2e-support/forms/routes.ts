@@ -1,6 +1,6 @@
 import type { Context } from 'hono';
 import { env } from '@/shared/config/env';
-import { createTestFormWithSteps, deleteTestForm } from './crud';
+import { createTestFormWithSteps, createTestFormWithBranching, deleteTestForm } from './crud';
 
 /**
  * POST /e2e/forms
@@ -33,6 +33,40 @@ export async function createForm(c: Context) {
   } catch (error) {
     console.error('[E2E] Create form error:', error);
     return c.json({ error: 'Failed to create form' }, 500);
+  }
+}
+
+/**
+ * POST /e2e/forms/branched
+ * Create a test form with branching (shared + testimonial + improvement flows)
+ *
+ * Uses pre-configured E2E_USER_ID and E2E_ORGANIZATION_ID from environment.
+ */
+export async function createBranchedForm(c: Context) {
+  try {
+    const body = await c.req.json();
+    const { name } = body;
+
+    if (!name || typeof name !== 'string') {
+      return c.json({ error: 'name is required' }, 400);
+    }
+
+    console.log(`[E2E] Creating branched form "${name}"`);
+
+    const result = await createTestFormWithBranching(
+      env.E2E_ORGANIZATION_ID,
+      name,
+      env.E2E_USER_ID
+    );
+
+    const studioUrl = `${env.FRONTEND_URL}/forms/${result.formId}/studio`;
+
+    console.log(`[E2E] Created branched form ${result.formId} with ${result.allSteps.length} steps`);
+
+    return c.json({ ...result, studioUrl }, 201);
+  } catch (error) {
+    console.error('[E2E] Create branched form error:', error);
+    return c.json({ error: 'Failed to create branched form' }, 500);
   }
 }
 

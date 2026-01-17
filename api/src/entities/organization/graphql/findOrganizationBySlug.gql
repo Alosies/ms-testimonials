@@ -4,5 +4,6 @@ query FindOrganizationBySlug($slug: String!) {
     name
     slug
     is_active
+    created_by
   }
 }

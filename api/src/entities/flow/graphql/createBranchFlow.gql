@@ -1,0 +1,29 @@
+mutation CreateBranchFlow(
+  $form_id: String!
+  $organization_id: String!
+  $name: String!
+  $flow_type: String!
+  $is_primary: Boolean!
+  $display_order: smallint!
+  $branch_question_id: String
+  $branch_field: String
+  $branch_operator: String
+  $branch_value: jsonb
+) {
+  insert_flows_one(
+    object: {
+      form_id: $form_id
+      organization_id: $organization_id
+      name: $name
+      flow_type: $flow_type
+      is_primary: $is_primary
+      display_order: $display_order
+      branch_question_id: $branch_question_id
+      branch_field: $branch_field
+      branch_operator: $branch_operator
+      branch_value: $branch_value
+    }
+  ) {
+    id
+  }
+}
