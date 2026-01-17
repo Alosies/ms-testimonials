@@ -39,8 +39,10 @@ apps/web/tests/e2e/
 │   │   └── login.spec.ts     # Authentication tests
 │   ├── forms-list/
 │   │   └── forms-list.spec.ts # Forms list page tests
-│   └── form-studio/
-│       └── studio.spec.ts    # Form builder/studio tests
+│   └── form-studio/          # Form builder/studio tests
+│       ├── actions/          # Reusable action helpers (DRY)
+│       ├── focused-tests/    # Detailed debugging tests
+│       └── journey-tests/    # Complete workflow tests
 │
 ├── shared/                   # Shared utilities and abstractions
 │   ├── api/
@@ -381,12 +383,15 @@ Available endpoints:
 2. **Factory pattern for test data** - Use actual returned data for assertions, not hardcoded constants
 3. **Mirror app structure** - Feature folders should match app feature folders
 4. **Page objects for UI** - All UI interactions go through page objects
-5. **Clean imports** - Import from barrel exports (`../../shared`, `../../entities`)
+5. **Clean imports** - Use `@e2e/*` path aliases for clean imports
 6. **Noun-based fixture names** - Name fixtures as nouns (`formViaApi`), not actions (`testForm`)
+7. **Journey + Focused tests** - Write one journey test for complete flow, focused tests for debugging
+8. **DRY with actions** - Share common operations via the actions layer (see [Test Organization](./test-organization.md))
 
 ---
 
 ## Related Documentation
 
+- [Test Organization](./test-organization.md) - Journey tests, focused tests, actions layer
 - [Test IDs](./test-ids.md) - Centralized test ID system
 - [Running Tests](./running-tests.md) - Commands and environment setup
