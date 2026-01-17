@@ -14,7 +14,6 @@ import type { StepType } from '@/shared/stepCards';
 import TimelineStepCard from './TimelineStepCard.vue';
 import TimelineEmptyState from './TimelineEmptyState.vue';
 import BranchedTimelineCanvas from './BranchedTimelineCanvas.vue';
-import { studioTestIds } from '@/shared/constants/testIds';
 
 const editor = useTimelineEditor();
 
@@ -38,7 +37,7 @@ async function handleInsert(afterIndex: number, type: StepType) {
   <BranchedTimelineCanvas v-if="editor.isBranchingEnabled.value" />
 
   <!-- Standard linear view -->
-  <div v-else :data-testid="studioTestIds.canvas" class="timeline-container">
+  <div v-else class="timeline-container">
     <div v-if="editor.steps.value.length > 0" class="timeline-spacer" />
 
     <TimelineStepCard

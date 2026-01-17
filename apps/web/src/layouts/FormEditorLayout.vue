@@ -1,23 +1,26 @@
 <script setup lang="ts">
-// Minimal layout - just structure
+import { studioTestIds } from '@/shared/constants/testIds';
 </script>
 
 <template>
   <div class="flex h-screen flex-col bg-background">
     <!-- Header slot -->
-    <header class="shrink-0 border-b border-border">
+    <header :data-testid="studioTestIds.header" class="shrink-0 border-b border-border">
       <slot name="header" />
     </header>
 
     <!-- Three-panel body -->
     <div class="flex flex-1 overflow-hidden">
       <!-- Left: Steps Sidebar (240px) -->
-      <aside class="w-60 shrink-0 border-r border-border bg-muted/30 overflow-y-auto scrollbar-subtle">
+      <aside
+        :data-testid="studioTestIds.sidebar"
+        class="w-60 shrink-0 border-r border-border bg-muted/30 overflow-y-auto scrollbar-subtle"
+      >
         <slot name="sidebar" />
       </aside>
 
       <!-- Center: Timeline Canvas (fluid) - Figma-style dotted grid with scroll-snap -->
-      <main class="relative flex-1 overflow-hidden">
+      <main :data-testid="studioTestIds.canvas" class="relative flex-1 overflow-hidden">
         <!-- Fixed overlay for keyboard hints (desktop only, doesn't scroll) -->
         <div class="absolute inset-0 pointer-events-none z-10">
           <slot name="canvas-overlay" />
@@ -29,7 +32,10 @@
       </main>
 
       <!-- Right: Properties Panel (280px) -->
-      <aside class="w-72 shrink-0 border-l border-border bg-background overflow-y-auto scrollbar-subtle">
+      <aside
+        :data-testid="studioTestIds.propertiesPanel"
+        class="w-72 shrink-0 border-l border-border bg-background overflow-y-auto scrollbar-subtle"
+      >
         <slot name="properties" />
       </aside>
     </div>

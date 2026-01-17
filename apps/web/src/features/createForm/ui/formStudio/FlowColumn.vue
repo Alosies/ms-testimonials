@@ -15,6 +15,7 @@ import type { FlowMembership } from '@/shared/stepCards';
 import type { FormStep } from '../../models';
 import type { StepType } from '@/shared/stepCards';
 import { useTimelineEditor } from '../../composables/timeline';
+import { studioTestIds } from '@/shared/constants/testIds';
 import FlowStepCard from './FlowStepCard.vue';
 import TimelineConnector from './TimelineConnector.vue';
 import StepTypePicker from '../stepsSidebar/StepTypePicker.vue';
@@ -119,6 +120,9 @@ function handleCollapseClick(e: Event) {
       'flow-column-testimonial': flowType === 'testimonial',
       'flow-column-improvement': flowType === 'improvement',
     }"
+    :data-testid="studioTestIds.flowColumn"
+    :data-flow-type="flowType"
+    :data-is-focused="isFocused"
     @click="emit('focus')"
   >
     <!-- Flow Header -->

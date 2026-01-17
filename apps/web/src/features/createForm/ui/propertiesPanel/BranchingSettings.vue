@@ -29,6 +29,7 @@ import {
 import { useTimelineEditor } from '../../composables/timeline';
 import { useSaveLock } from '../../composables';
 import { FLOW_METADATA } from '@/entities/form';
+import { studioTestIds } from '@/shared/constants/testIds';
 
 const editor = useTimelineEditor();
 const { isLocked } = useSaveLock();
@@ -106,7 +107,7 @@ function handleCancelDisable() {
 </script>
 
 <template>
-  <div v-if="isRatingStep" class="branching-settings">
+  <div v-if="isRatingStep" class="branching-settings" :data-testid="studioTestIds.propertiesBranchingSettings">
     <div class="flex items-center gap-2 mb-3">
       <Icon icon="mdi:source-branch" class="w-4 h-4 text-primary" />
       <h4 class="text-sm font-semibold">Conditional Branching</h4>

@@ -4,6 +4,7 @@ import { Icon } from '@testimonials/icons';
 import { Button } from '@testimonials/ui';
 import type { StepType } from '../../models';
 import { STEP_HELP_CONTENT } from '../../constants';
+import { studioTestIds } from '@/shared/constants/testIds';
 
 interface Props {
   stepType: StepType | null;
@@ -20,7 +21,7 @@ const content = computed(() => {
 </script>
 
 <template>
-  <div v-if="content" class="border-b pb-4">
+  <div v-if="content" class="border-b pb-4" :data-testid="studioTestIds.propertiesContextualHelp">
     <Button
       variant="ghost"
       class="flex items-center gap-2 w-full justify-start px-0 hover:bg-transparent"
@@ -35,7 +36,7 @@ const content = computed(() => {
       />
     </Button>
     <div v-show="isOpen" class="pt-3">
-      <h4 class="font-medium text-sm mb-1">{{ content.title }}</h4>
+      <h4 class="font-medium text-sm mb-1" :data-testid="studioTestIds.propertiesStepTypeHeading">{{ content.title }}</h4>
       <p class="text-sm text-muted-foreground mb-3">
         {{ content.description }}
       </p>

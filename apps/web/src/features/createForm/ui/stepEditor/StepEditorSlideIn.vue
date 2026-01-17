@@ -35,6 +35,7 @@ import { SaveStatusPill, type SaveStatus } from '@/shared/widgets';
 import type { StepContent, StepType, LinkedQuestion } from '@/shared/stepCards';
 import { getStepLabel } from '../../functions';
 import { STEP_TYPE_OPTIONS, STEP_TYPE_CONFIGS } from '../../constants';
+import { studioTestIds } from '@/shared/constants/testIds';
 
 const emit = defineEmits<{
   /** Emitted when navigating to a different step - parent should scroll to this index */
@@ -156,10 +157,12 @@ onUnmounted(() => {
     <SheetContent
       side="right"
       :class="`overflow-y-auto transition-all duration-200 ${needsWiderPanel ? 'w-[500px] sm:w-[640px]' : 'w-[400px] sm:w-[540px]'}`"
+      :data-testid="studioTestIds.stepEditor"
+      :data-step-id="selectedStep?.id"
     >
       <SheetHeader class="border-b pb-4">
         <div class="flex items-center justify-between">
-          <SheetTitle class="flex items-center gap-2">
+          <SheetTitle class="flex items-center gap-2" :data-testid="studioTestIds.stepEditorTitle">
             <Icon v-if="stepConfig" :icon="stepConfig.icon" class="w-5 h-5" />
             <span>Edit {{ stepLabel }}</span>
           </SheetTitle>

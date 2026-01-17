@@ -66,13 +66,14 @@ async function handleAddAtEnd(type: StepType) {
 </script>
 
 <template>
-  <div :data-testid="studioTestIds.sidebar" class="p-2 text-xs text-muted-foreground">
+  <div class="p-2 text-xs text-muted-foreground">
     <div class="mb-2 font-semibold">STEPS</div>
 
     <template v-for="(step, index) in editor.steps.value" :key="step.id">
       <!-- Step item -->
       <div
         :data-testid="studioTestIds.sidebarStepCard"
+        :data-step-id="step.id"
         class="step-item p-2 bg-background rounded cursor-pointer flex items-center gap-2 border-l-2 transition-colors"
         :class="[
           index === editor.selectedIndex.value ? 'ring-2 ring-primary' : '',

@@ -5,22 +5,26 @@
  * Allows customization of:
  * - Primary accent color (buttons, links, highlights)
  * - Displays organization logo (read-only, set in Settings)
+ *
+ * ADR-014 Phase 3: Uses focused useDesignControl composable (ISP compliance).
  */
 import { ref, watch } from 'vue';
 import { Icon } from '@testimonials/icons';
 import { Button, Label } from '@testimonials/ui';
-import { useTimelineEditor } from '../../composables/timeline';
+import { useDesignControl } from '../../composables/design';
 import { isValidHexColor, normalizeHexColor } from '@/entities/form';
 import { OrganizationLogo } from '@/entities/organization';
+import { studioTestIds } from '@/shared/constants/testIds';
 
-const editor = useTimelineEditor();
+// ADR-014: Use focused design control instead of full design
+const design = useDesignControl();
 
 // Local state for color input (to handle native color picker)
-const localColor = ref(editor.effectivePrimaryColor.value);
+const localColor = ref(design.effectivePrimaryColor.value);
 
-// Sync local color with editor state
+// Sync local color with design control state
 watch(
-  () => editor.effectivePrimaryColor.value,
+  () => design.effectivePrimaryColor.value,
   (newColor) => {
     localColor.value = newColor;
   }
@@ -33,13 +37,13 @@ function handleColorChange(event: Event) {
 
   if (isValidHexColor(newColor)) {
     localColor.value = normalizeHexColor(newColor);
-    editor.updatePrimaryColor(localColor.value);
+    design.updatePrimaryColor(localColor.value);
   }
 }
 </script>
 
 <template>
-  <div class="design-settings">
+  <div class="design-settings" :data-testid="studioTestIds.propertiesDesignSettings">
     <div class="flex items-center gap-2 mb-3">
       <Icon icon="heroicons:paint-brush" class="w-4 h-4 text-primary" />
       <h4 class="text-sm font-semibold">Design</h4>
@@ -73,11 +77,11 @@ function handleColorChange(event: Event) {
 
           <!-- Reset button -->
           <Button
-            v-if="editor.hasCustomColor.value"
+            v-if="design.hasCustomColor.value"
             variant="ghost"
             size="sm"
             class="h-8 px-2"
-            @click="editor.resetPrimaryColor"
+            @click="design.resetPrimaryColor"
           >
             <Icon icon="heroicons:arrow-path" class="w-4 h-4" />
           </Button>
@@ -90,11 +94,11 @@ function handleColorChange(event: Event) {
 
         <!-- Organization Logo Preview -->
         <div
-          v-if="editor.orgLogoUrl.value"
+          v-if="design.orgLogoUrl.value"
           class="flex items-center gap-3 p-3 rounded-lg bg-muted/50 border border-border/50"
         >
           <OrganizationLogo
-            :logo-url="editor.orgLogoUrl.value"
+            :logo-url="design.orgLogoUrl.value"
             size="md"
             :show-placeholder="false"
           />
@@ -119,7 +123,7 @@ function handleColorChange(event: Event) {
 
       <!-- Saving indicator -->
       <div
-        v-if="editor.designSaving.value"
+        v-if="design.isSaving.value"
         class="flex items-center gap-2 text-xs text-muted-foreground"
       >
         <Icon icon="heroicons:arrow-path" class="w-3 h-3 animate-spin" />
@@ -128,10 +132,10 @@ function handleColorChange(event: Event) {
 
       <!-- Error message -->
       <div
-        v-if="editor.designSaveError.value"
+        v-if="design.saveError.value"
         class="text-xs text-destructive"
       >
-        {{ editor.designSaveError.value }}
+        {{ design.saveError.value }}
       </div>
     </div>
   </div>

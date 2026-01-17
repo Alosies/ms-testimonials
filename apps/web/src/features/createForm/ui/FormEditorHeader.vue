@@ -27,7 +27,7 @@ function handleBack() {
 </script>
 
 <template>
-  <div :data-testid="studioTestIds.header" class="flex h-14 items-center justify-between px-4 bg-background">
+  <div class="flex h-14 items-center justify-between px-4 bg-background">
     <!-- Left: Back button + Divider + Title -->
     <div class="flex items-center">
       <!-- Exit Studio button -->
