@@ -18439,6 +18439,22 @@ export type Widgets_Variance_Order_By = {
   max_display?: InputMaybe<Order_By>;
 };
 
+export type CreateBranchFlowMutationVariables = Exact<{
+  form_id: Scalars['String']['input'];
+  organization_id: Scalars['String']['input'];
+  name: Scalars['String']['input'];
+  flow_type: Scalars['String']['input'];
+  is_primary: Scalars['Boolean']['input'];
+  display_order: Scalars['smallint']['input'];
+  branch_question_id?: InputMaybe<Scalars['String']['input']>;
+  branch_field?: InputMaybe<Scalars['String']['input']>;
+  branch_operator?: InputMaybe<Scalars['String']['input']>;
+  branch_value?: InputMaybe<Scalars['jsonb']['input']>;
+}>;
+
+
+export type CreateBranchFlowMutation = { __typename?: 'mutation_root', insert_flows_one: { __typename?: 'flows', id: string } | null };
+
 export type CreateTestFlowMutationVariables = Exact<{
   form_id: Scalars['String']['input'];
   organization_id: Scalars['String']['input'];
@@ -18478,6 +18494,14 @@ export type SoftDeleteTestFormMutationVariables = Exact<{
 
 export type SoftDeleteTestFormMutation = { __typename?: 'mutation_root', update_forms_by_pk: { __typename?: 'forms', id: string, is_active: boolean } | null };
 
+export type UpdateFormBranchingConfigMutationVariables = Exact<{
+  id: Scalars['String']['input'];
+  branching_config: Scalars['jsonb']['input'];
+}>;
+
+
+export type UpdateFormBranchingConfigMutation = { __typename?: 'mutation_root', update_forms_by_pk: { __typename?: 'forms', id: string, branching_config: any } | null };
+
 export type CreateTestFormQuestionMutationVariables = Exact<{
   step_id: Scalars['String']['input'];
   organization_id: Scalars['String']['input'];
@@ -18498,6 +18522,8 @@ export type CreateTestFormStepMutationVariables = Exact<{
   step_type: Scalars['String']['input'];
   step_order: Scalars['smallint']['input'];
   is_active: Scalars['Boolean']['input'];
+  content?: InputMaybe<Scalars['jsonb']['input']>;
+  flow_membership?: InputMaybe<Scalars['String']['input']>;
 }>;
 
 
@@ -18669,6 +18695,15 @@ export type UpdateIdentityMutationVariables = Exact<{
 export type UpdateIdentityMutation = { __typename?: 'mutation_root', update_user_identities_by_pk: { __typename?: 'user_identities', id: string, user_id: string, provider: string } | null };
 
 
+export const CreateBranchFlowDocument = `
+    mutation CreateBranchFlow($form_id: String!, $organization_id: String!, $name: String!, $flow_type: String!, $is_primary: Boolean!, $display_order: smallint!, $branch_question_id: String, $branch_field: String, $branch_operator: String, $branch_value: jsonb) {
+  insert_flows_one(
+    object: {form_id: $form_id, organization_id: $organization_id, name: $name, flow_type: $flow_type, is_primary: $is_primary, display_order: $display_order, branch_question_id: $branch_question_id, branch_field: $branch_field, branch_operator: $branch_operator, branch_value: $branch_value}
+  ) {
+    id
+  }
+}
+    `;
 export const CreateTestFlowDocument = `
     mutation CreateTestFlow($form_id: String!, $organization_id: String!, $name: String!, $flow_type: String!, $is_primary: Boolean!, $display_order: smallint!) {
   insert_flows_one(
@@ -18706,6 +18741,17 @@ export const SoftDeleteTestFormDocument = `
   }
 }
     `;
+export const UpdateFormBranchingConfigDocument = `
+    mutation UpdateFormBranchingConfig($id: String!, $branching_config: jsonb!) {
+  update_forms_by_pk(
+    pk_columns: {id: $id}
+    _set: {branching_config: $branching_config}
+  ) {
+    id
+    branching_config
+  }
+}
+    `;
 export const CreateTestFormQuestionDocument = `
     mutation CreateTestFormQuestion($step_id: String!, $organization_id: String!, $question_type_id: String!, $question_text: String!, $question_key: String!, $display_order: smallint!, $is_required: Boolean!, $is_active: Boolean!) {
   insert_form_questions_one(
@@ -18716,9 +18762,9 @@ export const CreateTestFormQuestionDocument = `
 }
     `;
 export const CreateTestFormStepDocument = `
-    mutation CreateTestFormStep($flow_id: String!, $organization_id: String!, $step_type: String!, $step_order: smallint!, $is_active: Boolean!) {
+    mutation CreateTestFormStep($flow_id: String!, $organization_id: String!, $step_type: String!, $step_order: smallint!, $is_active: Boolean!, $content: jsonb = {}, $flow_membership: String = "shared") {
   insert_form_steps_one(
-    object: {flow_id: $flow_id, organization_id: $organization_id, step_type: $step_type, step_order: $step_order, is_active: $is_active}
+    object: {flow_id: $flow_id, organization_id: $organization_id, step_type: $step_type, step_order: $step_order, is_active: $is_active, content: $content, flow_membership: $flow_membership}
   ) {
     id
   }
@@ -19021,6 +19067,9 @@ const defaultWrapper: SdkFunctionWrapper = (action, _operationName, _operationTy
 
 export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = defaultWrapper) {
   return {
+    CreateBranchFlow(variables: CreateBranchFlowMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<CreateBranchFlowMutation> {
+      return withWrapper((wrappedRequestHeaders) => client.request<CreateBranchFlowMutation>({ document: CreateBranchFlowDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'CreateBranchFlow', 'mutation', variables);
+    },
     CreateTestFlow(variables: CreateTestFlowMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<CreateTestFlowMutation> {
       return withWrapper((wrappedRequestHeaders) => client.request<CreateTestFlowMutation>({ document: CreateTestFlowDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'CreateTestFlow', 'mutation', variables);
     },
@@ -19032,6 +19081,9 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
     },
     SoftDeleteTestForm(variables: SoftDeleteTestFormMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<SoftDeleteTestFormMutation> {
       return withWrapper((wrappedRequestHeaders) => client.request<SoftDeleteTestFormMutation>({ document: SoftDeleteTestFormDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'SoftDeleteTestForm', 'mutation', variables);
+    },
+    UpdateFormBranchingConfig(variables: UpdateFormBranchingConfigMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<UpdateFormBranchingConfigMutation> {
+      return withWrapper((wrappedRequestHeaders) => client.request<UpdateFormBranchingConfigMutation>({ document: UpdateFormBranchingConfigDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'UpdateFormBranchingConfig', 'mutation', variables);
     },
     CreateTestFormQuestion(variables: CreateTestFormQuestionMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<CreateTestFormQuestionMutation> {
       return withWrapper((wrappedRequestHeaders) => client.request<CreateTestFormQuestionMutation>({ document: CreateTestFormQuestionDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'CreateTestFormQuestion', 'mutation', variables);

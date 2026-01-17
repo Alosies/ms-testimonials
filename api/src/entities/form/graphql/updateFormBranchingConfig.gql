@@ -1,0 +1,12 @@
+mutation UpdateFormBranchingConfig(
+  $id: String!
+  $branching_config: jsonb!
+) {
+  update_forms_by_pk(
+    pk_columns: { id: $id }
+    _set: { branching_config: $branching_config }
+  ) {
+    id
+    branching_config
+  }
+}

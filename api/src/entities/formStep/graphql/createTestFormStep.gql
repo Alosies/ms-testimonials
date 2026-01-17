@@ -4,6 +4,8 @@ mutation CreateTestFormStep(
   $step_type: String!
   $step_order: smallint!
   $is_active: Boolean!
+  $content: jsonb = {}
+  $flow_membership: String = "shared"
 ) {
   insert_form_steps_one(
     object: {
@@ -12,6 +14,8 @@ mutation CreateTestFormStep(
       step_type: $step_type
       step_order: $step_order
       is_active: $is_active
+      content: $content
+      flow_membership: $flow_membership
     }
   ) {
     id

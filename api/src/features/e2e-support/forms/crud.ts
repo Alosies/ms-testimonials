@@ -4,6 +4,7 @@ import {
   CreateTestFormDocument,
   SoftDeleteTestFormDocument,
   CleanupOldTestFormsDocument,
+  UpdateFormBranchingConfigDocument,
   // Flow operations
   CreateTestFlowDocument,
   CreateBranchFlowDocument,
@@ -15,6 +16,7 @@ import {
   type CreateTestFormMutation,
   type SoftDeleteTestFormMutation,
   type CleanupOldTestFormsMutation,
+  type UpdateFormBranchingConfigMutation,
   type CreateTestFlowMutation,
   type CreateBranchFlowMutation,
   type CreateTestFormStepMutation,
@@ -199,11 +201,17 @@ export async function createTestFormWithSteps(
 /**
  * Create a test form with branching (shared + testimonial + improvement flows)
  *
- * Creates a complete branched form structure for E2E testing:
+ * Creates a complete branched form structure for E2E testing that mimics
+ * the Taskflow form pattern:
  * - 1 form with "E2E Branched Form" prefix
- * - 1 shared flow with: welcome, question, rating steps
+ * - 1 shared flow with: welcome, 3 questions, rating steps (5 total, rating last)
  * - 1 testimonial flow (rating >= 4) with: question, consent, thank_you steps
  * - 1 improvement flow (rating < 4) with: question, thank_you steps
+ *
+ * Structure mirrors production form patterns:
+ * - Shared flow: welcome(0), problem_before(1), solution_experience(2), specific_results(3), rating(4)
+ * - Testimonial flow: recommendation(0), consent(1), thank_you(2)
+ * - Improvement flow: improvement_feedback(0), thank_you(1)
  *
  * @param organizationId - Organization ID (from E2E_ORGANIZATION_ID env var)
  * @param name - Form name (will be prefixed with "E2E Branched Form - ")
@@ -255,39 +263,81 @@ export async function createTestFormWithBranching(
 
   const sharedFlowId = sharedFlowData.insert_flows_one.id;
 
-  // 3. Create shared steps: welcome, question, rating
+  // 3. Create shared steps: welcome, 3 questions, rating (5 total, rating last)
+  // This mimics the Taskflow form structure
   const sharedSteps: TestStep[] = [];
   let stepOrder = 0;
   let branchQuestionId = '';
 
-  // Welcome step
+  // Welcome step (step_order: 0)
   const welcomeStep = await createStep(sharedFlowId, organizationId, 'welcome', stepOrder++);
   sharedSteps.push({ ...welcomeStep, flowMembership: 'shared', flowId: sharedFlowId });
 
-  // Question step (before rating)
-  const questionStep = await createStep(sharedFlowId, organizationId, 'question', stepOrder++);
-  const questionQuestion = await createQuestion(
-    questionStep.id,
+  // Question step 1: Problem before (step_order: 1)
+  const problemStep = await createStep(sharedFlowId, organizationId, 'question', stepOrder++);
+  const problemQuestion = await createQuestion(
+    problemStep.id,
     organizationId,
-    'What challenges did you face before using our product?',
-    'challenges',
+    'Before using our product, what challenges did you face?',
+    'problem_before',
     QUESTION_TYPE_IDS.TEXT_LONG
   );
-  questionStep.questions.push(questionQuestion);
-  sharedSteps.push({ ...questionStep, flowMembership: 'shared', flowId: sharedFlowId });
+  problemStep.questions.push(problemQuestion);
+  sharedSteps.push({ ...problemStep, flowMembership: 'shared', flowId: sharedFlowId });
 
-  // Rating step (branch point)
+  // Question step 2: Solution experience (step_order: 2)
+  const solutionStep = await createStep(sharedFlowId, organizationId, 'question', stepOrder++);
+  const solutionQuestion = await createQuestion(
+    solutionStep.id,
+    organizationId,
+    'Can you describe your experience using our product? What features stood out?',
+    'solution_experience',
+    QUESTION_TYPE_IDS.TEXT_LONG
+  );
+  solutionStep.questions.push(solutionQuestion);
+  sharedSteps.push({ ...solutionStep, flowMembership: 'shared', flowId: sharedFlowId });
+
+  // Question step 3: Specific results (step_order: 3)
+  const resultsStep = await createStep(sharedFlowId, organizationId, 'question', stepOrder++);
+  const resultsQuestion = await createQuestion(
+    resultsStep.id,
+    organizationId,
+    'What specific results have you seen? Please share any metrics or examples.',
+    'specific_results',
+    QUESTION_TYPE_IDS.TEXT_LONG
+  );
+  resultsStep.questions.push(resultsQuestion);
+  sharedSteps.push({ ...resultsStep, flowMembership: 'shared', flowId: sharedFlowId });
+
+  // Rating step - branch point (step_order: 4) - LAST step in shared flow
   const ratingStep = await createStep(sharedFlowId, organizationId, 'rating', stepOrder++);
   const ratingQuestion = await createQuestion(
     ratingStep.id,
     organizationId,
-    'How would you rate your overall experience?',
-    'experience_rating',
+    'Overall, how satisfied are you with our product?',
+    'rating',
     QUESTION_TYPE_IDS.RATING_STAR
   );
   ratingStep.questions.push(ratingQuestion);
   sharedSteps.push({ ...ratingStep, flowMembership: 'shared', flowId: sharedFlowId });
   branchQuestionId = ratingQuestion.id;
+
+  // Update form's branching_config with enabled=true and ratingStepId
+  const { error: branchingConfigError } = await executeGraphQLAsAdmin<UpdateFormBranchingConfigMutation>(
+    UpdateFormBranchingConfigDocument,
+    {
+      id: formId,
+      branching_config: {
+        enabled: true,
+        threshold: 4,
+        ratingStepId: ratingStep.id,
+      },
+    }
+  );
+
+  if (branchingConfigError) {
+    throw new Error(`Failed to update branching config: ${branchingConfigError.message}`);
+  }
 
   // 4. Create testimonial flow (rating >= 4)
   const { data: testimonialFlowData, error: testimonialFlowError } = await executeGraphQLAsAdmin<CreateBranchFlowMutation>(
@@ -312,28 +362,28 @@ export async function createTestFormWithBranching(
 
   const testimonialFlowId = testimonialFlowData.insert_flows_one.id;
 
-  // 5. Create testimonial steps
+  // 5. Create testimonial steps (for rating >= 4)
   const testimonialSteps: TestStep[] = [];
   let testimonialStepOrder = 0;
 
-  // Question step
-  const testimonialQuestionStep = await createStep(testimonialFlowId, organizationId, 'question', testimonialStepOrder++);
+  // Question step: recommendation (step_order: 0 within testimonial flow)
+  const testimonialQuestionStep = await createStep(testimonialFlowId, organizationId, 'question', testimonialStepOrder++, undefined, 'testimonial');
   const testimonialQuestion = await createQuestion(
     testimonialQuestionStep.id,
     organizationId,
-    'Would you recommend us to others? What would you tell them?',
+    'What would you tell someone considering using our product?',
     'recommendation',
     QUESTION_TYPE_IDS.TEXT_LONG
   );
   testimonialQuestionStep.questions.push(testimonialQuestion);
   testimonialSteps.push({ ...testimonialQuestionStep, flowMembership: 'testimonial', flowId: testimonialFlowId });
 
-  // Consent step
-  const consentStep = await createStep(testimonialFlowId, organizationId, 'consent', testimonialStepOrder++);
+  // Consent step (step_order: 1 within testimonial flow)
+  const consentStep = await createStep(testimonialFlowId, organizationId, 'consent', testimonialStepOrder++, undefined, 'testimonial');
   testimonialSteps.push({ ...consentStep, flowMembership: 'testimonial', flowId: testimonialFlowId });
 
-  // Thank you step
-  const testimonialThankYouStep = await createStep(testimonialFlowId, organizationId, 'thank_you', testimonialStepOrder++);
+  // Thank you step (step_order: 2 within testimonial flow)
+  const testimonialThankYouStep = await createStep(testimonialFlowId, organizationId, 'thank_you', testimonialStepOrder++, undefined, 'testimonial');
   testimonialSteps.push({ ...testimonialThankYouStep, flowMembership: 'testimonial', flowId: testimonialFlowId });
 
   // 6. Create improvement flow (rating < 4)
@@ -359,12 +409,12 @@ export async function createTestFormWithBranching(
 
   const improvementFlowId = improvementFlowData.insert_flows_one.id;
 
-  // 7. Create improvement steps
+  // 7. Create improvement steps (for rating < 4)
   const improvementSteps: TestStep[] = [];
   let improvementStepOrder = 0;
 
-  // Question step
-  const improvementQuestionStep = await createStep(improvementFlowId, organizationId, 'question', improvementStepOrder++);
+  // Question step: improvement feedback (step_order: 0 within improvement flow)
+  const improvementQuestionStep = await createStep(improvementFlowId, organizationId, 'question', improvementStepOrder++, undefined, 'improvement');
   const improvementQuestion = await createQuestion(
     improvementQuestionStep.id,
     organizationId,
@@ -375,8 +425,11 @@ export async function createTestFormWithBranching(
   improvementQuestionStep.questions.push(improvementQuestion);
   improvementSteps.push({ ...improvementQuestionStep, flowMembership: 'improvement', flowId: improvementFlowId });
 
-  // Thank you step
-  const improvementThankYouStep = await createStep(improvementFlowId, organizationId, 'thank_you', improvementStepOrder++);
+  // Thank you step (step_order: 1 within improvement flow) - with different message
+  const improvementThankYouStep = await createStep(improvementFlowId, organizationId, 'thank_you', improvementStepOrder++, {
+    title: 'Thank you for your honest feedback.',
+    subtitle: 'We take your feedback seriously and will use it to improve our product.',
+  }, 'improvement');
   improvementSteps.push({ ...improvementThankYouStep, flowMembership: 'improvement', flowId: improvementFlowId });
 
   // Build result
@@ -419,14 +472,48 @@ export async function createTestFormWithBranching(
 }
 
 /**
+ * Default content for step types that require it
+ */
+const DEFAULT_STEP_CONTENT: Partial<Record<TestStep['stepType'], object>> = {
+  welcome: {
+    title: 'Share your experience with us',
+    subtitle: 'It only takes a couple of minutes',
+    buttonText: 'Get Started',
+  },
+  consent: {
+    title: 'One last thing...',
+    description: 'Can we share your feedback?',
+    options: {
+      public: {
+        label: 'Share publicly',
+        description: 'Your testimonial may be featured on our website and marketing materials.',
+      },
+      private: {
+        label: 'Keep private',
+        description: 'Your feedback will be used internally to improve our product.',
+      },
+    },
+  },
+  thank_you: {
+    title: 'Thank you!',
+    subtitle: 'We really appreciate your feedback',
+  },
+};
+
+/**
  * Helper: Create a step
  */
 async function createStep(
   flowId: string,
   organizationId: string,
   stepType: TestStep['stepType'],
-  stepOrder: number
+  stepOrder: number,
+  contentOverride?: object,
+  flowMembership: string = 'shared'
 ): Promise<TestStep> {
+  // Use provided content, or default content for step types that need it
+  const content = contentOverride ?? DEFAULT_STEP_CONTENT[stepType] ?? {};
+
   const { data, error } = await executeGraphQLAsAdmin<CreateTestFormStepMutation>(
     CreateTestFormStepDocument,
     {
@@ -435,6 +522,8 @@ async function createStep(
       step_type: stepType,
       step_order: stepOrder,
       is_active: true,
+      content,
+      flow_membership: flowMembership,
     }
   );
 
