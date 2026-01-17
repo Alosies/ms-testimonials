@@ -20,6 +20,7 @@ Orchestrate E2E testing operations by routing to the appropriate specialized ski
 | Skill | Use When |
 |-------|----------|
 | `/e2e-test-ids` | Creating test IDs, adding `data-testid` to components, using test IDs in tests |
+| `/e2e-tests-runner` | Running E2E tests, debugging test failures, verifying changes |
 
 *More skills coming soon: e2e-page-objects, e2e-fixtures, e2e-api*
 
@@ -31,6 +32,8 @@ Orchestrate E2E testing operations by routing to the appropriate specialized ski
 |-----------|----------|
 | "add test id", "create testid", "data-testid" | `/e2e-test-ids` |
 | "target element in test", "select element" | `/e2e-test-ids` |
+| "run tests", "run e2e", "verify tests" | `/e2e-tests-runner` |
+| "playwright test", "test failed", "debug test" | `/e2e-tests-runner` |
 
 ### Test Infrastructure Setup (Multi-Step)
 
@@ -55,6 +58,8 @@ When user asks to "add E2E tests for a feature", coordinate:
 User Request
     │
     ├─ Test ID related? ────────────► /e2e-test-ids
+    │
+    ├─ Run/debug tests? ────────────► /e2e-tests-runner
     │
     ├─ Page object related? ─────────► (handle directly for now)
     │
@@ -89,10 +94,9 @@ pnpm exec playwright test features/form-studio --config=tests/e2e/playwright.con
 ## When NOT to Route
 
 Handle directly if:
-- Running tests (`pnpm test:e2e`)
-- Checking test status
+- Checking test status (just reading output)
 - Reading existing test code for context
-- Simple test debugging
+- Explaining test failures (after `/e2e-tests-runner` has run)
 
 ## Coordination Notes
 
