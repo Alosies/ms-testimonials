@@ -29,5 +29,11 @@ export * from './autoSave';
 // Step Editor
 export * from './stepEditor';
 
+// Branching Control (ADR-014 Phase 3 - ISP compliance)
+export * from './branching';
+
+// Design Control (ADR-014 Phase 3 - ISP compliance)
+export * from './design';
+
 // Legacy (deprecated, will be removed)
 export * from './_legacy';
