@@ -3,6 +3,7 @@
  *
  * Actions for loading and initializing the studio.
  */
+import { expect } from '@playwright/test';
 import type { StudioPage } from '@e2e/shared/pages/studio.page';
 import type { TestFormData } from '@e2e/entities/form/types';
 
@@ -13,6 +14,8 @@ export function createSetupActions(studio: StudioPage) {
      */
     async loadStudio(studioUrl: string) {
       await studio.page.goto(studioUrl);
+      // Verify we're on the studio page (not redirected to dashboard)
+      await expect(studio.page).toHaveURL(/\/studio/);
       await studio.expectLoaded();
     },
 
@@ -21,6 +24,8 @@ export function createSetupActions(studio: StudioPage) {
      */
     async loadWithSteps(formData: TestFormData) {
       await studio.page.goto(formData.studioUrl);
+      // Verify we're on the studio page (not redirected to dashboard)
+      await expect(studio.page).toHaveURL(/\/studio/);
       await studio.expectLoaded();
 
       const expectedCount = formData.steps?.length ?? 0;
