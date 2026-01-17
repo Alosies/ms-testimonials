@@ -215,6 +215,37 @@ export const useAutoSaveController = createSharedComposable(() => {
   };
 
   // ============================================
+  // Immediate Save with Status Indicator
+  // ============================================
+
+  /**
+   * Wrap an immediate save operation to show the Saving → Saved indicator.
+   *
+   * Use this for discrete changes like toggle switches that save immediately
+   * but should still show the user that a save is happening.
+   *
+   * @example
+   * const { withSaveIndicator } = useAutoSaveController();
+   * await withSaveIndicator(async () => {
+   *   await updateQuestion({ id, input: { is_required: value } });
+   * });
+   */
+  const withSaveIndicator = async <T>(fn: () => Promise<T>): Promise<T> => {
+    saveStatus.value = 'saving';
+    try {
+      const result = await fn();
+      saveStatus.value = 'saved';
+      await nextTick();
+      saveStatus.value = 'idle';
+      return result;
+    } catch (error) {
+      saveStatus.value = 'error';
+      lastError.value = error instanceof Error ? error : new Error(String(error));
+      throw error;
+    }
+  };
+
+  // ============================================
   // Public API
   // ============================================
 
@@ -226,5 +257,6 @@ export const useAutoSaveController = createSharedComposable(() => {
 
     // Actions
     saveNow,
+    withSaveIndicator,
   };
 });

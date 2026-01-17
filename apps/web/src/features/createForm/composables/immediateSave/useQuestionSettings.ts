@@ -5,30 +5,37 @@
  * - Toggle required
  * - Change question type
  * - Set validation constraints
+ *
+ * Uses withSaveIndicator to show the Saving → Saved chip transition.
  */
 import { useUpdateFormQuestion } from '@/entities/formQuestion/composables';
-import { useSaveLock } from '../autoSave';
+import { useSaveLock, useAutoSaveController } from '../autoSave';
 
 export function useQuestionSettings() {
   const { updateFormQuestion } = useUpdateFormQuestion();
   const { withLock } = useSaveLock();
+  const { withSaveIndicator } = useAutoSaveController();
 
   const setRequired = async (questionId: string, isRequired: boolean) => {
-    return withLock('question-required', async () => {
-      await updateFormQuestion({
-        id: questionId,
-        input: { is_required: isRequired },
-      });
-    });
+    return withSaveIndicator(() =>
+      withLock('question-required', async () => {
+        await updateFormQuestion({
+          id: questionId,
+          input: { is_required: isRequired },
+        });
+      })
+    );
   };
 
   const setQuestionType = async (questionId: string, questionTypeId: string) => {
-    return withLock('question-type', async () => {
-      await updateFormQuestion({
-        id: questionId,
-        input: { question_type_id: questionTypeId },
-      });
-    });
+    return withSaveIndicator(() =>
+      withLock('question-type', async () => {
+        await updateFormQuestion({
+          id: questionId,
+          input: { question_type_id: questionTypeId },
+        });
+      })
+    );
   };
 
   const setValidation = async (
@@ -43,12 +50,14 @@ export function useQuestionSettings() {
       validation_pattern?: string | null;
     }
   ) => {
-    return withLock('question-validation', async () => {
-      await updateFormQuestion({
-        id: questionId,
-        input: validation,
-      });
-    });
+    return withSaveIndicator(() =>
+      withLock('question-validation', async () => {
+        await updateFormQuestion({
+          id: questionId,
+          input: validation,
+        });
+      })
+    );
   };
 
   return {
