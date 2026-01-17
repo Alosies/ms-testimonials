@@ -103,7 +103,40 @@ function _useAuth() {
   }
 
   /**
+   * Process a session - enhance token and update state
+   * This is extracted to be called from deferred callbacks safely
+   */
+  async function processSession(session: { user: User; access_token: string }) {
+    supabaseUser.value = session.user;
+    try {
+      await handleAuthCallback(session.access_token);
+    } catch (err) {
+      console.error('[Auth] Failed to enhance token:', err);
+      handleSignedOut();
+    }
+  }
+
+  /**
+   * Mark initialization as complete
+   */
+  function markInitialized() {
+    if (isInitialized.value) return;
+
+    isLoading.value = false;
+    isInitialized.value = true;
+
+    if (authReadyResolve) {
+      authReadyResolve();
+      authReadyResolve = null;
+    }
+  }
+
+  /**
    * Initialize auth state from Supabase session
+   *
+   * This directly restores the session using getSession() and then sets up
+   * listeners for future auth changes. Token enhancement is done AFTER
+   * getting the session (outside any Supabase callbacks).
    */
   async function initialize() {
     if (isInitialized.value) {
@@ -114,35 +147,48 @@ function _useAuth() {
     error.value = null;
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      // 1. Get stored session directly
+      console.log('[Auth] Getting stored session...');
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
-      if (session?.user) {
-        supabaseUser.value = session.user;
-        await handleAuthCallback(session.access_token);
+      if (sessionError) {
+        console.error('[Auth] Error getting session:', sessionError);
+        error.value = sessionError.message;
+      } else if (session?.user) {
+        // 2. Session exists - enhance token for Hasura
+        console.log('[Auth] Found session for:', session.user.email);
+        await processSession({ user: session.user, access_token: session.access_token });
+      } else {
+        console.log('[Auth] No stored session');
       }
     } catch (err) {
+      console.error('[Auth] Error during initialization:', err);
       error.value = err instanceof Error ? err.message : 'Failed to initialize auth';
-    } finally {
-      isLoading.value = false;
-      isInitialized.value = true;
-
-      // Resolve the auth ready promise so router guards can proceed
-      if (authReadyResolve) {
-        authReadyResolve();
-        authReadyResolve = null;
-      }
     }
 
-    // Listen for auth changes
-    supabase.auth.onAuthStateChange(async (event, session) => {
+    // 3. Always mark as initialized
+    markInitialized();
+
+    // 4. Set up listener for future auth changes (not initial session)
+    supabase.auth.onAuthStateChange((event, session) => {
+      console.log('[Auth] onAuthStateChange:', event, session?.user?.email);
+
+      // Skip INITIAL_SESSION since we already handled the initial session above
+      if (event === 'INITIAL_SESSION') {
+        return;
+      }
+
+      // Defer async operations to avoid Supabase callback deadlocks
       if (event === 'SIGNED_IN' && session?.user) {
-        supabaseUser.value = session.user;
-        await handleAuthCallback(session.access_token);
+        setTimeout(() => {
+          processSession({ user: session.user, access_token: session.access_token });
+        }, 0);
       } else if (event === 'SIGNED_OUT') {
         handleSignedOut();
       } else if (event === 'TOKEN_REFRESHED' && session?.user) {
-        supabaseUser.value = session.user;
-        await handleAuthCallback(session.access_token);
+        setTimeout(() => {
+          processSession({ user: session.user, access_token: session.access_token });
+        }, 0);
       }
     });
   }

@@ -145,6 +145,7 @@ function _useTokenManager() {
 
   /**
    * Handle auth callback (called when Supabase auth state changes)
+   * This directly enhances the provided token instead of calling getSession() again
    */
   const handleAuthCallback = async (access_token: string | undefined): Promise<string | null> => {
     if (!access_token) {
@@ -152,13 +153,44 @@ function _useTokenManager() {
       return null;
     }
 
-    // Use getValidEnhancedToken to benefit from concurrency control
-    try {
-      return await getValidEnhancedToken();
-    } catch (error) {
-      console.error('Error enhancing token in auth callback:', error);
-      return null;
+    // Check if we have a valid cached token
+    const now = Math.floor(Date.now() / 1000);
+    const fiveMinutes = 5 * 60;
+
+    if (
+      enhancedTokenState.value.token &&
+      enhancedTokenState.value.expiresAt &&
+      enhancedTokenState.value.expiresAt - now > fiveMinutes
+    ) {
+      return enhancedTokenState.value.token;
     }
+
+    // Handle concurrent refresh attempts
+    if (enhancedTokenState.value.refreshPromise) {
+      try {
+        return await enhancedTokenState.value.refreshPromise;
+      } catch (error) {
+        console.error('Error waiting for token refresh:', error);
+        enhancedTokenState.value.refreshPromise = null;
+        return null;
+      }
+    }
+
+    // Directly enhance the provided token (don't call getSession again)
+    enhancedTokenState.value.refreshPromise = (async () => {
+      try {
+        console.log('[TokenManager] Enhancing token...');
+        const enhancedToken = await _enhanceToken(access_token);
+        enhancedTokenState.value.refreshPromise = null;
+        return enhancedToken;
+      } catch (error) {
+        enhancedTokenState.value.refreshPromise = null;
+        console.error('Error enhancing token:', error);
+        return null;
+      }
+    })();
+
+    return enhancedTokenState.value.refreshPromise;
   };
 
   return {
