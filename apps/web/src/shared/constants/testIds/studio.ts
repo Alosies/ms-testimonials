@@ -14,6 +14,9 @@ export const studioTestIds = {
   canvasEmptyState: 'studio-canvas-empty-state',
   canvasAddButton: 'studio-canvas-add-button',
 
+  // Flow columns (for branched forms)
+  flowColumn: 'studio-flow-column',
+
   // Header elements
   headerSaveStatus: 'studio-header-save-status',
   headerBackButton: 'studio-header-back-button',
@@ -27,6 +30,16 @@ export const studioTestIds = {
   // Properties panel elements
   propertiesTitleInput: 'studio-properties-title-input',
   propertiesDescriptionInput: 'studio-properties-description-input',
+
+  // Properties panel sections
+  propertiesStepTypeHeading: 'studio-properties-step-type-heading',
+  propertiesContextualHelp: 'studio-properties-contextual-help',
+  propertiesBranchingSettings: 'studio-properties-branching-settings',
+  propertiesDesignSettings: 'studio-properties-design-settings',
+
+  // Step Editor (slide-in editor opened via E key)
+  stepEditor: 'studio-step-editor',
+  stepEditorTitle: 'studio-step-editor-title',
 } as const;
 
 export type StudioTestId = typeof studioTestIds;
