@@ -150,10 +150,67 @@ test('example', async ({ authedPage, formViaApi }) => {
 
 ---
 
+## Best Practices
+
+### Selectors
+
+**Always use `data-testid` attributes** - never use element selectors like `button`, `#id`, or CSS classes.
+
+```typescript
+// ✅ Good: data-testid selector
+await stepCard.getByTestId(studioTestIds.welcomeTitle);
+
+// ❌ Bad: element or class selectors
+await page.locator('button');
+await page.locator('#title');
+await page.locator('.btn-primary');
+```
+
+### MVP Test Consolidation
+
+For MVP, **combine closely related atomic tests** into one test. Leave a comment explaining this decision.
+
+```typescript
+/**
+ * MVP: Combined test for all Welcome step fields (title, subtitle, buttonText).
+ * In the future, these should be split into individual atomic tests.
+ */
+test('all fields auto-save correctly', async ({ ... }) => {
+  // Test multiple related things in one test
+});
+```
+
+### Auto-Save Testing Pattern
+
+When testing auto-save functionality:
+1. **Batch all edits together** - don't wait after each edit
+2. **Wait for save once** at the end before reload
+3. **Reload and verify** persistence
+
+```typescript
+// ✅ Good: batch edits, wait once
+await actions.autoSave.fillWelcomeField('title', newTitle);
+await actions.autoSave.fillWelcomeField('subtitle', newSubtitle);
+await actions.autoSave.fillWelcomeField('buttonText', newButtonText);
+await actions.autoSave.closeEditorAndWaitForSave();  // Wait once
+await studio.page.reload();
+// Verify all fields
+
+// ❌ Bad: wait after each edit
+await actions.autoSave.fillWelcomeField('title', newTitle);
+await actions.autoSave.closeEditorAndWaitForSave();  // Unnecessary wait
+await actions.autoSave.fillWelcomeField('subtitle', newSubtitle);
+await actions.autoSave.closeEditorAndWaitForSave();  // Unnecessary wait
+```
+
+---
+
 ## Checklist
 
 - [ ] Chose correct test type (journey vs focused)
 - [ ] Used `@e2e/*` path aliases
+- [ ] Used `data-testid` selectors (not element/class selectors)
 - [ ] Created/used actions for reusable operations
 - [ ] Used fixture data for assertions (not hardcoded values)
 - [ ] Added to correct folder (`journey-tests/` or `focused-tests/`)
+- [ ] Combined related tests for MVP (with comment explaining)

@@ -40,6 +40,11 @@ export const studioTestIds = {
   // Step Editor (slide-in editor opened via E key)
   stepEditor: 'studio-step-editor',
   stepEditorTitle: 'studio-step-editor-title',
+
+  // Step card content elements (for auto-save validation)
+  welcomeTitle: 'step-card-welcome-title',
+  welcomeSubtitle: 'step-card-welcome-subtitle',
+  welcomeButton: 'step-card-welcome-button',
 } as const;
 
 export type StudioTestId = typeof studioTestIds;

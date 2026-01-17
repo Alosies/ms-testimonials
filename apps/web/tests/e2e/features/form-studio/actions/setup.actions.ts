@@ -33,5 +33,12 @@ export function createSetupActions(studio: StudioPage) {
         await studio.expectStepCount(expectedCount, { timeout: 10000 });
       }
     },
+
+    /**
+     * Wait for studio to be fully loaded (use after page reload)
+     */
+    async waitForStudioLoad() {
+      await studio.expectLoaded();
+    },
   };
 }

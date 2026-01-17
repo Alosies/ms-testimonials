@@ -4,6 +4,7 @@ import { Button } from '@testimonials/ui';
 import { Icon } from '@testimonials/icons';
 import type { FormStep, WelcomeContent, StepCardMode } from '../models';
 import { isWelcomeStep } from '../functions';
+import { studioTestIds } from '@/shared/constants/testIds';
 
 interface Props {
   step: FormStep;
@@ -55,17 +56,20 @@ function handleStart() {
     <h2
       class="font-semibold mb-3"
       :class="isPreviewMode ? 'text-2xl md:text-3xl' : 'text-xl'"
+      :data-testid="studioTestIds.welcomeTitle"
     >
       {{ displayTitle }}
     </h2>
     <p
       class="text-muted-foreground mb-6"
       :class="isPreviewMode ? 'text-lg' : 'text-base'"
+      :data-testid="studioTestIds.welcomeSubtitle"
     >
       {{ displaySubtitle }}
     </p>
     <Button
       :size="isPreviewMode ? 'lg' : 'default'"
+      :data-testid="studioTestIds.welcomeButton"
       @click="handleStart"
     >
       {{ content.buttonText || 'Get Started' }}

@@ -11,6 +11,7 @@
  * - branching.actions.ts  - Branch switching (left/right)
  * - management.actions.ts - Add/edit/delete steps
  * - properties.actions.ts - Properties panel validation
+ * - autosave.actions.ts   - Auto-save field editing and verification
  *
  * ## Usage
  * ```ts
@@ -32,6 +33,7 @@ import { createNavigationActions } from './navigation.actions';
 import { createBranchingActions } from './branching.actions';
 import { createManagementActions } from './management.actions';
 import { createPropertiesActions } from './properties.actions';
+import { createAutoSaveActions } from './autosave.actions';
 
 export function createStudioActions(studio: StudioPage) {
   return {
@@ -52,6 +54,9 @@ export function createStudioActions(studio: StudioPage) {
 
     /** Properties panel validation */
     props: createPropertiesActions(studio),
+
+    /** Auto-save testing actions */
+    autoSave: createAutoSaveActions(studio),
   };
 }
 
@@ -64,3 +69,4 @@ export { createNavigationActions } from './navigation.actions';
 export { createBranchingActions } from './branching.actions';
 export { createManagementActions } from './management.actions';
 export { createPropertiesActions, STEP_TYPE_PANEL_TITLES } from './properties.actions';
+export { createAutoSaveActions, WELCOME_STEP_FIELDS } from './autosave.actions';
