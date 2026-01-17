@@ -7,7 +7,7 @@
  */
 import { testApiRequest } from '../../../shared';
 import { createEntityUrlSlug } from '@/shared/urls';
-import type { CreateFormResponse, TestFormData } from '../types';
+import type { CreateFormResponse, CreateBranchedFormResponse, TestFormData, TestBranchedFormData } from '../types';
 
 /**
  * Create a test form via E2E API.
@@ -54,6 +54,55 @@ export async function createTestForm(
     orgSlug,
     flowId: result.flowId,
     steps: result.steps,
+  };
+}
+
+/**
+ * Create a test form with branching via E2E API.
+ *
+ * Creates a form with multiple flows for testing branched navigation:
+ * - Shared flow: welcome, question, rating (branch point)
+ * - Testimonial flow: question, consent, thank_you (rating >= 4)
+ * - Improvement flow: question, thank_you (rating < 4)
+ *
+ * @param orgSlug - Organization slug (for building studioUrl)
+ * @param name - Optional form name (defaults to timestamped name)
+ * @returns Full branched form data including all flows and steps
+ *
+ * @example
+ * ```ts
+ * const form = await createTestBranchedForm('my-org');
+ * await page.goto(form.studioUrl);
+ *
+ * // Navigate to testimonial flow steps
+ * const testimonialStep = form.testimonialFlow.steps[0];
+ * await page.locator(`[data-step-id="${testimonialStep.id}"]`).click();
+ * ```
+ */
+export async function createTestBranchedForm(
+  orgSlug: string,
+  name?: string
+): Promise<TestBranchedFormData> {
+  const formName = name || `E2E Branched Test ${Date.now()}`;
+
+  const result = await testApiRequest<CreateBranchedFormResponse>('POST', '/forms/branched', {
+    name: formName,
+  });
+
+  // Build studioUrl using the same URL pattern the app uses
+  const urlSlug = createEntityUrlSlug(result.formName, result.formId);
+  const studioUrl = `/${orgSlug}/forms/${urlSlug}/studio`;
+
+  return {
+    id: result.formId,
+    name: result.formName,
+    studioUrl,
+    orgSlug,
+    sharedFlow: result.sharedFlow,
+    testimonialFlow: result.testimonialFlow,
+    improvementFlow: result.improvementFlow,
+    allSteps: result.allSteps,
+    branchQuestionId: result.branchQuestionId,
   };
 }
 

@@ -1,5 +1,5 @@
 // API-based test data creation
-export { createTestForm, deleteTestForm } from './form-api';
+export { createTestForm, createTestBranchedForm, deleteTestForm } from './form-api';
 
 // Playwright fixtures for form tests
 export { test, expect } from './form-fixtures';

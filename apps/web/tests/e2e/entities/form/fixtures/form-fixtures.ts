@@ -15,14 +15,16 @@
  */
 import { test as appTest } from '../../../app/fixtures';
 import { createFormCreationPage } from '../../../shared';
-import { createTestForm, deleteTestForm } from './form-api';
-import type { TestFormData } from '../types';
+import { createTestForm, createTestBranchedForm, deleteTestForm } from './form-api';
+import type { TestFormData, TestBranchedFormData } from '../types';
 
 export interface FormFixtures {
   /** Form created via E2E API (fast, ~1s) - use for most tests */
   formViaApi: TestFormData;
   /** Form created via UI with AI generation (slow, ~30s) - use for UI flow tests */
   formViaUi: TestFormData;
+  /** Branched form via E2E API (fast) - use for branch navigation tests */
+  branchedFormViaApi: TestBranchedFormData;
 }
 
 export const test = appTest.extend<FormFixtures>({
@@ -66,6 +68,20 @@ export const test = appTest.extend<FormFixtures>({
       await deleteTestForm(formId);
     } catch (error) {
       console.warn(`Failed to cleanup form ${formId}:`, error);
+    }
+  },
+
+  // Branched form via API (fast) - use for branch navigation tests
+  branchedFormViaApi: async ({ orgSlug }, use) => {
+    const formData = await createTestBranchedForm(orgSlug);
+
+    await use(formData);
+
+    // Cleanup after test
+    try {
+      await deleteTestForm(formData.id);
+    } catch (error) {
+      console.warn(`Failed to cleanup branched form ${formData.id}:`, error);
     }
   },
 });

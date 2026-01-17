@@ -26,9 +26,25 @@ export interface TestQuestion {
  */
 export interface TestStep {
   id: string;
-  stepType: 'welcome' | 'question' | 'rating' | 'thank_you';
+  stepType: 'welcome' | 'question' | 'rating' | 'thank_you' | 'consent';
   stepOrder: number;
   questions: TestQuestion[];
+  /** Flow membership for branched forms */
+  flowMembership?: 'shared' | 'testimonial' | 'improvement';
+  /** Flow ID this step belongs to */
+  flowId?: string;
+}
+
+/**
+ * Flow data for branched forms
+ */
+export interface TestFlow {
+  id: string;
+  name: string;
+  flowType: 'shared' | 'branch';
+  isPrimary: boolean;
+  displayOrder: number;
+  steps: TestStep[];
 }
 
 /**
@@ -67,4 +83,40 @@ export interface CreateFormResponse {
   flowId: string;
   studioUrl: string;
   steps: TestStep[];
+}
+
+/**
+ * Branched form data for E2E tests
+ *
+ * Contains all flows and steps for testing navigation in branched forms.
+ */
+export interface TestBranchedFormData {
+  id: string;
+  name: string;
+  studioUrl: string;
+  orgSlug: string;
+  /** Shared flow (before branch point) */
+  sharedFlow: TestFlow;
+  /** Testimonial flow (rating >= 4) */
+  testimonialFlow: TestFlow;
+  /** Improvement flow (rating < 4) */
+  improvementFlow: TestFlow;
+  /** All steps flattened for easy access */
+  allSteps: TestStep[];
+  /** The rating question that serves as branch point */
+  branchQuestionId: string;
+}
+
+/**
+ * Response from E2E API branched form creation
+ */
+export interface CreateBranchedFormResponse {
+  formId: string;
+  formName: string;
+  studioUrl: string;
+  sharedFlow: TestFlow;
+  testimonialFlow: TestFlow;
+  improvementFlow: TestFlow;
+  allSteps: TestStep[];
+  branchQuestionId: string;
 }
