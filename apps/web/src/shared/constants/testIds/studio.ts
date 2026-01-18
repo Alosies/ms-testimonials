@@ -69,6 +69,25 @@ export const studioTestIds = {
   thankYouTitleInput: 'thankyou-editor-title-input',
   thankYouMessageInput: 'thankyou-editor-message-input',
   thankYouRedirectUrlInput: 'thankyou-editor-redirect-url-input',
+
+  // Question type change workflow (ADR-017)
+  questionTypeDropdown: 'question-editor-type-dropdown',
+  questionOptionsSection: 'question-editor-options-section',
+  questionOptionItem: 'question-editor-option-item',
+
+  // Question type change warning dialog
+  questionTypeChangeWarningDialog: 'question-type-change-warning-dialog',
+  questionTypeChangeConfirmButton: 'question-type-change-confirm-button',
+  questionTypeChangeCancelButton: 'question-type-change-cancel-button',
+
+  // Question responses block (when responses exist)
+  questionTypeResponsesBlockMessage: 'question-type-responses-block-message',
+  deleteQuestionResponsesButton: 'delete-question-responses-button',
+
+  // Delete responses confirmation dialog
+  deleteResponsesConfirmDialog: 'delete-responses-confirm-dialog',
+  deleteResponsesConfirmButton: 'delete-responses-confirm-button',
+  deleteResponsesCancelButton: 'delete-responses-cancel-button',
 } as const;
 
 export type StudioTestId = typeof studioTestIds;
