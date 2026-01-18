@@ -1,0 +1,267 @@
+{
+  "project": "ms-testimonials",
+  "branchName": "yellow/question-type-change",
+  "description": "ADR-017: Question Type Change Workflow - Handle type changes with data transfer, warning dialogs, and response protection",
+  "prdDocument": "docs/adr/017-question-type-change-workflow/adr.md",
+  "userStories": [
+    {
+      "id": "BE-001",
+      "title": "Create test responses API endpoint",
+      "description": "As a developer, I need an API endpoint to create mock responses for E2E testing.",
+      "acceptanceCriteria": [
+        "Create POST /api/test/responses endpoint in api/routes/",
+        "Endpoint accepts: questionId, count, organizationId",
+        "Endpoint only available in development/test environment",
+        "Returns { created: number } on success",
+        "pnpm typecheck passes"
+      ],
+      "priority": 1,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "GQL-001",
+      "title": "Validate GraphQL schema with tm-graph MCP",
+      "description": "As a developer, I need to validate the required GraphQL operations exist before creating .gql files.",
+      "acceptanceCriteria": [
+        "Verify form_question_responses_aggregate type exists via tm-graph get-type-info",
+        "Verify delete_form_question_responses mutation exists via tm-graph list-mutations",
+        "Verify form_question_responses table fields match expected usage",
+        "Document any schema gaps or issues in notes"
+      ],
+      "priority": 2,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "GQL-002",
+      "title": "Create GetQuestionResponseCount query",
+      "description": "As a developer, I need a GraphQL query to get the count of responses for a question.",
+      "acceptanceCriteria": [
+        "Create GetQuestionResponseCount.gql in entities/formQuestion/graphql/queries/",
+        "Query uses form_question_responses_aggregate with count",
+        "pnpm codegen:web succeeds",
+        "pnpm typecheck passes"
+      ],
+      "priority": 3,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "GQL-003",
+      "title": "Create DeleteQuestionResponses mutation",
+      "description": "As a developer, I need a GraphQL mutation to bulk delete responses for a question.",
+      "acceptanceCriteria": [
+        "Create DeleteQuestionResponses.gql in entities/formQuestion/graphql/mutations/",
+        "Mutation uses delete_form_question_responses with where clause",
+        "Returns affected_rows count",
+        "pnpm codegen:web succeeds",
+        "pnpm typecheck passes"
+      ],
+      "priority": 4,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "GQL-004",
+      "title": "Create query composable useGetQuestionResponseCount",
+      "description": "As a developer, I need a composable to fetch the response count for a question.",
+      "acceptanceCriteria": [
+        "Create useGetQuestionResponseCount.ts in entities/formQuestion/composables/queries/",
+        "Uses useQuery with GetQuestionResponseCountDocument",
+        "Returns { count, loading, error }",
+        "Uses network-only fetch policy",
+        "Export from entities/formQuestion/index.ts",
+        "pnpm typecheck passes"
+      ],
+      "priority": 5,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "GQL-005",
+      "title": "Create mutation composable useDeleteQuestionResponses",
+      "description": "As a developer, I need a composable to delete responses for a question.",
+      "acceptanceCriteria": [
+        "Create useDeleteQuestionResponses.ts in entities/formQuestion/composables/mutations/",
+        "Uses useMutation with DeleteQuestionResponsesDocument",
+        "Returns { deleteResponses, loading, error }",
+        "Export from entities/formQuestion/index.ts",
+        "pnpm typecheck passes"
+      ],
+      "priority": 6,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "TS-001",
+      "title": "Create analyzeQuestionTypeChange pure function",
+      "description": "As a developer, I need a function to analyze data loss when changing question types.",
+      "acceptanceCriteria": [
+        "Create analyzeQuestionTypeChange.ts in features/createForm/functions/",
+        "Function returns TypeChangeAnalysis interface",
+        "Detects willLoseOptions, willLoseTextValidation, willLoseRatingConfig",
+        "Has isChoiceType, isTextType, isRatingType helper functions",
+        "Export from features/createForm/functions/index.ts",
+        "pnpm typecheck passes"
+      ],
+      "priority": 7,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "TS-002",
+      "title": "Create getTransferableQuestionFields pure function",
+      "description": "As a developer, I need a function to calculate which fields transfer to a new question type.",
+      "acceptanceCriteria": [
+        "Create getTransferableQuestionFields.ts in features/createForm/functions/",
+        "Function takes oldQuestion, newTypeId, questionTypes",
+        "Returns Partial<FormQuestionInsertInput>",
+        "Conditionally transfers fields based on new type's supports_* flags",
+        "Export from features/createForm/functions/index.ts",
+        "pnpm typecheck passes"
+      ],
+      "priority": 8,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "FE-001",
+      "title": "Create useQuestionTypeChange composable",
+      "description": "As a developer, I need a composable to orchestrate the question type change workflow.",
+      "acceptanceCriteria": [
+        "Create useQuestionTypeChange.ts in features/createForm/composables/immediateSave/",
+        "Implements replaceQuestionWithNewType function",
+        "Implements deleteQuestionResponses function",
+        "Integrates with useSaveLock for save coordination",
+        "Uses withSaveIndicator wrapper",
+        "Export from features/createForm/composables/index.ts",
+        "pnpm typecheck passes"
+      ],
+      "priority": 9,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "FE-002",
+      "title": "Create QuestionTypeChangeWarning dialog component",
+      "description": "As a user, I want to see a warning when changing types will delete my options.",
+      "acceptanceCriteria": [
+        "Create QuestionTypeChangeWarning.vue in features/createForm/ui/dialogs/",
+        "Shows optionCount and newTypeName props",
+        "Emits 'confirm' and 'cancel' events",
+        "Uses AlertDialog from @testimonials/ui",
+        "Has data-testid attributes from studioTestIds",
+        "pnpm typecheck passes"
+      ],
+      "priority": 10,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "FE-003",
+      "title": "Create DeleteResponsesConfirmation dialog component",
+      "description": "As a user, I want to confirm before deleting responses.",
+      "acceptanceCriteria": [
+        "Create DeleteResponsesConfirmation.vue in features/createForm/ui/dialogs/",
+        "Shows responseCount prop",
+        "Emits 'confirm' and 'cancel' events",
+        "Uses AlertDialog with destructive variant",
+        "Has data-testid attributes from studioTestIds",
+        "pnpm typecheck passes"
+      ],
+      "priority": 11,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "FE-004",
+      "title": "Update QuestionStepEditor with response check",
+      "description": "As a user, I want the type dropdown disabled when my question has responses.",
+      "acceptanceCriteria": [
+        "Add response count fetching to QuestionStepEditor.vue",
+        "Disable type dropdown when hasResponses is true",
+        "Show block message with response count",
+        "Add data-testid for questionTypeResponsesBlockMessage",
+        "pnpm typecheck passes"
+      ],
+      "priority": 12,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "FE-005",
+      "title": "Update QuestionStepEditor with delete responses button",
+      "description": "As a user, I want to delete responses so I can change the question type.",
+      "acceptanceCriteria": [
+        "Add Delete Responses button when hasResponses",
+        "Button opens DeleteResponsesConfirmation dialog",
+        "On confirm, call deleteQuestionResponses and refresh count",
+        "Add data-testid for deleteQuestionResponsesButton",
+        "pnpm typecheck passes"
+      ],
+      "priority": 13,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "FE-006",
+      "title": "Update QuestionStepEditor with type change warning",
+      "description": "As a user, I want to see a warning before losing my options when changing type.",
+      "acceptanceCriteria": [
+        "Integrate QuestionTypeChangeWarning dialog",
+        "Show warning when changing from choice type with options",
+        "On confirm, call replaceQuestionWithNewType",
+        "On cancel, revert dropdown selection",
+        "pnpm typecheck passes"
+      ],
+      "priority": 14,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "TEST-001",
+      "title": "Create choiceQuestionFormViaApi test fixture",
+      "description": "As a test author, I need a fixture that creates a form with a choice question and options.",
+      "acceptanceCriteria": [
+        "Create choiceQuestionForm.fixture.ts in tests/e2e/entities/form/fixtures/",
+        "Fixture creates form with choice_single question",
+        "Question has at least 3 options",
+        "Returns form data including question ID",
+        "pnpm typecheck passes"
+      ],
+      "priority": 15,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "TEST-002",
+      "title": "Create formWithResponsesViaApi test fixture",
+      "description": "As a test author, I need a fixture that creates a form with question responses.",
+      "acceptanceCriteria": [
+        "Create formWithResponses.fixture.ts in tests/e2e/entities/form/fixtures/",
+        "Fixture uses POST /api/test/responses endpoint",
+        "Creates specified number of mock responses",
+        "Returns form data including response count",
+        "pnpm typecheck passes"
+      ],
+      "priority": 16,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "TEST-003",
+      "title": "Run E2E tests and verify all pass",
+      "description": "As a developer, I need all question type change E2E tests to pass.",
+      "acceptanceCriteria": [
+        "Run: pnpm test:e2e --grep 'Question Type Change'",
+        "All 6 test cases pass",
+        "No flaky tests",
+        "Update prd.json notes with any issues encountered"
+      ],
+      "priority": 17,
+      "passes": false,
+      "notes": ""
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "feature": "question-type-change",
+  "createdAt": "2026-01-18T14:00:00Z",
+  "createdBy": "yellow",
+  "primaryAgent": "yellow",
+  "status": "active",
+  "sourceDocument": "docs/adr/017-question-type-change-workflow/",
+  "handoffs": []
+}
