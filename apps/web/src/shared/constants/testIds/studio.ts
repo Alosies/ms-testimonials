@@ -45,6 +45,30 @@ export const studioTestIds = {
   welcomeTitle: 'step-card-welcome-title',
   welcomeSubtitle: 'step-card-welcome-subtitle',
   welcomeButton: 'step-card-welcome-button',
+
+  // Question step card content elements
+  questionText: 'step-card-question-text',
+
+  // Rating step editor fields
+  ratingQuestionInput: 'rating-editor-question-input',
+  ratingLowLabelInput: 'rating-editor-low-label-input',
+  ratingHighLabelInput: 'rating-editor-high-label-input',
+  ratingHelpTextInput: 'rating-editor-help-text-input',
+  ratingRequiredSwitch: 'rating-editor-required-switch',
+
+  // Consent step editor fields
+  consentTitleInput: 'consent-editor-title-input',
+  consentDescriptionInput: 'consent-editor-description-input',
+  consentPublicLabelInput: 'consent-editor-public-label-input',
+  consentPublicDescriptionInput: 'consent-editor-public-description-input',
+  consentPrivateLabelInput: 'consent-editor-private-label-input',
+  consentPrivateDescriptionInput: 'consent-editor-private-description-input',
+  consentRequiredSwitch: 'consent-editor-required-switch',
+
+  // Thank You step editor fields
+  thankYouTitleInput: 'thankyou-editor-title-input',
+  thankYouMessageInput: 'thankyou-editor-message-input',
+  thankYouRedirectUrlInput: 'thankyou-editor-redirect-url-input',
 } as const;
 
 export type StudioTestId = typeof studioTestIds;
