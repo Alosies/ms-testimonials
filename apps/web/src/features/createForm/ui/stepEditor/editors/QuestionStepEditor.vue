@@ -240,8 +240,9 @@ async function handleRemoveOption(index: number) {
   <div v-if="question" class="space-y-6">
     <!-- Question Text -->
     <div>
-      <Label class="text-sm font-medium">Question Text</Label>
+      <Label for="questionText" class="text-sm font-medium">Question Text</Label>
       <Textarea
+        id="questionText"
         :model-value="question.questionText"
         class="mt-1.5"
         rows="3"
@@ -319,8 +320,9 @@ async function handleRemoveOption(index: number) {
 
     <!-- Placeholder Text -->
     <div>
-      <Label class="text-sm font-medium">Placeholder Text</Label>
+      <Label for="placeholder" class="text-sm font-medium">Placeholder Text</Label>
       <Input
+        id="placeholder"
         :model-value="question.placeholder ?? ''"
         class="mt-1.5"
         placeholder="Hint text shown in the input..."
@@ -331,8 +333,9 @@ async function handleRemoveOption(index: number) {
 
     <!-- Help Text -->
     <div>
-      <Label class="text-sm font-medium">Help Text</Label>
+      <Label for="helpText" class="text-sm font-medium">Help Text</Label>
       <Input
+        id="helpText"
         :model-value="question.helpText ?? ''"
         class="mt-1.5"
         placeholder="Additional guidance for respondents..."

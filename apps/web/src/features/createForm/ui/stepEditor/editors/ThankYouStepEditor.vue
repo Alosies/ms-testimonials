@@ -3,6 +3,7 @@ import { computed } from 'vue';
 import { Input, Textarea, Label, Switch } from '@testimonials/ui';
 import type { FormStep, ThankYouContent } from '@/shared/stepCards';
 import { isThankYouStep } from '../../../functions';
+import { studioTestIds } from '@/shared/constants/testIds';
 
 interface Props {
   step: FormStep;
@@ -36,6 +37,7 @@ function updateString(field: keyof ThankYouContent, value: string | number) {
       <Label for="title">Title</Label>
       <Input
         id="title"
+        :data-testid="studioTestIds.thankYouTitleInput"
         :model-value="content.title"
         placeholder="Thank you!"
         @update:model-value="updateString('title', $event)"
@@ -46,6 +48,7 @@ function updateString(field: keyof ThankYouContent, value: string | number) {
       <Label for="message">Message</Label>
       <Textarea
         id="message"
+        :data-testid="studioTestIds.thankYouMessageInput"
         :model-value="content.message"
         placeholder="Your testimonial has been submitted successfully."
         :rows="3"
@@ -81,6 +84,7 @@ function updateString(field: keyof ThankYouContent, value: string | number) {
       <Label for="redirectUrl">Redirect URL (optional)</Label>
       <Input
         id="redirectUrl"
+        :data-testid="studioTestIds.thankYouRedirectUrlInput"
         :model-value="content.redirectUrl ?? ''"
         placeholder="https://yoursite.com"
         @update:model-value="updateString('redirectUrl', $event)"

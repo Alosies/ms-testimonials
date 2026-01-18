@@ -16,6 +16,7 @@ import {
 import { Icon } from '@testimonials/icons';
 import type { FormStep, LinkedQuestion } from '@/shared/stepCards';
 import { FLOW_METADATA } from '@/entities/form';
+import { studioTestIds } from '@/shared/constants/testIds';
 import { useDisableBranchingModal } from '@/shared/widgets';
 import { useTimelineEditor } from '../../../composables/timeline';
 import { useQuestionSettings, useSaveLock } from '../../../composables';
@@ -154,6 +155,7 @@ function handleThresholdChange(value: unknown) {
       <Label class="text-sm font-medium">Rating Question</Label>
       <Textarea
         :model-value="question.questionText"
+        :data-testid="studioTestIds.ratingQuestionInput"
         class="mt-1.5"
         rows="2"
         placeholder="How would you rate your experience?"
@@ -211,6 +213,7 @@ function handleThresholdChange(value: unknown) {
           <Label class="text-xs text-gray-500">Low Label</Label>
           <Input
             :model-value="question.scaleMinLabel ?? ''"
+            :data-testid="studioTestIds.ratingLowLabelInput"
             class="mt-1"
             placeholder="Poor"
             @update:model-value="(v) => updateField('scaleMinLabel', String(v) || null)"
@@ -220,6 +223,7 @@ function handleThresholdChange(value: unknown) {
           <Label class="text-xs text-gray-500">High Label</Label>
           <Input
             :model-value="question.scaleMaxLabel ?? ''"
+            :data-testid="studioTestIds.ratingHighLabelInput"
             class="mt-1"
             placeholder="Excellent"
             @update:model-value="(v) => updateField('scaleMaxLabel', String(v) || null)"
@@ -239,6 +243,7 @@ function handleThresholdChange(value: unknown) {
       </div>
       <Switch
         :model-value="question.isRequired"
+        :data-testid="studioTestIds.ratingRequiredSwitch"
         :disabled="isLocked"
         @update:model-value="handleRequiredChange"
       />
@@ -251,6 +256,7 @@ function handleThresholdChange(value: unknown) {
       <Label class="text-sm font-medium">Help Text</Label>
       <Input
         :model-value="question.helpText ?? ''"
+        :data-testid="studioTestIds.ratingHelpTextInput"
         class="mt-1.5"
         placeholder="Additional guidance for respondents..."
         @update:model-value="(v) => updateField('helpText', String(v) || null)"

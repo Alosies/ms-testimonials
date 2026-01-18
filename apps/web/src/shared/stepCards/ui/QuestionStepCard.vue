@@ -8,6 +8,7 @@
 import { computed } from 'vue';
 import { QuestionInput } from '@/shared/formInputs';
 import type { FormStep, StepCardMode } from '../models';
+import { studioTestIds } from '@/shared/constants/testIds';
 
 interface Props {
   step: FormStep;
@@ -46,7 +47,10 @@ const isInputDisabled = computed(() => props.mode === 'edit');
 <template>
   <div class="text-center w-full">
     <!-- Question text as heading -->
-    <h3 class="text-2xl md:text-3xl font-bold text-gray-900 mb-8 leading-tight">
+    <h3
+      class="text-2xl md:text-3xl font-bold text-gray-900 mb-8 leading-tight"
+      :data-testid="studioTestIds.questionText"
+    >
       {{ displayText }}
     </h3>
 

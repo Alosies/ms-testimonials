@@ -30,6 +30,7 @@ const hoverValue = ref<number | null>(null);
 
 const displayText = computed(() =>
   props.questionText ||
+  props.step.question?.questionText ||
   (props.step.content as { questionText?: string })?.questionText ||
   'How would you rate your experience?',
 );
