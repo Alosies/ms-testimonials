@@ -15,16 +15,44 @@ proj-testimonials/
 └── ms-testimonials-blue/    # Blue agent worktree
 ```
 
-### Playwright MCP Selection (CRITICAL)
-**You MUST use the Playwright MCP that matches your worktree folder color:**
+### Browser Automation (agent-browser)
 
-| Folder Contains | Use This MCP |
-|-----------------|--------------|
-| `ms-testimonials-yellow` | `playwright-yellow` |
-| `ms-testimonials-green` | `playwright-green` |
-| `ms-testimonials-blue` | `playwright-blue` |
+Use `agent-browser` CLI for browser automation with automatic session isolation. **No MCP configuration needed.**
 
-Check your working directory path to determine which color you are. Each Playwright connects to a separate Chrome profile to avoid conflicts between agents.
+**Setup (one-time):**
+```bash
+npm install -g agent-browser
+agent-browser install  # Downloads Chromium
+```
+
+**Usage:**
+```bash
+# Source environment (auto-detects session from worktree)
+source scripts/get-agent-session.sh
+
+# Now use agent-browser with your session
+agent-browser --session $AGENT_SESSION open "$AGENT_BASE_URL/dashboard"
+agent-browser --session $AGENT_SESSION screenshot ./screenshot.png
+agent-browser --session $AGENT_SESSION snapshot -i --json  # For AI parsing
+```
+
+**Authentication:**
+```bash
+scripts/agent-browser-auth.sh ensure   # Restore or login if needed
+scripts/agent-browser-auth.sh login    # Fresh login
+scripts/agent-browser-auth.sh status   # Check session info
+```
+
+Each agent automatically uses an isolated session with separate cookies/storage:
+
+| Worktree | Session | Port |
+|----------|---------|------|
+| `ms-testimonials-yellow` | `yellow` | 3001 |
+| `ms-testimonials-green` | `green` | 3002 |
+| `ms-testimonials-blue` | `blue` | 3003 |
+| `ms-testimonials` (parent) | `parent` | 3000 |
+
+Auth states are persisted to `.agent-browser-states/` and can be restored across sessions.
 
 ### Branch Naming Convention
 - Yellow agent: `yellow/*` (e.g., `yellow/feature-x`)
