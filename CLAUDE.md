@@ -32,6 +32,21 @@ Check your working directory path to determine which color you are. Each Playwri
 - Blue agent: `blue/*` (e.g., `blue/feature-z`)
 - Default branches: `yellow/default`, `green/default`, `blue/default`
 
+### Dev Server Ports
+Each worktree runs on a different port to allow parallel development:
+
+| Worktree | Web Port | API Port |
+|----------|----------|----------|
+| yellow | 3001 | 4001 |
+| green | 3002 | 4002 |
+| blue | 3003 | 4003 |
+| parent | 3000 | 4000 |
+
+**Auto-detect port:** Use `scripts/get-agent-port.sh`
+```bash
+source scripts/get-agent-port.sh  # Sets E2E_PORT and E2E_BASE_URL
+```
+
 ## Project Overview
 
 Testimonials is a testimonial collection and display tool with AI-powered smart prompts. It helps businesses collect high-quality testimonials from customers through guided prompts, then assembles them into coherent testimonials using AI.
