@@ -26,6 +26,14 @@ export const useDirtyTracker = createSharedComposable(() => {
     flow: (id: string) => { dirty.flows.add(id); },
   };
 
+  /**
+   * Clear dirty flag for a specific entity.
+   * Used by immediate save to prevent auto-save from re-saving.
+   */
+  const clearStep = (id: string) => {
+    dirty.steps.delete(id);
+  };
+
   const snapshot = () => {
     const captured = {
       formInfo: dirty.formInfo,
@@ -62,5 +70,5 @@ export const useDirtyTracker = createSharedComposable(() => {
     dirty.flows.size > 0
   );
 
-  return { dirty: readonly(dirty), mark, snapshot, restoreDirtyState, hasPendingChanges };
+  return { dirty: readonly(dirty), mark, clearStep, snapshot, restoreDirtyState, hasPendingChanges };
 });

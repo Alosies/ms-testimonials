@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { Input, Textarea, Label, Switch } from '@testimonials/ui';
+import { Input, Textarea, Label, Switch, useToast } from '@testimonials/ui';
 import type { FormStep, ConsentContent } from '@/shared/stepCards';
 import { isConsentStep } from '../../../functions';
+import { studioTestIds } from '@/shared/constants/testIds';
+import { useStepContentSettings, useSaveLock } from '../../../composables';
 
 interface Props {
   step: FormStep;
@@ -13,6 +15,11 @@ const props = defineProps<Props>();
 const emit = defineEmits<{
   (e: 'update', content: ConsentContent): void;
 }>();
+
+// ADR-011: Immediate save for consent required toggle
+const { setConsentRequired } = useStepContentSettings();
+const { isLocked } = useSaveLock();
+const { toast } = useToast();
 
 const content = computed((): ConsentContent => {
   if (isConsentStep(props.step)) {
@@ -43,6 +50,24 @@ function updateOption(type: 'public' | 'private', field: 'label' | 'description'
   newOptions[type] = { ...newOptions[type], [field]: String(value) };
   update({ options: newOptions });
 }
+
+/**
+ * ADR-011: Handle required toggle with immediate persistence.
+ */
+async function handleRequiredChange(value: boolean) {
+  // Update local state immediately for responsive UI
+  emit('update', { ...content.value, required: value });
+
+  // Persist to database
+  try {
+    await setConsentRequired(props.step.id, content.value, value);
+  } catch (error) {
+    // Revert local state on failure
+    emit('update', { ...content.value, required: !value });
+    toast({ title: 'Failed to update required setting', variant: 'destructive' });
+    console.error('[ConsentStepEditor] Failed to set required:', error);
+  }
+}
 </script>
 
 <template>
@@ -51,6 +76,7 @@ function updateOption(type: 'public' | 'private', field: 'label' | 'description'
       <Label for="title">Title</Label>
       <Input
         id="title"
+        :data-testid="studioTestIds.consentTitleInput"
         :model-value="content.title"
         placeholder="How can we share your testimonial?"
         @update:model-value="updateString('title', $event)"
@@ -61,6 +87,7 @@ function updateOption(type: 'public' | 'private', field: 'label' | 'description'
       <Label for="description">Description</Label>
       <Textarea
         id="description"
+        :data-testid="studioTestIds.consentDescriptionInput"
         :model-value="content.description"
         placeholder="Choose how you'd like your feedback to be used."
         :rows="2"
@@ -73,6 +100,7 @@ function updateOption(type: 'public' | 'private', field: 'label' | 'description'
       <div>
         <Label>Label</Label>
         <Input
+          :data-testid="studioTestIds.consentPublicLabelInput"
           :model-value="content.options.public.label"
           placeholder="Public"
           @update:model-value="updateOption('public', 'label', $event)"
@@ -81,6 +109,7 @@ function updateOption(type: 'public' | 'private', field: 'label' | 'description'
       <div>
         <Label>Description</Label>
         <Input
+          :data-testid="studioTestIds.consentPublicDescriptionInput"
           :model-value="content.options.public.description"
           placeholder="Display on our website and marketing materials"
           @update:model-value="updateOption('public', 'description', $event)"
@@ -93,6 +122,7 @@ function updateOption(type: 'public' | 'private', field: 'label' | 'description'
       <div>
         <Label>Label</Label>
         <Input
+          :data-testid="studioTestIds.consentPrivateLabelInput"
           :model-value="content.options.private.label"
           placeholder="Private"
           @update:model-value="updateOption('private', 'label', $event)"
@@ -101,6 +131,7 @@ function updateOption(type: 'public' | 'private', field: 'label' | 'description'
       <div>
         <Label>Description</Label>
         <Input
+          :data-testid="studioTestIds.consentPrivateDescriptionInput"
           :model-value="content.options.private.description"
           placeholder="For internal use only"
           @update:model-value="updateOption('private', 'description', $event)"
@@ -114,8 +145,10 @@ function updateOption(type: 'public' | 'private', field: 'label' | 'description'
         <p class="text-xs text-muted-foreground">Customer must make a choice</p>
       </div>
       <Switch
-        :checked="content.required"
-        @update:checked="update({ required: $event })"
+        :data-testid="studioTestIds.consentRequiredSwitch"
+        :model-value="content.required"
+        :disabled="isLocked"
+        @update:model-value="handleRequiredChange"
       />
     </div>
   </div>

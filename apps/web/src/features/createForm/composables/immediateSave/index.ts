@@ -14,3 +14,4 @@
 export { useQuestionSettings } from './useQuestionSettings';
 export { useQuestionOptions } from './useQuestionOptions';
 export { useFlowSettings } from './useFlowSettings';
+export { useStepContentSettings } from './useStepContentSettings';
