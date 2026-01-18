@@ -548,6 +548,59 @@ question.value.is_required = value;  // Update UI after success
 - Discrete actions are fast enough (~100-200ms)
 - Avoids complex state reconciliation
 
+### JSONB Content Validation with Zod
+
+Form steps store their content in a PostgreSQL JSONB column. Since PostgreSQL doesn't validate JSONB structure, **Zod schemas provide the ONLY runtime validation** for content integrity.
+
+**Problem**: JSONB content has no schema enforcement at the database level. A simple type assertion (`step.content as ConsentContent`) provides TypeScript safety but no runtime guarantees.
+
+**Solution**: Zod schemas that:
+1. Define the structure for each step type's content
+2. Infer TypeScript types (single source of truth)
+3. Validate on read (graceful fallback to defaults)
+4. Validate on write (throw on invalid data)
+
+**Schema Location**: `entities/formStep/schemas/`
+
+```
+entities/formStep/schemas/
+├── welcomeContent.schema.ts      # WelcomeContentSchema
+├── consentContent.schema.ts      # ConsentContentSchema
+├── contactInfoContent.schema.ts  # ContactInfoContentSchema
+├── rewardContent.schema.ts       # RewardContentSchema
+├── thankYouContent.schema.ts     # ThankYouContentSchema
+├── stepContent.schema.ts         # Union + parse/validate functions
+└── index.ts                      # Barrel export
+```
+
+**Parse Functions**:
+
+| Function | Use Case | Behavior on Invalid |
+|----------|----------|---------------------|
+| `parseStepContent(type, content)` | Strict read | Throws ZodError |
+| `safeParseStepContent(type, content)` | Safe read | Returns result object |
+| `parseStepContentWithDefaults(type, content)` | Graceful read | Falls back to defaults |
+| `validateStepContent(type, content)` | Pre-save validation | Throws ZodError |
+
+**Integration Points**:
+
+```typescript
+// READ: stepTransform.ts - parsing content from GraphQL
+content: parseStepContentWithDefaults(step.step_type as StepType, step.content),
+
+// WRITE: useStepContentSettings.ts - validating before save
+function toJsonbContent<T extends StepContent>(stepType: StepType, content: T) {
+  validateStepContent(stepType, content);  // Throws if invalid
+  return content as unknown as Record<string, unknown>;
+}
+```
+
+**Why This Matters**:
+- **Data integrity**: Prevents malformed content from corrupting the database
+- **Type safety**: TypeScript types derived from Zod schemas (single source of truth)
+- **Graceful degradation**: Read path uses defaults if content is corrupted
+- **Fail-fast writes**: Invalid content throws before reaching the database
+
 ### Apollo Cache Updates
 
 After a mutation succeeds, the UI needs to reflect the new state. We use **fragment-based cache updates** for consistency:

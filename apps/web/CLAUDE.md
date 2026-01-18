@@ -32,6 +32,9 @@ entities/{entityName}/
 │   ├── index.ts          # Main types + barrel exports
 │   ├── mutations.ts      # Mutation-specific interfaces
 │   └── queries.ts        # Query-specific interfaces
+├── schemas/              # Zod schemas for JSONB content (if applicable)
+│   ├── {contentType}.schema.ts  # Individual content schemas
+│   └── index.ts          # Union schema + parse/validate functions
 ├── composables/          # Vue composables
 │   ├── queries/          # Query composables
 │   ├── mutations/        # Mutation composables
@@ -63,6 +66,35 @@ entities/{entityName}/
 ### `composables/` - Vue Composables
 - **Purpose**: Reactive, stateful Vue composition functions
 - **Behavior**: Handle component lifecycle and reactivity
+
+### `schemas/` - Zod Schemas for JSONB Content
+- **Purpose**: Runtime validation for PostgreSQL JSONB columns
+- **Use Case**: Entities that store structured content in JSONB (e.g., `form_steps.content`)
+- **Pattern**: Types inferred from Zod schemas (single source of truth)
+- **Exports**: Parse functions + validate functions + inferred types
+
+**Why schemas/ is separate from models/**:
+- `models/` exports only **types** (per FSD guidelines)
+- `schemas/` exports **functions** (parse, validate) + types
+- Both are exported from entity `index.ts`
+
+**Example** (formStep entity):
+```typescript
+// schemas/consentContent.schema.ts
+export const ConsentContentSchema = z.object({
+  title: z.string(),
+  required: z.boolean(),
+});
+export type ConsentContent = z.infer<typeof ConsentContentSchema>;
+
+// Usage in transform (read path)
+content: parseStepContentWithDefaults(step.step_type, step.content),
+
+// Usage in save (write path)
+validateStepContent('consent', updatedContent);  // Throws if invalid
+```
+
+**See**: ADR-011 "JSONB Content Validation with Zod" section
 
 ## Composable Naming and Location Rules (Critical)
 
