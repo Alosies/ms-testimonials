@@ -62,6 +62,26 @@ export function createStudioPage(page: Page) {
     return page.locator(`[data-step-id="${stepId}"]`);
   }
 
+  /**
+   * Get step card by ID on the sidebar only
+   * @param stepId - The step's database ID
+   */
+  function getStepCardByIdOnSidebar(stepId: string): Locator {
+    return page.locator(`[data-testid="${studioTestIds.sidebarStepCard}"][data-step-id="${stepId}"]`);
+  }
+
+  /**
+   * Get step card by ID on the canvas only
+   * Matches both TimelineStepCard (linear view) and FlowStepCard (branched view)
+   * @param stepId - The step's database ID
+   */
+  function getStepCardByIdOnCanvas(stepId: string): Locator {
+    // Match either TimelineStepCard (data-testid) or FlowStepCard (.flow-step-card class)
+    return page.locator(
+      `[data-testid="${studioTestIds.canvasStepCard}"][data-step-id="${stepId}"], .flow-step-card[data-step-id="${stepId}"]`,
+    );
+  }
+
   return {
     // Expose page and locators
     page,
@@ -88,6 +108,8 @@ export function createStudioPage(page: Page) {
     getSidebarStepCard,
     getCanvasStepCard,
     getStepCardById,
+    getStepCardByIdOnSidebar,
+    getStepCardByIdOnCanvas,
 
     // Navigation
     async goto(orgSlug: string, formSlug: string) {
