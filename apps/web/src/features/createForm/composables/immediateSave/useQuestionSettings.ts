@@ -1,27 +1,34 @@
 /**
  * Question Settings - Immediate save for discrete question changes
  *
- * Wraps useUpdateFormQuestion with save lock for:
+ * Wraps useUpdateFormQuestionAutoSave with save lock for:
  * - Toggle required
  * - Change question type
  * - Set validation constraints
  *
  * Uses withSaveIndicator to show the Saving → Saved chip transition.
+ *
+ * CRITICAL: Uses AutoSave mutation (minimal response: id + updated_at only)
+ * to prevent Apollo cache from overwriting unsaved local text field edits.
+ * The full mutation returns all fields which would destroy pending changes.
+ *
+ * @see ADR-003: Auto-Save Dirty Tracking
+ * @see ADR-010: Minimal Response Pattern
  */
-import { useUpdateFormQuestion } from '@/entities/formQuestion/composables';
+import { useUpdateFormQuestionAutoSave } from '@/entities/formQuestion/composables';
 import { useSaveLock, useAutoSaveController } from '../autoSave';
 
 export function useQuestionSettings() {
-  const { updateFormQuestion } = useUpdateFormQuestion();
+  const { updateFormQuestionAutoSave } = useUpdateFormQuestionAutoSave();
   const { withLock } = useSaveLock();
   const { withSaveIndicator } = useAutoSaveController();
 
   const setRequired = async (questionId: string, isRequired: boolean) => {
     return withSaveIndicator(() =>
       withLock('question-required', async () => {
-        await updateFormQuestion({
+        await updateFormQuestionAutoSave({
           id: questionId,
-          input: { is_required: isRequired },
+          changes: { is_required: isRequired },
         });
       })
     );
@@ -30,9 +37,9 @@ export function useQuestionSettings() {
   const setQuestionType = async (questionId: string, questionTypeId: string) => {
     return withSaveIndicator(() =>
       withLock('question-type', async () => {
-        await updateFormQuestion({
+        await updateFormQuestionAutoSave({
           id: questionId,
-          input: { question_type_id: questionTypeId },
+          changes: { question_type_id: questionTypeId },
         });
       })
     );
@@ -52,9 +59,9 @@ export function useQuestionSettings() {
   ) => {
     return withSaveIndicator(() =>
       withLock('question-validation', async () => {
-        await updateFormQuestion({
+        await updateFormQuestionAutoSave({
           id: questionId,
-          input: validation,
+          changes: validation,
         });
       })
     );
