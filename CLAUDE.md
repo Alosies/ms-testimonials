@@ -54,6 +54,22 @@ Each agent automatically uses an isolated session with separate cookies/storage:
 
 Auth states are persisted to `.agent-browser-states/` and can be restored across sessions.
 
+### Playwright MCP (for E2E Test Debugging)
+
+For debugging Playwright E2E tests, use the Playwright MCP that matches your worktree:
+
+| Folder Contains | Use This MCP |
+|-----------------|--------------|
+| `ms-testimonials-yellow` | `playwright-yellow` |
+| `ms-testimonials-green` | `playwright-green` |
+| `ms-testimonials-blue` | `playwright-blue` |
+
+Each Playwright MCP connects to a separate Chrome profile to avoid conflicts between agents.
+
+**When to use which:**
+- **agent-browser**: General browser automation (form filling, screenshots, navigation)
+- **Playwright MCP**: Debugging E2E tests, running Playwright interactively, test development
+
 ### Branch Naming Convention
 - Yellow agent: `yellow/*` (e.g., `yellow/feature-x`)
 - Green agent: `green/*` (e.g., `green/feature-y`)
