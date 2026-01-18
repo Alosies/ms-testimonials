@@ -1,7 +1,7 @@
 ---
 name: code-review
 description: Review staged code before commit. Senior engineer review for Vue 3, TypeScript, GraphQL, Tailwind, FSD architecture. Use when running /code-review, before committing, or when user asks for code review.
-allowed-tools: Bash, Read, Glob, Grep
+allowed-tools: Bash, Read, Glob, Grep, Skill
 ---
 
 # Code Review Skill
@@ -27,6 +27,20 @@ Review each non-E2E file against the checklist below.
 
 ### Step 4: Report Issues
 Use the output format below. Include file:line references and severity levels.
+
+### Step 5: Chain to E2E Test Runner (Optional)
+After completing the code review, offer to run relevant E2E tests:
+
+```
+Would you like me to run relevant E2E tests for these changes? (/code-review-e2e-runner)
+```
+
+If the user agrees or if running as part of a comprehensive review, invoke:
+```
+/code-review-e2e-runner
+```
+
+This will analyze the changes and run only the E2E tests relevant to the modified code.
 
 ---
 
@@ -112,3 +126,4 @@ Project documentation:
 
 Related skills:
 - `/e2e-code-review` - Specialized review for E2E test files (auto-delegated)
+- `/code-review-e2e-runner` - Run relevant E2E tests based on code changes (chained after review)
