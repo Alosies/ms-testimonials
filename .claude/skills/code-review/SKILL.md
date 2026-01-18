@@ -16,10 +16,16 @@ git diff --staged --name-only  # List changed files
 git diff --staged              # Full diff for review
 ```
 
-### Step 2: Analyze by Category
-Review each changed file against the checklist below.
+### Step 2: Route E2E Test Files
+If staged changes include E2E test files (`*.spec.ts` in `tests/e2e/`), delegate to `/e2e-code-review` for those files. It will:
+- Review test code against Playwright best practices
+- Run the tests and report pass/fail status
+- Report duration
 
-### Step 3: Report Issues
+### Step 3: Analyze by Category
+Review each non-E2E file against the checklist below.
+
+### Step 4: Report Issues
 Use the output format below. Include file:line references and severity levels.
 
 ---
@@ -103,3 +109,6 @@ Use the output format below. Include file:line references and severity levels.
 
 Project documentation:
 - `/apps/web/CLAUDE.md` - FSD architecture, composables, GraphQL patterns
+
+Related skills:
+- `/e2e-code-review` - Specialized review for E2E test files (auto-delegated)

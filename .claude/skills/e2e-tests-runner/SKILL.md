@@ -14,28 +14,48 @@ Run Playwright E2E tests with the correct configuration and environment setup.
 # Working directory (REQUIRED)
 cd apps/web
 
-# Run all tests (dev server must be running on port 3001)
-E2E_BASE_URL=http://localhost:3001 pnpm playwright test --config=tests/e2e/playwright.config.ts
+# Get port for current worktree (yellow=3001, green=3002, blue=3003)
+source ../../scripts/get-agent-port.sh
+
+# Run all tests
+E2E_BASE_URL=$E2E_BASE_URL pnpm test:e2e
+
+# Run smoke tests only (~1 minute)
+E2E_BASE_URL=$E2E_BASE_URL pnpm test:e2e:smoke
 
 # Run specific test file
-E2E_BASE_URL=http://localhost:3001 pnpm playwright test features/auth --config=tests/e2e/playwright.config.ts
+E2E_BASE_URL=$E2E_BASE_URL pnpm playwright test features/auth --config=tests/e2e/playwright.config.ts
 
 # Run with visible browser (headed mode)
-E2E_BASE_URL=http://localhost:3001 pnpm playwright test --config=tests/e2e/playwright.config.ts --headed
+E2E_BASE_URL=$E2E_BASE_URL pnpm test:e2e:headed
 
 # Run in interactive UI mode
-E2E_BASE_URL=http://localhost:3001 pnpm playwright test --config=tests/e2e/playwright.config.ts --ui
+E2E_BASE_URL=$E2E_BASE_URL pnpm test:e2e:ui
+```
+
+## Port Configuration
+
+Each worktree runs on a different port to allow parallel development:
+
+| Worktree | Port | E2E_BASE_URL |
+|----------|------|--------------|
+| yellow | 3001 | `http://localhost:3001` |
+| green | 3002 | `http://localhost:3002` |
+| blue | 3003 | `http://localhost:3003` |
+| parent | 3000 | `http://localhost:3000` |
+
+**Auto-detect port:** Use `scripts/get-agent-port.sh`
+```bash
+source ../../scripts/get-agent-port.sh  # Sets E2E_BASE_URL
+# or
+E2E_BASE_URL=http://localhost:$(../../scripts/get-agent-port.sh) pnpm test:e2e
 ```
 
 ## Critical Configuration
 
 ### Environment Variable
 
-The `E2E_BASE_URL` environment variable **MUST** be set:
-
-```bash
-E2E_BASE_URL=http://localhost:3001
-```
+The `E2E_BASE_URL` environment variable **MUST** be set to the correct port for your worktree.
 
 Without this, tests fail with: `Cannot navigate to invalid URL`
 
@@ -80,7 +100,31 @@ curl -s http://localhost:4000/health && echo "API is running" || echo "API NOT r
 
 ```bash
 cd apps/web
-E2E_BASE_URL=http://localhost:3001 pnpm playwright test --config=tests/e2e/playwright.config.ts
+E2E_BASE_URL=http://localhost:3001 pnpm test:e2e
+```
+
+### Run Smoke Tests
+
+Quick validation suite (~1 minute) - includes journey tests and combined autosave tests:
+
+```bash
+E2E_BASE_URL=http://localhost:3001 pnpm test:e2e:smoke
+```
+
+### Run Tests by Tag
+
+```bash
+# Run only @smoke tagged tests
+E2E_BASE_URL=http://localhost:3001 pnpm playwright test --grep @smoke --config=tests/e2e/playwright.config.ts
+
+# Run only @autosave tagged tests
+E2E_BASE_URL=http://localhost:3001 pnpm playwright test --grep @autosave --config=tests/e2e/playwright.config.ts
+
+# Exclude tests with a specific tag
+E2E_BASE_URL=http://localhost:3001 pnpm playwright test --grep-invert @slow --config=tests/e2e/playwright.config.ts
+
+# Run tests with multiple tags (OR logic)
+E2E_BASE_URL=http://localhost:3001 pnpm playwright test --grep "@smoke|@autosave" --config=tests/e2e/playwright.config.ts
 ```
 
 ### Run Specific Feature
@@ -129,6 +173,25 @@ E2E_BASE_URL=http://localhost:3001 pnpm playwright test --config=tests/e2e/playw
 | Page objects | `apps/web/tests/e2e/shared/pages/` |
 | Fixtures | `apps/web/tests/e2e/entities/` |
 | App fixtures | `apps/web/tests/e2e/app/` |
+
+## Test Tags
+
+Tests are organized with tags for selective running:
+
+| Tag | Purpose | When to Run |
+|-----|---------|-------------|
+| `@smoke` | Critical path tests (journey + combined) | Every PR, quick validation |
+| `@autosave` | Auto-save functionality tests | When modifying auto-save |
+
+### NPM Scripts
+
+| Script | Command | Description |
+|--------|---------|-------------|
+| `test:e2e` | `pnpm test:e2e` | Run all tests |
+| `test:e2e:smoke` | `pnpm test:e2e:smoke` | Run @smoke tests only (~1 min) |
+| `test:e2e:ui` | `pnpm test:e2e:ui` | Interactive UI mode |
+| `test:e2e:headed` | `pnpm test:e2e:headed` | Visible browser |
+| `test:e2e:debug` | `pnpm test:e2e:debug` | Debug mode |
 
 ## Troubleshooting
 

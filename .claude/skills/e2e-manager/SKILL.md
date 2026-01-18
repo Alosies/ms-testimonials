@@ -21,6 +21,8 @@ Orchestrate E2E testing operations by routing to the appropriate specialized ski
 |-------|----------|
 | `/e2e-test-ids` | Creating test IDs, adding `data-testid` to components, using test IDs in tests |
 | `/e2e-tests-runner` | Running E2E tests, debugging test failures, verifying changes |
+| `/e2e-code-review` | Reviewing E2E test code for best practices, before merging test changes |
+| `/e2e-tests-creator` | Creating new E2E tests, journey tests, focused tests, action helpers |
 
 *More skills coming soon: e2e-page-objects, e2e-fixtures, e2e-api*
 
@@ -34,6 +36,8 @@ Orchestrate E2E testing operations by routing to the appropriate specialized ski
 | "target element in test", "select element" | `/e2e-test-ids` |
 | "run tests", "run e2e", "verify tests" | `/e2e-tests-runner` |
 | "playwright test", "test failed", "debug test" | `/e2e-tests-runner` |
+| "review test", "check test code", "e2e review" | `/e2e-code-review` |
+| "create test", "write test", "add e2e test" | `/e2e-tests-creator` |
 
 ### Test Infrastructure Setup (Multi-Step)
 
@@ -60,6 +64,10 @@ User Request
     ├─ Test ID related? ────────────► /e2e-test-ids
     │
     ├─ Run/debug tests? ────────────► /e2e-tests-runner
+    │
+    ├─ Review test code? ───────────► /e2e-code-review
+    │
+    ├─ Create new tests? ───────────► /e2e-tests-creator
     │
     ├─ Page object related? ─────────► (handle directly for now)
     │
