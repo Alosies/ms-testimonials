@@ -35,8 +35,18 @@ export type QuestionStepTextField = keyof typeof QUESTION_STEP_TEXT_FIELDS;
 export const QUESTION_TYPE_OPTIONS = {
   text_short: 'Short answer',
   text_long: 'Paragraph',
-  rating_scale: 'Star rating',
-  checkbox: 'Checkbox',
+  text_email: 'Email',
+  text_url: 'URL',
+  choice_single: 'Multiple choice',
+  choice_multiple: 'Checkboxes',
+  choice_dropdown: 'Dropdown',
+  rating_star: 'Star rating',
+  rating_scale: 'Linear scale',
+  input_date: 'Date',
+  input_time: 'Time',
+  input_switch: 'Switch',
+  input_checkbox: 'Checkbox',
+  special_hidden: 'Hidden field',
 } as const;
 
 export type QuestionTypeId = keyof typeof QUESTION_TYPE_OPTIONS;
@@ -106,12 +116,22 @@ export function createAutoSaveActions(studio: StudioPage) {
     async selectQuestionType(typeId: QuestionTypeId) {
       const typeName = QUESTION_TYPE_OPTIONS[typeId];
       // Click the Question Type dropdown trigger
-      const trigger = page.locator('[role="combobox"]').filter({ hasText: /Paragraph|Short answer|Star rating|Checkbox/ });
+      const trigger = page.locator('[role="combobox"]').filter({ hasText: /Paragraph|Short answer|Star rating|Checkbox|Multiple choice|Email|URL|Checkboxes|Dropdown|Linear scale|Date|Time|Switch|Hidden/ });
       await trigger.click();
       // Wait for listbox to appear and select the option
       const option = page.getByRole('option', { name: typeName });
       await option.waitFor({ state: 'visible' });
       await option.click();
+    },
+
+    /**
+     * Get the current question type from the dropdown
+     * Returns the display name (e.g., "Paragraph", "Star rating")
+     */
+    async getQuestionType(): Promise<string> {
+      const trigger = page.locator('[role="combobox"]').filter({ hasText: /Paragraph|Short answer|Star rating|Checkbox|Multiple choice|Email|URL|Checkboxes|Dropdown|Linear scale|Date|Time|Switch|Hidden/ });
+      const text = await trigger.textContent();
+      return text?.trim() ?? '';
     },
 
     /**

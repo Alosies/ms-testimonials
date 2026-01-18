@@ -34,6 +34,7 @@ import { createBranchingActions } from './branching.actions';
 import { createManagementActions } from './management.actions';
 import { createPropertiesActions } from './properties.actions';
 import { createAutoSaveActions } from './autosave.actions';
+import { createQuestionTypeChangeActions } from './questionTypeChange.actions';
 
 export function createStudioActions(studio: StudioPage) {
   return {
@@ -57,6 +58,9 @@ export function createStudioActions(studio: StudioPage) {
 
     /** Auto-save testing actions */
     autoSave: createAutoSaveActions(studio),
+
+    /** Question type change actions (ADR-017) */
+    questionType: createQuestionTypeChangeActions(studio),
   };
 }
 
@@ -78,3 +82,7 @@ export {
   CONSENT_STEP_FIELDS,
   THANKYOU_STEP_FIELDS,
 } from './autosave.actions';
+export {
+  createQuestionTypeChangeActions,
+  QUESTION_TYPE_NAMES,
+} from './questionTypeChange.actions';
