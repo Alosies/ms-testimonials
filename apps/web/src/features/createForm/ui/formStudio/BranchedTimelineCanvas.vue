@@ -62,11 +62,15 @@ async function handleInsert(afterIndex: number, type: StepType) {
 }
 
 function handleFocusTestimonial() {
-  editor.focusFlow('testimonial');
+  // Use setFlowFocus instead of focusFlow to avoid overwriting step selection.
+  // When a FlowStepCard is clicked, handleStepSelect already selects the correct step
+  // via editor.selectStep(). Using focusFlow here would always select the first step.
+  editor.setFlowFocus('testimonial');
 }
 
 function handleFocusImprovement() {
-  editor.focusFlow('improvement');
+  // Use setFlowFocus instead of focusFlow to avoid overwriting step selection.
+  editor.setFlowFocus('improvement');
 }
 
 function handleExpandFlow(flow: 'testimonial' | 'improvement') {
