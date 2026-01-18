@@ -2,8 +2,11 @@
  * Step Transformation Functions
  *
  * Pure functions for transforming GraphQL step data to internal types.
+ *
+ * @see ADR-011: Immediate Save Actions - uses Zod for JSONB content validation
  */
-import type { FormStep, StepType, StepContent } from '@/shared/stepCards';
+import type { FormStep, StepType } from '@/shared/stepCards';
+import { parseStepContentWithDefaults } from '@/entities/formStep';
 import type { GetFormStepsQuery } from '@/shared/graphql/generated/operations';
 
 // Type for a single step from the GraphQL query
@@ -53,7 +56,8 @@ export function transformFormSteps(steps: GraphQLFormStep[]): FormStep[] {
             })),
           }
         : null,
-      content: (step.content as StepContent) ?? {},
+      // Zod validation with graceful fallback to defaults
+      content: parseStepContentWithDefaults(step.step_type as StepType, step.content),
       tips: (step.tips as string[]) ?? [],
       // flowMembership for backward compatibility (derived from flow.flow_type)
       flowMembership: (step.flow_membership as FormStep['flowMembership']) ?? 'shared',

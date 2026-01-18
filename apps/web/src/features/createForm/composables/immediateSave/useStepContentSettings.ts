@@ -7,23 +7,30 @@
  * Uses withSaveIndicator to show the Saving → Saved chip transition.
  * Clears the step's dirty flag after save to prevent auto-save from re-saving.
  *
- * IMPORTANT: Step content is stored as JSONB. TypeScript types are the ONLY
- * client-side validation. All content must be strictly typed before saving.
+ * IMPORTANT: Step content is stored as JSONB. Zod schemas provide runtime
+ * validation on both read (stepTransform) and write (validateStepContent).
  *
  * @see ADR-011: Immediate Save Actions
  */
-import { useUpdateFormStepAutoSave } from '@/entities/formStep';
+import { useUpdateFormStepAutoSave, validateStepContent } from '@/entities/formStep';
 import { useSaveLock, useAutoSaveController, useDirtyTracker } from '../autoSave';
-import type { ConsentContent, StepContent } from '@/shared/stepCards';
+import type { ConsentContent, StepContent, StepType } from '@/shared/stepCards';
 
 /**
- * Type-safe cast for passing strictly-typed step content to GraphQL mutations.
- * This is the ONLY place where we cast to the loose GraphQL JSON type.
+ * Validate and cast strictly-typed step content for GraphQL mutations.
+ * Runtime validates with Zod before passing to GraphQL.
  *
+ * @param stepType - The step type for schema selection
  * @param content - Strictly typed step content (ConsentContent, WelcomeContent, etc.)
  * @returns GraphQL-compatible JSON object
+ * @throws ZodError if content doesn't match expected schema
  */
-function toJsonbContent<T extends StepContent>(content: T): Record<string, unknown> {
+function toJsonbContent<T extends StepContent>(
+  stepType: StepType,
+  content: T
+): Record<string, unknown> {
+  // Runtime validation ensures content matches schema before save
+  validateStepContent(stepType, content);
   return content as unknown as Record<string, unknown>;
 }
 
@@ -44,7 +51,7 @@ export function useStepContentSettings() {
   ) => {
     return withSaveIndicator(() =>
       withLock('consent-required', async () => {
-        // Strictly typed - TypeScript validates all fields
+        // Strictly typed - TypeScript + Zod validates all fields
         const updatedContent: ConsentContent = {
           ...currentContent,
           required: isRequired,
@@ -52,7 +59,8 @@ export function useStepContentSettings() {
         await updateFormStepAutoSave({
           id: stepId,
           changes: {
-            content: toJsonbContent(updatedContent),
+            // Zod validates before save
+            content: toJsonbContent('consent', updatedContent),
           },
         });
         // Clear dirty flag to prevent auto-save from re-saving
