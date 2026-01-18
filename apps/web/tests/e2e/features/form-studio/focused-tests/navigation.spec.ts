@@ -180,5 +180,36 @@ test.describe('Studio Navigation', () => {
       ];
       await actions.select.selectStep(lastTestimonialStep.id);
     });
+
+    test('clicking on non-first steps in branch flows selects correct step', async ({ authedPage, branchedFormViaApi }) => {
+      const studio = createStudioPage(authedPage);
+      const actions = createStudioActions(studio);
+
+      await actions.setup.loadStudio(branchedFormViaApi.studioUrl);
+
+      const testimonialSteps = branchedFormViaApi.testimonialFlow.steps;
+      const improvementSteps = branchedFormViaApi.improvementFlow.steps;
+
+      expect(testimonialSteps.length).toBeGreaterThanOrEqual(2);
+      expect(improvementSteps.length).toBeGreaterThanOrEqual(2);
+
+      // Click on second step in testimonial flow (not the first)
+      const secondTestimonialStep = testimonialSteps[1];
+      await studio.getStepCardByIdOnCanvas(secondTestimonialStep.id).click();
+      await studio.waitForScrollSettle();
+
+      // Verify the correct step is selected (not the first step)
+      await studio.expectSidebarStepSelected(secondTestimonialStep.id);
+      await studio.expectFlowFocused('testimonial');
+
+      // Click on last step in improvement flow
+      const lastImprovementStep = improvementSteps[improvementSteps.length - 1];
+      await studio.getStepCardByIdOnCanvas(lastImprovementStep.id).click();
+      await studio.waitForScrollSettle();
+
+      // Verify the correct step is selected and flow switched
+      await studio.expectSidebarStepSelected(lastImprovementStep.id);
+      await studio.expectFlowFocused('improvement');
+    });
   });
 });
