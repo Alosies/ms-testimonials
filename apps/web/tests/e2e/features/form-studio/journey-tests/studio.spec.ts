@@ -26,7 +26,7 @@ import { test, expect } from '@e2e/entities/form/fixtures';
 import { createStudioPage } from '@e2e/shared';
 import { createStudioActions } from '@e2e/features/form-studio/actions';
 
-test('form studio complete journey', async ({ authedPage, branchedFormViaApi }) => {
+test('form studio complete journey', { tag: '@smoke' }, async ({ authedPage, branchedFormViaApi }) => {
   const studio = createStudioPage(authedPage);
   const { setup, select, nav, branch, manage, props } = createStudioActions(studio);
 
