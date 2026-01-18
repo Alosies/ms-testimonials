@@ -9,12 +9,12 @@ import { createStudioPage } from '@e2e/shared';
 import { createStudioActions } from '@e2e/features/form-studio/actions';
 import { studioTestIds } from '@/shared/constants/testIds';
 
-test.describe('Auto-Save - Welcome Step', () => {
+test.describe('Auto-Save - Welcome Step', { tag: '@autosave' }, () => {
   /**
    * MVP: Combined test for all Welcome step fields (title, subtitle, buttonText).
    * In the future, these should be split into individual atomic tests.
    */
-  test('all fields auto-save correctly', async ({ authedPage, branchedFormViaApi }) => {
+  test('all fields auto-save correctly', { tag: '@smoke' }, async ({ authedPage, branchedFormViaApi }) => {
     const studio = createStudioPage(authedPage);
     const actions = createStudioActions(studio);
 
