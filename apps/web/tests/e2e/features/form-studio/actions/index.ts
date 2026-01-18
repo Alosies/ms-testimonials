@@ -69,4 +69,12 @@ export { createNavigationActions } from './navigation.actions';
 export { createBranchingActions } from './branching.actions';
 export { createManagementActions } from './management.actions';
 export { createPropertiesActions, STEP_TYPE_PANEL_TITLES } from './properties.actions';
-export { createAutoSaveActions, WELCOME_STEP_FIELDS } from './autosave.actions';
+export {
+  createAutoSaveActions,
+  WELCOME_STEP_FIELDS,
+  QUESTION_STEP_TEXT_FIELDS,
+  QUESTION_TYPE_OPTIONS,
+  RATING_STEP_FIELDS,
+  CONSENT_STEP_FIELDS,
+  THANKYOU_STEP_FIELDS,
+} from './autosave.actions';
