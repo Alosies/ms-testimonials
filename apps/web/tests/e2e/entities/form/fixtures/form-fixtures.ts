@@ -15,8 +15,8 @@
  */
 import { test as appTest } from '../../../app/fixtures';
 import { createFormCreationPage } from '../../../shared';
-import { createTestForm, createTestBranchedForm, deleteTestForm } from './form-api';
-import type { TestFormData, TestBranchedFormData } from '../types';
+import { createTestForm, createTestBranchedForm, createTestChoiceQuestionForm, createTestFormWithResponses, deleteTestForm } from './form-api';
+import type { TestFormData, TestBranchedFormData, TestChoiceQuestionFormData, TestFormWithResponsesData } from '../types';
 
 export interface FormFixtures {
   /** Form created via E2E API (fast, ~1s) - use for most tests */
@@ -25,6 +25,10 @@ export interface FormFixtures {
   formViaUi: TestFormData;
   /** Branched form via E2E API (fast) - use for branch navigation tests */
   branchedFormViaApi: TestBranchedFormData;
+  /** Form with choice_single question and options via E2E API (fast) - use for question type change tests */
+  choiceQuestionFormViaApi: TestChoiceQuestionFormData;
+  /** Form with mock responses via E2E API (fast) - use for response-dependent tests */
+  formWithResponsesViaApi: TestFormWithResponsesData;
 }
 
 export const test = appTest.extend<FormFixtures>({
@@ -82,6 +86,34 @@ export const test = appTest.extend<FormFixtures>({
       await deleteTestForm(formData.id);
     } catch (error) {
       console.warn(`Failed to cleanup branched form ${formData.id}:`, error);
+    }
+  },
+
+  // Choice question form via API (fast) - use for question type change tests
+  choiceQuestionFormViaApi: async ({ orgSlug }, use) => {
+    const formData = await createTestChoiceQuestionForm(orgSlug);
+
+    await use(formData);
+
+    // Cleanup after test
+    try {
+      await deleteTestForm(formData.id);
+    } catch (error) {
+      console.warn(`Failed to cleanup choice question form ${formData.id}:`, error);
+    }
+  },
+
+  // Form with responses via API (fast) - use for response-dependent tests
+  formWithResponsesViaApi: async ({ orgSlug }, use) => {
+    const formData = await createTestFormWithResponses(orgSlug);
+
+    await use(formData);
+
+    // Cleanup after test
+    try {
+      await deleteTestForm(formData.id);
+    } catch (error) {
+      console.warn(`Failed to cleanup form with responses ${formData.id}:`, error);
     }
   },
 });

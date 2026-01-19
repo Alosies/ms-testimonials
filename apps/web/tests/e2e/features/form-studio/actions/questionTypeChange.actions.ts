@@ -10,7 +10,7 @@
  */
 import { expect } from '@playwright/test';
 import type { StudioPage } from '@e2e/shared/pages/studio.page';
-import { studioTestIds } from '@/shared/constants/testIds';
+import { studioTestIds, widgetsTestIds } from '@/shared/constants/testIds';
 
 /**
  * Question type display names mapping
@@ -58,8 +58,19 @@ export function createQuestionTypeChangeActions(studio: StudioPage) {
       await expect(dropdown).toBeEnabled();
     },
 
+    /**
+     * Wait for the question type dropdown to show a valid type (not placeholder).
+     * Use this before interacting with the dropdown to ensure organization data has loaded.
+     */
+    async waitForTypeDropdownLoaded() {
+      const dropdown = page.getByTestId(studioTestIds.questionTypeDropdown);
+      // Wait for dropdown to NOT show placeholder
+      await expect(dropdown).not.toContainText('Select type', { timeout: 10000 });
+    },
+
     // ========================================
     // Warning Dialog Actions (Options Loss)
+    // Uses shared ConfirmationModal with change_question_type action
     // ========================================
 
     /**
@@ -81,33 +92,41 @@ export function createQuestionTypeChangeActions(studio: StudioPage) {
 
     /**
      * Expect the type change warning dialog to be visible
+     * Validates it's specifically the "Change Question Type" dialog
      */
     async expectWarningDialogVisible() {
-      const dialog = page.getByTestId(studioTestIds.questionTypeChangeWarningDialog);
+      const dialog = page.getByTestId(widgetsTestIds.confirmationModal);
       await expect(dialog).toBeVisible();
+      // Verify it's the change question type dialog by checking title
+      await expect(page.getByTestId(widgetsTestIds.confirmationModalTitle)).toContainText(
+        'Change Question Type'
+      );
     },
 
     /**
      * Expect the type change warning dialog to be hidden
      */
     async expectWarningDialogHidden() {
-      const dialog = page.getByTestId(studioTestIds.questionTypeChangeWarningDialog);
+      const dialog = page.getByTestId(widgetsTestIds.confirmationModal);
       await expect(dialog).toBeHidden();
     },
 
     /**
-     * Verify the warning message contains expected text
+     * Verify the warning message contains expected text about options being deleted
+     * @param expectedText - Text to look for (e.g., "3 options")
      */
     async expectWarningMessage(expectedText: string) {
-      const dialog = page.getByTestId(studioTestIds.questionTypeChangeWarningDialog);
+      const dialog = page.getByTestId(widgetsTestIds.confirmationModal);
+      // The message should mention options being deleted
       await expect(dialog).toContainText(expectedText);
+      await expect(dialog).toContainText('permanently delete');
     },
 
     /**
      * Confirm the type change in the warning dialog
      */
     async confirmTypeChange() {
-      const confirmButton = page.getByTestId(studioTestIds.questionTypeChangeConfirmButton);
+      const confirmButton = page.getByTestId(widgetsTestIds.confirmationModalConfirmButton);
       await confirmButton.click();
     },
 
@@ -115,7 +134,7 @@ export function createQuestionTypeChangeActions(studio: StudioPage) {
      * Cancel the type change in the warning dialog
      */
     async cancelTypeChange() {
-      const cancelButton = page.getByTestId(studioTestIds.questionTypeChangeCancelButton);
+      const cancelButton = page.getByTestId(widgetsTestIds.confirmationModalCancelButton);
       await cancelButton.click();
     },
 
@@ -149,22 +168,25 @@ export function createQuestionTypeChangeActions(studio: StudioPage) {
     },
 
     // ========================================
-    // Delete Responses Dialog Actions
+    // Delete Responses Dialog Actions (uses shared ConfirmationModal)
     // ========================================
 
     /**
      * Expect the delete responses confirmation dialog to be visible
+     * Note: Uses shared ConfirmationModal widget
      */
     async expectDeleteResponsesDialogVisible() {
-      const dialog = page.getByTestId(studioTestIds.deleteResponsesConfirmDialog);
+      const dialog = page.getByTestId(widgetsTestIds.confirmationModal);
       await expect(dialog).toBeVisible();
+      // Verify it's the delete responses dialog by checking title
+      await expect(page.getByTestId(widgetsTestIds.confirmationModalTitle)).toContainText('Delete Responses');
     },
 
     /**
      * Confirm deletion of responses
      */
     async confirmDeleteResponses() {
-      const confirmButton = page.getByTestId(studioTestIds.deleteResponsesConfirmButton);
+      const confirmButton = page.getByTestId(widgetsTestIds.confirmationModalConfirmButton);
       await confirmButton.click();
     },
 
@@ -172,7 +194,7 @@ export function createQuestionTypeChangeActions(studio: StudioPage) {
      * Cancel deletion of responses
      */
     async cancelDeleteResponses() {
-      const cancelButton = page.getByTestId(studioTestIds.deleteResponsesCancelButton);
+      const cancelButton = page.getByTestId(widgetsTestIds.confirmationModalCancelButton);
       await cancelButton.click();
     },
 

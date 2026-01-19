@@ -112,16 +112,19 @@ export function createAutoSaveActions(studio: StudioPage) {
 
     /**
      * Select a question type from the dropdown
+     * Uses testId for more reliable selection
      */
     async selectQuestionType(typeId: QuestionTypeId) {
       const typeName = QUESTION_TYPE_OPTIONS[typeId];
-      // Click the Question Type dropdown trigger
-      const trigger = page.locator('[role="combobox"]').filter({ hasText: /Paragraph|Short answer|Star rating|Checkbox|Multiple choice|Email|URL|Checkboxes|Dropdown|Linear scale|Date|Time|Switch|Hidden/ });
+      // Click the Question Type dropdown trigger using testId
+      const trigger = page.getByTestId(studioTestIds.questionTypeDropdown);
       await trigger.click();
       // Wait for listbox to appear and select the option
       const option = page.getByRole('option', { name: typeName });
       await option.waitFor({ state: 'visible' });
       await option.click();
+      // Wait for the dropdown to close and type change to process
+      await page.waitForTimeout(500);
     },
 
     /**
@@ -129,7 +132,7 @@ export function createAutoSaveActions(studio: StudioPage) {
      * Returns the display name (e.g., "Paragraph", "Star rating")
      */
     async getQuestionType(): Promise<string> {
-      const trigger = page.locator('[role="combobox"]').filter({ hasText: /Paragraph|Short answer|Star rating|Checkbox|Multiple choice|Email|URL|Checkboxes|Dropdown|Linear scale|Date|Time|Switch|Hidden/ });
+      const trigger = page.getByTestId(studioTestIds.questionTypeDropdown);
       const text = await trigger.textContent();
       return text?.trim() ?? '';
     },
