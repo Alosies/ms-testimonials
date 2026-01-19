@@ -11,60 +11,13 @@
  */
 
 import type { FlowMembership } from '@/entities/formStep';
-
-// =============================================================================
-// Types
-// =============================================================================
-
-/**
- * Minimal step representation for ordering calculations
- */
-export interface OrderableStep {
-  id: string;
-  stepOrder: number;
-  flowMembership: FlowMembership;
-}
-
-/**
- * Result of a reorder operation
- */
-export interface ReorderResult<T extends OrderableStep> {
-  /** Steps with updated stepOrder values */
-  reorderedSteps: T[];
-  /** IDs of steps whose order changed */
-  changedStepIds: Set<string>;
-  /** Whether the reorder was valid and applied */
-  success: boolean;
-}
-
-/**
- * Step order update for database persistence
- */
-export interface StepOrderUpdate {
-  id: string;
-  step_order: number;
-}
-
-/**
- * Parameters for calculating step ordering
- */
-export interface CalculateOrderingParams<T extends OrderableStep> {
-  steps: T[];
-  fromIndex: number;
-  toIndex: number;
-}
-
-/**
- * Parameters for recalculating flow-specific ordering
- */
-export interface RecalculateFlowOrderParams<T extends OrderableStep> {
-  steps: T[];
-  flowMembership: FlowMembership;
-}
-
-// =============================================================================
-// Implementation
-// =============================================================================
+import type {
+  OrderableStep,
+  ReorderResult,
+  StepOrderUpdate,
+  CalculateOrderingParams,
+  RecalculateFlowOrderParams,
+} from '../models/functionTypes';
 
 /**
  * Calculate new step ordering after moving a step from one position to another

@@ -31,6 +31,33 @@ export type {
   TimelineComputed,
 } from './timeline';
 
+// Function types - extracted from functions/ per FSD guidelines
+export type {
+  // analyzeQuestionTypeChange types (ADR-017)
+  TypeChangeAnalysis,
+  AnalyzableQuestion,
+  // getTransferableQuestionFields types (ADR-017)
+  QuestionTypeCapabilities,
+  TransferableQuestionInput,
+  TransferableQuestionFields,
+  // buildStepsFromQuestions types (ADR-014)
+  BuildStepsParams,
+  FormStepInput,
+  BuildStepsResult,
+  // calculateStepOrdering types (ADR-014)
+  OrderableStep,
+  ReorderResult,
+  StepOrderUpdate,
+  CalculateOrderingParams,
+  RecalculateFlowOrderParams,
+  // validateBranchingConfig types (ADR-014)
+  ValidatableStep,
+  BranchingValidationError,
+  BranchingValidationWarning,
+  BranchingValidationResult,
+  ValidateBranchingParams,
+} from './functionTypes';
+
 // Help content for properties panel
 export interface HelpContent {
   title: string;

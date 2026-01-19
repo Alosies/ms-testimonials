@@ -11,77 +11,15 @@
  */
 
 import type { FlowMembership as EntityFlowMembership } from '@/entities/formStep';
-import type { AIQuestion, StepContent as AIStepContent } from '@/shared/api';
-import type { DeepReadonly } from 'vue';
+import type {
+  BuildStepsParams,
+  FormStepInput,
+  BuildStepsResult,
+} from '../models/functionTypes';
 import {
   getDefaultWelcomeContent,
   getDefaultThankYouContent,
 } from '../constants/wizardConfig';
-
-// =============================================================================
-// Types
-// =============================================================================
-
-/**
- * Parameters for building form steps from AI-generated questions
- */
-export interface BuildStepsParams {
-  /** Organization ID for the form owner */
-  organizationId: string;
-  /** User ID of the form creator */
-  userId: string;
-  /** Concept/product name for default content */
-  conceptName: string;
-  /** AI-generated questions to build steps from */
-  questions: DeepReadonly<AIQuestion[]>;
-  /** AI-generated step content for system steps */
-  stepContent: DeepReadonly<AIStepContent> | null;
-  /** Shared flow ID - all steps point here initially */
-  sharedFlowId: string;
-}
-
-/**
- * Form step input for database insertion
- *
- * ADR-013: No question_id - questions reference steps via step_id
- *
- * Internal tracking fields (_prefixed) are stripped before API calls:
- * - _originalQuestionIndex: Maps step to original question for question creation
- * - _flowMembership: Actual intended flow for branch step updates
- * - _intendedStepOrder: Step order within actual flow after updates
- */
-export interface FormStepInput {
-  organization_id: string;
-  created_by: string;
-  step_type: string;
-  step_order: number;
-  content: Record<string, unknown>;
-  flow_id: string;
-  flow_membership: EntityFlowMembership;
-  is_active: boolean;
-  /** Internal: original question index for mapping after question creation */
-  _originalQuestionIndex?: number;
-  /** Internal: actual intended flow membership for branch flow updates */
-  _flowMembership?: EntityFlowMembership;
-  /** Internal: step_order within intended flow for branch flow updates */
-  _intendedStepOrder?: number;
-}
-
-/**
- * Result of building steps from questions
- */
-export interface BuildStepsResult {
-  /** Step inputs ready for database insertion */
-  steps: FormStepInput[];
-  /** Whether any questions are testimonial-flow specific */
-  hasTestimonialSteps: boolean;
-  /** Whether any questions are improvement-flow specific */
-  hasImprovementSteps: boolean;
-}
-
-// =============================================================================
-// Implementation
-// =============================================================================
 
 /**
  * Build form steps array from AI-generated questions

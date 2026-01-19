@@ -11,74 +11,17 @@
  * 4. Each branch (testimonial/improvement) should have at least one step
  */
 
-import type { FlowMembership } from '@/entities/formStep';
-import type { BranchingConfig } from '@/entities/form';
+import type {
+  ValidatableStep,
+  BranchingValidationError,
+  BranchingValidationWarning,
+  BranchingValidationResult,
+  ValidateBranchingParams,
+} from '../models/functionTypes';
+import { MIN_THRESHOLD, MAX_THRESHOLD } from '../constants/branching';
 
-// =============================================================================
-// Types
-// =============================================================================
-
-/**
- * Minimal step representation for branching validation
- */
-export interface ValidatableStep {
-  id: string;
-  stepType: string;
-  flowMembership: FlowMembership;
-}
-
-/**
- * Validation error with code and message
- */
-export interface BranchingValidationError {
-  code: string;
-  message: string;
-  field?: string;
-}
-
-/**
- * Validation warning (non-blocking issues)
- */
-export interface BranchingValidationWarning {
-  code: string;
-  message: string;
-}
-
-/**
- * Result of branching configuration validation
- */
-export interface BranchingValidationResult {
-  /** Whether the configuration is valid */
-  isValid: boolean;
-  /** Blocking errors that prevent saving */
-  errors: BranchingValidationError[];
-  /** Non-blocking warnings for user awareness */
-  warnings: BranchingValidationWarning[];
-}
-
-/**
- * Parameters for branching validation
- */
-export interface ValidateBranchingParams {
-  /** Current branching configuration */
-  config: BranchingConfig;
-  /** All steps in the form */
-  steps: ValidatableStep[];
-}
-
-// =============================================================================
-// Constants
-// =============================================================================
-
-/** Minimum valid threshold value */
-export const MIN_THRESHOLD = 1;
-
-/** Maximum valid threshold value */
-export const MAX_THRESHOLD = 10;
-
-// =============================================================================
-// Implementation
-// =============================================================================
+// Re-export constants for backward compatibility
+export { MIN_THRESHOLD, MAX_THRESHOLD };
 
 /**
  * Validate branching configuration against steps
