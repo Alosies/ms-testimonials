@@ -16,6 +16,8 @@ export type ConfirmationActionType =
   | 'delete_question'
   | 'delete_step'
   | 'delete_step_blocked'
+  | 'delete_responses'
+  | 'change_question_type'
   | 'archive_testimonial'
   | 'reject_testimonial'
   | 'regenerate_questions'

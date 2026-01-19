@@ -53,6 +53,22 @@ export const CONFIRMATION_MESSAGES: Record<
     warningText: 'is used for branching.',
     intent: 'info',
   },
+  delete_responses: {
+    title: 'Delete Responses',
+    message:
+      'To change the question type, you must first delete all responses for this question. This action is permanent and cannot be undone.',
+    confirmText: 'Delete Responses',
+    warningText: 'response(s) will be permanently deleted.',
+    intent: 'danger',
+  },
+  change_question_type: {
+    title: 'Change Question Type',
+    message:
+      'Changing the question type will permanently delete all options from this question. This action cannot be undone.',
+    confirmText: 'Change Type',
+    warningText: 'will be permanently deleted.',
+    intent: 'warning',
+  },
 
   // Warning actions (amber/orange)
   archive_testimonial: {
