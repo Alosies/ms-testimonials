@@ -8,13 +8,22 @@
  */
 
 // Simple form creation
-export { createTestFormWithSteps } from './create-simple';
+export { createTestFormWithSteps } from './createSimpleForm';
 
 // Branched form creation
-export { createTestFormWithBranching } from './create-branched';
+export { createTestFormWithBranching } from './createBranchedForm';
+
+// Choice question form creation
+export { createTestFormWithChoiceQuestion } from './createChoiceQuestionForm';
 
 // Delete and cleanup operations
-export { deleteTestForm, cleanupTestData } from './delete';
+export { deleteTestForm, cleanupTestData } from './deleteForm';
 
-// Helpers (exported for potential reuse)
-export { createStep, createQuestion, DEFAULT_STEP_CONTENT } from './helpers';
+// Re-export shared primitives for external use
+export {
+  createStep,
+  createQuestion,
+  createQuestionOption,
+  getQuestionTypeId,
+  DEFAULT_STEP_CONTENT,
+} from './shared';

@@ -1,11 +1,19 @@
+/**
+ * Low-level primitives for creating test form entities.
+ * These are the building blocks used by higher-level builders.
+ */
 import { executeGraphQLAsAdmin } from '@/shared/libs/hasura';
 import {
   CreateTestFormStepDocument,
   CreateTestFormQuestionDocument,
+  CreateTestQuestionOptionDocument,
+  GetQuestionTypeByNameDocument,
   type CreateTestFormStepMutation,
   type CreateTestFormQuestionMutation,
+  type CreateTestQuestionOptionMutation,
+  type GetQuestionTypeByNameQuery,
 } from '@/graphql/generated/operations';
-import type { TestStep, TestQuestion } from '../types';
+import type { TestStep, TestQuestion, TestQuestionOption } from '../../types';
 
 /**
  * Default content for step types that require it
@@ -37,7 +45,7 @@ export const DEFAULT_STEP_CONTENT: Partial<Record<TestStep['stepType'], object>>
 };
 
 /**
- * Helper: Create a step
+ * Create a step
  */
 export async function createStep(
   flowId: string,
@@ -47,7 +55,6 @@ export async function createStep(
   contentOverride?: object,
   flowMembership: string = 'shared'
 ): Promise<TestStep> {
-  // Use provided content, or default content for step types that need it
   const content = contentOverride ?? DEFAULT_STEP_CONTENT[stepType] ?? {};
 
   const { data, error } = await executeGraphQLAsAdmin<CreateTestFormStepMutation>(
@@ -76,7 +83,7 @@ export async function createStep(
 }
 
 /**
- * Helper: Create a question
+ * Create a question
  */
 export async function createQuestion(
   stepId: string,
@@ -112,4 +119,68 @@ export async function createQuestion(
     displayOrder: 1,
     isRequired: true,
   };
+}
+
+/**
+ * Create a question option
+ */
+export async function createQuestionOption(
+  questionId: string,
+  organizationId: string,
+  createdBy: string,
+  optionValue: string,
+  optionLabel: string,
+  displayOrder: number,
+  isDefault: boolean = false
+): Promise<TestQuestionOption> {
+  const { data, error } = await executeGraphQLAsAdmin<CreateTestQuestionOptionMutation>(
+    CreateTestQuestionOptionDocument,
+    {
+      organization_id: organizationId,
+      question_id: questionId,
+      option_value: optionValue,
+      option_label: optionLabel,
+      display_order: displayOrder,
+      is_default: isDefault,
+      created_by: createdBy,
+    }
+  );
+
+  if (error || !data?.insert_question_options_one?.id) {
+    throw new Error(`Failed to create question option: ${error?.message || 'No option ID returned'}`);
+  }
+
+  return {
+    id: data.insert_question_options_one.id,
+    questionId,
+    optionValue,
+    optionLabel,
+    displayOrder,
+    isDefault,
+  };
+}
+
+/**
+ * Get question type ID by unique_name.
+ * Caches results to avoid repeated DB calls.
+ */
+const questionTypeCache = new Map<string, string>();
+
+export async function getQuestionTypeId(uniqueName: string): Promise<string> {
+  if (questionTypeCache.has(uniqueName)) {
+    return questionTypeCache.get(uniqueName)!;
+  }
+
+  const { data, error } = await executeGraphQLAsAdmin<GetQuestionTypeByNameQuery>(
+    GetQuestionTypeByNameDocument,
+    { unique_name: uniqueName }
+  );
+
+  if (error || !data?.question_types?.[0]?.id) {
+    throw new Error(`Failed to find question type "${uniqueName}": ${error?.message || 'Not found'}`);
+  }
+
+  const typeId = data.question_types[0].id;
+  questionTypeCache.set(uniqueName, typeId);
+  return typeId;
 }
