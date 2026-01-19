@@ -83,11 +83,7 @@ export const studioTestIds = {
   // Question responses block (when responses exist)
   questionTypeResponsesBlockMessage: 'question-type-responses-block-message',
   deleteQuestionResponsesButton: 'delete-question-responses-button',
-
-  // Delete responses confirmation dialog
-  deleteResponsesConfirmDialog: 'delete-responses-confirm-dialog',
-  deleteResponsesConfirmButton: 'delete-responses-confirm-button',
-  deleteResponsesCancelButton: 'delete-responses-cancel-button',
+  // Note: Delete responses dialog uses shared ConfirmationModal (widgetsTestIds)
 } as const;
 
 export type StudioTestId = typeof studioTestIds;

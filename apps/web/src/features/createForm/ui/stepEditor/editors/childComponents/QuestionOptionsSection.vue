@@ -3,6 +3,7 @@ import { ref, computed, nextTick } from 'vue';
 import { Button, Input, Label, Separator } from '@testimonials/ui';
 import { Icon } from '@testimonials/icons';
 import type { QuestionOption } from '@/shared/stepCards';
+import { studioTestIds } from '@/shared/constants/testIds';
 
 const props = defineProps<{
   options: QuestionOption[];
@@ -51,7 +52,7 @@ async function handleEnterKey() {
 </script>
 
 <template>
-  <div>
+  <div :data-testid="studioTestIds.questionOptionsSection">
     <Separator class="my-4" />
 
     <div class="rounded-lg border bg-gray-50 p-4">
@@ -78,6 +79,7 @@ async function handleEnterKey() {
         <div
           v-for="(option, optIndex) in options"
           :key="option.id"
+          :data-testid="studioTestIds.questionOptionItem"
           class="flex items-center gap-2"
         >
           <!-- Visual indicator (radio or checkbox style) -->
