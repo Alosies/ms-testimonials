@@ -18516,6 +18516,24 @@ export type CreateTestFormQuestionMutationVariables = Exact<{
 
 export type CreateTestFormQuestionMutation = { __typename?: 'mutation_root', insert_form_questions_one: { __typename?: 'form_questions', id: string } | null };
 
+export type GetFormQuestionFormIdQueryVariables = Exact<{
+  question_id: Scalars['String']['input'];
+}>;
+
+
+export type GetFormQuestionFormIdQuery = { __typename?: 'query_root', form_questions_by_pk: { __typename?: 'form_questions', id: string, step: { __typename?: 'form_steps', flow: { __typename?: 'flows', form_id: string } } | null } | null };
+
+export type CreateTestFormQuestionResponseMutationVariables = Exact<{
+  organization_id: Scalars['String']['input'];
+  submission_id: Scalars['String']['input'];
+  question_id: Scalars['String']['input'];
+  answer_text?: InputMaybe<Scalars['String']['input']>;
+  answer_integer?: InputMaybe<Scalars['Int']['input']>;
+}>;
+
+
+export type CreateTestFormQuestionResponseMutation = { __typename?: 'mutation_root', insert_form_question_responses_one: { __typename?: 'form_question_responses', id: string } | null };
+
 export type CreateTestFormStepMutationVariables = Exact<{
   flow_id: Scalars['String']['input'];
   organization_id: Scalars['String']['input'];
@@ -18528,6 +18546,14 @@ export type CreateTestFormStepMutationVariables = Exact<{
 
 
 export type CreateTestFormStepMutation = { __typename?: 'mutation_root', insert_form_steps_one: { __typename?: 'form_steps', id: string } | null };
+
+export type CreateTestFormSubmissionMutationVariables = Exact<{
+  organization_id: Scalars['String']['input'];
+  form_id: Scalars['String']['input'];
+}>;
+
+
+export type CreateTestFormSubmissionMutation = { __typename?: 'mutation_root', insert_form_submissions_one: { __typename?: 'form_submissions', id: string } | null };
 
 export type CreateOrganizationMutationVariables = Exact<{
   name: Scalars['String']['input'];
@@ -18610,6 +18636,26 @@ export type FindFreePlanQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type FindFreePlanQuery = { __typename?: 'query_root', plans: Array<{ __typename?: 'plans', id: string, name: string, unique_name: string, max_forms: number, max_members: number, max_testimonials: number, max_widgets: number, show_branding: boolean }> };
+
+export type CreateTestQuestionOptionMutationVariables = Exact<{
+  organization_id: Scalars['String']['input'];
+  question_id: Scalars['String']['input'];
+  option_value: Scalars['String']['input'];
+  option_label: Scalars['String']['input'];
+  display_order: Scalars['smallint']['input'];
+  is_default: Scalars['Boolean']['input'];
+  created_by: Scalars['String']['input'];
+}>;
+
+
+export type CreateTestQuestionOptionMutation = { __typename?: 'mutation_root', insert_question_options_one: { __typename?: 'question_options', id: string, question_id: string, option_value: string, option_label: string, display_order: number, is_default: boolean } | null };
+
+export type GetQuestionTypeByNameQueryVariables = Exact<{
+  unique_name: Scalars['String']['input'];
+}>;
+
+
+export type GetQuestionTypeByNameQuery = { __typename?: 'query_root', question_types: Array<{ __typename?: 'question_types', id: string, unique_name: string, name: string, category: string }> };
 
 export type FindRoleByUniqueNameQueryVariables = Exact<{
   uniqueName: Scalars['String']['input'];
@@ -18761,10 +18807,40 @@ export const CreateTestFormQuestionDocument = `
   }
 }
     `;
+export const GetFormQuestionFormIdDocument = `
+    query GetFormQuestionFormId($question_id: String!) {
+  form_questions_by_pk(id: $question_id) {
+    id
+    step {
+      flow {
+        form_id
+      }
+    }
+  }
+}
+    `;
+export const CreateTestFormQuestionResponseDocument = `
+    mutation CreateTestFormQuestionResponse($organization_id: String!, $submission_id: String!, $question_id: String!, $answer_text: String, $answer_integer: Int) {
+  insert_form_question_responses_one(
+    object: {organization_id: $organization_id, submission_id: $submission_id, question_id: $question_id, answer_text: $answer_text, answer_integer: $answer_integer}
+  ) {
+    id
+  }
+}
+    `;
 export const CreateTestFormStepDocument = `
     mutation CreateTestFormStep($flow_id: String!, $organization_id: String!, $step_type: String!, $step_order: smallint!, $is_active: Boolean!, $content: jsonb = {}, $flow_membership: String = "shared") {
   insert_form_steps_one(
     object: {flow_id: $flow_id, organization_id: $organization_id, step_type: $step_type, step_order: $step_order, is_active: $is_active, content: $content, flow_membership: $flow_membership}
+  ) {
+    id
+  }
+}
+    `;
+export const CreateTestFormSubmissionDocument = `
+    mutation CreateTestFormSubmission($organization_id: String!, $form_id: String!) {
+  insert_form_submissions_one(
+    object: {organization_id: $organization_id, form_id: $form_id}
   ) {
     id
   }
@@ -18935,6 +19011,30 @@ export const FindFreePlanDocument = `
   }
 }
     `;
+export const CreateTestQuestionOptionDocument = `
+    mutation CreateTestQuestionOption($organization_id: String!, $question_id: String!, $option_value: String!, $option_label: String!, $display_order: smallint!, $is_default: Boolean!, $created_by: String!) {
+  insert_question_options_one(
+    object: {organization_id: $organization_id, question_id: $question_id, option_value: $option_value, option_label: $option_label, display_order: $display_order, is_default: $is_default, is_active: true, created_by: $created_by}
+  ) {
+    id
+    question_id
+    option_value
+    option_label
+    display_order
+    is_default
+  }
+}
+    `;
+export const GetQuestionTypeByNameDocument = `
+    query GetQuestionTypeByName($unique_name: String!) {
+  question_types(where: {unique_name: {_eq: $unique_name}}, limit: 1) {
+    id
+    unique_name
+    name
+    category
+  }
+}
+    `;
 export const FindRoleByUniqueNameDocument = `
     query FindRoleByUniqueName($uniqueName: String!) {
   roles(where: {unique_name: {_eq: $uniqueName}}, limit: 1) {
@@ -19088,8 +19188,17 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
     CreateTestFormQuestion(variables: CreateTestFormQuestionMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<CreateTestFormQuestionMutation> {
       return withWrapper((wrappedRequestHeaders) => client.request<CreateTestFormQuestionMutation>({ document: CreateTestFormQuestionDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'CreateTestFormQuestion', 'mutation', variables);
     },
+    GetFormQuestionFormId(variables: GetFormQuestionFormIdQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<GetFormQuestionFormIdQuery> {
+      return withWrapper((wrappedRequestHeaders) => client.request<GetFormQuestionFormIdQuery>({ document: GetFormQuestionFormIdDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'GetFormQuestionFormId', 'query', variables);
+    },
+    CreateTestFormQuestionResponse(variables: CreateTestFormQuestionResponseMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<CreateTestFormQuestionResponseMutation> {
+      return withWrapper((wrappedRequestHeaders) => client.request<CreateTestFormQuestionResponseMutation>({ document: CreateTestFormQuestionResponseDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'CreateTestFormQuestionResponse', 'mutation', variables);
+    },
     CreateTestFormStep(variables: CreateTestFormStepMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<CreateTestFormStepMutation> {
       return withWrapper((wrappedRequestHeaders) => client.request<CreateTestFormStepMutation>({ document: CreateTestFormStepDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'CreateTestFormStep', 'mutation', variables);
+    },
+    CreateTestFormSubmission(variables: CreateTestFormSubmissionMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<CreateTestFormSubmissionMutation> {
+      return withWrapper((wrappedRequestHeaders) => client.request<CreateTestFormSubmissionMutation>({ document: CreateTestFormSubmissionDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'CreateTestFormSubmission', 'mutation', variables);
     },
     CreateOrganization(variables: CreateOrganizationMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<CreateOrganizationMutation> {
       return withWrapper((wrappedRequestHeaders) => client.request<CreateOrganizationMutation>({ document: CreateOrganizationDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'CreateOrganization', 'mutation', variables);
@@ -19120,6 +19229,12 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
     },
     FindFreePlan(variables?: FindFreePlanQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<FindFreePlanQuery> {
       return withWrapper((wrappedRequestHeaders) => client.request<FindFreePlanQuery>({ document: FindFreePlanDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'FindFreePlan', 'query', variables);
+    },
+    CreateTestQuestionOption(variables: CreateTestQuestionOptionMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<CreateTestQuestionOptionMutation> {
+      return withWrapper((wrappedRequestHeaders) => client.request<CreateTestQuestionOptionMutation>({ document: CreateTestQuestionOptionDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'CreateTestQuestionOption', 'mutation', variables);
+    },
+    GetQuestionTypeByName(variables: GetQuestionTypeByNameQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<GetQuestionTypeByNameQuery> {
+      return withWrapper((wrappedRequestHeaders) => client.request<GetQuestionTypeByNameQuery>({ document: GetQuestionTypeByNameDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'GetQuestionTypeByName', 'query', variables);
     },
     FindRoleByUniqueName(variables: FindRoleByUniqueNameQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<FindRoleByUniqueNameQuery> {
       return withWrapper((wrappedRequestHeaders) => client.request<FindRoleByUniqueNameQuery>({ document: FindRoleByUniqueNameDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'FindRoleByUniqueName', 'query', variables);

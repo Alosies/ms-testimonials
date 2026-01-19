@@ -1,0 +1,12 @@
+# Used by E2E form-responses endpoint to get form_id from a question_id
+# Required to create form_submissions before creating question responses
+query GetFormQuestionFormId($question_id: String!) {
+  form_questions_by_pk(id: $question_id) {
+    id
+    step {
+      flow {
+        form_id
+      }
+    }
+  }
+}

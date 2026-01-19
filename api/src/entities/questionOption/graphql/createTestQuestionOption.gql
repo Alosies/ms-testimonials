@@ -1,0 +1,29 @@
+mutation CreateTestQuestionOption(
+  $organization_id: String!
+  $question_id: String!
+  $option_value: String!
+  $option_label: String!
+  $display_order: smallint!
+  $is_default: Boolean!
+  $created_by: String!
+) {
+  insert_question_options_one(
+    object: {
+      organization_id: $organization_id
+      question_id: $question_id
+      option_value: $option_value
+      option_label: $option_label
+      display_order: $display_order
+      is_default: $is_default
+      is_active: true
+      created_by: $created_by
+    }
+  ) {
+    id
+    question_id
+    option_value
+    option_label
+    display_order
+    is_default
+  }
+}

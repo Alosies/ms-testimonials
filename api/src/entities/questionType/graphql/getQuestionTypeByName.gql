@@ -1,0 +1,8 @@
+query GetQuestionTypeByName($unique_name: String!) {
+  question_types(where: { unique_name: { _eq: $unique_name } }, limit: 1) {
+    id
+    unique_name
+    name
+    category
+  }
+}

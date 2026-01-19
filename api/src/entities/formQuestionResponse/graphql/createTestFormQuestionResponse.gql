@@ -1,0 +1,19 @@
+mutation CreateTestFormQuestionResponse(
+  $organization_id: String!
+  $submission_id: String!
+  $question_id: String!
+  $answer_text: String
+  $answer_integer: Int
+) {
+  insert_form_question_responses_one(
+    object: {
+      organization_id: $organization_id
+      submission_id: $submission_id
+      question_id: $question_id
+      answer_text: $answer_text
+      answer_integer: $answer_integer
+    }
+  ) {
+    id
+  }
+}

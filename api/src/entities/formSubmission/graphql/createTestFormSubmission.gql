@@ -1,0 +1,13 @@
+mutation CreateTestFormSubmission(
+  $organization_id: String!
+  $form_id: String!
+) {
+  insert_form_submissions_one(
+    object: {
+      organization_id: $organization_id
+      form_id: $form_id
+    }
+  ) {
+    id
+  }
+}

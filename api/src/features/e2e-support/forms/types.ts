@@ -3,6 +3,18 @@
  */
 
 /**
+ * Question option data returned by the API
+ */
+export interface TestQuestionOption {
+  id: string;
+  questionId: string;
+  optionValue: string;
+  optionLabel: string;
+  displayOrder: number;
+  isDefault: boolean;
+}
+
+/**
  * Question data returned by the API
  */
 export interface TestQuestion {
@@ -13,6 +25,12 @@ export interface TestQuestion {
   questionTypeId: string;
   displayOrder: number;
   isRequired: boolean;
+  /** Options for choice-type questions */
+  options?: TestQuestionOption[];
+  /** Question type unique name (e.g., 'text_long', 'choice_single') - convenience for tests */
+  questionType?: string;
+  /** Number of responses for this question - for response blocking tests */
+  responseCount?: number;
 }
 
 /**
@@ -27,6 +45,8 @@ export interface TestStep {
   flowMembership?: 'shared' | 'testimonial' | 'improvement';
   /** Flow ID this step belongs to */
   flowId?: string;
+  /** Convenience property: first question in the step (for steps that have one question) */
+  question?: TestQuestion;
 }
 
 /**
@@ -69,4 +89,42 @@ export interface TestBranchedFormResult {
   allSteps: TestStep[];
   /** The rating question that serves as branch point */
   branchQuestionId: string;
+}
+
+/**
+ * Choice question step data for E2E tests
+ * Contains the question with its options
+ */
+export interface TestChoiceQuestionStep {
+  id: string;
+  stepType: 'question';
+  stepOrder: number;
+  /** The choice question with its options */
+  question: TestQuestion & {
+    questionType: string;
+    options: TestQuestionOption[];
+  };
+  flowMembership: 'shared' | 'testimonial' | 'improvement';
+  flowId: string;
+}
+
+/**
+ * Choice question form data returned by the API
+ * Uses branched form structure for compatibility with existing tests
+ */
+export interface TestChoiceQuestionFormResult {
+  formId: string;
+  formName: string;
+  /** Shared flow containing the choice question */
+  sharedFlow: TestFlow;
+  /** Testimonial flow (rating >= 4) */
+  testimonialFlow: TestFlow;
+  /** Improvement flow (rating < 4) */
+  improvementFlow: TestFlow;
+  /** All steps flattened for easy access */
+  allSteps: TestStep[];
+  /** The rating question that serves as branch point */
+  branchQuestionId: string;
+  /** The choice question ID */
+  choiceQuestionId: string;
 }

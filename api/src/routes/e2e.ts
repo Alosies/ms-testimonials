@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { env } from '@/shared/config/env';
 import { e2eAuthMiddleware, isE2EConfigured } from '@/features/e2e-support/middleware/e2e';
-import { createForm, createBranchedForm, deleteForm, getOrganization, cleanup } from '@/features/e2e-support';
+import { createForm, createBranchedForm, createChoiceQuestionForm, deleteForm, getOrganization, cleanup, createFormResponses } from '@/features/e2e-support';
 
 /**
  * E2E Testing Support Routes
@@ -37,11 +37,17 @@ export function createE2ERoutes(): Hono {
   // POST /e2e/forms/branched - Create test form with branching
   app.post('/forms/branched', createBranchedForm);
 
+  // POST /e2e/forms/choice-question - Create test form with choice question and options
+  app.post('/forms/choice-question', createChoiceQuestionForm);
+
   // DELETE /e2e/forms/:id - Delete test form
   app.delete('/forms/:id', deleteForm);
 
   // POST /e2e/cleanup - Clean up old test data
   app.post('/cleanup', cleanup);
+
+  // POST /e2e/form-responses - Create mock responses for a question
+  app.post('/form-responses', createFormResponses);
 
   return app;
 }
