@@ -5,3 +5,4 @@ export { useUpdateFormQuestionAutoSave } from './useUpdateFormQuestionAutoSave';
 export { useDeleteFormQuestion } from './useDeleteFormQuestion';
 export { useDeactivateFormQuestions } from './useDeactivateFormQuestions';
 export { useReorderFormQuestions } from './useReorderFormQuestions';
+export { useDeleteQuestionResponses } from './useDeleteQuestionResponses';

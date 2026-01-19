@@ -1,0 +1,9 @@
+query GetQuestionResponseCount($questionId: String!) {
+  form_question_responses_aggregate(
+    where: { question_id: { _eq: $questionId } }
+  ) {
+    aggregate {
+      count
+    }
+  }
+}

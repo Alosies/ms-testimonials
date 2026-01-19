@@ -1,0 +1,7 @@
+mutation DeleteQuestionResponses($questionId: String!) {
+  delete_form_question_responses(
+    where: { question_id: { _eq: $questionId } }
+  ) {
+    affected_rows
+  }
+}

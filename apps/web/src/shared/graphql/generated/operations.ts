@@ -18437,6 +18437,13 @@ export type FormQuestionBasicFragment = { __typename?: 'form_questions', id: str
 
 export type FormQuestionWithOptionsFragment = { __typename?: 'form_questions', scale_min_label?: string | null, scale_max_label?: string | null, id: string, step_id?: string | null, organization_id: string, question_type_id: string, question_key: string, question_text: string, placeholder?: string | null, help_text?: string | null, display_order: number, is_required: boolean, min_length?: number | null, max_length?: number | null, min_value?: number | null, max_value?: number | null, validation_pattern?: string | null, allowed_file_types?: Array<string> | null, max_file_size_kb?: number | null, is_active: boolean, created_at: string, updated_at: string, options: Array<{ __typename?: 'question_options', id: string, question_id: string, option_value: string, option_label: string, display_order: number, is_default: boolean, is_active: boolean }>, question_type: { __typename?: 'question_types', id: string, unique_name: string, name: string, category: string, input_component: string } };
 
+export type DeleteQuestionResponsesMutationVariables = Exact<{
+  questionId: Scalars['String']['input'];
+}>;
+
+
+export type DeleteQuestionResponsesMutation = { __typename?: 'mutation_root', delete_form_question_responses?: { __typename?: 'form_question_responses_mutation_response', affected_rows: number } | null };
+
 export type CreateFormQuestionMutationVariables = Exact<{
   input: Form_Questions_Insert_Input;
 }>;
@@ -18487,6 +18494,13 @@ export type UpdateFormQuestionAutoSaveMutationVariables = Exact<{
 
 
 export type UpdateFormQuestionAutoSaveMutation = { __typename?: 'mutation_root', update_form_questions_by_pk?: { __typename?: 'form_questions', id: string, updated_at: string } | null };
+
+export type GetQuestionResponseCountQueryVariables = Exact<{
+  questionId: Scalars['String']['input'];
+}>;
+
+
+export type GetQuestionResponseCountQuery = { __typename?: 'query_root', form_question_responses_aggregate: { __typename?: 'form_question_responses_aggregate', aggregate?: { __typename?: 'form_question_responses_aggregate_fields', count: number } | null } };
 
 export type GetFormQuestionsQueryVariables = Exact<{
   formId: Scalars['String']['input'];
@@ -19332,6 +19346,35 @@ export function useGetFormsLazyQuery(variables?: GetFormsQueryVariables | VueCom
   return VueApolloComposable.useLazyQuery<GetFormsQuery, GetFormsQueryVariables>(GetFormsDocument, variables, options);
 }
 export type GetFormsQueryCompositionFunctionResult = VueApolloComposable.UseQueryReturn<GetFormsQuery, GetFormsQueryVariables>;
+export const DeleteQuestionResponsesDocument = gql`
+    mutation DeleteQuestionResponses($questionId: String!) {
+  delete_form_question_responses(where: {question_id: {_eq: $questionId}}) {
+    affected_rows
+  }
+}
+    `;
+
+/**
+ * __useDeleteQuestionResponsesMutation__
+ *
+ * To run a mutation, you first call `useDeleteQuestionResponsesMutation` within a Vue component and pass it any options that fit your needs.
+ * When your component renders, `useDeleteQuestionResponsesMutation` returns an object that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - Several other properties: https://v4.apollo.vuejs.org/api/use-mutation.html#return
+ *
+ * @param options that will be passed into the mutation, supported options are listed on: https://v4.apollo.vuejs.org/guide-composable/mutation.html#options;
+ *
+ * @example
+ * const { mutate, loading, error, onDone } = useDeleteQuestionResponsesMutation({
+ *   variables: {
+ *     questionId: // value for 'questionId'
+ *   },
+ * });
+ */
+export function useDeleteQuestionResponsesMutation(options: VueApolloComposable.UseMutationOptions<DeleteQuestionResponsesMutation, DeleteQuestionResponsesMutationVariables> | ReactiveFunction<VueApolloComposable.UseMutationOptions<DeleteQuestionResponsesMutation, DeleteQuestionResponsesMutationVariables>> = {}) {
+  return VueApolloComposable.useMutation<DeleteQuestionResponsesMutation, DeleteQuestionResponsesMutationVariables>(DeleteQuestionResponsesDocument, options);
+}
+export type DeleteQuestionResponsesMutationCompositionFunctionResult = VueApolloComposable.UseMutationReturn<DeleteQuestionResponsesMutation, DeleteQuestionResponsesMutationVariables>;
 export const CreateFormQuestionDocument = gql`
     mutation CreateFormQuestion($input: form_questions_insert_input!) {
   insert_form_questions_one(object: $input) {
@@ -19547,6 +19590,38 @@ export function useUpdateFormQuestionAutoSaveMutation(options: VueApolloComposab
   return VueApolloComposable.useMutation<UpdateFormQuestionAutoSaveMutation, UpdateFormQuestionAutoSaveMutationVariables>(UpdateFormQuestionAutoSaveDocument, options);
 }
 export type UpdateFormQuestionAutoSaveMutationCompositionFunctionResult = VueApolloComposable.UseMutationReturn<UpdateFormQuestionAutoSaveMutation, UpdateFormQuestionAutoSaveMutationVariables>;
+export const GetQuestionResponseCountDocument = gql`
+    query GetQuestionResponseCount($questionId: String!) {
+  form_question_responses_aggregate(where: {question_id: {_eq: $questionId}}) {
+    aggregate {
+      count
+    }
+  }
+}
+    `;
+
+/**
+ * __useGetQuestionResponseCountQuery__
+ *
+ * To run a query within a Vue component, call `useGetQuestionResponseCountQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetQuestionResponseCountQuery` returns an object from Apollo Client that contains result, loading and error properties
+ * you can use to render your UI.
+ *
+ * @param variables that will be passed into the query
+ * @param options that will be passed into the query, supported options are listed on: https://v4.apollo.vuejs.org/guide-composable/query.html#options;
+ *
+ * @example
+ * const { result, loading, error } = useGetQuestionResponseCountQuery({
+ *   questionId: // value for 'questionId'
+ * });
+ */
+export function useGetQuestionResponseCountQuery(variables: GetQuestionResponseCountQueryVariables | VueCompositionApi.Ref<GetQuestionResponseCountQueryVariables> | ReactiveFunction<GetQuestionResponseCountQueryVariables>, options: VueApolloComposable.UseQueryOptions<GetQuestionResponseCountQuery, GetQuestionResponseCountQueryVariables> | VueCompositionApi.Ref<VueApolloComposable.UseQueryOptions<GetQuestionResponseCountQuery, GetQuestionResponseCountQueryVariables>> | ReactiveFunction<VueApolloComposable.UseQueryOptions<GetQuestionResponseCountQuery, GetQuestionResponseCountQueryVariables>> = {}) {
+  return VueApolloComposable.useQuery<GetQuestionResponseCountQuery, GetQuestionResponseCountQueryVariables>(GetQuestionResponseCountDocument, variables, options);
+}
+export function useGetQuestionResponseCountLazyQuery(variables?: GetQuestionResponseCountQueryVariables | VueCompositionApi.Ref<GetQuestionResponseCountQueryVariables> | ReactiveFunction<GetQuestionResponseCountQueryVariables>, options: VueApolloComposable.UseQueryOptions<GetQuestionResponseCountQuery, GetQuestionResponseCountQueryVariables> | VueCompositionApi.Ref<VueApolloComposable.UseQueryOptions<GetQuestionResponseCountQuery, GetQuestionResponseCountQueryVariables>> | ReactiveFunction<VueApolloComposable.UseQueryOptions<GetQuestionResponseCountQuery, GetQuestionResponseCountQueryVariables>> = {}) {
+  return VueApolloComposable.useLazyQuery<GetQuestionResponseCountQuery, GetQuestionResponseCountQueryVariables>(GetQuestionResponseCountDocument, variables, options);
+}
+export type GetQuestionResponseCountQueryCompositionFunctionResult = VueApolloComposable.UseQueryReturn<GetQuestionResponseCountQuery, GetQuestionResponseCountQueryVariables>;
 export const GetFormQuestionsDocument = gql`
     query GetFormQuestions($formId: String!) {
   form_questions(
