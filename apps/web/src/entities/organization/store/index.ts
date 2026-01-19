@@ -56,11 +56,11 @@ export const useOrganizationStore = defineStore('organization', () => {
 
   /**
    * Question types formatted for select/dropdown components.
-   * Maps unique_name to id for compatibility with form components.
    */
   const questionTypeOptions = computed(() =>
     allowedQuestionTypes.value.map((type) => ({
-      id: type.unique_name,
+      uniqueName: type.unique_name, // Used as Select value and for comparison
+      id: type.id, // Actual database ID for mutations
       name: type.name,
       icon: type.icon,
       supportsOptions: type.supports_options,

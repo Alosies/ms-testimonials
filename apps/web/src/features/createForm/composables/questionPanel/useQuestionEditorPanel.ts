@@ -133,7 +133,7 @@ export function useQuestionEditorPanel(options: UseQuestionEditorPanelOptions) {
 
   // Find current question type details
   const currentQuestionType = computed(() =>
-    questionTypes.value.find((t) => t.id === localQuestion.value?.question_type_id)
+    questionTypes.value.find((t) => t.uniqueName === localQuestion.value?.question_type_id)
   );
 
   const questionTypeIcon = computed(() => currentQuestionType.value?.icon ?? 'minus');

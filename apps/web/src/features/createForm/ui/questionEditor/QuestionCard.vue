@@ -26,7 +26,7 @@ const isDirty = computed(() => props.question.isModified || props.question.isNew
 
 // Find current question type details
 const currentQuestionType = computed(() =>
-  questionTypes.value.find((t) => t.id === props.question.question_type_id)
+  questionTypes.value.find((t) => t.uniqueName === props.question.question_type_id)
 );
 
 const questionTypeLabel = computed(

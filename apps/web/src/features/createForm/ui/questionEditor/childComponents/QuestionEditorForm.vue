@@ -18,7 +18,8 @@ import type { QuestionData } from '../../../models';
 import QuestionOptionsEditor from './QuestionOptionsEditor.vue';
 
 interface QuestionTypeOption {
-  id: string;
+  uniqueName: string; // Used as Select value and for comparison (e.g., 'text_short')
+  id: string; // Actual database ID for mutations
   name: string;
   icon: string | null | undefined;
   supportsOptions?: boolean;
@@ -105,7 +106,7 @@ function getHeroIconName(iconName: string | null | undefined): string {
               </div>
             </SelectTrigger>
             <SelectContent>
-              <SelectItem v-for="type in questionTypes" :key="type.id" :value="type.id">
+              <SelectItem v-for="type in questionTypes" :key="type.id" :value="type.uniqueName">
                 <div class="flex items-center gap-2">
                   <Icon :icon="getHeroIconName(type.icon)" class="h-4 w-4 text-gray-500" />
                   <span>{{ type.name }}</span>
