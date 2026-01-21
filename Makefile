@@ -1,4 +1,4 @@
-.PHONY: install restart dev dev-web dev-api build db-up db-down hasura-console hasura-migrate hasura-metadata sync sync-push ralph-afk ralph-once
+.PHONY: install restart dev dev-web dev-api build db-up db-down hasura-console hasura-migrate hasura-metadata codegen codegen-watch e2e e2e-smoke e2e-headed e2e-ui sync sync-push ralph-afk ralph-once
 
 # Install dependencies
 install:
@@ -54,6 +54,26 @@ codegen:
 
 codegen-watch:
 	pnpm codegen:web:watch
+
+# E2E Tests (auto-detects port based on worktree: yellow=3001, green=3002, blue=3003)
+# Usage: make e2e                           - Run all tests
+# Usage: make e2e-smoke                     - Run smoke tests only
+# Usage: make e2e G="test name pattern"     - Run tests matching grep pattern
+# Usage: make e2e-headed                    - Run with visible browser
+# Usage: make e2e-headed G="pattern"        - Run matching tests with visible browser
+# Usage: make e2e-ui                        - Run in interactive UI mode
+# Usage: make e2e-ui G="pattern"            - Run matching tests in UI mode
+e2e:
+	E2E_BASE_URL=http://localhost:$$(./scripts/get-agent-port.sh) pnpm --filter @testimonials/web test:e2e $(if $(G),-- -g "$(G)",)
+
+e2e-smoke:
+	E2E_BASE_URL=http://localhost:$$(./scripts/get-agent-port.sh) pnpm --filter @testimonials/web test:e2e:smoke
+
+e2e-headed:
+	E2E_BASE_URL=http://localhost:$$(./scripts/get-agent-port.sh) pnpm --filter @testimonials/web test:e2e:headed $(if $(G),-- -g "$(G)",)
+
+e2e-ui:
+	E2E_BASE_URL=http://localhost:$$(./scripts/get-agent-port.sh) pnpm --filter @testimonials/web test:e2e:ui $(if $(G),-- -g "$(G)",)
 
 # Worktree sync
 sync:
