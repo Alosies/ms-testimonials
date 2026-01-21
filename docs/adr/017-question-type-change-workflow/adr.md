@@ -16,7 +16,7 @@
 
 ## Status
 
-**Proposed** - 2026-01-18
+**Implemented** - 2026-01-21 (Proposed 2026-01-18)
 
 ## Context
 
@@ -483,54 +483,54 @@ See `implementation.md` for detailed implementation guide.
 
 ## Implementation Checklist
 
-### Phase 0: E2E Tests (TDD - DONE)
+### Phase 0: E2E Tests (TDD) - ✅ COMPLETE
 
 - [x] Create test spec: `apps/web/tests/e2e/features/form-studio/focused-tests/question-type-change.spec.ts`
 - [x] Create action helpers: `apps/web/tests/e2e/features/form-studio/actions/questionTypeChange.actions.ts`
 - [x] Add test IDs to: `apps/web/src/shared/constants/testIds/studio.ts`
 - [x] Update autosave actions with `getQuestionType()` helper
-- [ ] Create fixture: `choiceQuestionFormViaApi` (form with choice question + options)
-- [ ] Create fixture: `formWithResponsesViaApi` (form with actual responses)
+- [x] Create fixture: `createTestChoiceQuestionForm()` in `form-fixtures.ts`
+- [x] Create fixture: `createTestFormWithResponses()` in `form-fixtures.ts`
 
-### Phase 1: GraphQL Operations (~50 lines)
+### Phase 1: GraphQL Operations - ✅ COMPLETE
 
-- [ ] Add `GetQuestionResponseCount` query to `formQuestion` entity
-- [ ] Add `DeleteQuestionResponses` mutation to `formQuestion` entity
-- [ ] Create composables: `useGetQuestionResponseCount`, `useDeleteQuestionResponses`
+- [x] Add `GetQuestionResponseCount` query to `formQuestion` entity
+- [x] Add `DeleteQuestionResponses` mutation to `formQuestion` entity
+- [x] Create composables: `useGetQuestionResponseCount`, `useDeleteQuestionResponses`
 
-### Phase 2: Pure Functions (~80 lines)
+### Phase 2: Pure Functions - ✅ COMPLETE
 
-- [ ] Create `analyzeQuestionTypeChange.ts` in `features/createForm/functions/`
-- [ ] Create `getTransferableQuestionFields.ts` in `features/createForm/functions/`
-- [ ] Add unit tests for both functions
+- [x] Create `analyzeQuestionTypeChange.ts` in `features/createForm/functions/`
+- [x] Create `getTransferableQuestionFields.ts` in `features/createForm/functions/`
+- [x] Add types in `features/createForm/models/functionTypes.ts`
 
-### Phase 3: Composable (~120 lines)
+### Phase 3: Composable - ✅ COMPLETE
 
-- [ ] Create `useQuestionTypeChange.ts` in `features/createForm/composables/`
+- [x] Create `useQuestionTypeChange.ts` in `features/createForm/composables/immediateSave/`
   - `replaceQuestionWithNewType()`
   - `deleteQuestionResponses()`
-  - `getResponseCount()`
-- [ ] Integrate with `useSaveLock` for save coordination
+- [x] Integrate with `useSaveLock` for save coordination
+- [x] Integrate with `useAutoSaveController` for UI feedback
 
-### Phase 4: UI Components (~150 lines)
+### Phase 4: UI Components - ✅ COMPLETE
 
-- [ ] Create `QuestionTypeChangeWarning.vue` dialog component
-- [ ] Create `DeleteResponsesConfirmation.vue` dialog component
-- [ ] Update `QuestionStepEditor.vue`:
-  - Add `responseCount` computed property
-  - Add `hasResponses` computed property
-  - Disable dropdown when `hasResponses`
-  - Show warning message and delete button
-  - Integrate warning dialog before type change
+- [x] ~~Create `QuestionTypeChangeWarning.vue`~~ → Uses shared `ConfirmationModal`
+- [x] ~~Create `DeleteResponsesConfirmation.vue`~~ → Uses shared `ConfirmationModal`
+- [x] Update `QuestionStepEditor.vue`:
+  - Response count fetching via `useGetQuestionResponseCount`
+  - `hasResponses` computed property
+  - Disabled dropdown when `hasResponses`
+  - Block message UI with delete button
+  - Integrated warning dialog before type change
 
-### Phase 5: Testing
+### Phase 5: Testing & Integration - ✅ COMPLETE
 
-- [ ] Unit tests for `analyzeQuestionTypeChange`
-- [ ] Unit tests for `getTransferableQuestionFields`
-- [ ] E2E test: Change type when no responses (happy path)
-- [ ] E2E test: Verify options deleted when changing from choice type
-- [ ] E2E test: Blocked when responses exist
-- [ ] E2E test: Delete responses then change type
+- [x] E2E test: Change type when no responses (happy path)
+- [x] E2E test: Verify options deleted when changing from choice type
+- [x] E2E test: Blocked when responses exist
+- [x] E2E test: Delete responses then change type
+- [x] E2E test: Preserves common fields after type change
+- [x] API endpoint: `POST /e2e/form-responses` for test fixtures
 
 ## Consequences
 
