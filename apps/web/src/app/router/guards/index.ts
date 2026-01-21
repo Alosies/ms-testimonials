@@ -3,11 +3,36 @@
  *
  * Following CoursePads pattern:
  * - Uses module-level promise for auth readiness (no Vue watch in guards)
- * - Uses currentUserId from context store as the primary auth check
+ * - Uses currentUser from useAuth directly for auth checks (avoids race conditions)
+ * - Uses context store only for org slug (loaded asynchronously)
+ * - Saves redirect URL for post-login navigation
  */
 import type { Router } from 'vue-router'
 import { useAuth, getAuthReadyPromise } from '@/features/auth'
-import { useCurrentContextStore } from '@/shared/currentContext'
+import { useCurrentContextStore, getContextReadyPromise } from '@/shared/currentContext'
+
+/**
+ * Storage key for saving the redirect URL after authentication
+ */
+const REDIRECT_URL_KEY = 'auth_redirect_url'
+
+/**
+ * Save the intended destination URL for post-login redirect
+ */
+export function saveRedirectUrl(url: string): void {
+  sessionStorage.setItem(REDIRECT_URL_KEY, url)
+}
+
+/**
+ * Get and clear the saved redirect URL
+ */
+export function getAndClearRedirectUrl(): string | null {
+  const url = sessionStorage.getItem(REDIRECT_URL_KEY)
+  if (url) {
+    sessionStorage.removeItem(REDIRECT_URL_KEY)
+  }
+  return url
+}
 
 /**
  * Reserved route segments that cannot be used as organization slugs
@@ -37,13 +62,16 @@ function isReservedSlug(slug: string): boolean {
 
 export function setupAuthGuards(router: Router) {
   router.beforeEach(async (to, from, next) => {
-    const { isInitialized } = useAuth()
+    const { isInitialized, currentUser } = useAuth()
     const contextStore = useCurrentContextStore()
 
     // For routes that require auth or are guest-only, wait for auth to initialize
     // Uses module-level promise pattern (no Vue watch in guards)
     if (to.meta.requiresAuth || to.meta.guestOnly) {
       await getAuthReadyPromise()
+      // Also wait for full context (including org) to be ready
+      // This ensures we have org slug before making redirect decisions
+      await getContextReadyPromise()
     }
 
     // If still not initialized (public routes), let them through
@@ -51,9 +79,11 @@ export function setupAuthGuards(router: Router) {
       return next()
     }
 
-    // Check if user is authenticated using context store
-    // Primary check: currentUserId is not null
-    const hasUser = contextStore.currentUserId !== null
+    // Check if user is authenticated using useAuth directly
+    // This avoids race conditions - currentUser is set when authReadyPromise resolves,
+    // but contextStore.currentUserId is set by a Vue watcher which runs asynchronously
+    const hasUser = !!currentUser.value
+    // Org slug from context store (may not be loaded yet for direct URL navigation)
     const orgSlug = contextStore.currentOrganizationSlug
 
     // Redirect authenticated users from root path to their organization dashboard
@@ -104,13 +134,20 @@ export function setupAuthGuards(router: Router) {
     }
 
     // Protect routes that require authentication
-    // Redirect to homepage (landing page) if not authenticated
+    // Redirect to login page if not authenticated, saving the intended destination
     if (to.meta.requiresAuth && !hasUser) {
-      return next('/')
+      // Save the intended destination for post-login redirect
+      saveRedirectUrl(to.fullPath)
+      return next('/auth/login')
     }
 
     // Prevent authenticated users from accessing guest-only pages (login, signup)
     if (to.meta.guestOnly && hasUser) {
+      // Check for saved redirect URL (e.g., user was redirected to login from a protected page)
+      const savedRedirectUrl = getAndClearRedirectUrl()
+      if (savedRedirectUrl) {
+        return next(savedRedirectUrl)
+      }
       // Redirect to org dashboard if we have an org slug
       if (orgSlug) {
         return next(`/${orgSlug}/dashboard`)
