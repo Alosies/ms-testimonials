@@ -1,5 +1,4 @@
 import { watch, computed } from 'vue';
-import { useRouter } from 'vue-router';
 import { useCurrentContextStore } from '../store';
 import { useAuth } from '@/features/auth';
 import { useGetUserDefaultOrganization, useOrganizationStore } from '@/entities/organization';
@@ -13,7 +12,6 @@ import type { CurrentOrganization } from '../models';
  * default organization.
  */
 export function useCurrentContext() {
-  const router = useRouter();
   const contextStore = useCurrentContextStore();
   const organizationStore = useOrganizationStore();
   const { currentUser, isAuthenticated, isInitialized } = useAuth();
@@ -44,7 +42,8 @@ export function useCurrentContext() {
     { immediate: true },
   );
 
-  // Watch for organization changes - sync to both stores and handle redirect
+  // Watch for organization changes - sync to both stores
+  // Note: Redirects are handled by the router guard after waiting for context ready
   watch(
     defaultOrg,
     newOrg => {
@@ -61,12 +60,6 @@ export function useCurrentContext() {
 
         // Sync to Organization store (full organization data)
         organizationStore.setCurrentOrganization(newOrg);
-
-        // Redirect authenticated users from root to org dashboard
-        // This handles the case where user was on '/' waiting for org to load
-        if (router.currentRoute.value.path === '/' && isAuthenticated.value) {
-          router.replace(`/${newOrg.slug}/dashboard`);
-        }
       }
     },
     { immediate: true },
@@ -93,13 +86,17 @@ export function useCurrentContext() {
 
   // Mark context as ready when auth is initialized and org is loaded (or no user)
   // This prevents flash of empty state while data is loading
+  // IMPORTANT: Also check that org is actually loaded (not just that loading is done)
+  // because isOrgLoading might be false initially before the query starts
   watch(
-    [isInitialized, isOrgLoading, isAuthenticated],
-    ([authInit, orgLoading, authenticated]) => {
+    [isInitialized, isOrgLoading, isAuthenticated, defaultOrg],
+    ([authInit, orgLoading, authenticated, org]) => {
       // Only mark ready when:
       // 1. Auth has been initialized, AND
-      // 2. Either: user is not authenticated (no org to load) OR org loading is done
-      if (authInit && (!authenticated || !orgLoading)) {
+      // 2. Either: user is not authenticated (no org to load) OR org is loaded
+      // Note: We check for org existence (not just !orgLoading) to handle the case
+      // where isOrgLoading is false before the query starts
+      if (authInit && (!authenticated || (org && !orgLoading))) {
         contextStore.markAsReady();
       }
     },

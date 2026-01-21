@@ -2,6 +2,43 @@ import { defineStore } from 'pinia';
 import { ref, computed, readonly } from 'vue';
 import type { CurrentUser, CurrentOrganization } from '../models';
 
+// ============================================================================
+// Module-level context readiness promise
+// This allows router guards to await context initialization (auth + org)
+// ============================================================================
+
+let contextReadyResolve: (() => void) | null = null;
+let contextReadyPromise: Promise<void> = new Promise(resolve => {
+  contextReadyResolve = resolve;
+});
+
+// Track if context has been resolved
+let contextResolved = false;
+
+/**
+ * Get the promise that resolves when context is fully initialized
+ * (auth checked AND organization loaded)
+ *
+ * This can be awaited in router guards to defer route decisions
+ * until we have the full context (user + org slug).
+ */
+export function getContextReadyPromise(): Promise<void> {
+  if (contextResolved) {
+    return Promise.resolve();
+  }
+  return contextReadyPromise;
+}
+
+/**
+ * Reset the context ready promise (used for testing or logout)
+ */
+export function resetContextReadyPromise(): void {
+  contextReadyPromise = new Promise(resolve => {
+    contextReadyResolve = resolve;
+  });
+  contextResolved = false;
+}
+
 /**
  * Current Context Store
  *
@@ -46,9 +83,15 @@ export const useCurrentContextStore = defineStore('currentContext', () => {
    * Mark context as ready
    * Called when auth is initialized and organization data is loaded (or determined to be absent)
    * Components should wait for isReady before showing content vs empty states
+   * Also resolves the module-level contextReadyPromise for router guards
    */
   function markAsReady() {
     isReady.value = true;
+    // Resolve the module-level promise for router guards
+    if (contextReadyResolve) {
+      contextReadyResolve();
+      contextResolved = true;
+    }
   }
 
   function reset() {
@@ -56,6 +99,8 @@ export const useCurrentContextStore = defineStore('currentContext', () => {
     organization.value = null;
     isLoading.value = false;
     isReady.value = false;
+    // Reset the module-level promise for next auth cycle
+    resetContextReadyPromise();
   }
 
   return {
