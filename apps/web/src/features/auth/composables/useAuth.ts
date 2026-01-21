@@ -86,12 +86,16 @@ function _useAuth() {
   const supabaseUser = ref<User | null>(null);
   const isLoading = ref(true);
   const isAuthenticating = ref(false);
+  const isAuthorizing = ref(false); // True when processing session from auth listener
   const error = ref<string | null>(null);
   const isInitialized = ref(false);
 
   // Computed properties
   const isAuthenticated = computed(() => !!currentUser.value);
-  const isAuthLoading = computed(() => isLoading.value || isAuthenticating.value);
+  // Include isAuthorizing to prevent premature app rendering after login
+  const isAuthLoading = computed(
+    () => isLoading.value || isAuthenticating.value || isAuthorizing.value
+  );
 
   /**
    * Handle signed out state
@@ -179,15 +183,32 @@ function _useAuth() {
       }
 
       // Defer async operations to avoid Supabase callback deadlocks
+      // IMPORTANT: Set isAuthorizing BEFORE setTimeout to prevent premature app rendering
       if (event === 'SIGNED_IN' && session?.user) {
-        setTimeout(() => {
-          processSession({ user: session.user, access_token: session.access_token });
+        isAuthorizing.value = true; // Start authorizing (keeps isAuthLoading true)
+        setTimeout(async () => {
+          try {
+            await processSession({
+              user: session.user,
+              access_token: session.access_token,
+            });
+          } finally {
+            isAuthorizing.value = false; // Done authorizing
+          }
         }, 0);
       } else if (event === 'SIGNED_OUT') {
         handleSignedOut();
       } else if (event === 'TOKEN_REFRESHED' && session?.user) {
-        setTimeout(() => {
-          processSession({ user: session.user, access_token: session.access_token });
+        isAuthorizing.value = true;
+        setTimeout(async () => {
+          try {
+            await processSession({
+              user: session.user,
+              access_token: session.access_token,
+            });
+          } finally {
+            isAuthorizing.value = false;
+          }
         }, 0);
       }
     });
@@ -276,6 +297,8 @@ function _useAuth() {
     currentUser,
     isAuthenticated,
     isLoading: computed(() => isLoading.value),
+    isAuthenticating: computed(() => isAuthenticating.value),
+    isAuthorizing: computed(() => isAuthorizing.value),
     isAuthLoading,
     error: computed(() => error.value),
     isInitialized: computed(() => isInitialized.value),
