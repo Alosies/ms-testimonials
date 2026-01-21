@@ -1,64 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref, computed, readonly } from 'vue';
-import { promiseTimeout } from '@vueuse/core';
 import type { CurrentUser, CurrentOrganization } from '../models';
-
-// ============================================================================
-// Module-level context readiness promise
-// This allows router guards to await context initialization before checking org
-// ============================================================================
-
-let contextReadyResolve: (() => void) | null = null;
-let contextReadyPromise: Promise<void> = new Promise(resolve => {
-  contextReadyResolve = resolve;
-});
-
-// Default timeout for context initialization (10 seconds - longer than auth)
-const DEFAULT_CONTEXT_TIMEOUT_MS = 10000;
-
-// Track if context has been resolved
-let contextResolved = false;
-
-/**
- * Get the promise that resolves when context is ready (user + org loaded)
- * This can be awaited in router guards to defer org-dependent checks
- *
- * @param timeoutMs - Maximum time to wait for context (default: 10000ms)
- * @returns Promise that resolves when context is ready or timeout occurs
- */
-export function getContextReadyPromise(
-  timeoutMs = DEFAULT_CONTEXT_TIMEOUT_MS
-): Promise<void> {
-  // If already resolved, return immediately
-  if (contextResolved) {
-    return Promise.resolve();
-  }
-
-  return Promise.race([
-    contextReadyPromise.then(() => {
-      contextResolved = true;
-    }),
-    promiseTimeout(timeoutMs).then(() => {
-      if (!contextResolved) {
-        console.warn(
-          `[Context] Timeout after ${timeoutMs}ms waiting for context initialization. ` +
-            'Proceeding with current context state.'
-        );
-        contextResolved = true;
-      }
-    }),
-  ]);
-}
-
-/**
- * Reset the context ready promise (used for testing or re-initialization)
- */
-export function resetContextReadyPromise(): void {
-  contextReadyPromise = new Promise(resolve => {
-    contextReadyResolve = resolve;
-  });
-  contextResolved = false;
-}
 
 /**
  * Current Context Store
@@ -104,18 +46,9 @@ export const useCurrentContextStore = defineStore('currentContext', () => {
    * Mark context as ready
    * Called when auth is initialized and organization data is loaded (or determined to be absent)
    * Components should wait for isReady before showing content vs empty states
-   * Also resolves the module-level contextReadyPromise for router guards
    */
   function markAsReady() {
-    if (isReady.value) return;
-
     isReady.value = true;
-
-    // Resolve the module-level promise for router guards
-    if (contextReadyResolve) {
-      contextReadyResolve();
-      contextReadyResolve = null;
-    }
   }
 
   function reset() {
@@ -123,8 +56,6 @@ export const useCurrentContextStore = defineStore('currentContext', () => {
     organization.value = null;
     isLoading.value = false;
     isReady.value = false;
-    // Reset the context ready promise for next initialization
-    resetContextReadyPromise();
   }
 
   return {

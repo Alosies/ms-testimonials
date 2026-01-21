@@ -1,3 +1,3 @@
-export { useCurrentContextStore, getContextReadyPromise } from './store';
+export { useCurrentContextStore } from './store';
 export { useCurrentContext, useAuthRedirect } from './composables';
 export type * from './models';

@@ -3,12 +3,11 @@
  *
  * Following CoursePads pattern:
  * - Uses module-level promise for auth readiness (no Vue watch in guards)
- * - Uses currentUser from auth directly for immediate auth checks
- * - Uses context store for org slug (after awaiting context ready)
+ * - Uses currentUserId from context store as the primary auth check
  */
 import type { Router } from 'vue-router'
 import { useAuth, getAuthReadyPromise } from '@/features/auth'
-import { useCurrentContextStore, getContextReadyPromise } from '@/shared/currentContext'
+import { useCurrentContextStore } from '@/shared/currentContext'
 
 /**
  * Reserved route segments that cannot be used as organization slugs
@@ -38,7 +37,7 @@ function isReservedSlug(slug: string): boolean {
 
 export function setupAuthGuards(router: Router) {
   router.beforeEach(async (to, from, next) => {
-    const { isInitialized, currentUser } = useAuth()
+    const { isInitialized } = useAuth()
     const contextStore = useCurrentContextStore()
 
     // For routes that require auth or are guest-only, wait for auth to initialize
@@ -52,16 +51,9 @@ export function setupAuthGuards(router: Router) {
       return next()
     }
 
-    // Check if user is authenticated using auth state directly
-    // This avoids race condition with context store watchers
-    const hasUser = currentUser.value !== null
-
-    // For org slug, we need to wait for context to be ready
-    // Only wait if we have a user (org loading happens after auth)
-    if (hasUser && !contextStore.currentOrganizationSlug) {
-      await getContextReadyPromise()
-    }
-
+    // Check if user is authenticated using context store
+    // Primary check: currentUserId is not null
+    const hasUser = contextStore.currentUserId !== null
     const orgSlug = contextStore.currentOrganizationSlug
 
     // Redirect authenticated users from root path to their organization dashboard
