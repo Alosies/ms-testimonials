@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { onMounted, watch } from 'vue';
+import { onMounted, watch, toRefs } from 'vue';
 import { useRouter } from 'vue-router';
+import { Icon } from '@testimonials/icons';
 import { useAuth } from '@/features/auth';
 import { useCurrentContextStore } from '@/shared/currentContext';
 
@@ -8,92 +9,117 @@ const router = useRouter();
 const { isAuthLoading, isAuthenticated } = useAuth();
 const contextStore = useCurrentContextStore();
 
+// Use toRefs to get proper reactive refs from Pinia store
+const { currentOrganizationSlug } = toRefs(contextStore);
+
+// Track if redirect has been initiated to prevent multiple navigations
+let redirectInitiated = false;
+
 // Helper to get the redirect path
 function getRedirectPath() {
-  const orgSlug = contextStore.currentOrganizationSlug;
-  return orgSlug ? `/${orgSlug}/dashboard` : '/';
+  const slug = currentOrganizationSlug.value;
+  return slug ? `/${slug}/dashboard` : '/';
 }
 
 // Redirect to dashboard when auth and org context are ready
 onMounted(() => {
-  if (isAuthenticated.value && !isAuthLoading.value && contextStore.currentOrganizationSlug) {
+  if (isAuthenticated.value && !isAuthLoading.value && currentOrganizationSlug.value) {
+    redirectInitiated = true;
     router.push(getRedirectPath());
   }
 });
 
 // Watch for auth and org context completion
+// Use array of refs for proper reactivity tracking
 watch(
-  [isAuthenticated, isAuthLoading, () => contextStore.currentOrganizationSlug],
-  ([authenticated, loading, orgSlug]) => {
-    if (authenticated && !loading && orgSlug) {
+  [isAuthenticated, isAuthLoading, currentOrganizationSlug],
+  ([authenticated, loading, slug]) => {
+    if (authenticated && !loading && slug && !redirectInitiated) {
+      redirectInitiated = true;
+      // Small delay to show success state briefly
       setTimeout(() => {
-        router.push(getRedirectPath());
-      }, 1500);
+        router.push(getRedirectPath()).catch((err) => {
+          console.error('[callback.vue] router.push() failed:', err);
+        });
+      }, 500);
     }
-  }
+  },
+  { immediate: true }
 );
 </script>
 
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10 flex items-center justify-center p-4">
-    <div class="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center">
+  <div class="fixed inset-0 flex items-center justify-center overflow-hidden">
+    <!-- Animated gradient background -->
+    <div class="absolute inset-0 bg-gradient-to-br from-slate-50 via-white to-teal-50/30">
+      <!-- Radial pulse waves from center -->
+      <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+        <div class="callback-wave absolute h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-teal-200/30" />
+        <div class="callback-wave absolute h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-teal-200/20 [animation-delay:-1s]" />
+        <div class="callback-wave absolute h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-teal-100/15 [animation-delay:-2s]" />
+      </div>
+
+      <!-- Corner glows -->
+      <div class="absolute -left-32 -top-32 h-64 w-64 rounded-full bg-teal-100/40 blur-3xl" />
+      <div class="absolute -bottom-32 -right-32 h-64 w-64 rounded-full bg-teal-100/40 blur-3xl" />
+
+      <!-- Center glow -->
+      <div class="center-glow absolute left-1/2 top-1/3 h-80 w-80 -translate-x-1/2 -translate-y-1/2 rounded-full blur-2xl" />
+    </div>
+
+    <!-- Main content -->
+    <div class="relative z-10 flex flex-col items-center px-8">
       <!-- Loading state -->
       <template v-if="isAuthLoading">
-        <div class="mb-6">
-          <div class="w-16 h-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin mx-auto" />
+        <div class="mb-8 flex justify-center">
+          <div class="relative animate-float-gentle">
+            <!-- Pulse rings -->
+            <div class="absolute -inset-3 animate-ping-slow rounded-full bg-teal-500/10" />
+            <div class="absolute -inset-5 animate-ping-slower rounded-full bg-teal-500/5" />
+
+            <div class="relative flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-teal-500 to-teal-600 shadow-lg shadow-teal-500/25">
+              <Icon icon="lucide:key-round" class="h-8 w-8 text-white" />
+            </div>
+          </div>
         </div>
-        <h1 class="text-xl font-bold text-foreground mb-2">
-          Authenticating...
-        </h1>
-        <p class="text-muted-foreground">
-          Please wait while we complete your sign in.
-        </p>
+
+        <div class="text-center">
+          <span class="text-lg font-medium text-foreground">
+            Completing sign in
+          </span>
+          <p class="mt-2 text-sm text-muted-foreground">
+            Processing authentication...
+          </p>
+        </div>
       </template>
 
       <!-- Success state -->
       <template v-else-if="isAuthenticated">
-        <div class="mb-6">
-          <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
-            <svg
-              class="w-8 h-8 text-primary"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M5 13l4 4L19 7"
-              />
-            </svg>
+        <div class="mb-8 flex justify-center">
+          <div class="relative animate-float-gentle">
+            <!-- Pulse rings -->
+            <div class="absolute -inset-3 animate-ping-slow rounded-full bg-teal-500/10" />
+            <div class="absolute -inset-5 animate-ping-slower rounded-full bg-teal-500/5" />
+
+            <div class="relative flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-teal-500 to-teal-600 shadow-lg shadow-teal-500/25">
+              <Icon icon="lucide:check" class="h-8 w-8 text-white" />
+            </div>
           </div>
         </div>
 
-        <h1 class="text-xl font-bold text-foreground mb-2">
-          Welcome!
-        </h1>
-        <p class="text-muted-foreground mb-6">
-          Authentication successful. Redirecting to your dashboard...
-        </p>
-
-        <!-- Loading indicator -->
-        <div class="flex items-center justify-center gap-1 text-primary">
-          <div class="w-2 h-2 bg-primary rounded-full animate-bounce" />
-          <div
-            class="w-2 h-2 bg-primary rounded-full animate-bounce"
-            style="animation-delay: 0.1s"
-          />
-          <div
-            class="w-2 h-2 bg-primary rounded-full animate-bounce"
-            style="animation-delay: 0.2s"
-          />
+        <div class="text-center">
+          <span class="text-lg font-medium text-foreground">
+            Welcome back!
+          </span>
+          <p class="mt-2 text-sm text-muted-foreground">
+            Redirecting to your dashboard...
+          </p>
         </div>
 
         <!-- Manual redirect button -->
-        <div class="mt-6">
+        <div class="mt-8">
           <button
-            class="text-primary hover:underline text-sm font-medium"
+            class="text-sm font-medium text-teal-600 hover:text-teal-700 hover:underline"
             @click="router.push(getRedirectPath())"
           >
             Go to Dashboard
@@ -103,38 +129,68 @@ watch(
 
       <!-- Error state -->
       <template v-else>
-        <div class="mb-6">
-          <div class="w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center mx-auto">
-            <svg
-              class="w-8 h-8 text-destructive"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
+        <div class="mb-8 flex justify-center">
+          <div class="relative">
+            <div class="relative flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-destructive to-destructive/80 shadow-lg shadow-destructive/25">
+              <Icon icon="lucide:x" class="h-8 w-8 text-white" />
+            </div>
           </div>
         </div>
 
-        <h1 class="text-xl font-bold text-foreground mb-2">
-          Authentication Failed
-        </h1>
-        <p class="text-muted-foreground mb-6">
-          Something went wrong. Please try again.
-        </p>
+        <div class="text-center">
+          <span class="text-lg font-medium text-foreground">
+            Authentication Failed
+          </span>
+          <p class="mt-2 text-sm text-muted-foreground">
+            Something went wrong. Please try again.
+          </p>
+        </div>
 
-        <button
-          class="text-primary hover:underline text-sm font-medium"
-          @click="router.push('/auth/login')"
-        >
-          Back to Login
-        </button>
+        <div class="mt-8">
+          <button
+            class="text-sm font-medium text-teal-600 hover:text-teal-700 hover:underline"
+            @click="router.push('/auth/login')"
+          >
+            Back to Login
+          </button>
+        </div>
       </template>
     </div>
   </div>
 </template>
+
+<style scoped>
+/* Expanding radial waves */
+.callback-wave {
+  animation: callback-expand-wave 3s ease-out infinite;
+}
+
+@keyframes callback-expand-wave {
+  0% {
+    transform: translate(-50%, -50%) scale(0.2);
+    opacity: 0.5;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0;
+  }
+}
+
+/* Center glow pulse */
+.center-glow {
+  background: radial-gradient(circle, rgba(204, 251, 241, 0.5) 0%, rgba(204, 251, 241, 0.2) 40%, transparent 70%);
+  animation: center-glow-pulse 3s ease-in-out infinite;
+}
+
+@keyframes center-glow-pulse {
+  0%, 100% {
+    opacity: 0.5;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: translate(-50%, -50%) scale(1.1);
+  }
+}
+
+</style>

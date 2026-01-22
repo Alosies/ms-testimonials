@@ -30,7 +30,19 @@ onMounted(async () => {
       window.location.href = '/auth/login';
     }, 500);
   } catch (err) {
-    error.value = err instanceof Error ? err.message : 'Failed to sign out';
+    console.error('[logout.vue] logout() failed:', err);
+
+    // If session is already missing, treat it as successful logout
+    // This handles edge cases where app state shows authenticated but Supabase session is gone
+    const errorMessage = err instanceof Error ? err.message : String(err);
+    if (errorMessage.includes('Auth session missing') || errorMessage.includes('session_not_found')) {
+      setTimeout(() => {
+        window.location.href = '/auth/login';
+      }, 500);
+      return;
+    }
+
+    error.value = errorMessage;
     isLoggingOut.value = false;
   }
 });
