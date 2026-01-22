@@ -94,6 +94,8 @@ function handleMouseLeave() {
           'cursor-default': mode !== 'preview',
         }"
         :disabled="mode !== 'preview'"
+        :data-testid="`rating-star-${n}`"
+        :data-rating-value="getStarValue(n)"
         @click="handleClick(n)"
         @mouseenter="handleMouseEnter(n)"
       >

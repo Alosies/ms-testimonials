@@ -117,6 +117,9 @@ const designConfig = computed(() => {
   return parseDesignConfig(form.value.settings);
 });
 
+// Get organization ID for analytics
+const organizationId = computed(() => form.value?.organization?.id ?? '');
+
 // Get organization logo
 const orgLogoUrl = computed(() => form.value?.organization?.logo?.storage_path ?? null);
 
@@ -178,6 +181,8 @@ const primaryColorHsl = computed(() => {
       :branching-config="branchingConfig"
       :logo-url="orgLogoUrl"
       :primary-color-hsl="primaryColorHsl"
+      :form-id="formId"
+      :organization-id="organizationId"
     />
   </div>
 </template>

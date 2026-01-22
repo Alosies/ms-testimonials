@@ -22,6 +22,7 @@ import {
   ThankYouStepCard,
 } from '@/shared/stepCards';
 import { OrganizationLogo } from '@/entities/organization';
+import { publicFormTestIds } from '@/shared/constants/testIds';
 import { usePublicFormFlow } from '../composables';
 
 interface Props {
@@ -31,12 +32,18 @@ interface Props {
   logoUrl?: string | null;
   /** Custom primary color in HSL CSS variable format (e.g., "175 84% 32%") */
   primaryColorHsl?: string | null;
+  /** Form ID for persistence and analytics */
+  formId?: string;
+  /** Organization ID for analytics */
+  organizationId?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   branchingConfig: null,
   logoUrl: null,
   primaryColorHsl: null,
+  formId: '',
+  organizationId: '',
 });
 
 // Custom styles for the entire public form (applies custom primary color)
@@ -50,9 +57,13 @@ const customPrimaryStyles = computed(() => {
 
 const stepsRef = toRef(props, 'steps');
 const branchingConfigRef = toRef(props, 'branchingConfig');
+const formIdRef = toRef(props, 'formId');
+const organizationIdRef = toRef(props, 'organizationId');
 const flow = usePublicFormFlow({
   steps: stepsRef,
   branchingConfig: branchingConfigRef,
+  formId: formIdRef,
+  organizationId: organizationIdRef,
 });
 
 // Rating response for v-model binding
@@ -85,20 +96,26 @@ const isWelcomeStep = computed(() => flow.currentStep.value?.stepType === 'welco
 const isThankYouStep = computed(() => flow.currentStep.value?.stepType === 'thank_you');
 const isRatingStep = computed(() => flow.currentStep.value?.stepType === 'rating');
 
-// Navigation visibility - hide on welcome (has its own button) and thank you (end state)
+// Navigation visibility
 const showNavigation = computed(() => !isWelcomeStep.value && !isThankYouStep.value);
 const showBackButton = computed(() => !flow.isFirstStep.value && showNavigation.value);
-const showNextButton = computed(() => !flow.isLastStep.value && showNavigation.value);
-
-// Disable next on rating step if no rating selected yet
-const isNextDisabled = computed(() => {
-  if (isRatingStep.value && ratingResponse.value === null) {
-    return true;
-  }
-  return false;
-});
+// Show Continue on rating step when rating selected (flow reveals next steps after determination)
+const showNextButton = computed(() =>
+  (isRatingStep.value && ratingResponse.value !== null) ||
+  (!flow.isLastStep.value && showNavigation.value)
+);
+const isNextDisabled = computed(() => isRatingStep.value && ratingResponse.value === null);
 
 function handleWelcomeStart() {
+  flow.goToNext();
+}
+
+/**
+ * Handle form submission (on Submit button click)
+ * Tracks submission analytics and clears persisted state before navigating to thank you
+ */
+async function handleSubmit() {
+  await flow.handleSubmission();
   flow.goToNext();
 }
 </script>
@@ -108,6 +125,7 @@ function handleWelcomeStart() {
   <div
     class="min-h-screen flex flex-col items-center justify-center p-4 bg-gray-50"
     :style="customPrimaryStyles"
+    :data-testid="publicFormTestIds.container"
   >
     <!-- Logo (fixed position, top-left) -->
     <div v-if="logoUrl" class="fixed top-6 left-6 z-10">
@@ -123,16 +141,22 @@ function handleWelcomeStart() {
       <div
         class="h-full bg-primary transition-all duration-300"
         :style="{ width: `${flow.progress.value}%` }"
+        :data-testid="publicFormTestIds.progressBar"
       />
     </div>
 
     <div class="w-full max-w-4xl px-4">
       <!-- Step card -->
-      <StepCardContainer
+      <div
         v-if="flow.currentStep.value"
-        mode="preview"
-        :step-type="flow.currentStep.value.stepType"
+        :data-testid="publicFormTestIds.stepCard"
+        :data-step-type="flow.currentStep.value.stepType"
+        :data-step-index="flow.currentStepIndex.value"
       >
+        <StepCardContainer
+          mode="preview"
+          :step-type="flow.currentStep.value.stepType"
+        >
         <!-- Welcome step with start handler -->
         <WelcomeStepCard
           v-if="isWelcomeStep"
@@ -154,7 +178,8 @@ function handleWelcomeStart() {
           :step="flow.currentStep.value"
           mode="preview"
         />
-      </StepCardContainer>
+        </StepCardContainer>
+      </div>
 
       <!-- Navigation buttons (hidden on welcome and thank you steps) -->
       <div
@@ -166,6 +191,7 @@ function handleWelcomeStart() {
           v-if="showBackButton"
           variant="outline"
           class="border-gray-300 text-gray-600 hover:bg-gray-100 hover:text-gray-700"
+          :data-testid="publicFormTestIds.backButton"
           @click="flow.goToPrevious"
         >
           <Icon icon="heroicons:arrow-left" class="w-4 h-4 mr-2" />
@@ -173,29 +199,34 @@ function handleWelcomeStart() {
         </Button>
         <div v-else />
 
+        <!-- Submit button (on step before thank_you) -->
+        <Button
+          v-if="flow.isStepBeforeThankYou.value"
+          :disabled="isNextDisabled"
+          :data-testid="publicFormTestIds.submitButton"
+          @click="handleSubmit"
+        >
+          Submit
+          <Icon icon="heroicons:check" class="w-4 h-4 ml-2" />
+        </Button>
+
         <!-- Next/Continue button -->
         <Button
-          v-if="showNextButton"
+          v-else-if="showNextButton"
           :disabled="isNextDisabled"
+          :data-testid="publicFormTestIds.continueButton"
           @click="flow.goToNext"
         >
           Continue
           <Icon icon="heroicons:arrow-right" class="w-4 h-4 ml-2" />
         </Button>
-
-        <!-- Submit button (on last non-thank-you step) -->
-        <Button
-          v-else-if="!isThankYouStep"
-          :disabled="isNextDisabled"
-          @click="flow.goToNext"
-        >
-          Submit
-          <Icon icon="heroicons:check" class="w-4 h-4 ml-2" />
-        </Button>
       </div>
 
       <!-- Step indicator (uses visible steps for branching) -->
-      <div class="mt-6 flex justify-center gap-2">
+      <div
+        class="mt-6 flex justify-center gap-2"
+        :data-testid="publicFormTestIds.stepIndicator"
+      >
         <button
           v-for="(step, index) in flow.visibleSteps.value"
           :key="step.id"
@@ -204,6 +235,9 @@ function handleWelcomeStart() {
             'bg-primary': index === flow.currentStepIndex.value,
             'bg-gray-300': index !== flow.currentStepIndex.value,
           }"
+          :data-testid="publicFormTestIds.stepDot"
+          :data-step-index="index"
+          :data-active="index === flow.currentStepIndex.value"
           @click="flow.goToStep(index)"
         />
       </div>
