@@ -2,15 +2,17 @@
  * Auth composable - Main authentication state and methods
  *
  * Uses useTokenManager for token management (singleton pattern).
+ * Uses a state machine (AuthStep) for clear visibility into auth state.
  */
 import { ref, computed } from 'vue';
 import type { User } from '@supabase/supabase-js';
-import { promiseTimeout } from '@vueuse/core';
+import { promiseTimeout, createSharedComposable } from '@vueuse/core';
 import { supabase } from '@/shared/auth/supabase';
 import { useTokenManager } from '@/shared/authorization';
 import * as authApi from '../api';
 import type { AuthCredentials, RegisterCredentials } from '../models';
-import { createSharedComposable } from '@vueuse/core';
+import { AUTH_STEPS, AUTH_STEP_GROUPS, type AuthStep } from '../constants';
+import { isStepInGroup } from '../functions';
 
 // ============================================================================
 // Module-level auth readiness promise
@@ -82,33 +84,40 @@ function _useAuth() {
     currentUser,
   } = useTokenManager();
 
-  // Auth state
+  // Auth state machine - single source of truth for auth state
+  const authStep = ref<AuthStep>(AUTH_STEPS.UNINITIALIZED);
   const supabaseUser = ref<User | null>(null);
-  const isLoading = ref(true);
-  const isAuthenticating = ref(false);
-  const isAuthorizing = ref(false); // True when processing session from auth listener
   const error = ref<string | null>(null);
-  const isInitialized = ref(false);
 
-  // Computed properties
+  // Computed properties derived from authStep
   const isAuthenticated = computed(() => !!currentUser.value);
-  // Include isAuthorizing to prevent premature app rendering after login
-  const isAuthLoading = computed(
-    () => isLoading.value || isAuthenticating.value || isAuthorizing.value
+  const isInitialized = computed(() =>
+    authStep.value === AUTH_STEPS.AUTH_COMPLETED_AND_IDLE
   );
+  const isAuthLoading = computed(() =>
+    isStepInGroup(authStep.value, AUTH_STEP_GROUPS.LOADING)
+  );
+  const isLoggingOut = computed(() => authStep.value === AUTH_STEPS.SUPABASE_LOGGING_OUT);
+
+  // Legacy computed values for backwards compatibility
+  const isLoading = computed(() =>
+    isStepInGroup(authStep.value, AUTH_STEP_GROUPS.LOADING)
+  );
+  const isAuthenticating = computed(() => authStep.value === AUTH_STEPS.SUPABASE_SIGNING_IN);
+  const isAuthorizing = computed(() => authStep.value === AUTH_STEPS.API_ENHANCING_TOKEN);
 
   /**
-   * Handle signed out state
+   * Handle signed out state - clear auth data
    */
   function handleSignedOut() {
     supabaseUser.value = null;
+    
     clearEnhancedToken();
     error.value = null;
   }
 
   /**
    * Process a session - enhance token and update state
-   * This is extracted to be called from deferred callbacks safely
    */
   async function processSession(session: { user: User; access_token: string }) {
     supabaseUser.value = session.user;
@@ -121,14 +130,9 @@ function _useAuth() {
   }
 
   /**
-   * Mark initialization as complete
+   * Resolve the auth ready promise (allows router guards to proceed)
    */
-  function markInitialized() {
-    if (isInitialized.value) return;
-
-    isLoading.value = false;
-    isInitialized.value = true;
-
+  function resolveAuthReady() {
     if (authReadyResolve) {
       authReadyResolve();
       authReadyResolve = null;
@@ -138,78 +142,64 @@ function _useAuth() {
   /**
    * Initialize auth state from Supabase session
    *
-   * This directly restores the session using getSession() and then sets up
-   * listeners for future auth changes. Token enhancement is done AFTER
-   * getting the session (outside any Supabase callbacks).
+   * Follows Supabase's recommended Vue 3 pattern:
+   * 1. Call getSession() first (awaitable, returns from cache)
+   * 2. Set up onAuthStateChange for future auth events
+   * 3. Skip INITIAL_SESSION since we already handled it with getSession()
+   *
+   * See: https://supabase.com/docs/guides/getting-started/tutorials/with-vue-3
    */
   async function initialize() {
     if (isInitialized.value) {
       return;
     }
 
-    isLoading.value = true;
+    authStep.value = AUTH_STEPS.SUPABASE_CHECKING_SESSION;
     error.value = null;
 
     try {
-      // 1. Get stored session directly
-      console.log('[Auth] Getting stored session...');
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
       if (sessionError) {
         console.error('[Auth] Error getting session:', sessionError);
         error.value = sessionError.message;
       } else if (session?.user) {
-        // 2. Session exists - enhance token for Hasura
-        console.log('[Auth] Found session for:', session.user.email);
+        authStep.value = AUTH_STEPS.API_ENHANCING_TOKEN;
         await processSession({ user: session.user, access_token: session.access_token });
-      } else {
-        console.log('[Auth] No stored session');
       }
     } catch (err) {
       console.error('[Auth] Error during initialization:', err);
       error.value = err instanceof Error ? err.message : 'Failed to initialize auth';
     }
 
-    // 3. Always mark as initialized
-    markInitialized();
+    // Transition to idle and resolve auth promise
+    authStep.value = AUTH_STEPS.AUTH_COMPLETED_AND_IDLE;
+    resolveAuthReady();
 
-    // 4. Set up listener for future auth changes (not initial session)
-    supabase.auth.onAuthStateChange((event, session) => {
-      console.log('[Auth] onAuthStateChange:', event, session?.user?.email);
-
-      // Skip INITIAL_SESSION since we already handled the initial session above
+    // Set up listener for future auth changes
+    supabase.auth.onAuthStateChange(async (event, session) => {
+      // Skip INITIAL_SESSION since we already handled it with getSession() above
       if (event === 'INITIAL_SESSION') {
         return;
       }
 
-      // Defer async operations to avoid Supabase callback deadlocks
-      // IMPORTANT: Set isAuthorizing BEFORE setTimeout to prevent premature app rendering
-      if (event === 'SIGNED_IN' && session?.user) {
-        isAuthorizing.value = true; // Start authorizing (keeps isAuthLoading true)
-        setTimeout(async () => {
-          try {
-            await processSession({
-              user: session.user,
-              access_token: session.access_token,
-            });
-          } finally {
-            isAuthorizing.value = false; // Done authorizing
-          }
-        }, 0);
-      } else if (event === 'SIGNED_OUT') {
+      if (event === 'SIGNED_OUT') {
         handleSignedOut();
-      } else if (event === 'TOKEN_REFRESHED' && session?.user) {
-        isAuthorizing.value = true;
-        setTimeout(async () => {
-          try {
-            await processSession({
-              user: session.user,
-              access_token: session.access_token,
-            });
-          } finally {
-            isAuthorizing.value = false;
-          }
-        }, 0);
+        authStep.value = AUTH_STEPS.AUTH_COMPLETED_AND_IDLE;
+        return;
+      }
+
+      // Handle SIGNED_IN and TOKEN_REFRESHED - enhance token
+      if (session?.user) {
+        authStep.value = AUTH_STEPS.API_ENHANCING_TOKEN;
+        try {
+          await processSession({
+            user: session.user,
+            access_token: session.access_token,
+          });
+        } finally {
+          authStep.value = AUTH_STEPS.AUTH_COMPLETED_AND_IDLE;
+        }
       }
     });
   }
@@ -218,17 +208,16 @@ function _useAuth() {
    * Sign in with email and password
    */
   async function login(credentials: AuthCredentials) {
-    isAuthenticating.value = true;
+    authStep.value = AUTH_STEPS.SUPABASE_SIGNING_IN;
     error.value = null;
 
     try {
       await authApi.login(credentials);
-      // Auth state change listener will handle the rest
+      // Auth state change listener will handle transition to API_ENHANCING_TOKEN → AUTH_COMPLETED_AND_IDLE
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Sign in failed';
+      authStep.value = AUTH_STEPS.AUTH_COMPLETED_AND_IDLE;
       throw err;
-    } finally {
-      isAuthenticating.value = false;
     }
   }
 
@@ -236,17 +225,16 @@ function _useAuth() {
    * Sign up with email and password
    */
   async function register(credentials: RegisterCredentials) {
-    isAuthenticating.value = true;
+    authStep.value = AUTH_STEPS.SUPABASE_SIGNING_IN;
     error.value = null;
 
     try {
       await authApi.register(credentials);
-      // Auth state change listener will handle the rest
+      // Auth state change listener will handle transition to API_ENHANCING_TOKEN → AUTH_COMPLETED_AND_IDLE
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Sign up failed';
+      authStep.value = AUTH_STEPS.AUTH_COMPLETED_AND_IDLE;
       throw err;
-    } finally {
-      isAuthenticating.value = false;
     }
   }
 
@@ -254,15 +242,16 @@ function _useAuth() {
    * Sign in with Google OAuth
    */
   async function loginWithGoogle() {
-    isAuthenticating.value = true;
+    authStep.value = AUTH_STEPS.SUPABASE_SIGNING_IN;
     error.value = null;
 
     try {
       await authApi.loginWithGoogle();
       // This will redirect to Google, then back to /auth/callback
+      // authStep stays at SUPABASE_SIGNING_IN until page reloads
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Google sign in failed';
-      isAuthenticating.value = false;
+      authStep.value = AUTH_STEPS.AUTH_COMPLETED_AND_IDLE;
       throw err;
     }
   }
@@ -271,17 +260,17 @@ function _useAuth() {
    * Sign out
    */
   async function logout() {
-    isAuthenticating.value = true;
+    authStep.value = AUTH_STEPS.SUPABASE_LOGGING_OUT;
     error.value = null;
 
     try {
       await authApi.logout();
       handleSignedOut();
+      authStep.value = AUTH_STEPS.AUTH_COMPLETED_AND_IDLE;
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Sign out failed';
+      authStep.value = AUTH_STEPS.AUTH_COMPLETED_AND_IDLE;
       throw err;
-    } finally {
-      isAuthenticating.value = false;
     }
   }
 
@@ -293,15 +282,21 @@ function _useAuth() {
   }
 
   return {
-    // State (readonly)
+    // State machine (single source of truth)
+    authStep: computed(() => authStep.value),
+
+    // Computed state derived from authStep
     currentUser,
     isAuthenticated,
-    isLoading: computed(() => isLoading.value),
-    isAuthenticating: computed(() => isAuthenticating.value),
-    isAuthorizing: computed(() => isAuthorizing.value),
+    isInitialized,
     isAuthLoading,
+    isLoggingOut,
     error: computed(() => error.value),
-    isInitialized: computed(() => isInitialized.value),
+
+    // Legacy computed values (for backwards compatibility)
+    isLoading,
+    isAuthenticating,
+    isAuthorizing,
 
     // Methods
     initialize,

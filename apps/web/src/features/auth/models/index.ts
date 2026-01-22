@@ -22,8 +22,5 @@ export interface EnhancedTokenResponse {
   user: AuthUser;
 }
 
-export type AuthState =
-  | 'unauthenticated'
-  | 'authenticating'
-  | 'authenticated'
-  | 'error';
+// Re-export AuthStep type from constants (type lives with its constants)
+export type { AuthStep } from '../constants';
