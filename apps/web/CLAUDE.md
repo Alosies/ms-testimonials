@@ -265,17 +265,59 @@ Only use custom CSS when Tailwind cannot achieve the desired effect:
 
 ## Pinia Store Reactivity Pattern (Critical)
 
-When destructuring properties from Pinia stores, **ALWAYS use `toRefs()`** to maintain reactivity:
+Pinia stores return **reactive objects**. Direct destructuring breaks reactivity because it extracts the current value rather than maintaining the reactive reference.
+
+### Use `toRefs()` for Reactive Properties
+
+When destructuring **state and getters** (reactive properties) from Pinia stores, **ALWAYS use `toRefs()`** from Vue:
 
 ```typescript
-// ✅ Correct: Use toRefs() to maintain reactivity
+// ✅ Correct: Use toRefs() for reactive properties
+import { toRefs } from 'vue';
+import { useCurrentContextStore } from '@/shared/currentContext';
+
+const contextStore = useCurrentContextStore();
+const { currentOrganizationSlug, isReady } = toRefs(contextStore);
+
+// ❌ Wrong: Direct destructuring loses reactivity
+const { currentOrganizationSlug } = useCurrentContextStore();
+
+// ❌ Wrong: Using computed() wrapper - unnecessary and verbose
+const currentOrganizationSlug = computed(() => contextStore.currentOrganizationSlug);
+```
+
+### Actions Don't Need `toRefs()`
+
+**Methods/actions** can be destructured directly since they are functions, not reactive values:
+
+```typescript
 import { toRefs } from 'vue';
 import { useAuthStore } from '@/shared/auth';
 
-const { currentUser, isAuthenticated } = toRefs(useAuthStore());
+const authStore = useAuthStore();
 
-// ❌ Wrong: Direct destructuring loses reactivity
-const { currentUser, isAuthenticated } = useAuthStore();
+// ✅ Correct: toRefs for state/getters, direct for actions
+const { currentUser, isAuthenticated } = toRefs(authStore);
+const { login, logout } = authStore;  // Actions don't need toRefs
+```
+
+### Common Mistake: Getter Function in Watch Array
+
+When watching store properties, ensure you're watching the ref from `toRefs()`, not a getter function:
+
+```typescript
+// ❌ Wrong: Getter returns the same object reference, won't trigger watch properly
+watch(
+  [() => store.someProperty],
+  ([value]) => { ... }
+);
+
+// ✅ Correct: Use toRefs to get proper refs for watching
+const { someProperty } = toRefs(store);
+watch(
+  [someProperty],
+  ([value]) => { ... }
+);
 ```
 
 ## Two-Way Data Binding with defineModel (Critical)
