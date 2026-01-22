@@ -1,0 +1,77 @@
+table:
+  name: form_analytics_events
+  schema: public
+object_relationships:
+  - name: form
+    using:
+      foreign_key_constraint_on: form_id
+  - name: organization
+    using:
+      foreign_key_constraint_on: organization_id
+insert_permissions:
+  - role: anonymous
+    permission:
+      check:
+        form:
+          _and:
+            - is_active:
+                _eq: true
+            - status:
+                _eq: published
+      columns:
+        - organization_id
+        - form_id
+        - session_id
+        - event_type
+        - step_index
+        - step_id
+        - step_type
+        - event_data
+        - user_agent
+  - role: member
+    permission:
+      check:
+        organization_id:
+          _eq: X-Hasura-Organization-Id
+      columns: '*'
+  - role: org_admin
+    permission:
+      check:
+        organization_id:
+          _eq: X-Hasura-Organization-Id
+      columns: '*'
+  - role: owner
+    permission:
+      check:
+        organization_id:
+          _eq: X-Hasura-Organization-Id
+      columns: '*'
+select_permissions:
+  - role: member
+    permission:
+      columns: '*'
+      filter:
+        organization_id:
+          _eq: X-Hasura-Organization-Id
+      allow_aggregations: true
+  - role: org_admin
+    permission:
+      columns: '*'
+      filter:
+        organization_id:
+          _eq: X-Hasura-Organization-Id
+      allow_aggregations: true
+  - role: owner
+    permission:
+      columns: '*'
+      filter:
+        organization_id:
+          _eq: X-Hasura-Organization-Id
+      allow_aggregations: true
+  - role: viewer
+    permission:
+      columns: '*'
+      filter:
+        organization_id:
+          _eq: X-Hasura-Organization-Id
+      allow_aggregations: true
