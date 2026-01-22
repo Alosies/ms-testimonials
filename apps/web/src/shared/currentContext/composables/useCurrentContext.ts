@@ -1,28 +1,23 @@
-import { watch, computed } from 'vue';
+import { watch, computed, toRefs } from 'vue';
 import { useCurrentContextStore } from '../store';
 import { useAuth } from '@/features/auth';
-import { useGetUserDefaultOrganization, useOrganizationStore } from '@/entities/organization';
+import { useOrganizationStore } from '@/entities/organization';
 import type { CurrentOrganization } from '../models';
 
 /**
  * Composable to initialize and sync the current context
  *
- * This should be called once in App.vue or a root layout component
- * to sync auth state with the context store and fetch the user's
- * default organization.
+ * This should be called once in App.vue or a root layout component.
+ * Organization data is fetched by useOrganizationStore directly.
+ * This composable syncs auth/org state to contextStore and manages ready state.
  */
 export function useCurrentContext() {
   const contextStore = useCurrentContextStore();
   const organizationStore = useOrganizationStore();
   const { currentUser, isAuthenticated, isInitialized } = useAuth();
 
-  // Reactive variables that update when currentUser changes
-  const orgQueryVariables = computed(() => ({
-    userId: currentUser.value?.id ?? '',
-  }));
-
-  const { organization: defaultOrg, role: userRole, isLoading: isOrgLoading } =
-    useGetUserDefaultOrganization(orgQueryVariables);
+  // Get reactive refs from organization store
+  const { currentOrganization, isLoading: isOrgLoading } = toRefs(organizationStore);
 
   // Watch for auth changes and sync to context store
   watch(
@@ -36,19 +31,16 @@ export function useCurrentContext() {
         });
       } else {
         contextStore.reset();
-        organizationStore.reset();
       }
     },
     { immediate: true },
   );
 
-  // Watch for organization changes - sync to both stores
-  // Note: Redirects are handled by the router guard after waiting for context ready
+  // Watch organization store and sync to context store (simplified interface)
   watch(
-    defaultOrg,
+    currentOrganization,
     newOrg => {
       if (newOrg) {
-        // Sync to CurrentContext store (simplified interface)
         const org: CurrentOrganization = {
           id: newOrg.id,
           name: newOrg.name,
@@ -57,46 +49,32 @@ export function useCurrentContext() {
           setupStatus: newOrg.setup_status as 'pending_setup' | 'completed',
         };
         contextStore.setCurrentOrganization(org);
-
-        // Sync to Organization store (full organization data)
-        organizationStore.setCurrentOrganization(newOrg);
+      } else {
+        contextStore.setCurrentOrganization(null);
       }
     },
     { immediate: true },
   );
 
-  // Watch for role changes - sync to organization store
-  watch(
-    userRole,
-    newRole => {
-      organizationStore.setCurrentRole(newRole);
-    },
-    { immediate: true },
-  );
-
-  // Watch loading state
+  // Watch loading state and sync to context store
   watch(
     isOrgLoading,
     loading => {
       contextStore.setLoading(loading);
-      organizationStore.setLoading(loading);
     },
     { immediate: true },
   );
 
   // Mark context as ready when auth is initialized and org is loaded (or no user)
-  // This prevents flash of empty state while data is loading
-  // IMPORTANT: Also check that org is actually loaded (not just that loading is done)
-  // because isOrgLoading might be false initially before the query starts
   watch(
-    [isInitialized, isOrgLoading, isAuthenticated, defaultOrg],
+    [isInitialized, isOrgLoading, isAuthenticated, currentOrganization],
     ([authInit, orgLoading, authenticated, org]) => {
-      // Only mark ready when:
+      const orgSlug = org?.slug ?? null;
+
+      // Mark ready when:
       // 1. Auth has been initialized, AND
       // 2. Either: user is not authenticated (no org to load) OR org is loaded
-      // Note: We check for org existence (not just !orgLoading) to handle the case
-      // where isOrgLoading is false before the query starts
-      if (authInit && (!authenticated || (org && !orgLoading))) {
+      if (authInit && (!authenticated || (orgSlug && !orgLoading))) {
         contextStore.markAsReady();
       }
     },
