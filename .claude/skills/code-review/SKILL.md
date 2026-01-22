@@ -48,7 +48,8 @@ This will analyze the changes and run only the E2E tests relevant to the modifie
 
 ### Vue 3
 - [ ] `defineModel()` for v-model (not props+emit pattern)
-- [ ] `toRefs()` when destructuring Pinia stores
+- [ ] **`toRefs()` when destructuring Pinia stores** - direct destructuring breaks reactivity
+- [ ] **No getter functions for store properties in watch** - use `toRefs()` refs instead of `() => store.prop`
 - [ ] Composition API used (not Options API)
 - [ ] `computed()` for derived state
 - [ ] Refs unwrapped with `.value` correctly
