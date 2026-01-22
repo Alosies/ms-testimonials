@@ -14,6 +14,7 @@ import formRoutes from '@/routes/forms';
 import widgetRoutes from '@/routes/widgets';
 import aiRoutes from '@/routes/ai';
 import mediaRoutes from '@/routes/media';
+import analyticsRoutes from '@/routes/analytics';
 import { createE2ERoutes } from '@/routes/e2e';
 
 const app = new OpenAPIHono();
@@ -58,6 +59,7 @@ app.route('/forms', formRoutes);
 app.route('/widgets', widgetRoutes);
 app.route('/ai', aiRoutes);
 app.route('/media', mediaRoutes);
+app.route('/analytics', analyticsRoutes);
 
 // E2E testing support routes (only active when E2E_API_SECRET is configured)
 app.route('/e2e', createE2ERoutes());
@@ -104,6 +106,10 @@ app.doc('/openapi.json', {
     {
       name: 'Media',
       description: 'Media upload and management',
+    },
+    {
+      name: 'Analytics',
+      description: 'Form analytics and event tracking',
     },
     {
       name: 'Webhooks',

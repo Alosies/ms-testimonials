@@ -1,0 +1,27 @@
+mutation InsertFormAnalyticsEvent(
+  $organization_id: String!
+  $form_id: String!
+  $session_id: String!
+  $event_type: String!
+  $step_index: Int
+  $step_id: String
+  $step_type: String
+  $event_data: jsonb!
+  $user_agent: String
+) {
+  insert_form_analytics_events_one(
+    object: {
+      organization_id: $organization_id
+      form_id: $form_id
+      session_id: $session_id
+      event_type: $event_type
+      step_index: $step_index
+      step_id: $step_id
+      step_type: $step_type
+      event_data: $event_data
+      user_agent: $user_agent
+    }
+  ) {
+    id
+  }
+}

@@ -2182,6 +2182,705 @@ input flows_variance_order_by {
 }
 
 """
+Lightweight analytics table for tracking form interactions.
+
+   Stores only event metadata - NO user-entered content or PII.
+   This allows analytics to work before form submission and enables
+   abandonment tracking without privacy concerns.
+
+   Events are immutable (no updates) for audit trail integrity.
+   Session ID correlates events within a single form-filling session.
+"""
+type form_analytics_events {
+  """Timestamp when the event occurred. Used for time-series analytics."""
+  created_at: timestamptz!
+  """
+  JSONB for extensible event metadata.
+     Examples: timeOnStep, abandonedOnRequired, deviceType.
+     Avoid storing PII here.
+  """
+  event_data(
+    """JSON select path"""
+    path: String
+  ): jsonb!
+  """
+  Type of analytics event:
+     - form_started: User landed on the form
+     - step_completed: User moved past a step
+     - step_skipped: User skipped optional step
+     - form_submitted: Form completed successfully
+     - form_abandoned: User left without submitting
+     - form_resumed: User returned to saved progress
+  """
+  event_type: String!
+  """An object relationship"""
+  form: forms!
+  """
+  The form this event relates to. CASCADE delete ensures cleanup
+     when forms are removed.
+  """
+  form_id: String!
+  """Opaque unique identifier (NanoID 12-char)."""
+  id: String!
+  """An object relationship"""
+  organization: organizations!
+  """
+  Organization that owns the form. Used for multi-tenant isolation
+     in analytics queries and dashboards.
+  """
+  organization_id: String!
+  """
+  Client-generated UUID (v4) stored in localStorage.
+     Correlates all events from a single form-filling session.
+     Regenerated when form is completed or explicitly cleared.
+  """
+  session_id: String!
+  """
+  Database ID of the step (for joining with form_steps).
+     NULL for form-level events.
+  """
+  step_id: String
+  """
+  Zero-based index of the step within visible steps.
+     NULL for form-level events (started, submitted, abandoned).
+  """
+  step_index: Int
+  """
+  Type of step (welcome, question, rating, etc.).
+     Denormalized for efficient analytics queries.
+  """
+  step_type: String
+  """
+  Browser user agent string for device/browser analytics.
+     Useful for identifying abandonment patterns by device.
+  """
+  user_agent: String
+}
+
+"""
+aggregated selection of "form_analytics_events"
+"""
+type form_analytics_events_aggregate {
+  aggregate: form_analytics_events_aggregate_fields
+  nodes: [form_analytics_events!]!
+}
+
+"""
+aggregate fields of "form_analytics_events"
+"""
+type form_analytics_events_aggregate_fields {
+  avg: form_analytics_events_avg_fields
+  count(columns: [form_analytics_events_select_column!], distinct: Boolean): Int!
+  max: form_analytics_events_max_fields
+  min: form_analytics_events_min_fields
+  stddev: form_analytics_events_stddev_fields
+  stddev_pop: form_analytics_events_stddev_pop_fields
+  stddev_samp: form_analytics_events_stddev_samp_fields
+  sum: form_analytics_events_sum_fields
+  var_pop: form_analytics_events_var_pop_fields
+  var_samp: form_analytics_events_var_samp_fields
+  variance: form_analytics_events_variance_fields
+}
+
+"""append existing jsonb value of filtered columns with new jsonb value"""
+input form_analytics_events_append_input {
+  """
+  JSONB for extensible event metadata.
+     Examples: timeOnStep, abandonedOnRequired, deviceType.
+     Avoid storing PII here.
+  """
+  event_data: jsonb
+}
+
+"""aggregate avg on columns"""
+type form_analytics_events_avg_fields {
+  """
+  Zero-based index of the step within visible steps.
+     NULL for form-level events (started, submitted, abandoned).
+  """
+  step_index: Float
+}
+
+"""
+Boolean expression to filter rows from the table "form_analytics_events". All fields are combined with a logical 'AND'.
+"""
+input form_analytics_events_bool_exp {
+  _and: [form_analytics_events_bool_exp!]
+  _not: form_analytics_events_bool_exp
+  _or: [form_analytics_events_bool_exp!]
+  created_at: timestamptz_comparison_exp
+  event_data: jsonb_comparison_exp
+  event_type: String_comparison_exp
+  form: forms_bool_exp
+  form_id: String_comparison_exp
+  id: String_comparison_exp
+  organization: organizations_bool_exp
+  organization_id: String_comparison_exp
+  session_id: String_comparison_exp
+  step_id: String_comparison_exp
+  step_index: Int_comparison_exp
+  step_type: String_comparison_exp
+  user_agent: String_comparison_exp
+}
+
+"""
+unique or primary key constraints on table "form_analytics_events"
+"""
+enum form_analytics_events_constraint {
+  """
+  unique or primary key constraint on columns "id"
+  """
+  form_analytics_events_pkey
+}
+
+"""
+delete the field or element with specified path (for JSON arrays, negative integers count from the end)
+"""
+input form_analytics_events_delete_at_path_input {
+  """
+  JSONB for extensible event metadata.
+     Examples: timeOnStep, abandonedOnRequired, deviceType.
+     Avoid storing PII here.
+  """
+  event_data: [String!]
+}
+
+"""
+delete the array element with specified index (negative integers count from the end). throws an error if top level container is not an array
+"""
+input form_analytics_events_delete_elem_input {
+  """
+  JSONB for extensible event metadata.
+     Examples: timeOnStep, abandonedOnRequired, deviceType.
+     Avoid storing PII here.
+  """
+  event_data: Int
+}
+
+"""
+delete key/value pair or string element. key/value pairs are matched based on their key value
+"""
+input form_analytics_events_delete_key_input {
+  """
+  JSONB for extensible event metadata.
+     Examples: timeOnStep, abandonedOnRequired, deviceType.
+     Avoid storing PII here.
+  """
+  event_data: String
+}
+
+"""
+input type for incrementing numeric columns in table "form_analytics_events"
+"""
+input form_analytics_events_inc_input {
+  """
+  Zero-based index of the step within visible steps.
+     NULL for form-level events (started, submitted, abandoned).
+  """
+  step_index: Int
+}
+
+"""
+input type for inserting data into table "form_analytics_events"
+"""
+input form_analytics_events_insert_input {
+  """Timestamp when the event occurred. Used for time-series analytics."""
+  created_at: timestamptz
+  """
+  JSONB for extensible event metadata.
+     Examples: timeOnStep, abandonedOnRequired, deviceType.
+     Avoid storing PII here.
+  """
+  event_data: jsonb
+  """
+  Type of analytics event:
+     - form_started: User landed on the form
+     - step_completed: User moved past a step
+     - step_skipped: User skipped optional step
+     - form_submitted: Form completed successfully
+     - form_abandoned: User left without submitting
+     - form_resumed: User returned to saved progress
+  """
+  event_type: String
+  form: forms_obj_rel_insert_input
+  """
+  The form this event relates to. CASCADE delete ensures cleanup
+     when forms are removed.
+  """
+  form_id: String
+  """Opaque unique identifier (NanoID 12-char)."""
+  id: String
+  organization: organizations_obj_rel_insert_input
+  """
+  Organization that owns the form. Used for multi-tenant isolation
+     in analytics queries and dashboards.
+  """
+  organization_id: String
+  """
+  Client-generated UUID (v4) stored in localStorage.
+     Correlates all events from a single form-filling session.
+     Regenerated when form is completed or explicitly cleared.
+  """
+  session_id: String
+  """
+  Database ID of the step (for joining with form_steps).
+     NULL for form-level events.
+  """
+  step_id: String
+  """
+  Zero-based index of the step within visible steps.
+     NULL for form-level events (started, submitted, abandoned).
+  """
+  step_index: Int
+  """
+  Type of step (welcome, question, rating, etc.).
+     Denormalized for efficient analytics queries.
+  """
+  step_type: String
+  """
+  Browser user agent string for device/browser analytics.
+     Useful for identifying abandonment patterns by device.
+  """
+  user_agent: String
+}
+
+"""aggregate max on columns"""
+type form_analytics_events_max_fields {
+  """Timestamp when the event occurred. Used for time-series analytics."""
+  created_at: timestamptz
+  """
+  Type of analytics event:
+     - form_started: User landed on the form
+     - step_completed: User moved past a step
+     - step_skipped: User skipped optional step
+     - form_submitted: Form completed successfully
+     - form_abandoned: User left without submitting
+     - form_resumed: User returned to saved progress
+  """
+  event_type: String
+  """
+  The form this event relates to. CASCADE delete ensures cleanup
+     when forms are removed.
+  """
+  form_id: String
+  """Opaque unique identifier (NanoID 12-char)."""
+  id: String
+  """
+  Organization that owns the form. Used for multi-tenant isolation
+     in analytics queries and dashboards.
+  """
+  organization_id: String
+  """
+  Client-generated UUID (v4) stored in localStorage.
+     Correlates all events from a single form-filling session.
+     Regenerated when form is completed or explicitly cleared.
+  """
+  session_id: String
+  """
+  Database ID of the step (for joining with form_steps).
+     NULL for form-level events.
+  """
+  step_id: String
+  """
+  Zero-based index of the step within visible steps.
+     NULL for form-level events (started, submitted, abandoned).
+  """
+  step_index: Int
+  """
+  Type of step (welcome, question, rating, etc.).
+     Denormalized for efficient analytics queries.
+  """
+  step_type: String
+  """
+  Browser user agent string for device/browser analytics.
+     Useful for identifying abandonment patterns by device.
+  """
+  user_agent: String
+}
+
+"""aggregate min on columns"""
+type form_analytics_events_min_fields {
+  """Timestamp when the event occurred. Used for time-series analytics."""
+  created_at: timestamptz
+  """
+  Type of analytics event:
+     - form_started: User landed on the form
+     - step_completed: User moved past a step
+     - step_skipped: User skipped optional step
+     - form_submitted: Form completed successfully
+     - form_abandoned: User left without submitting
+     - form_resumed: User returned to saved progress
+  """
+  event_type: String
+  """
+  The form this event relates to. CASCADE delete ensures cleanup
+     when forms are removed.
+  """
+  form_id: String
+  """Opaque unique identifier (NanoID 12-char)."""
+  id: String
+  """
+  Organization that owns the form. Used for multi-tenant isolation
+     in analytics queries and dashboards.
+  """
+  organization_id: String
+  """
+  Client-generated UUID (v4) stored in localStorage.
+     Correlates all events from a single form-filling session.
+     Regenerated when form is completed or explicitly cleared.
+  """
+  session_id: String
+  """
+  Database ID of the step (for joining with form_steps).
+     NULL for form-level events.
+  """
+  step_id: String
+  """
+  Zero-based index of the step within visible steps.
+     NULL for form-level events (started, submitted, abandoned).
+  """
+  step_index: Int
+  """
+  Type of step (welcome, question, rating, etc.).
+     Denormalized for efficient analytics queries.
+  """
+  step_type: String
+  """
+  Browser user agent string for device/browser analytics.
+     Useful for identifying abandonment patterns by device.
+  """
+  user_agent: String
+}
+
+"""
+response of any mutation on the table "form_analytics_events"
+"""
+type form_analytics_events_mutation_response {
+  """number of rows affected by the mutation"""
+  affected_rows: Int!
+  """data from the rows affected by the mutation"""
+  returning: [form_analytics_events!]!
+}
+
+"""
+on_conflict condition type for table "form_analytics_events"
+"""
+input form_analytics_events_on_conflict {
+  constraint: form_analytics_events_constraint!
+  update_columns: [form_analytics_events_update_column!]! = []
+  where: form_analytics_events_bool_exp
+}
+
+"""Ordering options when selecting data from "form_analytics_events"."""
+input form_analytics_events_order_by {
+  created_at: order_by
+  event_data: order_by
+  event_type: order_by
+  form: forms_order_by
+  form_id: order_by
+  id: order_by
+  organization: organizations_order_by
+  organization_id: order_by
+  session_id: order_by
+  step_id: order_by
+  step_index: order_by
+  step_type: order_by
+  user_agent: order_by
+}
+
+"""primary key columns input for table: form_analytics_events"""
+input form_analytics_events_pk_columns_input {
+  """Opaque unique identifier (NanoID 12-char)."""
+  id: String!
+}
+
+"""prepend existing jsonb value of filtered columns with new jsonb value"""
+input form_analytics_events_prepend_input {
+  """
+  JSONB for extensible event metadata.
+     Examples: timeOnStep, abandonedOnRequired, deviceType.
+     Avoid storing PII here.
+  """
+  event_data: jsonb
+}
+
+"""
+select columns of table "form_analytics_events"
+"""
+enum form_analytics_events_select_column {
+  """column name"""
+  created_at
+  """column name"""
+  event_data
+  """column name"""
+  event_type
+  """column name"""
+  form_id
+  """column name"""
+  id
+  """column name"""
+  organization_id
+  """column name"""
+  session_id
+  """column name"""
+  step_id
+  """column name"""
+  step_index
+  """column name"""
+  step_type
+  """column name"""
+  user_agent
+}
+
+"""
+input type for updating data in table "form_analytics_events"
+"""
+input form_analytics_events_set_input {
+  """Timestamp when the event occurred. Used for time-series analytics."""
+  created_at: timestamptz
+  """
+  JSONB for extensible event metadata.
+     Examples: timeOnStep, abandonedOnRequired, deviceType.
+     Avoid storing PII here.
+  """
+  event_data: jsonb
+  """
+  Type of analytics event:
+     - form_started: User landed on the form
+     - step_completed: User moved past a step
+     - step_skipped: User skipped optional step
+     - form_submitted: Form completed successfully
+     - form_abandoned: User left without submitting
+     - form_resumed: User returned to saved progress
+  """
+  event_type: String
+  """
+  The form this event relates to. CASCADE delete ensures cleanup
+     when forms are removed.
+  """
+  form_id: String
+  """Opaque unique identifier (NanoID 12-char)."""
+  id: String
+  """
+  Organization that owns the form. Used for multi-tenant isolation
+     in analytics queries and dashboards.
+  """
+  organization_id: String
+  """
+  Client-generated UUID (v4) stored in localStorage.
+     Correlates all events from a single form-filling session.
+     Regenerated when form is completed or explicitly cleared.
+  """
+  session_id: String
+  """
+  Database ID of the step (for joining with form_steps).
+     NULL for form-level events.
+  """
+  step_id: String
+  """
+  Zero-based index of the step within visible steps.
+     NULL for form-level events (started, submitted, abandoned).
+  """
+  step_index: Int
+  """
+  Type of step (welcome, question, rating, etc.).
+     Denormalized for efficient analytics queries.
+  """
+  step_type: String
+  """
+  Browser user agent string for device/browser analytics.
+     Useful for identifying abandonment patterns by device.
+  """
+  user_agent: String
+}
+
+"""aggregate stddev on columns"""
+type form_analytics_events_stddev_fields {
+  """
+  Zero-based index of the step within visible steps.
+     NULL for form-level events (started, submitted, abandoned).
+  """
+  step_index: Float
+}
+
+"""aggregate stddev_pop on columns"""
+type form_analytics_events_stddev_pop_fields {
+  """
+  Zero-based index of the step within visible steps.
+     NULL for form-level events (started, submitted, abandoned).
+  """
+  step_index: Float
+}
+
+"""aggregate stddev_samp on columns"""
+type form_analytics_events_stddev_samp_fields {
+  """
+  Zero-based index of the step within visible steps.
+     NULL for form-level events (started, submitted, abandoned).
+  """
+  step_index: Float
+}
+
+"""
+Streaming cursor of the table "form_analytics_events"
+"""
+input form_analytics_events_stream_cursor_input {
+  """Stream column input with initial value"""
+  initial_value: form_analytics_events_stream_cursor_value_input!
+  """cursor ordering"""
+  ordering: cursor_ordering
+}
+
+"""Initial value of the column from where the streaming should start"""
+input form_analytics_events_stream_cursor_value_input {
+  """Timestamp when the event occurred. Used for time-series analytics."""
+  created_at: timestamptz
+  """
+  JSONB for extensible event metadata.
+     Examples: timeOnStep, abandonedOnRequired, deviceType.
+     Avoid storing PII here.
+  """
+  event_data: jsonb
+  """
+  Type of analytics event:
+     - form_started: User landed on the form
+     - step_completed: User moved past a step
+     - step_skipped: User skipped optional step
+     - form_submitted: Form completed successfully
+     - form_abandoned: User left without submitting
+     - form_resumed: User returned to saved progress
+  """
+  event_type: String
+  """
+  The form this event relates to. CASCADE delete ensures cleanup
+     when forms are removed.
+  """
+  form_id: String
+  """Opaque unique identifier (NanoID 12-char)."""
+  id: String
+  """
+  Organization that owns the form. Used for multi-tenant isolation
+     in analytics queries and dashboards.
+  """
+  organization_id: String
+  """
+  Client-generated UUID (v4) stored in localStorage.
+     Correlates all events from a single form-filling session.
+     Regenerated when form is completed or explicitly cleared.
+  """
+  session_id: String
+  """
+  Database ID of the step (for joining with form_steps).
+     NULL for form-level events.
+  """
+  step_id: String
+  """
+  Zero-based index of the step within visible steps.
+     NULL for form-level events (started, submitted, abandoned).
+  """
+  step_index: Int
+  """
+  Type of step (welcome, question, rating, etc.).
+     Denormalized for efficient analytics queries.
+  """
+  step_type: String
+  """
+  Browser user agent string for device/browser analytics.
+     Useful for identifying abandonment patterns by device.
+  """
+  user_agent: String
+}
+
+"""aggregate sum on columns"""
+type form_analytics_events_sum_fields {
+  """
+  Zero-based index of the step within visible steps.
+     NULL for form-level events (started, submitted, abandoned).
+  """
+  step_index: Int
+}
+
+"""
+update columns of table "form_analytics_events"
+"""
+enum form_analytics_events_update_column {
+  """column name"""
+  created_at
+  """column name"""
+  event_data
+  """column name"""
+  event_type
+  """column name"""
+  form_id
+  """column name"""
+  id
+  """column name"""
+  organization_id
+  """column name"""
+  session_id
+  """column name"""
+  step_id
+  """column name"""
+  step_index
+  """column name"""
+  step_type
+  """column name"""
+  user_agent
+}
+
+input form_analytics_events_updates {
+  """append existing jsonb value of filtered columns with new jsonb value"""
+  _append: form_analytics_events_append_input
+  """
+  delete the field or element with specified path (for JSON arrays, negative integers count from the end)
+  """
+  _delete_at_path: form_analytics_events_delete_at_path_input
+  """
+  delete the array element with specified index (negative integers count from the end). throws an error if top level container is not an array
+  """
+  _delete_elem: form_analytics_events_delete_elem_input
+  """
+  delete key/value pair or string element. key/value pairs are matched based on their key value
+  """
+  _delete_key: form_analytics_events_delete_key_input
+  """increments the numeric columns with given value of the filtered values"""
+  _inc: form_analytics_events_inc_input
+  """prepend existing jsonb value of filtered columns with new jsonb value"""
+  _prepend: form_analytics_events_prepend_input
+  """sets the columns of the filtered rows to the given values"""
+  _set: form_analytics_events_set_input
+  """filter the rows which have to be updated"""
+  where: form_analytics_events_bool_exp!
+}
+
+"""aggregate var_pop on columns"""
+type form_analytics_events_var_pop_fields {
+  """
+  Zero-based index of the step within visible steps.
+     NULL for form-level events (started, submitted, abandoned).
+  """
+  step_index: Float
+}
+
+"""aggregate var_samp on columns"""
+type form_analytics_events_var_samp_fields {
+  """
+  Zero-based index of the step within visible steps.
+     NULL for form-level events (started, submitted, abandoned).
+  """
+  step_index: Float
+}
+
+"""aggregate variance on columns"""
+type form_analytics_events_variance_fields {
+  """
+  Zero-based index of the step within visible steps.
+     NULL for form-level events (started, submitted, abandoned).
+  """
+  step_index: Float
+}
+
+"""
 Raw form submission responses - internal data for AI assembly, not displayed on widgets
 """
 type form_question_responses {
@@ -8998,6 +9697,20 @@ type mutation_root {
     id: String!
   ): flows
   """
+  delete data from the table: "form_analytics_events"
+  """
+  delete_form_analytics_events(
+    """filter the rows which have to be deleted"""
+    where: form_analytics_events_bool_exp!
+  ): form_analytics_events_mutation_response
+  """
+  delete single row from the table: "form_analytics_events"
+  """
+  delete_form_analytics_events_by_pk(
+    """Opaque unique identifier (NanoID 12-char)."""
+    id: String!
+  ): form_analytics_events
+  """
   delete data from the table: "form_question_responses"
   """
   delete_form_question_responses(
@@ -9335,6 +10048,24 @@ type mutation_root {
     """upsert condition"""
     on_conflict: flows_on_conflict
   ): flows
+  """
+  insert data into the table: "form_analytics_events"
+  """
+  insert_form_analytics_events(
+    """the rows to be inserted"""
+    objects: [form_analytics_events_insert_input!]!
+    """upsert condition"""
+    on_conflict: form_analytics_events_on_conflict
+  ): form_analytics_events_mutation_response
+  """
+  insert a single row into the table: "form_analytics_events"
+  """
+  insert_form_analytics_events_one(
+    """the row to be inserted"""
+    object: form_analytics_events_insert_input!
+    """upsert condition"""
+    on_conflict: form_analytics_events_on_conflict
+  ): form_analytics_events
   """
   insert data into the table: "form_question_responses"
   """
@@ -9801,6 +10532,66 @@ type mutation_root {
     """updates to execute, in order"""
     updates: [flows_updates!]!
   ): [flows_mutation_response]
+  """
+  update data of the table: "form_analytics_events"
+  """
+  update_form_analytics_events(
+    """append existing jsonb value of filtered columns with new jsonb value"""
+    _append: form_analytics_events_append_input
+    """
+    delete the field or element with specified path (for JSON arrays, negative integers count from the end)
+    """
+    _delete_at_path: form_analytics_events_delete_at_path_input
+    """
+    delete the array element with specified index (negative integers count from the end). throws an error if top level container is not an array
+    """
+    _delete_elem: form_analytics_events_delete_elem_input
+    """
+    delete key/value pair or string element. key/value pairs are matched based on their key value
+    """
+    _delete_key: form_analytics_events_delete_key_input
+    """increments the numeric columns with given value of the filtered values"""
+    _inc: form_analytics_events_inc_input
+    """prepend existing jsonb value of filtered columns with new jsonb value"""
+    _prepend: form_analytics_events_prepend_input
+    """sets the columns of the filtered rows to the given values"""
+    _set: form_analytics_events_set_input
+    """filter the rows which have to be updated"""
+    where: form_analytics_events_bool_exp!
+  ): form_analytics_events_mutation_response
+  """
+  update single row of the table: "form_analytics_events"
+  """
+  update_form_analytics_events_by_pk(
+    """append existing jsonb value of filtered columns with new jsonb value"""
+    _append: form_analytics_events_append_input
+    """
+    delete the field or element with specified path (for JSON arrays, negative integers count from the end)
+    """
+    _delete_at_path: form_analytics_events_delete_at_path_input
+    """
+    delete the array element with specified index (negative integers count from the end). throws an error if top level container is not an array
+    """
+    _delete_elem: form_analytics_events_delete_elem_input
+    """
+    delete key/value pair or string element. key/value pairs are matched based on their key value
+    """
+    _delete_key: form_analytics_events_delete_key_input
+    """increments the numeric columns with given value of the filtered values"""
+    _inc: form_analytics_events_inc_input
+    """prepend existing jsonb value of filtered columns with new jsonb value"""
+    _prepend: form_analytics_events_prepend_input
+    """sets the columns of the filtered rows to the given values"""
+    _set: form_analytics_events_set_input
+    pk_columns: form_analytics_events_pk_columns_input!
+  ): form_analytics_events
+  """
+  update multiples rows of table: "form_analytics_events"
+  """
+  update_form_analytics_events_many(
+    """updates to execute, in order"""
+    updates: [form_analytics_events_updates!]!
+  ): [form_analytics_events_mutation_response]
   """
   update data of the table: "form_question_responses"
   """
@@ -14337,6 +15128,43 @@ type query_root {
     id: String!
   ): flows
   """
+  fetch data from the table: "form_analytics_events"
+  """
+  form_analytics_events(
+    """distinct select on columns"""
+    distinct_on: [form_analytics_events_select_column!]
+    """limit the number of rows returned"""
+    limit: Int
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+    """sort the rows by one or more columns"""
+    order_by: [form_analytics_events_order_by!]
+    """filter the rows returned"""
+    where: form_analytics_events_bool_exp
+  ): [form_analytics_events!]!
+  """
+  fetch aggregated fields from the table: "form_analytics_events"
+  """
+  form_analytics_events_aggregate(
+    """distinct select on columns"""
+    distinct_on: [form_analytics_events_select_column!]
+    """limit the number of rows returned"""
+    limit: Int
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+    """sort the rows by one or more columns"""
+    order_by: [form_analytics_events_order_by!]
+    """filter the rows returned"""
+    where: form_analytics_events_bool_exp
+  ): form_analytics_events_aggregate!
+  """
+  fetch data from the table: "form_analytics_events" using primary key columns
+  """
+  form_analytics_events_by_pk(
+    """Opaque unique identifier (NanoID 12-char)."""
+    id: String!
+  ): form_analytics_events
+  """
   fetch data from the table: "form_question_responses"
   """
   form_question_responses(
@@ -16891,6 +17719,54 @@ type subscription_root {
     """filter the rows returned"""
     where: flows_bool_exp
   ): [flows!]!
+  """
+  fetch data from the table: "form_analytics_events"
+  """
+  form_analytics_events(
+    """distinct select on columns"""
+    distinct_on: [form_analytics_events_select_column!]
+    """limit the number of rows returned"""
+    limit: Int
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+    """sort the rows by one or more columns"""
+    order_by: [form_analytics_events_order_by!]
+    """filter the rows returned"""
+    where: form_analytics_events_bool_exp
+  ): [form_analytics_events!]!
+  """
+  fetch aggregated fields from the table: "form_analytics_events"
+  """
+  form_analytics_events_aggregate(
+    """distinct select on columns"""
+    distinct_on: [form_analytics_events_select_column!]
+    """limit the number of rows returned"""
+    limit: Int
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+    """sort the rows by one or more columns"""
+    order_by: [form_analytics_events_order_by!]
+    """filter the rows returned"""
+    where: form_analytics_events_bool_exp
+  ): form_analytics_events_aggregate!
+  """
+  fetch data from the table: "form_analytics_events" using primary key columns
+  """
+  form_analytics_events_by_pk(
+    """Opaque unique identifier (NanoID 12-char)."""
+    id: String!
+  ): form_analytics_events
+  """
+  fetch data from the table in a streaming manner: "form_analytics_events"
+  """
+  form_analytics_events_stream(
+    """maximum number of rows returned in a single batch"""
+    batch_size: Int!
+    """cursor to stream the results returned by the query"""
+    cursor: [form_analytics_events_stream_cursor_input]!
+    """filter the rows returned"""
+    where: form_analytics_events_bool_exp
+  ): [form_analytics_events!]!
   """
   fetch data from the table: "form_question_responses"
   """
