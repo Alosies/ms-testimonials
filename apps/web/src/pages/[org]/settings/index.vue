@@ -22,9 +22,8 @@ const { goToDashboard } = useRouting();
 
 // Handle successful save
 function handleSaved(updatedOrg: UserDefaultOrganization) {
-  // Update the store with the new organization data
-  organizationStore.setCurrentOrganization(updatedOrg);
-
+  // Refetch organization data to update the store
+  organizationStore.refetchOrganization();
   // If setup was just completed, navigate to dashboard
   if (updatedOrg.setup_status === 'completed') {
     goToDashboard();
