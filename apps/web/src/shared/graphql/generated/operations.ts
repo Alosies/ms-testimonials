@@ -1526,6 +1526,700 @@ export type Flows_Variance_Order_By = {
   display_order?: InputMaybe<Order_By>;
 };
 
+/**
+ * Lightweight analytics table for tracking form interactions.
+ *
+ *    Stores only event metadata - NO user-entered content or PII.
+ *    This allows analytics to work before form submission and enables
+ *    abandonment tracking without privacy concerns.
+ *
+ *    Events are immutable (no updates) for audit trail integrity.
+ *    Session ID correlates events within a single form-filling session.
+ */
+export type Form_Analytics_Events = {
+  __typename?: 'form_analytics_events';
+  /** Timestamp when the event occurred. Used for time-series analytics. */
+  created_at: Scalars['timestamptz']['output'];
+  /**
+   * JSONB for extensible event metadata.
+   *    Examples: timeOnStep, abandonedOnRequired, deviceType.
+   *    Avoid storing PII here.
+   */
+  event_data: Scalars['jsonb']['output'];
+  /**
+   * Type of analytics event:
+   *    - form_started: User landed on the form
+   *    - step_completed: User moved past a step
+   *    - step_skipped: User skipped optional step
+   *    - form_submitted: Form completed successfully
+   *    - form_abandoned: User left without submitting
+   *    - form_resumed: User returned to saved progress
+   */
+  event_type: Scalars['String']['output'];
+  /** An object relationship */
+  form: Forms;
+  /**
+   * The form this event relates to. CASCADE delete ensures cleanup
+   *    when forms are removed.
+   */
+  form_id: Scalars['String']['output'];
+  /** Opaque unique identifier (NanoID 12-char). */
+  id: Scalars['String']['output'];
+  /** An object relationship */
+  organization: Organizations;
+  /**
+   * Organization that owns the form. Used for multi-tenant isolation
+   *    in analytics queries and dashboards.
+   */
+  organization_id: Scalars['String']['output'];
+  /**
+   * Client-generated UUID (v4) stored in localStorage.
+   *    Correlates all events from a single form-filling session.
+   *    Regenerated when form is completed or explicitly cleared.
+   */
+  session_id: Scalars['String']['output'];
+  /**
+   * Database ID of the step (for joining with form_steps).
+   *    NULL for form-level events.
+   */
+  step_id?: Maybe<Scalars['String']['output']>;
+  /**
+   * Zero-based index of the step within visible steps.
+   *    NULL for form-level events (started, submitted, abandoned).
+   */
+  step_index?: Maybe<Scalars['Int']['output']>;
+  /**
+   * Type of step (welcome, question, rating, etc.).
+   *    Denormalized for efficient analytics queries.
+   */
+  step_type?: Maybe<Scalars['String']['output']>;
+  /**
+   * Browser user agent string for device/browser analytics.
+   *    Useful for identifying abandonment patterns by device.
+   */
+  user_agent?: Maybe<Scalars['String']['output']>;
+};
+
+
+/**
+ * Lightweight analytics table for tracking form interactions.
+ *
+ *    Stores only event metadata - NO user-entered content or PII.
+ *    This allows analytics to work before form submission and enables
+ *    abandonment tracking without privacy concerns.
+ *
+ *    Events are immutable (no updates) for audit trail integrity.
+ *    Session ID correlates events within a single form-filling session.
+ */
+export type Form_Analytics_EventsEvent_DataArgs = {
+  path?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** aggregated selection of "form_analytics_events" */
+export type Form_Analytics_Events_Aggregate = {
+  __typename?: 'form_analytics_events_aggregate';
+  aggregate?: Maybe<Form_Analytics_Events_Aggregate_Fields>;
+  nodes: Array<Form_Analytics_Events>;
+};
+
+/** aggregate fields of "form_analytics_events" */
+export type Form_Analytics_Events_Aggregate_Fields = {
+  __typename?: 'form_analytics_events_aggregate_fields';
+  avg?: Maybe<Form_Analytics_Events_Avg_Fields>;
+  count: Scalars['Int']['output'];
+  max?: Maybe<Form_Analytics_Events_Max_Fields>;
+  min?: Maybe<Form_Analytics_Events_Min_Fields>;
+  stddev?: Maybe<Form_Analytics_Events_Stddev_Fields>;
+  stddev_pop?: Maybe<Form_Analytics_Events_Stddev_Pop_Fields>;
+  stddev_samp?: Maybe<Form_Analytics_Events_Stddev_Samp_Fields>;
+  sum?: Maybe<Form_Analytics_Events_Sum_Fields>;
+  var_pop?: Maybe<Form_Analytics_Events_Var_Pop_Fields>;
+  var_samp?: Maybe<Form_Analytics_Events_Var_Samp_Fields>;
+  variance?: Maybe<Form_Analytics_Events_Variance_Fields>;
+};
+
+
+/** aggregate fields of "form_analytics_events" */
+export type Form_Analytics_Events_Aggregate_FieldsCountArgs = {
+  columns?: InputMaybe<Array<Form_Analytics_Events_Select_Column>>;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+/** append existing jsonb value of filtered columns with new jsonb value */
+export type Form_Analytics_Events_Append_Input = {
+  /**
+   * JSONB for extensible event metadata.
+   *    Examples: timeOnStep, abandonedOnRequired, deviceType.
+   *    Avoid storing PII here.
+   */
+  event_data?: InputMaybe<Scalars['jsonb']['input']>;
+};
+
+/** aggregate avg on columns */
+export type Form_Analytics_Events_Avg_Fields = {
+  __typename?: 'form_analytics_events_avg_fields';
+  /**
+   * Zero-based index of the step within visible steps.
+   *    NULL for form-level events (started, submitted, abandoned).
+   */
+  step_index?: Maybe<Scalars['Float']['output']>;
+};
+
+/** Boolean expression to filter rows from the table "form_analytics_events". All fields are combined with a logical 'AND'. */
+export type Form_Analytics_Events_Bool_Exp = {
+  _and?: InputMaybe<Array<Form_Analytics_Events_Bool_Exp>>;
+  _not?: InputMaybe<Form_Analytics_Events_Bool_Exp>;
+  _or?: InputMaybe<Array<Form_Analytics_Events_Bool_Exp>>;
+  created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  event_data?: InputMaybe<Jsonb_Comparison_Exp>;
+  event_type?: InputMaybe<String_Comparison_Exp>;
+  form?: InputMaybe<Forms_Bool_Exp>;
+  form_id?: InputMaybe<String_Comparison_Exp>;
+  id?: InputMaybe<String_Comparison_Exp>;
+  organization?: InputMaybe<Organizations_Bool_Exp>;
+  organization_id?: InputMaybe<String_Comparison_Exp>;
+  session_id?: InputMaybe<String_Comparison_Exp>;
+  step_id?: InputMaybe<String_Comparison_Exp>;
+  step_index?: InputMaybe<Int_Comparison_Exp>;
+  step_type?: InputMaybe<String_Comparison_Exp>;
+  user_agent?: InputMaybe<String_Comparison_Exp>;
+};
+
+/** unique or primary key constraints on table "form_analytics_events" */
+export enum Form_Analytics_Events_Constraint {
+  /** unique or primary key constraint on columns "id" */
+  FormAnalyticsEventsPkey = 'form_analytics_events_pkey'
+}
+
+/** delete the field or element with specified path (for JSON arrays, negative integers count from the end) */
+export type Form_Analytics_Events_Delete_At_Path_Input = {
+  /**
+   * JSONB for extensible event metadata.
+   *    Examples: timeOnStep, abandonedOnRequired, deviceType.
+   *    Avoid storing PII here.
+   */
+  event_data?: InputMaybe<Array<Scalars['String']['input']>>;
+};
+
+/** delete the array element with specified index (negative integers count from the end). throws an error if top level container is not an array */
+export type Form_Analytics_Events_Delete_Elem_Input = {
+  /**
+   * JSONB for extensible event metadata.
+   *    Examples: timeOnStep, abandonedOnRequired, deviceType.
+   *    Avoid storing PII here.
+   */
+  event_data?: InputMaybe<Scalars['Int']['input']>;
+};
+
+/** delete key/value pair or string element. key/value pairs are matched based on their key value */
+export type Form_Analytics_Events_Delete_Key_Input = {
+  /**
+   * JSONB for extensible event metadata.
+   *    Examples: timeOnStep, abandonedOnRequired, deviceType.
+   *    Avoid storing PII here.
+   */
+  event_data?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** input type for incrementing numeric columns in table "form_analytics_events" */
+export type Form_Analytics_Events_Inc_Input = {
+  /**
+   * Zero-based index of the step within visible steps.
+   *    NULL for form-level events (started, submitted, abandoned).
+   */
+  step_index?: InputMaybe<Scalars['Int']['input']>;
+};
+
+/** input type for inserting data into table "form_analytics_events" */
+export type Form_Analytics_Events_Insert_Input = {
+  /** Timestamp when the event occurred. Used for time-series analytics. */
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /**
+   * JSONB for extensible event metadata.
+   *    Examples: timeOnStep, abandonedOnRequired, deviceType.
+   *    Avoid storing PII here.
+   */
+  event_data?: InputMaybe<Scalars['jsonb']['input']>;
+  /**
+   * Type of analytics event:
+   *    - form_started: User landed on the form
+   *    - step_completed: User moved past a step
+   *    - step_skipped: User skipped optional step
+   *    - form_submitted: Form completed successfully
+   *    - form_abandoned: User left without submitting
+   *    - form_resumed: User returned to saved progress
+   */
+  event_type?: InputMaybe<Scalars['String']['input']>;
+  form?: InputMaybe<Forms_Obj_Rel_Insert_Input>;
+  /**
+   * The form this event relates to. CASCADE delete ensures cleanup
+   *    when forms are removed.
+   */
+  form_id?: InputMaybe<Scalars['String']['input']>;
+  /** Opaque unique identifier (NanoID 12-char). */
+  id?: InputMaybe<Scalars['String']['input']>;
+  organization?: InputMaybe<Organizations_Obj_Rel_Insert_Input>;
+  /**
+   * Organization that owns the form. Used for multi-tenant isolation
+   *    in analytics queries and dashboards.
+   */
+  organization_id?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Client-generated UUID (v4) stored in localStorage.
+   *    Correlates all events from a single form-filling session.
+   *    Regenerated when form is completed or explicitly cleared.
+   */
+  session_id?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Database ID of the step (for joining with form_steps).
+   *    NULL for form-level events.
+   */
+  step_id?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Zero-based index of the step within visible steps.
+   *    NULL for form-level events (started, submitted, abandoned).
+   */
+  step_index?: InputMaybe<Scalars['Int']['input']>;
+  /**
+   * Type of step (welcome, question, rating, etc.).
+   *    Denormalized for efficient analytics queries.
+   */
+  step_type?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Browser user agent string for device/browser analytics.
+   *    Useful for identifying abandonment patterns by device.
+   */
+  user_agent?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** aggregate max on columns */
+export type Form_Analytics_Events_Max_Fields = {
+  __typename?: 'form_analytics_events_max_fields';
+  /** Timestamp when the event occurred. Used for time-series analytics. */
+  created_at?: Maybe<Scalars['timestamptz']['output']>;
+  /**
+   * Type of analytics event:
+   *    - form_started: User landed on the form
+   *    - step_completed: User moved past a step
+   *    - step_skipped: User skipped optional step
+   *    - form_submitted: Form completed successfully
+   *    - form_abandoned: User left without submitting
+   *    - form_resumed: User returned to saved progress
+   */
+  event_type?: Maybe<Scalars['String']['output']>;
+  /**
+   * The form this event relates to. CASCADE delete ensures cleanup
+   *    when forms are removed.
+   */
+  form_id?: Maybe<Scalars['String']['output']>;
+  /** Opaque unique identifier (NanoID 12-char). */
+  id?: Maybe<Scalars['String']['output']>;
+  /**
+   * Organization that owns the form. Used for multi-tenant isolation
+   *    in analytics queries and dashboards.
+   */
+  organization_id?: Maybe<Scalars['String']['output']>;
+  /**
+   * Client-generated UUID (v4) stored in localStorage.
+   *    Correlates all events from a single form-filling session.
+   *    Regenerated when form is completed or explicitly cleared.
+   */
+  session_id?: Maybe<Scalars['String']['output']>;
+  /**
+   * Database ID of the step (for joining with form_steps).
+   *    NULL for form-level events.
+   */
+  step_id?: Maybe<Scalars['String']['output']>;
+  /**
+   * Zero-based index of the step within visible steps.
+   *    NULL for form-level events (started, submitted, abandoned).
+   */
+  step_index?: Maybe<Scalars['Int']['output']>;
+  /**
+   * Type of step (welcome, question, rating, etc.).
+   *    Denormalized for efficient analytics queries.
+   */
+  step_type?: Maybe<Scalars['String']['output']>;
+  /**
+   * Browser user agent string for device/browser analytics.
+   *    Useful for identifying abandonment patterns by device.
+   */
+  user_agent?: Maybe<Scalars['String']['output']>;
+};
+
+/** aggregate min on columns */
+export type Form_Analytics_Events_Min_Fields = {
+  __typename?: 'form_analytics_events_min_fields';
+  /** Timestamp when the event occurred. Used for time-series analytics. */
+  created_at?: Maybe<Scalars['timestamptz']['output']>;
+  /**
+   * Type of analytics event:
+   *    - form_started: User landed on the form
+   *    - step_completed: User moved past a step
+   *    - step_skipped: User skipped optional step
+   *    - form_submitted: Form completed successfully
+   *    - form_abandoned: User left without submitting
+   *    - form_resumed: User returned to saved progress
+   */
+  event_type?: Maybe<Scalars['String']['output']>;
+  /**
+   * The form this event relates to. CASCADE delete ensures cleanup
+   *    when forms are removed.
+   */
+  form_id?: Maybe<Scalars['String']['output']>;
+  /** Opaque unique identifier (NanoID 12-char). */
+  id?: Maybe<Scalars['String']['output']>;
+  /**
+   * Organization that owns the form. Used for multi-tenant isolation
+   *    in analytics queries and dashboards.
+   */
+  organization_id?: Maybe<Scalars['String']['output']>;
+  /**
+   * Client-generated UUID (v4) stored in localStorage.
+   *    Correlates all events from a single form-filling session.
+   *    Regenerated when form is completed or explicitly cleared.
+   */
+  session_id?: Maybe<Scalars['String']['output']>;
+  /**
+   * Database ID of the step (for joining with form_steps).
+   *    NULL for form-level events.
+   */
+  step_id?: Maybe<Scalars['String']['output']>;
+  /**
+   * Zero-based index of the step within visible steps.
+   *    NULL for form-level events (started, submitted, abandoned).
+   */
+  step_index?: Maybe<Scalars['Int']['output']>;
+  /**
+   * Type of step (welcome, question, rating, etc.).
+   *    Denormalized for efficient analytics queries.
+   */
+  step_type?: Maybe<Scalars['String']['output']>;
+  /**
+   * Browser user agent string for device/browser analytics.
+   *    Useful for identifying abandonment patterns by device.
+   */
+  user_agent?: Maybe<Scalars['String']['output']>;
+};
+
+/** response of any mutation on the table "form_analytics_events" */
+export type Form_Analytics_Events_Mutation_Response = {
+  __typename?: 'form_analytics_events_mutation_response';
+  /** number of rows affected by the mutation */
+  affected_rows: Scalars['Int']['output'];
+  /** data from the rows affected by the mutation */
+  returning: Array<Form_Analytics_Events>;
+};
+
+/** on_conflict condition type for table "form_analytics_events" */
+export type Form_Analytics_Events_On_Conflict = {
+  constraint: Form_Analytics_Events_Constraint;
+  update_columns?: Array<Form_Analytics_Events_Update_Column>;
+  where?: InputMaybe<Form_Analytics_Events_Bool_Exp>;
+};
+
+/** Ordering options when selecting data from "form_analytics_events". */
+export type Form_Analytics_Events_Order_By = {
+  created_at?: InputMaybe<Order_By>;
+  event_data?: InputMaybe<Order_By>;
+  event_type?: InputMaybe<Order_By>;
+  form?: InputMaybe<Forms_Order_By>;
+  form_id?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
+  organization?: InputMaybe<Organizations_Order_By>;
+  organization_id?: InputMaybe<Order_By>;
+  session_id?: InputMaybe<Order_By>;
+  step_id?: InputMaybe<Order_By>;
+  step_index?: InputMaybe<Order_By>;
+  step_type?: InputMaybe<Order_By>;
+  user_agent?: InputMaybe<Order_By>;
+};
+
+/** primary key columns input for table: form_analytics_events */
+export type Form_Analytics_Events_Pk_Columns_Input = {
+  /** Opaque unique identifier (NanoID 12-char). */
+  id: Scalars['String']['input'];
+};
+
+/** prepend existing jsonb value of filtered columns with new jsonb value */
+export type Form_Analytics_Events_Prepend_Input = {
+  /**
+   * JSONB for extensible event metadata.
+   *    Examples: timeOnStep, abandonedOnRequired, deviceType.
+   *    Avoid storing PII here.
+   */
+  event_data?: InputMaybe<Scalars['jsonb']['input']>;
+};
+
+/** select columns of table "form_analytics_events" */
+export enum Form_Analytics_Events_Select_Column {
+  /** column name */
+  CreatedAt = 'created_at',
+  /** column name */
+  EventData = 'event_data',
+  /** column name */
+  EventType = 'event_type',
+  /** column name */
+  FormId = 'form_id',
+  /** column name */
+  Id = 'id',
+  /** column name */
+  OrganizationId = 'organization_id',
+  /** column name */
+  SessionId = 'session_id',
+  /** column name */
+  StepId = 'step_id',
+  /** column name */
+  StepIndex = 'step_index',
+  /** column name */
+  StepType = 'step_type',
+  /** column name */
+  UserAgent = 'user_agent'
+}
+
+/** input type for updating data in table "form_analytics_events" */
+export type Form_Analytics_Events_Set_Input = {
+  /** Timestamp when the event occurred. Used for time-series analytics. */
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /**
+   * JSONB for extensible event metadata.
+   *    Examples: timeOnStep, abandonedOnRequired, deviceType.
+   *    Avoid storing PII here.
+   */
+  event_data?: InputMaybe<Scalars['jsonb']['input']>;
+  /**
+   * Type of analytics event:
+   *    - form_started: User landed on the form
+   *    - step_completed: User moved past a step
+   *    - step_skipped: User skipped optional step
+   *    - form_submitted: Form completed successfully
+   *    - form_abandoned: User left without submitting
+   *    - form_resumed: User returned to saved progress
+   */
+  event_type?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * The form this event relates to. CASCADE delete ensures cleanup
+   *    when forms are removed.
+   */
+  form_id?: InputMaybe<Scalars['String']['input']>;
+  /** Opaque unique identifier (NanoID 12-char). */
+  id?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Organization that owns the form. Used for multi-tenant isolation
+   *    in analytics queries and dashboards.
+   */
+  organization_id?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Client-generated UUID (v4) stored in localStorage.
+   *    Correlates all events from a single form-filling session.
+   *    Regenerated when form is completed or explicitly cleared.
+   */
+  session_id?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Database ID of the step (for joining with form_steps).
+   *    NULL for form-level events.
+   */
+  step_id?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Zero-based index of the step within visible steps.
+   *    NULL for form-level events (started, submitted, abandoned).
+   */
+  step_index?: InputMaybe<Scalars['Int']['input']>;
+  /**
+   * Type of step (welcome, question, rating, etc.).
+   *    Denormalized for efficient analytics queries.
+   */
+  step_type?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Browser user agent string for device/browser analytics.
+   *    Useful for identifying abandonment patterns by device.
+   */
+  user_agent?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** aggregate stddev on columns */
+export type Form_Analytics_Events_Stddev_Fields = {
+  __typename?: 'form_analytics_events_stddev_fields';
+  /**
+   * Zero-based index of the step within visible steps.
+   *    NULL for form-level events (started, submitted, abandoned).
+   */
+  step_index?: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate stddev_pop on columns */
+export type Form_Analytics_Events_Stddev_Pop_Fields = {
+  __typename?: 'form_analytics_events_stddev_pop_fields';
+  /**
+   * Zero-based index of the step within visible steps.
+   *    NULL for form-level events (started, submitted, abandoned).
+   */
+  step_index?: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate stddev_samp on columns */
+export type Form_Analytics_Events_Stddev_Samp_Fields = {
+  __typename?: 'form_analytics_events_stddev_samp_fields';
+  /**
+   * Zero-based index of the step within visible steps.
+   *    NULL for form-level events (started, submitted, abandoned).
+   */
+  step_index?: Maybe<Scalars['Float']['output']>;
+};
+
+/** Streaming cursor of the table "form_analytics_events" */
+export type Form_Analytics_Events_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Form_Analytics_Events_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type Form_Analytics_Events_Stream_Cursor_Value_Input = {
+  /** Timestamp when the event occurred. Used for time-series analytics. */
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /**
+   * JSONB for extensible event metadata.
+   *    Examples: timeOnStep, abandonedOnRequired, deviceType.
+   *    Avoid storing PII here.
+   */
+  event_data?: InputMaybe<Scalars['jsonb']['input']>;
+  /**
+   * Type of analytics event:
+   *    - form_started: User landed on the form
+   *    - step_completed: User moved past a step
+   *    - step_skipped: User skipped optional step
+   *    - form_submitted: Form completed successfully
+   *    - form_abandoned: User left without submitting
+   *    - form_resumed: User returned to saved progress
+   */
+  event_type?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * The form this event relates to. CASCADE delete ensures cleanup
+   *    when forms are removed.
+   */
+  form_id?: InputMaybe<Scalars['String']['input']>;
+  /** Opaque unique identifier (NanoID 12-char). */
+  id?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Organization that owns the form. Used for multi-tenant isolation
+   *    in analytics queries and dashboards.
+   */
+  organization_id?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Client-generated UUID (v4) stored in localStorage.
+   *    Correlates all events from a single form-filling session.
+   *    Regenerated when form is completed or explicitly cleared.
+   */
+  session_id?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Database ID of the step (for joining with form_steps).
+   *    NULL for form-level events.
+   */
+  step_id?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Zero-based index of the step within visible steps.
+   *    NULL for form-level events (started, submitted, abandoned).
+   */
+  step_index?: InputMaybe<Scalars['Int']['input']>;
+  /**
+   * Type of step (welcome, question, rating, etc.).
+   *    Denormalized for efficient analytics queries.
+   */
+  step_type?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Browser user agent string for device/browser analytics.
+   *    Useful for identifying abandonment patterns by device.
+   */
+  user_agent?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** aggregate sum on columns */
+export type Form_Analytics_Events_Sum_Fields = {
+  __typename?: 'form_analytics_events_sum_fields';
+  /**
+   * Zero-based index of the step within visible steps.
+   *    NULL for form-level events (started, submitted, abandoned).
+   */
+  step_index?: Maybe<Scalars['Int']['output']>;
+};
+
+/** update columns of table "form_analytics_events" */
+export enum Form_Analytics_Events_Update_Column {
+  /** column name */
+  CreatedAt = 'created_at',
+  /** column name */
+  EventData = 'event_data',
+  /** column name */
+  EventType = 'event_type',
+  /** column name */
+  FormId = 'form_id',
+  /** column name */
+  Id = 'id',
+  /** column name */
+  OrganizationId = 'organization_id',
+  /** column name */
+  SessionId = 'session_id',
+  /** column name */
+  StepId = 'step_id',
+  /** column name */
+  StepIndex = 'step_index',
+  /** column name */
+  StepType = 'step_type',
+  /** column name */
+  UserAgent = 'user_agent'
+}
+
+export type Form_Analytics_Events_Updates = {
+  /** append existing jsonb value of filtered columns with new jsonb value */
+  _append?: InputMaybe<Form_Analytics_Events_Append_Input>;
+  /** delete the field or element with specified path (for JSON arrays, negative integers count from the end) */
+  _delete_at_path?: InputMaybe<Form_Analytics_Events_Delete_At_Path_Input>;
+  /** delete the array element with specified index (negative integers count from the end). throws an error if top level container is not an array */
+  _delete_elem?: InputMaybe<Form_Analytics_Events_Delete_Elem_Input>;
+  /** delete key/value pair or string element. key/value pairs are matched based on their key value */
+  _delete_key?: InputMaybe<Form_Analytics_Events_Delete_Key_Input>;
+  /** increments the numeric columns with given value of the filtered values */
+  _inc?: InputMaybe<Form_Analytics_Events_Inc_Input>;
+  /** prepend existing jsonb value of filtered columns with new jsonb value */
+  _prepend?: InputMaybe<Form_Analytics_Events_Prepend_Input>;
+  /** sets the columns of the filtered rows to the given values */
+  _set?: InputMaybe<Form_Analytics_Events_Set_Input>;
+  /** filter the rows which have to be updated */
+  where: Form_Analytics_Events_Bool_Exp;
+};
+
+/** aggregate var_pop on columns */
+export type Form_Analytics_Events_Var_Pop_Fields = {
+  __typename?: 'form_analytics_events_var_pop_fields';
+  /**
+   * Zero-based index of the step within visible steps.
+   *    NULL for form-level events (started, submitted, abandoned).
+   */
+  step_index?: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate var_samp on columns */
+export type Form_Analytics_Events_Var_Samp_Fields = {
+  __typename?: 'form_analytics_events_var_samp_fields';
+  /**
+   * Zero-based index of the step within visible steps.
+   *    NULL for form-level events (started, submitted, abandoned).
+   */
+  step_index?: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate variance on columns */
+export type Form_Analytics_Events_Variance_Fields = {
+  __typename?: 'form_analytics_events_variance_fields';
+  /**
+   * Zero-based index of the step within visible steps.
+   *    NULL for form-level events (started, submitted, abandoned).
+   */
+  step_index?: Maybe<Scalars['Float']['output']>;
+};
+
 /** Raw form submission responses - internal data for AI assembly, not displayed on widgets */
 export type Form_Question_Responses = {
   __typename?: 'form_question_responses';
@@ -7396,6 +8090,10 @@ export type Mutation_Root = {
   delete_flows?: Maybe<Flows_Mutation_Response>;
   /** delete single row from the table: "flows" */
   delete_flows_by_pk?: Maybe<Flows>;
+  /** delete data from the table: "form_analytics_events" */
+  delete_form_analytics_events?: Maybe<Form_Analytics_Events_Mutation_Response>;
+  /** delete single row from the table: "form_analytics_events" */
+  delete_form_analytics_events_by_pk?: Maybe<Form_Analytics_Events>;
   /** delete data from the table: "form_question_responses" */
   delete_form_question_responses?: Maybe<Form_Question_Responses_Mutation_Response>;
   /** delete single row from the table: "form_question_responses" */
@@ -7488,6 +8186,10 @@ export type Mutation_Root = {
   insert_flows?: Maybe<Flows_Mutation_Response>;
   /** insert a single row into the table: "flows" */
   insert_flows_one?: Maybe<Flows>;
+  /** insert data into the table: "form_analytics_events" */
+  insert_form_analytics_events?: Maybe<Form_Analytics_Events_Mutation_Response>;
+  /** insert a single row into the table: "form_analytics_events" */
+  insert_form_analytics_events_one?: Maybe<Form_Analytics_Events>;
   /** insert data into the table: "form_question_responses" */
   insert_form_question_responses?: Maybe<Form_Question_Responses_Mutation_Response>;
   /** insert a single row into the table: "form_question_responses" */
@@ -7584,6 +8286,12 @@ export type Mutation_Root = {
   update_flows_by_pk?: Maybe<Flows>;
   /** update multiples rows of table: "flows" */
   update_flows_many?: Maybe<Array<Maybe<Flows_Mutation_Response>>>;
+  /** update data of the table: "form_analytics_events" */
+  update_form_analytics_events?: Maybe<Form_Analytics_Events_Mutation_Response>;
+  /** update single row of the table: "form_analytics_events" */
+  update_form_analytics_events_by_pk?: Maybe<Form_Analytics_Events>;
+  /** update multiples rows of table: "form_analytics_events" */
+  update_form_analytics_events_many?: Maybe<Array<Maybe<Form_Analytics_Events_Mutation_Response>>>;
   /** update data of the table: "form_question_responses" */
   update_form_question_responses?: Maybe<Form_Question_Responses_Mutation_Response>;
   /** update single row of the table: "form_question_responses" */
@@ -7733,6 +8441,18 @@ export type Mutation_RootDelete_FlowsArgs = {
 
 /** mutation root */
 export type Mutation_RootDelete_Flows_By_PkArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+/** mutation root */
+export type Mutation_RootDelete_Form_Analytics_EventsArgs = {
+  where: Form_Analytics_Events_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootDelete_Form_Analytics_Events_By_PkArgs = {
   id: Scalars['String']['input'];
 };
 
@@ -8014,6 +8734,20 @@ export type Mutation_RootInsert_FlowsArgs = {
 export type Mutation_RootInsert_Flows_OneArgs = {
   object: Flows_Insert_Input;
   on_conflict?: InputMaybe<Flows_On_Conflict>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_Form_Analytics_EventsArgs = {
+  objects: Array<Form_Analytics_Events_Insert_Input>;
+  on_conflict?: InputMaybe<Form_Analytics_Events_On_Conflict>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_Form_Analytics_Events_OneArgs = {
+  object: Form_Analytics_Events_Insert_Input;
+  on_conflict?: InputMaybe<Form_Analytics_Events_On_Conflict>;
 };
 
 
@@ -8362,6 +9096,38 @@ export type Mutation_RootUpdate_Flows_By_PkArgs = {
 /** mutation root */
 export type Mutation_RootUpdate_Flows_ManyArgs = {
   updates: Array<Flows_Updates>;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Form_Analytics_EventsArgs = {
+  _append?: InputMaybe<Form_Analytics_Events_Append_Input>;
+  _delete_at_path?: InputMaybe<Form_Analytics_Events_Delete_At_Path_Input>;
+  _delete_elem?: InputMaybe<Form_Analytics_Events_Delete_Elem_Input>;
+  _delete_key?: InputMaybe<Form_Analytics_Events_Delete_Key_Input>;
+  _inc?: InputMaybe<Form_Analytics_Events_Inc_Input>;
+  _prepend?: InputMaybe<Form_Analytics_Events_Prepend_Input>;
+  _set?: InputMaybe<Form_Analytics_Events_Set_Input>;
+  where: Form_Analytics_Events_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Form_Analytics_Events_By_PkArgs = {
+  _append?: InputMaybe<Form_Analytics_Events_Append_Input>;
+  _delete_at_path?: InputMaybe<Form_Analytics_Events_Delete_At_Path_Input>;
+  _delete_elem?: InputMaybe<Form_Analytics_Events_Delete_Elem_Input>;
+  _delete_key?: InputMaybe<Form_Analytics_Events_Delete_Key_Input>;
+  _inc?: InputMaybe<Form_Analytics_Events_Inc_Input>;
+  _prepend?: InputMaybe<Form_Analytics_Events_Prepend_Input>;
+  _set?: InputMaybe<Form_Analytics_Events_Set_Input>;
+  pk_columns: Form_Analytics_Events_Pk_Columns_Input;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Form_Analytics_Events_ManyArgs = {
+  updates: Array<Form_Analytics_Events_Updates>;
 };
 
 
@@ -12351,6 +13117,12 @@ export type Query_Root = {
   flows_aggregate: Flows_Aggregate;
   /** fetch data from the table: "flows" using primary key columns */
   flows_by_pk?: Maybe<Flows>;
+  /** fetch data from the table: "form_analytics_events" */
+  form_analytics_events: Array<Form_Analytics_Events>;
+  /** fetch aggregated fields from the table: "form_analytics_events" */
+  form_analytics_events_aggregate: Form_Analytics_Events_Aggregate;
+  /** fetch data from the table: "form_analytics_events" using primary key columns */
+  form_analytics_events_by_pk?: Maybe<Form_Analytics_Events>;
   /** fetch data from the table: "form_question_responses" */
   form_question_responses: Array<Form_Question_Responses>;
   /** fetch aggregated fields from the table: "form_question_responses" */
@@ -12522,6 +13294,29 @@ export type Query_RootFlows_AggregateArgs = {
 
 
 export type Query_RootFlows_By_PkArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+export type Query_RootForm_Analytics_EventsArgs = {
+  distinct_on?: InputMaybe<Array<Form_Analytics_Events_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Form_Analytics_Events_Order_By>>;
+  where?: InputMaybe<Form_Analytics_Events_Bool_Exp>;
+};
+
+
+export type Query_RootForm_Analytics_Events_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Form_Analytics_Events_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Form_Analytics_Events_Order_By>>;
+  where?: InputMaybe<Form_Analytics_Events_Bool_Exp>;
+};
+
+
+export type Query_RootForm_Analytics_Events_By_PkArgs = {
   id: Scalars['String']['input'];
 };
 
@@ -14560,6 +15355,14 @@ export type Subscription_Root = {
   flows_by_pk?: Maybe<Flows>;
   /** fetch data from the table in a streaming manner: "flows" */
   flows_stream: Array<Flows>;
+  /** fetch data from the table: "form_analytics_events" */
+  form_analytics_events: Array<Form_Analytics_Events>;
+  /** fetch aggregated fields from the table: "form_analytics_events" */
+  form_analytics_events_aggregate: Form_Analytics_Events_Aggregate;
+  /** fetch data from the table: "form_analytics_events" using primary key columns */
+  form_analytics_events_by_pk?: Maybe<Form_Analytics_Events>;
+  /** fetch data from the table in a streaming manner: "form_analytics_events" */
+  form_analytics_events_stream: Array<Form_Analytics_Events>;
   /** fetch data from the table: "form_question_responses" */
   form_question_responses: Array<Form_Question_Responses>;
   /** fetch aggregated fields from the table: "form_question_responses" */
@@ -14788,6 +15591,36 @@ export type Subscription_RootFlows_StreamArgs = {
   batch_size: Scalars['Int']['input'];
   cursor: Array<InputMaybe<Flows_Stream_Cursor_Input>>;
   where?: InputMaybe<Flows_Bool_Exp>;
+};
+
+
+export type Subscription_RootForm_Analytics_EventsArgs = {
+  distinct_on?: InputMaybe<Array<Form_Analytics_Events_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Form_Analytics_Events_Order_By>>;
+  where?: InputMaybe<Form_Analytics_Events_Bool_Exp>;
+};
+
+
+export type Subscription_RootForm_Analytics_Events_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Form_Analytics_Events_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Form_Analytics_Events_Order_By>>;
+  where?: InputMaybe<Form_Analytics_Events_Bool_Exp>;
+};
+
+
+export type Subscription_RootForm_Analytics_Events_By_PkArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+export type Subscription_RootForm_Analytics_Events_StreamArgs = {
+  batch_size: Scalars['Int']['input'];
+  cursor: Array<InputMaybe<Form_Analytics_Events_Stream_Cursor_Input>>;
+  where?: InputMaybe<Form_Analytics_Events_Bool_Exp>;
 };
 
 
