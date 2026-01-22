@@ -7,12 +7,12 @@ import { ConfirmationModal } from '@/shared/widgets';
 
 const { initialize, isInitialized, isAuthenticated, isAuthLoading } = useAuth();
 
+// Initialize current context (will sync with auth state)
+const { isReady: isContextReady } = useCurrentContext();
+
 // Initialize auth IMMEDIATELY in setup (not onMounted)
 // This must happen before router guards run to avoid timeout
 initialize();
-
-// Initialize current context (will sync with auth state)
-const { isReady: isContextReady } = useCurrentContext();
 
 // Two-stage loader pattern (following CoursePads):
 // Stage 1: Show AuthLoader while auth is initializing
@@ -46,14 +46,38 @@ const showApp = computed(() => {
 </script>
 
 <template>
-  <!-- Stage 1: Auth loading -->
-  <AuthLoader v-if="showAuthLoader" />
-  <!-- Stage 2: Context loading (after auth, for authenticated users) -->
-  <ContextLoader v-else-if="showContextLoader" />
-  <!-- Stage 3: App ready -->
-  <template v-else-if="showApp">
-    <RouterView />
-    <!-- Global confirmation modal -->
-    <ConfirmationModal />
-  </template>
+  <!-- Smooth fade transition between loader stages and app -->
+  <Transition name="app-fade" mode="out-in" appear>
+    <!-- Stage 1: Auth loading -->
+    <AuthLoader v-if="showAuthLoader" key="auth-loader" />
+    <!-- Stage 2: Context loading (after auth, for authenticated users) -->
+    <ContextLoader v-else-if="showContextLoader" key="context-loader" />
+    <!-- Stage 3: App ready -->
+    <div v-else-if="showApp" key="app" class="min-h-screen">
+      <RouterView />
+      <!-- Global confirmation modal -->
+      <ConfirmationModal />
+    </div>
+  </Transition>
 </template>
+
+<style>
+/* App fade transition - 250ms for optimal balance between smooth and responsive */
+.app-fade-enter-active,
+.app-fade-leave-active {
+  transition: opacity 0.25s ease-out;
+}
+
+.app-fade-enter-from,
+.app-fade-leave-to {
+  opacity: 0;
+}
+
+/* Respect user preference for reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .app-fade-enter-active,
+  .app-fade-leave-active {
+    transition: none;
+  }
+}
+</style>
