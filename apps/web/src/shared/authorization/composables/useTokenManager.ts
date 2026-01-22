@@ -179,7 +179,6 @@ function _useTokenManager() {
     // Directly enhance the provided token (don't call getSession again)
     enhancedTokenState.value.refreshPromise = (async () => {
       try {
-        console.log('[TokenManager] Enhancing token...');
         const enhancedToken = await _enhanceToken(access_token);
         enhancedTokenState.value.refreshPromise = null;
         return enhancedToken;

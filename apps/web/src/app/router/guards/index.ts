@@ -136,7 +136,6 @@ export function setupAuthGuards(router: Router) {
     // Protect routes that require authentication
     // Redirect to login page if not authenticated, saving the intended destination
     if (to.meta.requiresAuth && !hasUser) {
-      // Save the intended destination for post-login redirect
       saveRedirectUrl(to.fullPath)
       return next('/auth/login')
     }
