@@ -46,3 +46,5 @@ Each ADR follows this structure:
 | [ADR-015](./015-e2e-testing-architecture/adr.md) | Modular E2E Testing Architecture | Accepted | 2026-01-13 |
 | [ADR-016](./016-test-data-api/adr.md) | Test Data API for E2E Testing | Proposed | 2026-01-14 |
 | [ADR-017](./017-question-type-change-workflow/adr.md) | Question Type Change Workflow | Proposed | 2026-01-18 |
+| [ADR-018](./018-form-persistence-analytics/adr.md) | Form Persistence & Analytics | Accepted | 2026-01-20 |
+| [ADR-019](./019-public-form-api-security/adr.md) | Public Form API Security Architecture | Proposed | 2026-01-20 |
