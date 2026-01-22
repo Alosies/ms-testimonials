@@ -1,27 +1,45 @@
 import { defineStore } from 'pinia';
-import { ref, computed, readonly } from 'vue';
+import { computed } from 'vue';
 import type {
-  OrganizationRole,
-  UserDefaultOrganization,
-  OrganizationPlan,
   AllowedQuestionType,
 } from '../models';
 import { isAdminRole, isOwnerRole } from '../models';
+import { useAuth } from '@/features/auth';
+import { useGetUserDefaultOrganization } from '../composables/queries/useGetUserDefaultOrganization';
 
 /**
  * Organization Store
  *
  * Manages the current organization context and user's role within it.
- * Synced with CurrentContextStore for global access.
+ * Consumes useGetUserDefaultOrganization directly and sets its own state.
  */
 export const useOrganizationStore = defineStore('organization', () => {
   // ========================================
+  // Data Fetching
+  // ========================================
+  const { currentUser } = useAuth();
+
+  const orgQueryVariables = computed(() => ({
+    userId: currentUser.value?.id ?? '',
+  }));
+
+  const {
+    isLoading: queryLoading,
+    organization: currentOrganization,
+    role: currentRole,
+    refetch: refetchOrganization,
+  } = useGetUserDefaultOrganization(orgQueryVariables);
+
+  // ========================================
   // State
   // ========================================
-  const currentOrganization = ref<UserDefaultOrganization | null>(null);
-  const currentRole = ref<OrganizationRole | null>(null);
-  const currentPlan = ref<OrganizationPlan | null>(null);
-  const isLoading = ref(false);
+  
+  const isLoading = computed(() => queryLoading.value);
+  const currentPlan = computed(() => currentOrganization.value?.plans?.[0] ?? null);
+  // ========================================
+  // Sync query result to state
+  // ========================================
+
 
   // ========================================
   // Computed - Organization Properties
@@ -95,37 +113,14 @@ export const useOrganizationStore = defineStore('organization', () => {
    */
   const showSetupIndicator = computed(() => needsSetup.value && isAdmin.value);
 
-  // ========================================
-  // Actions
-  // ========================================
-  function setCurrentOrganization(organization: UserDefaultOrganization | null) {
-    currentOrganization.value = organization;
-    // Extract active plan from organization (first active plan from the array)
-    currentPlan.value = organization?.plans?.[0] ?? null;
-  }
-
-  function setCurrentRole(role: OrganizationRole | null) {
-    currentRole.value = role;
-  }
-
-  function setLoading(loading: boolean) {
-    isLoading.value = loading;
-  }
-
-  function reset() {
-    currentOrganization.value = null;
-    currentRole.value = null;
-    currentPlan.value = null;
-    isLoading.value = false;
-  }
-
   return {
     // State
     // Note: Not using readonly() to maintain type compatibility with component props
     currentOrganization,
     currentRole,
     currentPlan,
-    isLoading: readonly(isLoading),
+    isLoading,
+    refetchOrganization,
 
     // Organization computed
     organizationId,
@@ -158,12 +153,6 @@ export const useOrganizationStore = defineStore('organization', () => {
     canDeleteOrg,
 
     // Combined checks
-    showSetupIndicator,
-
-    // Actions
-    setCurrentOrganization,
-    setCurrentRole,
-    setLoading,
-    reset,
+    showSetupIndicator
   };
 });

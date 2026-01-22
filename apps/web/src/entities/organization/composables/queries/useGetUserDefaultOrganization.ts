@@ -7,8 +7,10 @@ import {
 export function useGetUserDefaultOrganization(
   variables: Ref<GetUserDefaultOrganizationQueryVariables>,
 ) {
+
+  const isEnabled = computed(() => !!variables.value.userId);
   const { result, loading, error, refetch } = useGetUserDefaultOrganizationQuery(variables, {
-    enabled: computed(() => !!variables.value.userId),
+    enabled: isEnabled,
   });
 
   // Extract the organization role assignment (includes organization + role)
@@ -18,11 +20,21 @@ export function useGetUserDefaultOrganization(
 
   // Extract just the organization
   const organization = computed(
-    () => organizationRole.value?.organization ?? null,
+    () => {
+      if (isEnabled.value) {
+        return organizationRole.value?.organization ?? null;
+      }
+      return null;
+    },
   );
 
   // Extract the user's role in this organization
-  const role = computed(() => organizationRole.value?.role ?? null);
+  const role = computed(() => {
+    if (isEnabled.value) {
+      return organizationRole.value?.role ?? null;
+    }
+    return null;
+  });
 
   const isLoading = computed(() => loading.value && !result.value);
 
