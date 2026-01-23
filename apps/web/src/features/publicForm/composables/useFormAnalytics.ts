@@ -6,6 +6,7 @@ import type {
   UseFormAnalyticsOptions,
   TrackEventRequest,
 } from '../models';
+import { collectDeviceInfo } from '../functions/collectDeviceInfo';
 
 /**
  * Composable for tracking form analytics events
@@ -104,9 +105,11 @@ export function useFormAnalytics(options: UseFormAnalyticsOptions) {
 
   /**
    * Track form started event
+   * Includes device/browser info for analytics insights
    */
   async function trackFormStarted(): Promise<boolean> {
-    return sendEvent('form_started');
+    const deviceInfo = collectDeviceInfo();
+    return sendEvent('form_started', { device: deviceInfo });
   }
 
   /**
@@ -139,9 +142,11 @@ export function useFormAnalytics(options: UseFormAnalyticsOptions) {
 
   /**
    * Track form resumed event
+   * Includes device info as user may return on a different device
    */
   async function trackFormResumed(stepIndex: number): Promise<boolean> {
-    return sendEvent('form_resumed', { resumedAtStep: stepIndex });
+    const deviceInfo = collectDeviceInfo();
+    return sendEvent('form_resumed', { resumedAtStep: stepIndex, device: deviceInfo });
   }
 
   /**

@@ -7,4 +7,5 @@ export type {
   CurrentStepContext,
   UseFormAnalyticsOptions,
   TrackEventRequest,
+  DeviceInfo,
 } from './analytics';

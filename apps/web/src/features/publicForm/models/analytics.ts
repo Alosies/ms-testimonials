@@ -1,5 +1,8 @@
 import type { Ref } from 'vue';
 
+// Import types from shared core package (single source of truth)
+export type { DeviceInfo } from '@testimonials/core';
+
 /**
  * Analytics event types
  */
