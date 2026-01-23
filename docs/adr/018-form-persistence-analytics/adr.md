@@ -146,12 +146,17 @@ For testimonial forms (typically single-session), localStorage is the right trad
 
 | Event | When Triggered | Data Captured |
 |-------|----------------|---------------|
-| `form_started` | User lands on form | formId, sessionId |
+| `form_started` | User lands on form | formId, sessionId, **device info**, **geo location** |
 | `step_completed` | User advances past step | stepIndex, stepId, stepType |
 | `step_skipped` | User skips optional step | stepIndex, stepId, stepType |
 | `form_submitted` | Form successfully submitted | formId, sessionId |
 | `form_abandoned` | Page unload without submit | stepIndex, stepId, stepType |
-| `form_resumed` | User returns to saved form | stepIndex where resumed |
+| `form_resumed` | User returns to saved form | stepIndex, **device info**, **geo location** |
+
+**Note:** Device info and geo location are captured on `form_started` and `form_resumed` because:
+- These mark the beginning of a session or return visit
+- User may resume on a different device/location
+- Avoids redundant data on every step event
 
 **Database Schema:**
 
@@ -250,6 +255,112 @@ function setupUnloadHandler() {
 
 ---
 
+### 6. Visitor Data Enrichment
+
+To provide form creators with valuable insights about their visitors, we collect additional metadata **without requiring user permission prompts** (which could cause drop-off).
+
+#### Client-Side Collection
+
+The `collectDeviceInfo()` function gathers browser-available data on `form_started` and `form_resumed` events:
+
+| Category | Data | API |
+|----------|------|-----|
+| **Screen** | width, height, viewport, pixel ratio | `window.screen`, `window.innerWidth/Height` |
+| **Device** | touch support, mobile detection | `navigator.maxTouchPoints`, user agent |
+| **Locale** | language, timezone, timezone offset | `navigator.language`, `Intl.DateTimeFormat()` |
+| **Browser** | cookies enabled, do-not-track | `navigator.cookieEnabled`, `navigator.doNotTrack` |
+| **Traffic** | referrer URL | `document.referrer` |
+| **Connection** | type, effective type, downlink | `navigator.connection` (if available) |
+
+```typescript
+// Sent in event_data.device
+const deviceInfo = {
+  screenWidth: 1920,
+  screenHeight: 1080,
+  viewportWidth: 1440,
+  viewportHeight: 900,
+  devicePixelRatio: 2,
+  isMobile: false,
+  isTouchDevice: false,
+  language: 'en-US',
+  timezone: 'America/New_York',
+  referrer: 'https://google.com/search?q=...',
+  cookiesEnabled: true,
+  doNotTrack: false,
+};
+```
+
+#### Server-Side Geolocation Enrichment
+
+The API endpoint enriches events with IP-based geolocation:
+
+```typescript
+// Added to event_data.geo by server
+const geoInfo = {
+  ip: '203.0.113.42',
+  country: 'United States',
+  countryCode: 'US',
+  region: 'California',
+  city: 'San Francisco',
+  timezone: 'America/Los_Angeles',
+  isp: 'Comcast',
+  org: 'Acme Corp',
+};
+```
+
+**Geolocation Service:** Uses ip-api.com (free tier, no API key required). For high-volume production, consider MaxMind GeoIP.
+
+#### Why Enrich at Save-Time (Not Render-Time)
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    Save-Time Enrichment (Chosen)                     │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  Client                    API                      Database        │
+│    │                        │                          │            │
+│    │── POST event ─────────►│                          │            │
+│    │   + device info        │                          │            │
+│    │                        │── lookup IP ──►          │            │
+│    │                        │◄── geo data ───          │            │
+│    │                        │                          │            │
+│    │                        │── INSERT ───────────────►│            │
+│    │                        │   (device + geo)         │            │
+│    │◄── success ────────────│                          │            │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+| Factor | Save-Time | Render-Time |
+|--------|-----------|-------------|
+| **IP availability** | ✅ Available from request headers | ❌ Lost after request |
+| **Lookup frequency** | ✅ Once per session start | ❌ Every view |
+| **Historical accuracy** | ✅ Shows where user *was* | ❌ N/A |
+| **View latency** | ✅ Instant (data pre-enriched) | ❌ Adds API call delay |
+| **Cost** | ✅ Minimal API calls | ❌ Multiplied by views |
+
+**Decision:** Enrich at save-time because:
+1. Client IP is only available at the moment of the request
+2. One-time lookup cost vs. per-view cost
+3. Data represents historical context (where user was when filling form)
+4. Viewing analytics is instant with no external API dependencies
+
+#### Privacy Considerations
+
+All collected data is:
+- **Non-PII**: No names, emails, or personally identifiable information
+- **Permission-free**: Uses only standard browser APIs that don't trigger prompts
+- **Anonymized**: IP is used for geo lookup but city-level precision only
+- **Respects DNT**: `doNotTrack` flag is recorded for transparency
+
+**Data NOT collected** (requires permission):
+- Precise geolocation (GPS)
+- Camera/microphone
+- Clipboard contents
+- Notification permissions
+
+---
+
 ## File Structure
 
 ```
@@ -262,23 +373,57 @@ api/src/
 ├── features/
 │   └── analytics/
 │       └── trackEvent/
-│           └── index.ts
+│           └── index.ts          # Enriches with IP geolocation
 ├── routes/
 │   └── analytics.ts
 └── shared/
-    └── schemas/
-        └── analytics.ts
+    ├── schemas/
+    │   └── analytics.ts
+    └── utils/
+        └── geolocation.ts        # IP lookup via ip-api.com
 
-apps/web/src/features/publicForm/
-├── composables/
-│   ├── useFormPersistence.ts
-│   ├── useFormAnalytics.ts
-│   ├── usePublicFormFlow.ts  (integrates both)
-│   └── index.ts
-└── models/
-    ├── persistence.ts
-    ├── analytics.ts
-    └── index.ts
+apps/web/src/
+├── entities/
+│   └── formAnalyticsEvent/       # Entity for querying analytics
+│       ├── graphql/
+│       │   ├── fragments/
+│       │   │   └── FormAnalyticsEventBasic.gql
+│       │   └── queries/
+│       │       └── getFormAnalyticsEvents.gql
+│       ├── composables/
+│       │   └── queries/
+│       │       └── useGetFormAnalyticsEvents.ts
+│       ├── models/
+│       │   └── index.ts
+│       └── index.ts
+├── features/
+│   ├── publicForm/
+│   │   ├── composables/
+│   │   │   ├── useFormPersistence.ts
+│   │   │   ├── useFormAnalytics.ts   # Sends events with device info
+│   │   │   ├── usePublicFormFlow.ts  # Integrates both
+│   │   │   └── index.ts
+│   │   ├── functions/
+│   │   │   └── collectDeviceInfo.ts  # Client-side device/browser collection
+│   │   └── models/
+│   │       ├── persistence.ts
+│   │       ├── analytics.ts
+│   │       └── index.ts
+│   └── formResponses/            # Dashboard feature for viewing analytics
+│       ├── ui/
+│       │   ├── FormResponsesTable.vue
+│       │   ├── FormResponsesTableRow.vue
+│       │   ├── FormResponsesTableSkeleton.vue
+│       │   ├── FormResponsesEmptyState.vue
+│       │   └── FormResponsesTimeline.vue  # Shows visitor info
+│       ├── composables/
+│       │   └── useFormResponsesTableState.ts
+│       ├── functions/
+│       │   ├── aggregateBySession.ts
+│       │   └── formatDuration.ts
+│       ├── models/
+│       │   └── index.ts
+│       └── index.ts
 
 db/hasura/
 ├── migrations/
