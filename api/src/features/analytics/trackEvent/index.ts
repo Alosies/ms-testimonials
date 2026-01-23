@@ -6,6 +6,7 @@ import {
   InsertFormAnalyticsEventDocument,
   type InsertFormAnalyticsEventMutation,
 } from '@/entities/formAnalyticsEvent';
+import { getClientIp, lookupGeoLocation } from '@/shared/utils/geolocation';
 
 /**
  * POST /analytics/events
@@ -56,6 +57,36 @@ export async function trackEvent(c: Context) {
     // Get user agent from request headers
     const userAgent = c.req.header('user-agent') ?? null;
 
+    // Prepare event data with potential geolocation enrichment
+    let enrichedEventData = eventData ?? {};
+
+    // For form_started and form_resumed events, add geolocation data
+    // These events include device info, so we enrich with server-side location
+    if (eventType === 'form_started' || eventType === 'form_resumed') {
+      const clientIp = getClientIp(c.req.raw.headers);
+
+      if (clientIp) {
+        // Lookup geolocation (non-blocking, with timeout)
+        const geoLocation = await lookupGeoLocation(clientIp);
+
+        if (geoLocation) {
+          enrichedEventData = {
+            ...enrichedEventData,
+            geo: {
+              ip: geoLocation.ip,
+              country: geoLocation.country,
+              countryCode: geoLocation.countryCode,
+              region: geoLocation.regionName,
+              city: geoLocation.city,
+              timezone: geoLocation.timezone,
+              isp: geoLocation.isp,
+              org: geoLocation.org,
+            },
+          };
+        }
+      }
+    }
+
     // Insert analytics event using admin client
     // The Hasura permissions will validate form.is_active and form.status
     const { data, error } = await executeGraphQLAsAdmin<InsertFormAnalyticsEventMutation>(
@@ -68,7 +99,7 @@ export async function trackEvent(c: Context) {
         step_index: stepIndex ?? null,
         step_id: stepId ?? null,
         step_type: stepType ?? null,
-        event_data: eventData ?? {},
+        event_data: enrichedEventData,
         user_agent: userAgent,
       }
     );

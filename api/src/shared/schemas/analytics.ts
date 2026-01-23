@@ -3,9 +3,23 @@
  *
  * Defines schemas for lightweight analytics event tracking.
  * Events capture form interactions without storing PII.
+ *
+ * IMPORTANT: JSONB schemas are imported from @testimonials/core (single source of truth).
+ * This file extends them with OpenAPI metadata for API documentation.
  */
 
 import { z } from '@hono/zod-openapi';
+import {
+  DeviceInfoSchema as BaseDeviceInfoSchema,
+  GeoInfoSchema as BaseGeoInfoSchema,
+  EventDataSchema as BaseEventDataSchema,
+  type DeviceInfo,
+  type GeoInfo,
+  type EventData,
+} from '@testimonials/core';
+
+// Re-export types from core package
+export type { DeviceInfo, GeoInfo, EventData };
 
 /**
  * Valid event types for form analytics
@@ -21,6 +35,41 @@ export const AnalyticsEventTypeSchema = z.enum([
   description: 'Type of analytics event',
   example: 'step_completed',
 });
+
+// ============================================================================
+// JSONB event_data Schemas (extended with OpenAPI metadata)
+// ============================================================================
+// Base schemas imported from @testimonials/core - single source of truth
+// Extended here with .openapi() for API documentation
+// ============================================================================
+
+/**
+ * Device information collected from the client browser.
+ * @see @testimonials/core for base schema definition
+ */
+export const DeviceInfoSchema = BaseDeviceInfoSchema.openapi({
+  description: 'Device and browser information collected without user permission',
+});
+
+/**
+ * Geolocation information enriched server-side from IP address.
+ * @see @testimonials/core for base schema definition
+ */
+export const GeoInfoSchema = BaseGeoInfoSchema.openapi({
+  description: 'IP-based geolocation enriched server-side',
+});
+
+/**
+ * Complete event_data JSONB schema.
+ * @see @testimonials/core for base schema definition
+ */
+export const EventDataSchema = BaseEventDataSchema.openapi({
+  description: 'Event metadata stored in JSONB. Structure varies by event type.',
+});
+
+// ============================================================================
+// Request/Response Schemas
+// ============================================================================
 
 /**
  * Track event request body
@@ -51,9 +100,8 @@ export const TrackEventRequestSchema = z.object({
     description: 'Type of the step (welcome, question, rating, etc.)',
     example: 'rating',
   }),
-  eventData: z.record(z.unknown()).optional().openapi({
-    description: 'Additional event metadata (avoid PII)',
-    example: { timeOnStep: 15000 },
+  eventData: EventDataSchema.optional().openapi({
+    description: 'Additional event metadata - see DeviceInfoSchema and GeoInfoSchema',
   }),
 }).openapi('TrackEventRequest');
 

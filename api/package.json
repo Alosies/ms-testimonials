@@ -12,6 +12,7 @@
     "codegen": "graphql-codegen"
   },
   "dependencies": {
+    "@testimonials/core": "workspace:*",
     "@aws-sdk/client-s3": "^3.800.0",
     "@aws-sdk/s3-request-presigner": "^3.800.0",
     "@ai-sdk/anthropic": "^3.0.2",
