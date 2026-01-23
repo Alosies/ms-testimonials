@@ -1,7 +1,7 @@
-# ADR-018: Generic Flow Segments for Studio Canvas
+# ADR-020: Generic Flow Segments for Studio Canvas
 
 ## Doc Connections
-**ID**: `adr-018-generic-flow-segments`
+**ID**: `adr-020-generic-flow-segments`
 
 2026-01-19
 
@@ -347,7 +347,7 @@ Form
 
 | Category | File | Status | Changes |
 |----------|------|--------|---------|
-| **ADR** | `docs/adr/018-generic-flow-segments/adr.md` | ✅ | ADR document |
+| **ADR** | `docs/adr/020-generic-flow-segments/adr.md` | ✅ | ADR document |
 | **Utility** | `computeFlowSegments.ts` | ✅ | Segment computation function |
 | **Canvas** | `BranchedTimelineCanvas.vue` | ✅ | Segment-based rendering with merge indicator |
 | **Composables** | `useTimelineBranching.ts` | ✅ | Add `flowSegments`, `hasOutroSegment`, `outroSteps` |
