@@ -114,6 +114,8 @@ export interface TestBranchedFormData {
   id: string;
   name: string;
   studioUrl: string;
+  /** Public URL for customer-facing form (e.g., "/f/form-name_abc123") */
+  publicUrl: string;
   orgSlug: string;
   /** Shared flow (before branch point) */
   sharedFlow: TestFlow;

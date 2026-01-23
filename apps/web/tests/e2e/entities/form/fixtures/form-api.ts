@@ -6,7 +6,7 @@
  * from environment variables - no org lookup needed.
  */
 import { testApiRequest } from '../../../shared';
-import { createEntityUrlSlug } from '@/shared/urls';
+import { createEntityUrlSlug, createPublicFormUrl } from '@/shared/urls';
 import type {
   CreateFormResponse,
   CreateBranchedFormResponse,
@@ -102,10 +102,14 @@ export async function createTestBranchedForm(
   const urlSlug = createEntityUrlSlug(result.formName, result.formId);
   const studioUrl = `/${orgSlug}/forms/${urlSlug}/studio`;
 
+  // Build publicUrl for customer-facing form (/f/{name}_{id})
+  const publicUrl = createPublicFormUrl(result.formName, result.formId);
+
   return {
     id: result.formId,
     name: result.formName,
     studioUrl,
+    publicUrl,
     orgSlug,
     sharedFlow: result.sharedFlow,
     testimonialFlow: result.testimonialFlow,
