@@ -407,6 +407,100 @@ entities/organization/
 
 ---
 
+## JSONB Fields & Zod Schemas (CRITICAL)
+
+**Rule: Any field stored as JSONB in PostgreSQL MUST have a strict Zod schema to maintain data integrity.**
+
+### Why JSONB Needs Schemas
+
+JSONB columns are schemaless at the database level - PostgreSQL accepts any valid JSON. Without validation:
+- Data structure can drift over time
+- Invalid data can be written silently
+- Type safety is lost
+- Bugs are hard to trace
+
+### JSONB Schema Location
+
+| Context | Location |
+|---------|----------|
+| **Shared (DB JSONB)** | `packages/libs/core/src/schemas/db/{table}/{column}/` |
+| API (extends with OpenAPI) | `api/src/shared/schemas/{entity}.ts` |
+| Web app (entity-specific) | `apps/web/src/entities/{entity}/schemas/` |
+
+**Preferred Pattern:** Define JSONB schemas in `@testimonials/core` as single source of truth. API and Web import from core.
+
+### JSONB Schema Pattern
+
+```typescript
+// packages/libs/core/src/schemas/db/form_analytics_events/event_data/deviceInfo.schema.ts
+import { z } from 'zod';
+
+/**
+ * Schema for event_data.device in form_analytics_events table.
+ * @see README.md for migration planning
+ */
+export const DeviceInfoSchema = z.object({
+  screenWidth: z.number().int().positive(),
+  screenHeight: z.number().int().positive(),
+  isMobile: z.boolean(),
+  language: z.string(),
+  timezone: z.string(),
+  referrer: z.string(),
+  // ... all fields explicitly defined
+});
+
+// Type inferred from schema (single source of truth)
+export type DeviceInfo = z.infer<typeof DeviceInfoSchema>;
+```
+
+```typescript
+// api/src/shared/schemas/analytics.ts - extends with OpenAPI metadata
+import { DeviceInfoSchema as BaseDeviceInfoSchema, type DeviceInfo } from '@testimonials/core';
+
+export const DeviceInfoSchema = BaseDeviceInfoSchema.openapi({
+  description: 'Device and browser information',
+});
+export type { DeviceInfo };
+```
+
+```typescript
+// apps/web/src/features/publicForm/models/analytics.ts - imports type
+export type { DeviceInfo } from '@testimonials/core';
+```
+
+### JSONB Validation Pattern
+
+```typescript
+// Writing to JSONB - validate before save
+const eventData = EventDataSchema.parse(rawData);  // Throws if invalid
+await insertEvent({ event_data: eventData });
+
+// Reading from JSONB - validate/parse after fetch
+const parsed = EventDataSchema.safeParse(event.event_data);
+if (parsed.success) {
+  const data = parsed.data;  // Typed correctly
+}
+```
+
+### JSONB Schema Checklist
+
+- [ ] Create Zod schema for the JSONB structure
+- [ ] Define all fields explicitly (no `z.any()` or `z.unknown()`)
+- [ ] Use `.passthrough()` for forward compatibility if needed
+- [ ] Export types inferred from schemas (`z.infer<typeof Schema>`)
+- [ ] Validate on write (API side)
+- [ ] Validate/parse on read (for type safety)
+- [ ] Document schema in the entity's ADR or models
+
+### Existing JSONB Schemas
+
+| Table | Column | Schema Location |
+|-------|--------|-----------------|
+| `form_analytics_events` | `event_data` | `packages/libs/core/src/schemas/db/form_analytics_events/event_data/` |
+| `form_steps` | `content` | `apps/web/src/entities/formStep/schemas/` |
+
+---
+
 ## Common Commands
 
 ```bash
