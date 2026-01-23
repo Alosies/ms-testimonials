@@ -1,0 +1,13 @@
+fragment FormAnalyticsEventBasic on form_analytics_events {
+  id
+  form_id
+  organization_id
+  session_id
+  event_type
+  step_id
+  step_index
+  step_type
+  event_data
+  user_agent
+  created_at
+}

@@ -1,0 +1,11 @@
+#import "../fragments/FormAnalyticsEventBasic.gql"
+
+query GetFormAnalyticsEvents($formId: String!, $limit: Int) {
+  form_analytics_events(
+    where: { form_id: { _eq: $formId } }
+    order_by: { created_at: desc }
+    limit: $limit
+  ) {
+    ...FormAnalyticsEventBasic
+  }
+}

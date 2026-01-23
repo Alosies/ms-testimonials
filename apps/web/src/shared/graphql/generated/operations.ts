@@ -19266,6 +19266,16 @@ export type GetFormsQueryVariables = Exact<{
 
 export type GetFormsQuery = { __typename?: 'query_root', forms: Array<{ __typename?: 'forms', id: string, name: string, product_name: string, product_description?: string | null, settings: any, branching_config: any, status: string, is_active: boolean, organization_id: string, created_by: string, created_at: string, updated_at: string, organization: { __typename?: 'organizations', id: string, logo?: { __typename?: 'media', id: string, storage_path: string } | null }, flows: Array<{ __typename?: 'flows', id: string, flow_type: string, display_order: number }> }> };
 
+export type FormAnalyticsEventBasicFragment = { __typename?: 'form_analytics_events', id: string, form_id: string, organization_id: string, session_id: string, event_type: string, step_id?: string | null, step_index?: number | null, step_type?: string | null, event_data: any, user_agent?: string | null, created_at: string };
+
+export type GetFormAnalyticsEventsQueryVariables = Exact<{
+  formId: Scalars['String']['input'];
+  limit?: InputMaybe<Scalars['Int']['input']>;
+}>;
+
+
+export type GetFormAnalyticsEventsQuery = { __typename?: 'query_root', form_analytics_events: Array<{ __typename?: 'form_analytics_events', id: string, form_id: string, organization_id: string, session_id: string, event_type: string, step_id?: string | null, step_index?: number | null, step_type?: string | null, event_data: any, user_agent?: string | null, created_at: string }> };
+
 export type FormQuestionBasicFragment = { __typename?: 'form_questions', id: string, step_id?: string | null, organization_id: string, question_type_id: string, question_key: string, question_text: string, placeholder?: string | null, help_text?: string | null, display_order: number, is_required: boolean, min_length?: number | null, max_length?: number | null, min_value?: number | null, max_value?: number | null, validation_pattern?: string | null, allowed_file_types?: Array<string> | null, max_file_size_kb?: number | null, is_active: boolean, created_at: string, updated_at: string, question_type: { __typename?: 'question_types', id: string, unique_name: string, name: string, category: string, input_component: string } };
 
 export type FormQuestionWithOptionsFragment = { __typename?: 'form_questions', scale_min_label?: string | null, scale_max_label?: string | null, id: string, step_id?: string | null, organization_id: string, question_type_id: string, question_key: string, question_text: string, placeholder?: string | null, help_text?: string | null, display_order: number, is_required: boolean, min_length?: number | null, max_length?: number | null, min_value?: number | null, max_value?: number | null, validation_pattern?: string | null, allowed_file_types?: Array<string> | null, max_file_size_kb?: number | null, is_active: boolean, created_at: string, updated_at: string, options: Array<{ __typename?: 'question_options', id: string, question_id: string, option_value: string, option_label: string, display_order: number, is_default: boolean, is_active: boolean }>, question_type: { __typename?: 'question_types', id: string, unique_name: string, name: string, category: string, input_component: string } };
@@ -19579,6 +19589,21 @@ export const FormBasicFragmentDoc = gql`
     flow_type
     display_order
   }
+}
+    `;
+export const FormAnalyticsEventBasicFragmentDoc = gql`
+    fragment FormAnalyticsEventBasic on form_analytics_events {
+  id
+  form_id
+  organization_id
+  session_id
+  event_type
+  step_id
+  step_index
+  step_type
+  event_data
+  user_agent
+  created_at
 }
     `;
 export const FormQuestionBasicFragmentDoc = gql`
@@ -20179,6 +20204,41 @@ export function useGetFormsLazyQuery(variables?: GetFormsQueryVariables | VueCom
   return VueApolloComposable.useLazyQuery<GetFormsQuery, GetFormsQueryVariables>(GetFormsDocument, variables, options);
 }
 export type GetFormsQueryCompositionFunctionResult = VueApolloComposable.UseQueryReturn<GetFormsQuery, GetFormsQueryVariables>;
+export const GetFormAnalyticsEventsDocument = gql`
+    query GetFormAnalyticsEvents($formId: String!, $limit: Int) {
+  form_analytics_events(
+    where: {form_id: {_eq: $formId}}
+    order_by: {created_at: desc}
+    limit: $limit
+  ) {
+    ...FormAnalyticsEventBasic
+  }
+}
+    ${FormAnalyticsEventBasicFragmentDoc}`;
+
+/**
+ * __useGetFormAnalyticsEventsQuery__
+ *
+ * To run a query within a Vue component, call `useGetFormAnalyticsEventsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetFormAnalyticsEventsQuery` returns an object from Apollo Client that contains result, loading and error properties
+ * you can use to render your UI.
+ *
+ * @param variables that will be passed into the query
+ * @param options that will be passed into the query, supported options are listed on: https://v4.apollo.vuejs.org/guide-composable/query.html#options;
+ *
+ * @example
+ * const { result, loading, error } = useGetFormAnalyticsEventsQuery({
+ *   formId: // value for 'formId'
+ *   limit: // value for 'limit'
+ * });
+ */
+export function useGetFormAnalyticsEventsQuery(variables: GetFormAnalyticsEventsQueryVariables | VueCompositionApi.Ref<GetFormAnalyticsEventsQueryVariables> | ReactiveFunction<GetFormAnalyticsEventsQueryVariables>, options: VueApolloComposable.UseQueryOptions<GetFormAnalyticsEventsQuery, GetFormAnalyticsEventsQueryVariables> | VueCompositionApi.Ref<VueApolloComposable.UseQueryOptions<GetFormAnalyticsEventsQuery, GetFormAnalyticsEventsQueryVariables>> | ReactiveFunction<VueApolloComposable.UseQueryOptions<GetFormAnalyticsEventsQuery, GetFormAnalyticsEventsQueryVariables>> = {}) {
+  return VueApolloComposable.useQuery<GetFormAnalyticsEventsQuery, GetFormAnalyticsEventsQueryVariables>(GetFormAnalyticsEventsDocument, variables, options);
+}
+export function useGetFormAnalyticsEventsLazyQuery(variables?: GetFormAnalyticsEventsQueryVariables | VueCompositionApi.Ref<GetFormAnalyticsEventsQueryVariables> | ReactiveFunction<GetFormAnalyticsEventsQueryVariables>, options: VueApolloComposable.UseQueryOptions<GetFormAnalyticsEventsQuery, GetFormAnalyticsEventsQueryVariables> | VueCompositionApi.Ref<VueApolloComposable.UseQueryOptions<GetFormAnalyticsEventsQuery, GetFormAnalyticsEventsQueryVariables>> | ReactiveFunction<VueApolloComposable.UseQueryOptions<GetFormAnalyticsEventsQuery, GetFormAnalyticsEventsQueryVariables>> = {}) {
+  return VueApolloComposable.useLazyQuery<GetFormAnalyticsEventsQuery, GetFormAnalyticsEventsQueryVariables>(GetFormAnalyticsEventsDocument, variables, options);
+}
+export type GetFormAnalyticsEventsQueryCompositionFunctionResult = VueApolloComposable.UseQueryReturn<GetFormAnalyticsEventsQuery, GetFormAnalyticsEventsQueryVariables>;
 export const DeleteQuestionResponsesDocument = gql`
     mutation DeleteQuestionResponses($questionId: String!) {
   delete_form_question_responses(where: {question_id: {_eq: $questionId}}) {
