@@ -401,137 +401,27 @@ This document tracks the implementation of the API Service Data Layer Architectu
 
 ---
 
-## Phase 5: Dashboard Endpoint (First Drizzle Consumer)
-
-**Goal:** Create the form dashboard API endpoint using Drizzle.
-
-### 5.1 Create Dashboard Schemas
-
-- [ ] Create `api/src/shared/schemas/dashboard.ts`
-  ```typescript
-  import { z } from '@hono/zod-openapi';
-  import { MetricSentimentSchema } from '@testimonials/core';
-
-  export const SessionStatsSchema = z.object({
-    totalSessions: z.number().int(),
-    completedSessions: z.number().int(),
-    abandonedSessions: z.number().int(),
-    completionRate: z.number().nullable(),
-    avgCompletionTimeMs: z.number().nullable(),
-  }).openapi('SessionStats');
-
-  // Add other schemas as needed...
-  ```
-
-### 5.2 Create Dashboard Queries
-
-- [ ] Create `api/src/features/dashboard/getSessionStats.ts`
-- [ ] Create `api/src/features/dashboard/getFunnelData.ts`
-- [ ] Create `api/src/features/dashboard/getAudienceData.ts`
-- [ ] Create `api/src/features/dashboard/getRatingData.ts`
-- [ ] Create `api/src/features/dashboard/calculateBenchmark.ts`
-
-### 5.3 Create Dashboard Routes
-
-- [ ] Create `api/src/features/dashboard/routes.ts`
-  ```typescript
-  import { OpenAPIHono, createRoute } from '@hono/zod-openapi';
-  // ... route definitions
-
-  export type DashboardRoutes = typeof dashboard;
-  export { dashboard };
-  ```
-
-- [ ] Register dashboard routes in `api/src/index.ts`
-  ```typescript
-  import { dashboard } from './features/dashboard/routes';
-  app.route('/dashboard', dashboard);
-  ```
-
-### 5.4 Add Tests
-
-- [ ] Create `api/src/features/dashboard/__tests__/getSessionStats.test.ts`
-- [ ] Create `api/src/features/dashboard/__tests__/calculateBenchmark.test.ts`
-- [ ] Verify organization isolation in tests
-
-### 5.5 Verification
-
-- [ ] Test endpoint with curl/Postman
-- [ ] Verify response matches schema
-- [ ] Verify appears in Swagger UI
-
----
-
-## Phase 6: Frontend Dashboard Integration
-
-**Goal:** Integrate dashboard API with frontend using Hono RPC + TanStack Query.
-
-### 6.1 Add Dashboard to API Client
-
-- [ ] Update `apps/web/src/shared/api/client.ts`
-  ```typescript
-  import type { DashboardRoutes } from '@api/features/dashboard/routes';
-
-  // In createApiClients:
-  dashboard: hc<DashboardRoutes>(`${API_URL}/dashboard`, { headers }),
-  ```
-
-### 6.2 Create Dashboard Composable
-
-- [ ] Create `apps/web/src/features/formDashboard/composables/useFormDashboard.ts`
-  ```typescript
-  import { computed, type Ref } from 'vue';
-  import { useQuery } from '@tanstack/vue-query';
-  import { useApi } from '@/shared/api/useApi';
-
-  export function useFormDashboard(formId: Ref<string>) {
-    const api = useApi();
-
-    return useQuery({
-      queryKey: computed(() => ['form-dashboard', formId.value]),
-      queryFn: async () => {
-        const res = await api.dashboard.forms[':formId'].dashboard.$get({
-          param: { formId: formId.value },
-          query: { days: 30 },
-        });
-        if (!res.ok) throw new Error('Failed to fetch dashboard');
-        return res.json();
-      },
-      enabled: computed(() => !!formId.value),
-    });
-  }
-  ```
-
-### 6.3 Verification
-
-- [ ] Verify composable returns typed data
-- [ ] Verify TanStack Query caching works
-- [ ] Verify loading/error states work
-
----
-
-## Phase 7: Documentation & Cleanup
+## Phase 5: Documentation & Cleanup
 
 **Goal:** Finalize documentation and clean up deprecated code.
 
-### 7.1 Update CLAUDE.md
+### 5.1 Update CLAUDE.md
 
 - [ ] Add section about Hasura vs Drizzle decision tree
 - [ ] Add section about Hono RPC usage
 - [ ] Add section about TanStack Query usage
 
-### 7.2 Deprecation Cleanup
+### 5.2 Deprecation Cleanup
 
 - [ ] Remove `apps/web/src/shared/api/lib/apiClient.ts` (after full migration)
 - [ ] Remove manual type definitions that are now inferred
 - [ ] Clean up unused API config constants
 
-### 7.3 Final Verification
+### 5.3 Final Verification
 
 - [ ] All existing features still work
 - [ ] No TypeScript errors
 - [ ] Swagger UI shows all endpoints
-- [ ] Dashboard loads correctly
 
 ---
 
@@ -584,6 +474,4 @@ VITE_API_BASE_URL=http://localhost:4000
 | Phase 2: Frontend Hono RPC Setup | [ ] Not started | |
 | Phase 3: Migrate API Composables | [ ] Not started | |
 | Phase 4: Drizzle ORM Foundation | [ ] Not started | |
-| Phase 5: Dashboard Endpoint | [ ] Not started | |
-| Phase 6: Frontend Dashboard Integration | [ ] Not started | |
-| Phase 7: Documentation & Cleanup | [ ] Not started | |
+| Phase 5: Documentation & Cleanup | [ ] Not started | |
