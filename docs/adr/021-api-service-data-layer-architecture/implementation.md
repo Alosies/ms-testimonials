@@ -315,72 +315,148 @@ This document tracks the implementation of the API Service Data Layer Architectu
   export const testDb = drizzle(testClient, { schema });
   ```
 
-### 4.3 Create Schema Definitions
+### 4.3 Configure Drizzle Introspection
 
-- [ ] Create `api/src/db/schema/index.ts`
+We use database introspection to generate base schemas, then add JSONB type enhancements manually.
+
+- [ ] Create `api/drizzle.config.ts`
   ```typescript
-  export * from './formAnalyticsEvents';
-  export * from './testimonials';
-  export * from './forms';
+  import { defineConfig } from 'drizzle-kit';
+
+  export default defineConfig({
+    dialect: 'postgresql',
+    out: './src/db/schema/generated',
+    dbCredentials: {
+      url: process.env.DATABASE_URL!,
+    },
+    // Only introspect tables Drizzle needs
+    tablesFilter: [
+      'form_analytics_events',
+      'testimonials',
+      'forms',
+    ],
+  });
   ```
 
-- [ ] Create `api/src/db/schema/formAnalyticsEvents.ts`
+- [ ] Run initial introspection to generate base schemas
+  ```bash
+  cd api && pnpm drizzle-kit introspect
+  ```
+
+- [ ] Create `api/src/db/schema/index.ts` with type enhancements
   ```typescript
-  import { pgTable, text, timestamp, jsonb, integer } from 'drizzle-orm/pg-core';
+  import {
+    formAnalyticsEvents as _formAnalyticsEvents,
+    testimonials as _testimonials,
+    forms as _forms,
+  } from './generated';
+  import type { EventData } from '@testimonials/core';
 
-  export const formAnalyticsEvents = pgTable('form_analytics_events', {
-    id: text('id').primaryKey(),
-    formId: text('form_id').notNull(),
-    organizationId: text('organization_id').notNull(),
-    sessionId: text('session_id').notNull(),
-    eventType: text('event_type').notNull(),
-    stepIndex: integer('step_index'),
-    stepId: text('step_id'),
-    stepType: text('step_type'),
-    eventData: jsonb('event_data'),
-    createdAt: timestamp('created_at').defaultNow().notNull(),
-  });
+  // Re-export with JSONB type annotations
+  export const formAnalyticsEvents = {
+    ..._formAnalyticsEvents,
+    eventData: _formAnalyticsEvents.eventData.$type<EventData>(),
+  };
 
+  // Tables without JSONB can be re-exported directly
+  export { _testimonials as testimonials, _forms as forms };
+
+  // Type inference
   export type FormAnalyticsEvent = typeof formAnalyticsEvents.$inferSelect;
   export type NewFormAnalyticsEvent = typeof formAnalyticsEvents.$inferInsert;
+  export type Testimonial = typeof _testimonials.$inferSelect;
+  export type Form = typeof _forms.$inferSelect;
   ```
 
-- [ ] Create `api/src/db/schema/testimonials.ts`
+### 4.4 Schema Sync Tooling
+
+- [ ] Create `api/scripts/validate-drizzle-schema.ts`
   ```typescript
-  import { pgTable, text, timestamp, integer } from 'drizzle-orm/pg-core';
+  import { sql } from 'drizzle-orm';
+  import { db } from '../src/db';
+  import * as schema from '../src/db/schema';
 
-  export const testimonials = pgTable('testimonials', {
-    id: text('id').primaryKey(),
-    formId: text('form_id').notNull(),
-    organizationId: text('organization_id').notNull(),
-    content: text('content'),
-    rating: integer('rating'),
-    status: text('status').notNull().default('pending'),
-    createdAt: timestamp('created_at').defaultNow().notNull(),
-    updatedAt: timestamp('updated_at').defaultNow().notNull(),
-  });
+  const DRIZZLE_TABLES = ['form_analytics_events', 'testimonials', 'forms'];
 
-  export type Testimonial = typeof testimonials.$inferSelect;
+  async function validateSchema() {
+    const errors: string[] = [];
+
+    const result = await db.execute(sql`
+      SELECT table_name, column_name, data_type, is_nullable
+      FROM information_schema.columns
+      WHERE table_schema = 'public'
+        AND table_name = ANY(${DRIZZLE_TABLES})
+      ORDER BY table_name, ordinal_position
+    `);
+
+    const dbColumns = result.rows as Array<{
+      table_name: string;
+      column_name: string;
+      data_type: string;
+      is_nullable: string;
+    }>;
+
+    const dbColumnMap = new Map<string, typeof dbColumns[0]>();
+    for (const col of dbColumns) {
+      dbColumnMap.set(`${col.table_name}.${col.column_name}`, col);
+    }
+
+    const schemaEntries = {
+      form_analytics_events: schema.formAnalyticsEvents,
+      testimonials: schema.testimonials,
+      forms: schema.forms,
+    };
+
+    for (const [tableName, table] of Object.entries(schemaEntries)) {
+      const columns = Object.entries(table).filter(
+        ([key]) => !key.startsWith('_') && key !== '$inferSelect' && key !== '$inferInsert'
+      );
+
+      for (const [, colDef] of columns) {
+        if (typeof colDef !== 'object' || !('name' in colDef)) continue;
+        const key = `${tableName}.${colDef.name}`;
+        if (!dbColumnMap.get(key)) {
+          errors.push(`Column in Drizzle but not in DB: ${key}`);
+        }
+      }
+
+      const drizzleColNames = new Set(
+        columns
+          .filter(([, def]) => typeof def === 'object' && 'name' in def)
+          .map(([, def]) => (def as { name: string }).name)
+      );
+
+      for (const dbCol of dbColumns.filter(c => c.table_name === tableName)) {
+        if (!drizzleColNames.has(dbCol.column_name)) {
+          errors.push(`Column in DB but not in Drizzle: ${tableName}.${dbCol.column_name}`);
+        }
+      }
+    }
+
+    if (errors.length > 0) {
+      console.error('❌ Schema validation failed:');
+      errors.forEach(e => console.error(`  - ${e}`));
+      process.exit(1);
+    }
+
+    console.log('✅ Drizzle schema matches database');
+  }
+
+  validateSchema().catch(console.error);
   ```
 
-- [ ] Create `api/src/db/schema/forms.ts`
-  ```typescript
-  import { pgTable, text, timestamp, boolean } from 'drizzle-orm/pg-core';
-
-  export const forms = pgTable('forms', {
-    id: text('id').primaryKey(),
-    organizationId: text('organization_id').notNull(),
-    name: text('name').notNull(),
-    slug: text('slug').notNull(),
-    isActive: boolean('is_active').default(true),
-    createdAt: timestamp('created_at').defaultNow().notNull(),
-    updatedAt: timestamp('updated_at').defaultNow().notNull(),
-  });
-
-  export type Form = typeof forms.$inferSelect;
+- [ ] Add scripts to `api/package.json`
+  ```json
+  {
+    "scripts": {
+      "db:introspect": "drizzle-kit introspect",
+      "db:validate": "tsx scripts/validate-drizzle-schema.ts",
+      "db:sync": "pnpm db:introspect && pnpm db:validate"
+    }
+  }
   ```
 
-### 4.4 Add Graceful Shutdown
+### 4.5 Add Graceful Shutdown
 
 - [ ] Update `api/src/index.ts` to handle shutdown
   ```typescript
@@ -393,11 +469,13 @@ This document tracks the implementation of the API Service Data Layer Architectu
   });
   ```
 
-### 4.5 Verification
+### 4.6 Verification
 
 - [ ] Verify database connection works
 - [ ] Verify schema types are correctly inferred
 - [ ] Run a test query to validate setup
+- [ ] Run `pnpm db:validate` successfully
+- [ ] Verify `pnpm db:introspect` regenerates schemas correctly
 
 ---
 
@@ -438,7 +516,8 @@ This document tracks the implementation of the API Service Data Layer Architectu
     "postgres": "^3.4.x"
   },
   "devDependencies": {
-    "drizzle-kit": "^0.30.x"
+    "drizzle-kit": "^0.30.x",
+    "tsx": "^4.x"
   }
 }
 ```
@@ -470,8 +549,31 @@ VITE_API_BASE_URL=http://localhost:4000
 
 | Phase | Status | Completed Date |
 |-------|--------|----------------|
-| Phase 1: API Type Exports & Swagger | [ ] Not started | |
-| Phase 2: Frontend Hono RPC Setup | [ ] Not started | |
-| Phase 3: Migrate API Composables | [ ] Not started | |
-| Phase 4: Drizzle ORM Foundation | [ ] Not started | |
-| Phase 5: Documentation & Cleanup | [ ] Not started | |
+| Phase 1: API Type Exports & Swagger | [x] Completed | 2026-01-25 |
+| Phase 2: Frontend Hono RPC Setup | [x] Completed | 2026-01-25 |
+| Phase 3: Migrate API Composables | [x] Completed | 2026-01-25 |
+| Phase 4: Drizzle ORM + Schema Sync | [x] Completed | 2026-01-25 |
+| Phase 5: Documentation & Cleanup | [x] Completed | 2026-01-25 |
+
+### Phase 4 Breakdown
+
+| Task | Status |
+|------|--------|
+| 4.1 Install Dependencies | [x] |
+| 4.2 Create Database Client | [x] |
+| 4.3 Configure Drizzle Introspection | [x] |
+| 4.4 Schema Sync Tooling | [x] |
+| 4.5 Graceful Shutdown | [x] |
+| 4.6 Verification | [x] |
+
+### Implementation Notes
+
+**Phase 1:** Route type exports added to `auth.ts`, `ai.ts`, `media.ts`, `analytics.ts`. Barrel exports created in `routes/index.ts`. Swagger UI already existed via `@scalar/hono-api-reference` at `/docs`.
+
+**Phase 2:** Dependencies installed (`hono`, `@tanstack/vue-query`). Path aliases configured with TypeScript project references for proper cross-package type resolution. RPC client created with fetch-based approach since OpenAPIHono doesn't expose full route types for Hono RPC.
+
+**Phase 3:** `useApiForAI.ts` migrated to use the new RPC client's fetch method. Old `apiClient.ts` marked as deprecated.
+
+**Phase 4:** Drizzle ORM installed with `postgres` driver. Database client created in `api/src/db/`. Schema generation via introspection configured. Graceful shutdown handlers added for SIGTERM/SIGINT.
+
+**Phase 5:** Documentation updated. Decision tree added to CLAUDE.md.
