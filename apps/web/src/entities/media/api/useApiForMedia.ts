@@ -1,31 +1,18 @@
 /**
  * Media API Composable
  *
- * Provides type-safe methods for media operations.
- * Uses the shared API client for authenticated requests.
+ * Provides type-safe methods for media operations using the RPC client.
  */
 
-import { computed } from 'vue';
-import { useTokenManager } from '@/shared/authorization/composables/useTokenManager';
-import { createApiClient } from '@/shared/api/lib/apiClient';
-import { getApiBaseUrl } from '@/shared/api/config/apiConfig';
+import { useApi } from '@/shared/api/rpc';
 import type { PresignRequest, PresignResponse } from '../models';
-
-/**
- * API endpoint paths for media operations
- */
-const MEDIA_ENDPOINTS = {
-  PRESIGN: '/media/presign',
-} as const;
 
 /**
  * Media API composable
  * Provides methods for media-related API operations
  */
 export function useApiForMedia() {
-  const { getValidEnhancedToken } = useTokenManager();
-  const baseUrl = computed(() => getApiBaseUrl());
-  const client = createApiClient(baseUrl.value, getValidEnhancedToken);
+  const api = useApi();
 
   /**
    * Request a presigned URL for direct S3 upload
@@ -37,11 +24,17 @@ export function useApiForMedia() {
   async function requestPresignedUrl(
     request: PresignRequest
   ): Promise<PresignResponse> {
-    return client.post<PresignRequest, PresignResponse>(
-      MEDIA_ENDPOINTS.PRESIGN,
-      request,
-      { authenticated: true }
-    );
+    const res = await api.fetch('/media/presign', {
+      method: 'POST',
+      body: JSON.stringify(request),
+    });
+
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({ message: 'Unknown error' }));
+      throw new Error(error.message || 'Failed to get presigned URL');
+    }
+
+    return res.json() as Promise<PresignResponse>;
   }
 
   return {
