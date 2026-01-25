@@ -167,6 +167,32 @@ hasura migrate create "migration_name" --database-name default
 3. **Type Safety**: GraphQL codegen ensures type safety across frontend
 4. **JWT Auth**: Supabase handles auth, API enhances tokens with Hasura claims
 
+### Data Layer Decision Tree (Hasura vs Drizzle)
+
+Use **Hasura GraphQL** for:
+- Simple CRUD operations (create, read, update, delete single entities)
+- Real-time subscriptions
+- Frontend data fetching with Apollo Client
+- Operations that benefit from automatic pagination
+
+Use **Drizzle ORM** for:
+- Complex aggregations (COUNT, SUM, AVG with GROUP BY)
+- Multi-table JOINs that Hasura can't express efficiently
+- Bulk operations (batch inserts, updates)
+- Raw SQL when needed
+- Analytics queries (e.g., form conversion funnels)
+
+**Decision Flow:**
+```
+Is this a simple entity CRUD? → Hasura
+├── Yes: Use Hasura GraphQL
+└── No: Does it need aggregation/joins?
+    ├── Yes: Use Drizzle ORM (api/src/db)
+    └── No: Does it need real-time updates?
+        ├── Yes: Use Hasura subscriptions
+        └── No: Use Drizzle for better SQL control
+```
+
 ### Core Entities
 
 Based on MVP spec:
@@ -188,6 +214,49 @@ Based on MVP spec:
 - `GET /forms/:slug` - Get form by slug (public)
 - `GET /widgets/:id` - Get widget data for embed (public)
 - `POST /ai/assemble` - AI testimonial assembly
+
+### Frontend API Client Architecture
+
+The frontend uses two complementary data fetching approaches:
+
+**Apollo Client (GraphQL)** - For Hasura queries:
+```typescript
+// Entity composables in apps/web/src/entities/*/composables/
+import { useGetTestimonials } from '@/entities/testimonial';
+const { testimonials, loading } = useGetTestimonials();
+```
+
+**Hono RPC Client (REST)** - For custom API endpoints:
+```typescript
+// Use the unified API client
+import { useApi } from '@/shared/api/rpc';
+
+export function useApiForAI() {
+  const api = useApi();
+  return {
+    async suggestQuestions(request) {
+      const res = await api.fetch('/ai/suggest-questions', {
+        method: 'POST',
+        body: JSON.stringify(request),
+      });
+      if (!res.ok) throw new Error('Failed');
+      return res.json();
+    },
+  };
+}
+```
+
+**TanStack Query** - Available for complex REST caching needs:
+```typescript
+import { useQuery } from '@tanstack/vue-query';
+import { useApi } from '@/shared/api/rpc';
+
+const api = useApi();
+const { data } = useQuery({
+  queryKey: ['analytics', formId],
+  queryFn: () => api.fetch(`/analytics/${formId}`).then(r => r.json()),
+});
+```
 
 ## Type and Interface Organization (FSD)
 
