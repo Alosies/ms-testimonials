@@ -143,4 +143,5 @@ auth.use('/switch-organization', authMiddleware);
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 auth.openapi(switchOrganizationRoute, switchOrganization as any);
 
-export default auth;
+export { auth };
+export type AuthRoutes = typeof auth;

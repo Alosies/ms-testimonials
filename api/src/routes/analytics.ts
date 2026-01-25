@@ -79,4 +79,5 @@ reliable delivery during page unload.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 analytics.openapi(trackEventRoute, trackEvent as any);
 
-export default analytics;
+export { analytics };
+export type AnalyticsRoutes = typeof analytics;

@@ -133,4 +133,5 @@ ai.openapi(assembleTestimonialRoute, (async (c: any) => {
   });
 }) as any);
 
-export default ai;
+export { ai };
+export type AIRoutes = typeof ai;

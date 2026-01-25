@@ -165,4 +165,5 @@ Webhook endpoint called by Lambda after S3 upload completes.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 media.openapi(webhookRoute, handleS3Webhook as any);
 
-export default media;
+export { media };
+export type MediaRoutes = typeof media;
