@@ -41,7 +41,7 @@ const visitorInfo = computed<VisitorInfo | null>(() => {
 </script>
 
 <template>
-  <div class="h-full flex flex-col">
+  <div class="h-full min-h-0 flex flex-col">
     <!-- Header -->
     <div class="flex-shrink-0 pb-4 border-b border-border">
       <div class="flex items-center justify-between">
@@ -70,7 +70,7 @@ const visitorInfo = computed<VisitorInfo | null>(() => {
     </div>
 
     <!-- Timeline -->
-    <div v-else class="flex-1 overflow-y-auto pt-4">
+    <div v-else class="flex-1 min-h-0 overflow-y-auto pt-4 scrollbar-subtle">
       <!-- Visitor Info Card -->
       <div v-if="visitorInfo" class="mb-4 p-3 rounded-lg bg-muted/50">
         <div class="grid grid-cols-2 gap-x-4 gap-y-1.5">

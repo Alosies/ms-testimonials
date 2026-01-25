@@ -204,7 +204,7 @@ const statusOptions: Array<{ value: SessionStatus | 'all'; label: string }> = [
 
             <!-- Timeline (1/3 width) -->
             <div class="flex-1 min-w-0 hidden lg:block">
-              <div class="sticky top-0 h-fit max-h-[calc(100vh-12rem)] rounded-xl border border-border bg-card p-4">
+              <div class="sticky top-0 max-h-[calc(100vh-12rem)] rounded-xl border border-border bg-card p-4 flex flex-col overflow-hidden">
                 <FormResponsesTimeline :session="selectedSession" />
               </div>
             </div>
