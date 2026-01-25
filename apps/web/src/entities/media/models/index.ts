@@ -165,30 +165,19 @@ export interface UploadError {
 }
 
 // ============================================================
-// API TYPES
+// API TYPES (Re-exported from API schemas for type safety)
 // ============================================================
 
 /**
- * Request to generate presigned upload URL
+ * API request/response types - imported from API schemas (per ADR-021).
+ * This ensures frontend types stay in sync with backend contracts.
  */
-export interface PresignRequest {
-  filename: string;
-  mimeType: string;
-  fileSizeBytes: number;
-  entityType: MediaEntityType;
-  entityId?: string;
-}
-
-/**
- * Response with presigned upload URL
- */
-export interface PresignResponse {
-  uploadUrl: string;
-  mediaId: string;
-  storagePath: string;
-  expiresAt: string;
-  headers: Record<string, string>;
-}
+export type {
+  PresignRequest,
+  PresignResponse,
+  EntityType as ApiEntityType,
+  MediaStatus as ApiMediaStatus,
+} from '@api/shared/schemas/media';
 
 // ============================================================
 // COMPOSABLE OPTIONS

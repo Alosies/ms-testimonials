@@ -1,11 +1,12 @@
 /**
  * Media API Composable
  *
- * Provides type-safe methods for media operations using the RPC client.
+ * Provides type-safe methods for media operations.
+ * Types imported from API schemas for end-to-end type safety (per ADR-021).
  */
 
-import { useApi } from '@/shared/api/rpc';
-import type { PresignRequest, PresignResponse } from '../models';
+import { useApi } from '@/shared/api/rest';
+import type { PresignRequest, PresignResponse } from '@api/shared/schemas/media';
 
 /**
  * Media API composable
@@ -24,17 +25,7 @@ export function useApiForMedia() {
   async function requestPresignedUrl(
     request: PresignRequest
   ): Promise<PresignResponse> {
-    const res = await api.fetch('/media/presign', {
-      method: 'POST',
-      body: JSON.stringify(request),
-    });
-
-    if (!res.ok) {
-      const error = await res.json().catch(() => ({ message: 'Unknown error' }));
-      throw new Error(error.message || 'Failed to get presigned URL');
-    }
-
-    return res.json() as Promise<PresignResponse>;
+    return api.post<PresignRequest, PresignResponse>('/media/presign', request);
   }
 
   return {

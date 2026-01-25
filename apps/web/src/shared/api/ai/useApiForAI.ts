@@ -1,9 +1,9 @@
 /**
  * AI API Composable
- * Provides type-safe methods for AI operations using the RPC client
+ * Provides type-safe methods for AI operations using the REST client
  */
 
-import { useApi } from '../rpc';
+import { useApi } from '../rest';
 import type {
   SuggestQuestionsRequest,
   SuggestQuestionsResponse,

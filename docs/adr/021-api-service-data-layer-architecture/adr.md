@@ -3,14 +3,19 @@
 ## Doc Connections
 **ID**: `adr-021-api-service-data-layer-architecture`
 
-2026-01-24 IST
+2026-01-25 IST (Updated)
 
 **Parent ReadMes**:
 - `adr-index` - Architecture Decision Records index
 
 **Related ReadMes**:
+- `api-development-guide` - Practical API endpoint creation guide
 - `adr-022-form-dashboard` - First consumer of data layer
 - `adr-018-form-persistence-analytics` - Analytics data source
+
+**Child ReadMes**:
+- `api-development-guide` - Step-by-step API creation
+- `api-endpoint-creation` - Detailed endpoint creation procedure
 
 ---
 
@@ -1017,18 +1022,26 @@ export const db = drizzle(testClient, { schema });
 
 ## Type Synchronization & Documentation
 
+> **Practical Guide**: See [docs/api/](../../api/) for step-by-step endpoint creation.
+
 ### Current State
 
-The API already uses `@hono/zod-openapi` with `createRoute()` for some endpoints. The frontend uses a custom `createApiClient()` fetch wrapper in `apps/web/src/shared/api/`.
+The API uses `@hono/zod-openapi` with `createRoute()` for all endpoints. The frontend uses a typed fetch wrapper in `apps/web/src/shared/api/rest/`.
 
-### Strategy: zod-openapi + Hono RPC + Swagger UI
+### Important Limitation: OpenAPIHono and Hono RPC
+
+**OpenAPIHono does NOT support Hono RPC automatic type inference.**
+
+When you export `typeof routes`, you get an `OpenAPIHono` instance type, not chainable route types. The `hc<RouteType>()` client returns `unknown`.
+
+### Strategy: zod-openapi + Typed Fetch + Direct Type Imports
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                    Type & Doc Architecture                   │
 ├─────────────────────────────────────────────────────────────┤
 │                                                             │
-│  @hono/zod-openapi (Already in use)                         │
+│  @hono/zod-openapi                                          │
 │       │                                                     │
 │       ├──────────────▶ OpenAPI Spec (/api/openapi.json)     │
 │       │                      │                              │
@@ -1036,11 +1049,11 @@ The API already uses `@hono/zod-openapi` with `createRoute()` for some endpoints
 │       │               Swagger UI (/api/docs)                │
 │       │               (API Documentation)                   │
 │       │                                                     │
-│       └──────────────▶ Route Type Exports                   │
+│       └──────────────▶ Zod Schema Type Exports              │
 │                              │                              │
 │                              ▼                              │
-│                        Hono RPC Client (hc)                 │
-│                        (End-to-end type safety)             │
+│                        Direct Type Imports                  │
+│                        import type { X } from '@api/...'    │
 │                                                             │
 │  @testimonials/core                                         │
 │       └──────────────▶ Shared Domain Schemas                │
@@ -1054,7 +1067,7 @@ The API already uses `@hono/zod-openapi` with `createRoute()` for some endpoints
 | Layer | Provides | Used By |
 |-------|----------|---------|
 | **@hono/zod-openapi** | Route schemas, validation, OpenAPI spec | API routes |
-| **Hono RPC (hc)** | Type-safe client from route types | Frontend |
+| **Zod type exports** | `z.infer<>` types from schemas | Frontend (via `@api/shared/schemas/`) |
 | **@testimonials/core** | JSONB schemas, domain types | Both API & Frontend |
 | **Swagger UI** | Interactive API documentation | Developers |
 
@@ -1294,68 +1307,75 @@ export type AnalyticsRoutes = typeof analytics;
 export { analytics };
 ```
 
-**Step 4: Frontend uses Hono RPC (types are inferred, not defined)**
+**Step 4: Frontend uses typed fetch with imported types**
 
 ```typescript
-// apps/web/src/shared/api/client.ts
+// apps/web/src/shared/api/rest/client.ts
 
-import { hc } from 'hono/client';
-import type { AnalyticsRoutes } from '@api/routes/analytics';
-
-export function createApiClients(getToken: () => string | null) {
-  const headers = () => {
-    const token = getToken();
+export function createApiClients(getToken: () => Promise<string | null>) {
+  const getHeaders = async () => {
+    const token = await getToken();
     return token ? { Authorization: `Bearer ${token}` } : {};
   };
 
   return {
-    analytics: hc<AnalyticsRoutes>(`${API_URL}/analytics`, { headers }),
-    // ... other routes
+    // Typed POST helper
+    async post<TRequest, TResponse>(endpoint: string, body: TRequest): Promise<TResponse> {
+      const headers = await getHeaders();
+      const res = await fetch(`${API_URL}${endpoint}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...headers },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) throw new Error(`API Error ${res.status}`);
+      return res.json();
+    },
   };
 }
 ```
 
 ```typescript
-// apps/web/src/features/publicForm/composables/useAnalyticsTracking.ts
+// apps/web/src/features/publicForm/api/useApiForAnalytics.ts
 
-import { useApi } from '@/shared/api/useApi';
-import { collectDeviceInfo } from '../functions/collectDeviceInfo';
+import { useApi } from '@/shared/api/rest';
+import type { TrackEventRequest, TrackEventResponse } from '@api/shared/schemas/analytics';
 import type { DeviceInfo } from '@testimonials/core';  // ◄── Type from core
 
-export function useAnalyticsTracking(formId: string, organizationId: string) {
+export function useApiForAnalytics() {
   const api = useApi();
+
+  async function trackEvent(request: TrackEventRequest): Promise<TrackEventResponse> {
+    // Types imported from API schemas - full type safety!
+    return api.post<TrackEventRequest, TrackEventResponse>('/analytics/track', request);
+  }
+
+  return { trackEvent };
+}
+
+// Usage in composable
+export function useAnalyticsTracking(formId: string, organizationId: string) {
+  const { trackEvent } = useApiForAnalytics();
   const sessionId = crypto.randomUUID();
 
-  const trackEvent = async (
-    eventType: 'form_started' | 'step_completed' | 'form_submitted',  // Could import from core
+  const track = async (
+    eventType: 'form_started' | 'step_completed' | 'form_submitted',
     stepIndex?: number
   ) => {
-    const deviceInfo: DeviceInfo = collectDeviceInfo();  // ◄── Type from core
+    const deviceInfo: DeviceInfo = collectDeviceInfo();
 
-    // Request is fully typed via Hono RPC - no manual type definition!
-    const res = await api.analytics.track.$post({
-      json: {
-        formId,
-        organizationId,
-        sessionId,
-        eventType,
-        stepIndex,
-        eventData: {
-          device: deviceInfo,  // TypeScript knows this matches DeviceInfoSchema
-        },
-      },
+    const result = await trackEvent({
+      formId,
+      organizationId,
+      sessionId,
+      eventType,
+      stepIndex,
+      eventData: { device: deviceInfo },
     });
 
-    if (!res.ok) {
-      console.error('Failed to track event');
-      return;
-    }
-
-    const data = await res.json();  // Typed as TrackEventResponse
-    return data.eventId;
+    return result.eventId;
   };
 
-  return { trackEvent, sessionId };
+  return { track, sessionId };
 }
 ```
 
@@ -1418,14 +1438,15 @@ export type SessionStats = z.infer<typeof SessionStatsSchema>;
 export type DashboardResponse = z.infer<typeof DashboardResponseSchema>;
 ```
 
-**Step 3: Frontend composable (all types inferred)**
+**Step 3: Frontend composable (types imported from API schemas)**
 
 ```typescript
 // apps/web/src/features/formDashboard/composables/useFormDashboard.ts
 
 import { computed, type Ref } from 'vue';
 import { useQuery } from '@tanstack/vue-query';
-import { useApi } from '@/shared/api/useApi';
+import { useApi } from '@/shared/api/rest';
+import type { DashboardResponse } from '@api/shared/schemas/dashboard';
 import type { MetricSentiment } from '@testimonials/core';  // ◄── Domain type from core
 
 export function useFormDashboard(formId: Ref<string>) {
@@ -1434,14 +1455,11 @@ export function useFormDashboard(formId: Ref<string>) {
   const query = useQuery({
     queryKey: computed(() => ['form-dashboard', formId.value]),
     queryFn: async () => {
-      const res = await api.dashboard.forms[':formId'].dashboard.$get({
-        param: { formId: formId.value },
-        query: { days: 30 },
-      });
-
-      if (!res.ok) throw new Error('Failed to fetch dashboard');
-
-      return res.json();  // Typed as DashboardResponse
+      // Types imported from API schemas - full type safety!
+      return api.get<DashboardResponse>(
+        `/dashboard/forms/${formId.value}`,
+        { days: '30' }
+      );
     },
     enabled: computed(() => !!formId.value),
   });
@@ -1472,8 +1490,19 @@ export function useFormDashboard(formId: Ref<string>) {
 | Domain enums/types | `@testimonials/core/schemas/domain/` | `MetricSentiment`, `Period` |
 | API request schemas | `api/src/shared/schemas/` | `TrackEventRequestSchema` |
 | API response schemas | `api/src/shared/schemas/` | `DashboardResponseSchema` |
-| Route type exports | `api/src/routes/*.ts` | `export type AnalyticsRoutes` |
-| Frontend types | **None defined** | Inferred from Hono RPC + imported from core |
+| Frontend types | **Import from API** | `import type { X } from '@api/shared/schemas/...'` |
+
+### Frontend Type Import Pattern
+
+```typescript
+// Entity API composable imports types from API schemas
+import type { PresignRequest, PresignResponse } from '@api/shared/schemas/media';
+
+// Uses typed fetch helpers
+return api.post<PresignRequest, PresignResponse>('/media/presign', request);
+```
+
+> **Important**: Do NOT duplicate types in frontend. Always import from `@api/shared/schemas/`.
 
 ### Route Definition Pattern (Existing)
 
@@ -1556,81 +1585,67 @@ app.doc('/openapi.json', {
 app.get('/docs', swaggerUI({ url: '/openapi.json' }));
 ```
 
-### Frontend: Hono RPC Client
+### Frontend: Typed Fetch Client
 
-Replace the custom `createApiClient()` with Hono's type-safe RPC client.
+Since OpenAPIHono doesn't support Hono RPC type inference, we use typed fetch helpers with direct type imports.
 
 ```typescript
-// apps/web/src/shared/api/client.ts (NEW)
-import { hc } from 'hono/client';
-import type { AuthRoutes } from '@api/routes/auth';
-import type { AIRoutes } from '@api/routes/ai';
-import type { DashboardRoutes } from '@api/features/dashboard/routes';
-
-const API_URL = import.meta.env.VITE_API_BASE_URL;
-
-// Create typed clients for each route group
-export function createApiClients(getToken: () => string | null) {
-  const headers = () => {
-    const token = getToken();
+// apps/web/src/shared/api/rest/client.ts
+export function createApiClients(getToken: () => Promise<string | null>) {
+  const getHeaders = async () => {
+    const token = await getToken();
     return token ? { Authorization: `Bearer ${token}` } : {};
   };
 
   return {
-    auth: hc<AuthRoutes>(API_URL, { headers }),
-    ai: hc<AIRoutes>(API_URL, { headers }),
-    dashboard: hc<DashboardRoutes>(API_URL, { headers }),
+    // Typed POST helper
+    async post<TRequest, TResponse>(endpoint: string, body: TRequest): Promise<TResponse> {
+      const headers = await getHeaders();
+      const res = await fetch(`${API_URL}${endpoint}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...headers },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
+        const error = await res.json().catch(() => ({ message: 'Unknown error' }));
+        throw new Error(error.message || `API Error ${res.status}`);
+      }
+      return res.json();
+    },
+
+    // Typed GET helper
+    async get<TResponse>(endpoint: string, params?: Record<string, string>): Promise<TResponse> {
+      const headers = await getHeaders();
+      const url = new URL(`${API_URL}${endpoint}`);
+      if (params) {
+        Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
+      }
+      const res = await fetch(url.toString(), {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json', ...headers },
+      });
+      if (!res.ok) throw new Error(`API Error ${res.status}`);
+      return res.json();
+    },
   };
 }
-
-export type ApiClients = ReturnType<typeof createApiClients>;
 ```
 
-### Frontend: Composable with Hono RPC
+### Entity API Composable Pattern
 
 ```typescript
-// apps/web/src/shared/api/useApi.ts (NEW)
-import { createApiClients, type ApiClients } from './client';
-import { useTokenManager } from '@/shared/composables/useTokenManager';
+// apps/web/src/entities/media/api/useApiForMedia.ts
+import { useApi } from '@/shared/api/rest';
+import type { PresignRequest, PresignResponse } from '@api/shared/schemas/media';
 
-let apiClients: ApiClients | null = null;
-
-export function useApi() {
-  if (!apiClients) {
-    const { getAccessToken } = useTokenManager();
-    apiClients = createApiClients(getAccessToken);
-  }
-  return apiClients;
-}
-```
-
-### Usage in Feature Composables
-
-```typescript
-// apps/web/src/features/formDashboard/composables/useFormDashboard.ts
-import { computed, type Ref } from 'vue';
-import { useQuery } from '@tanstack/vue-query';
-import { useApi } from '@/shared/api/useApi';
-
-export function useFormDashboard(formId: Ref<string>, days: Ref<number> = ref(30)) {
+export function useApiForMedia() {
   const api = useApi();
 
-  return useQuery({
-    queryKey: computed(() => ['form-dashboard', formId.value, days.value]),
-    queryFn: async () => {
-      const res = await api.dashboard.forms[':formId'].dashboard.$get({
-        param: { formId: formId.value },
-        query: { days: days.value },
-      });
+  async function requestPresignedUrl(request: PresignRequest): Promise<PresignResponse> {
+    return api.post<PresignRequest, PresignResponse>('/media/presign', request);
+  }
 
-      if (!res.ok) {
-        throw new Error('Failed to fetch dashboard');
-      }
-
-      return res.json();  // Fully typed!
-    },
-    enabled: computed(() => !!formId.value),
-  });
+  return { requestPresignedUrl };
 }
 ```
 
@@ -1676,53 +1691,58 @@ export const MetricSentimentSchema = z.enum(['positive', 'negative', 'neutral'])
 export type MetricSentiment = z.infer<typeof MetricSentimentSchema>;
 ```
 
-```typescript
-// packages/libs/core/src/schemas/domain/index.ts
-export * from './analytics';
-```
-
 ### Type Flow Summary
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│ 1. Define route with zod-openapi                            │
-│    api/src/routes/dashboard.ts                              │
-│    └── createRoute({ request, responses })                  │
+│ 1. Define Zod schema with type export                       │
+│    api/src/shared/schemas/media.ts                          │
+│    └── export type PresignRequest = z.infer<...>            │
 │                                                             │
-│ 2. Export route type                                        │
-│    export type DashboardRoutes = typeof dashboard;          │
+│ 2. Create OpenAPI route using schema                        │
+│    api/src/routes/media.ts                                  │
+│    └── createRoute({ request: { body: PresignRequestSchema }}) │
 │                                                             │
-│ 3. Import in frontend                                       │
-│    apps/web/src/shared/api/client.ts                        │
-│    └── hc<DashboardRoutes>(API_URL)                         │
+│ 3. Frontend imports type from API                           │
+│    apps/web/src/entities/media/api/useApiForMedia.ts        │
+│    └── import type { PresignRequest } from '@api/shared/schemas/media' │
 │                                                             │
-│ 4. Use with full type inference                             │
-│    const res = await api.dashboard.forms[':formId'].$get()  │
-│    const data = await res.json();  // Typed!                │
+│ 4. Use typed fetch helpers                                  │
+│    api.post<PresignRequest, PresignResponse>('/media/presign', req) │
 └─────────────────────────────────────────────────────────────┘
 ```
 
+> **Detailed Guide**: See [docs/api/endpoint-creation.md](../../api/endpoint-creation.md) for step-by-step walkthrough.
+
 ---
 
-## Migration Plan: Existing Routes & Client
+## Current Implementation Status
 
-### Current State Analysis
+### API Routes (api/src/routes/)
 
-**API Routes (api/src/routes/):**
 | Route File | Status | Pattern |
 |------------|--------|---------|
-| `auth.ts` | ✅ Full OpenAPI | `createRoute()` + Zod |
-| `ai.ts` | ✅ Full OpenAPI | `createRoute()` + Zod |
-| `media.ts` | ✅ Full OpenAPI | `createRoute()` + Zod |
+| `auth.ts` | ✅ Complete | `createRoute()` + Zod |
+| `ai.ts` | ✅ Complete | `createRoute()` + Zod |
+| `media.ts` | ✅ Complete | `createRoute()` + Zod |
+| `analytics.ts` | ✅ Complete | `createRoute()` + Zod |
 | `forms.ts` | ⚠️ Placeholder | Plain Hono |
 | `testimonials.ts` | ⚠️ Placeholder | Plain Hono |
 | `widgets.ts` | ⚠️ Placeholder | Plain Hono |
-| `analytics.ts` | ⚠️ Partial | Needs completion |
 
-**Frontend API Client (apps/web/src/shared/api/):**
-| File | Status | Change Needed |
-|------|--------|---------------|
-| `lib/apiClient.ts` | Custom fetch wrapper | Replace with Hono RPC |
+### Frontend API Client (apps/web/src/shared/api/rest/)
+
+| File | Status | Description |
+|------|--------|-------------|
+| `client.ts` | ✅ Complete | Typed fetch helpers (`post<Req, Res>`, `get<Res>`) |
+| `useApi.ts` | ✅ Complete | Composable for accessing API client |
+
+### Entity API Composables
+
+| Entity | File | Types From |
+|--------|------|------------|
+| Media | `entities/media/api/useApiForMedia.ts` | `@api/shared/schemas/media` |
+| AI | `entities/*/api/useApiForAI.ts` | `@api/shared/schemas/ai` |
 | `ai/useApiForAI.ts` | Uses apiClient | Migrate to Hono RPC |
 | `config/apiConfig.ts` | Endpoint constants | Keep for non-typed endpoints |
 | `models/` | Manual type definitions | Auto-inferred from routes |

@@ -1,7 +1,7 @@
 /**
  * useApi Composable
  *
- * Provides a singleton instance of the Hono RPC API clients.
+ * Provides a singleton instance of the REST API client.
  * Must be called at setup-time (not inside async callbacks).
  */
 
@@ -11,13 +11,13 @@ import { useTokenManager } from '@/shared/authorization/composables/useTokenMana
 let apiClients: ApiClients | null = null;
 
 /**
- * Get the singleton API clients instance.
+ * Get the singleton API client instance.
  *
  * This composable follows Vue's composition API rules:
  * - Call at the root of setup() or <script setup>
- * - The returned clients can be used anywhere (event handlers, async code, etc.)
+ * - The returned client can be used anywhere (event handlers, async code, etc.)
  *
- * @returns Type-safe API clients for auth, ai, media, and analytics routes
+ * @returns Type-safe API client with fetch, post, and get methods
  */
 export function useApi(): ApiClients {
   if (!apiClients) {
@@ -28,7 +28,7 @@ export function useApi(): ApiClients {
 }
 
 /**
- * Reset the API clients (useful for testing or logout)
+ * Reset the API client (useful for testing or logout)
  */
 export function resetApiClients(): void {
   apiClients = null;

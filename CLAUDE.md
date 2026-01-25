@@ -226,10 +226,10 @@ import { useGetTestimonials } from '@/entities/testimonial';
 const { testimonials, loading } = useGetTestimonials();
 ```
 
-**Hono RPC Client (REST)** - For custom API endpoints:
+**REST Client** - For custom API endpoints:
 ```typescript
 // Use the unified API client
-import { useApi } from '@/shared/api/rpc';
+import { useApi } from '@/shared/api/rest';
 
 export function useApiForAI() {
   const api = useApi();
@@ -249,7 +249,7 @@ export function useApiForAI() {
 **TanStack Query** - Available for complex REST caching needs:
 ```typescript
 import { useQuery } from '@tanstack/vue-query';
-import { useApi } from '@/shared/api/rpc';
+import { useApi } from '@/shared/api/rest';
 
 const api = useApi();
 const { data } = useQuery({

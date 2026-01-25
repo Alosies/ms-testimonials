@@ -2,8 +2,8 @@
  * Core API Client
  * Pure function-based HTTP client (no Vue reactivity)
  *
- * @deprecated Use the Hono RPC client from '@/shared/api/rpc' instead.
- * The RPC client provides end-to-end type safety with the API routes.
+ * @deprecated Use the REST client from '@/shared/api/rest' instead.
+ * The REST client provides typed fetch helpers with explicit type imports.
  * This file is kept for backwards compatibility during migration.
  */
 
