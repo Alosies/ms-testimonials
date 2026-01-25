@@ -14,6 +14,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
+      '@api': fileURLToPath(new URL('../../api/src', import.meta.url)),
       '@testimonials/core': fileURLToPath(new URL('../../packages/libs/core/src', import.meta.url)),
       '@testimonials/ui': fileURLToPath(new URL('../../packages/libs/ui/src', import.meta.url)),
       '@testimonials/icons': fileURLToPath(new URL('../../packages/libs/icons/src', import.meta.url)),

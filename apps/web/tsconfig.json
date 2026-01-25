@@ -18,6 +18,7 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"],
+      "@api/*": ["../../api/src/*"],
       "@testimonials/core": ["../../packages/libs/core/src"],
       "@testimonials/ui": ["../../packages/libs/ui/src"],
       "@testimonials/ui/*": ["../../packages/libs/ui/src/*"],
@@ -27,5 +28,8 @@
     "types": ["vite/client"]
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue"],
-  "references": [{ "path": "./tsconfig.node.json" }]
+  "references": [
+    { "path": "./tsconfig.node.json" },
+    { "path": "../../api" }
+  ]
 }
