@@ -1,13 +1,9 @@
 /**
  * AI API Composable
- * Provides type-safe methods for AI operations
+ * Provides type-safe methods for AI operations using the RPC client
  */
 
-import { computed } from 'vue';
-import { useTokenManager } from '@/shared/authorization/composables/useTokenManager';
-import { createApiClient } from '../lib/apiClient';
-import { getApiBaseUrl } from '../config/apiConfig';
-import { API_ENDPOINTS } from '../config/apiConfig';
+import { useApi } from '../rpc';
 import type {
   SuggestQuestionsRequest,
   SuggestQuestionsResponse,
@@ -17,12 +13,10 @@ import type {
 
 /**
  * AI API composable
- * Provides methods for AI-related operations
+ * Provides methods for AI-related operations with type safety
  */
 export function useApiForAI() {
-  const { getValidEnhancedToken } = useTokenManager();
-  const baseUrl = computed(() => getApiBaseUrl());
-  const client = createApiClient(baseUrl.value, getValidEnhancedToken);
+  const api = useApi();
 
   /**
    * Generate AI-suggested questions for a product
@@ -31,11 +25,17 @@ export function useApiForAI() {
   async function suggestQuestions(
     request: SuggestQuestionsRequest
   ): Promise<SuggestQuestionsResponse> {
-    return client.post<SuggestQuestionsRequest, SuggestQuestionsResponse>(
-      API_ENDPOINTS.AI_SUGGEST_QUESTIONS,
-      request,
-      { authenticated: true }
-    );
+    const res = await api.fetch('/ai/suggest-questions', {
+      method: 'POST',
+      body: JSON.stringify(request),
+    });
+
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({ message: 'Unknown error' }));
+      throw new Error(error.message || 'Failed to suggest questions');
+    }
+
+    return res.json() as Promise<SuggestQuestionsResponse>;
   }
 
   /**
@@ -45,11 +45,17 @@ export function useApiForAI() {
   async function assembleTestimonial(
     request: AssembleTestimonialRequest
   ): Promise<AssembleTestimonialResponse> {
-    return client.post<AssembleTestimonialRequest, AssembleTestimonialResponse>(
-      API_ENDPOINTS.AI_ASSEMBLE,
-      request,
-      { authenticated: true }
-    );
+    const res = await api.fetch('/ai/assemble', {
+      method: 'POST',
+      body: JSON.stringify(request),
+    });
+
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({ message: 'Unknown error' }));
+      throw new Error(error.message || 'Failed to assemble testimonial');
+    }
+
+    return res.json() as Promise<AssembleTestimonialResponse>;
   }
 
   return {

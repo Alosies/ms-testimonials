@@ -1,6 +1,10 @@
 /**
  * Core API Client
  * Pure function-based HTTP client (no Vue reactivity)
+ *
+ * @deprecated Use the Hono RPC client from '@/shared/api/rpc' instead.
+ * The RPC client provides end-to-end type safety with the API routes.
+ * This file is kept for backwards compatibility during migration.
  */
 
 import type { ApiError } from '../models/common';
