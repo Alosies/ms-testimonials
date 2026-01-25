@@ -8,13 +8,10 @@ import { logger } from 'hono/logger';
 import { env } from '@/shared/config/env';
 import { corsConfig } from '@/shared/config/cors';
 
-import authRoutes from '@/routes/auth';
+import { auth, ai, media, analytics } from '@/routes';
 import testimonialRoutes from '@/routes/testimonials';
 import formRoutes from '@/routes/forms';
 import widgetRoutes from '@/routes/widgets';
-import aiRoutes from '@/routes/ai';
-import mediaRoutes from '@/routes/media';
-import analyticsRoutes from '@/routes/analytics';
 import { createE2ERoutes } from '@/routes/e2e';
 
 const app = new OpenAPIHono();
@@ -53,13 +50,14 @@ app.get('/health', (c) => {
 });
 
 // API Routes
-app.route('/auth', authRoutes);
+app.route('/auth', auth);
+app.route('/ai', ai);
+app.route('/media', media);
+app.route('/analytics', analytics);
+// Non-OpenAPI routes (still using default exports)
 app.route('/testimonials', testimonialRoutes);
 app.route('/forms', formRoutes);
 app.route('/widgets', widgetRoutes);
-app.route('/ai', aiRoutes);
-app.route('/media', mediaRoutes);
-app.route('/analytics', analyticsRoutes);
 
 // E2E testing support routes (only active when E2E_API_SECRET is configured)
 app.route('/e2e', createE2ERoutes());
@@ -172,6 +170,31 @@ app.notFound((c) => {
     },
     404
   );
+});
+
+// Graceful shutdown handler
+process.on('SIGTERM', async () => {
+  console.log('Received SIGTERM, shutting down gracefully...');
+  try {
+    const { closeDb } = await import('./db');
+    await closeDb();
+    console.log('Database connections closed.');
+  } catch {
+    // DB module not initialized or no connections to close
+  }
+  process.exit(0);
+});
+
+process.on('SIGINT', async () => {
+  console.log('Received SIGINT, shutting down gracefully...');
+  try {
+    const { closeDb } = await import('./db');
+    await closeDb();
+    console.log('Database connections closed.');
+  } catch {
+    // DB module not initialized or no connections to close
+  }
+  process.exit(0);
 });
 
 // Start server
