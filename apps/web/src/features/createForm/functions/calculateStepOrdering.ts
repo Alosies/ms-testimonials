@@ -10,7 +10,6 @@
  * - Cross-flow moves require flow assignment update + order recalculation
  */
 
-import type { FlowMembership } from '@/entities/formStep';
 import type {
   OrderableStep,
   ReorderResult,
@@ -170,23 +169,26 @@ export function getAllStepOrderUpdates<T extends OrderableStep>(
  * Validate that step orders within each flow are unique
  *
  * Checks the per-flow uniqueness constraint that exists in the database.
+ * Uses dynamic Map to support any flow membership value (ADR-018 generic approach).
  *
  * @param steps - Steps to validate
  * @returns Whether all flows have unique step orders
  */
 export function validateStepOrders<T extends OrderableStep>(
   steps: T[]
-): { valid: boolean; duplicates: { flowMembership: FlowMembership; order: number }[] } {
-  const ordersByFlow: Record<FlowMembership, Set<number>> = {
-    shared: new Set(),
-    testimonial: new Set(),
-    improvement: new Set(),
-  };
+): { valid: boolean; duplicates: { flowMembership: string; order: number }[] } {
+  // Use Map for dynamic flow membership support (no hardcoded values)
+  const ordersByFlow = new Map<string, Set<number>>();
 
-  const duplicates: { flowMembership: FlowMembership; order: number }[] = [];
+  const duplicates: { flowMembership: string; order: number }[] = [];
 
   for (const step of steps) {
-    const flowOrders = ordersByFlow[step.flowMembership];
+    // Initialize set for flow if not exists
+    if (!ordersByFlow.has(step.flowMembership)) {
+      ordersByFlow.set(step.flowMembership, new Set());
+    }
+
+    const flowOrders = ordersByFlow.get(step.flowMembership)!;
     if (flowOrders.has(step.stepOrder)) {
       duplicates.push({
         flowMembership: step.flowMembership,
@@ -207,6 +209,7 @@ export function validateStepOrders<T extends OrderableStep>(
  *
  * Ensures each flow has steps ordered 0, 1, 2, ... without gaps.
  * Use after operations that may create gaps (e.g., deletions).
+ * Uses dynamic Map to support any flow membership value (ADR-018 generic approach).
  *
  * @param steps - Steps to normalize
  * @returns Steps with normalized orders and changed IDs
@@ -216,22 +219,20 @@ export function normalizeStepOrders<T extends OrderableStep>(
 ): ReorderResult<T> {
   const changedStepIds = new Set<string>();
 
-  // Group steps by flow
-  const flowGroups: Record<FlowMembership, T[]> = {
-    shared: [],
-    testimonial: [],
-    improvement: [],
-  };
+  // Group steps by flow using Map (no hardcoded values)
+  const flowGroups = new Map<string, T[]>();
 
   for (const step of steps) {
-    flowGroups[step.flowMembership].push(step);
+    if (!flowGroups.has(step.flowMembership)) {
+      flowGroups.set(step.flowMembership, []);
+    }
+    flowGroups.get(step.flowMembership)!.push(step);
   }
 
   // Normalize each flow's ordering
   const normalizedSteps: T[] = [];
 
-  for (const flowMembership of ['shared', 'testimonial', 'improvement'] as FlowMembership[]) {
-    const flowSteps = flowGroups[flowMembership];
+  for (const [_flowMembership, flowSteps] of flowGroups) {
     // Sort by current order to preserve relative positions
     flowSteps.sort((a, b) => a.stepOrder - b.stepOrder);
 

@@ -156,10 +156,15 @@ export function getDefaultWelcomeContent(conceptName: string) {
   };
 }
 
+/**
+ * Get default thank you step content.
+ * Schema: ThankYouContentSchema requires title, message, showSocialShare
+ */
 export function getDefaultThankYouContent() {
   return {
     title: 'Thank you!',
-    subtitle: 'We really appreciate your feedback',
+    message: 'We really appreciate you taking the time to share your experience.',
+    showSocialShare: false,
   };
 }
 

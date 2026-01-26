@@ -124,11 +124,12 @@ export function useCreateFormWithSteps() {
       const hasRatingQuestion = ratingQuestionIndex >= 0;
       const DEFAULT_THRESHOLD = 4;
 
-      // 3. Create ONLY shared flow initially (branch flows need question_id which doesn't exist yet)
-      const sharedFlowInput = {
+      // 3. Create intro flow first (branch flows need question_id which doesn't exist yet)
+      // ADR-009: Intro is a shared flow at display_order=0
+      const introFlowInput = {
         form_id: form.id,
         organization_id: currentOrganizationId.value,
-        name: 'Shared Steps',
+        name: 'Intro',
         flow_type: 'shared',
         display_order: 0,
         branch_question_id: null,
@@ -138,10 +139,10 @@ export function useCreateFormWithSteps() {
         is_primary: true,
       };
 
-      const [sharedFlow] = await createFlows({ inputs: [sharedFlowInput] }) ?? [];
+      const [introFlow] = await createFlows({ inputs: [introFlowInput] }) ?? [];
 
-      if (!sharedFlow) {
-        throw new Error('Failed to create shared flow');
+      if (!introFlow) {
+        throw new Error('Failed to create intro flow');
       }
 
       // 4. Build step inputs using extracted function (ADR-014)
@@ -151,7 +152,7 @@ export function useCreateFormWithSteps() {
         conceptName: params.conceptName,
         questions: params.questions,
         stepContent: params.aiContext?.step_content ?? null,
-        sharedFlowId: sharedFlow.id,
+        sharedFlowId: introFlow.id,
       });
 
       // 5. Create steps (ADR-013 order: step → question)
@@ -245,28 +246,48 @@ export function useCreateFormWithSteps() {
         }
       }
 
-      // 8. Update branch steps to point to their actual branch flows with correct step_order
-      if (testimonialFlow && improvementFlow) {
-        const branchUpdates = getBranchFlowUpdates(
-          stepInputs,
-          createdSteps,
-          testimonialFlow.id,
-          improvementFlow.id
-        );
+      // 7b. ADR-009: Create ending flow (shared flow at display_order=3 for all users)
+      const endingFlowInput = {
+        form_id: form.id,
+        organization_id: currentOrganizationId.value,
+        name: 'Ending',
+        flow_type: 'shared',
+        display_order: 3,
+        branch_question_id: null,
+        branch_field: null as ResponseField | null,
+        branch_operator: null as BranchOperator | null,
+        branch_value: null as BranchValue,
+        is_primary: false,
+      };
 
-        if (branchUpdates.length > 0) {
-          await Promise.all(
-            branchUpdates.map(update =>
-              updateFormStepAutoSave({
-                id: update.stepId,
-                changes: {
-                  flow_id: update.flowId,
-                  step_order: update.stepOrder,
-                },
-              })
-            )
-          );
-        }
+      const [endingFlow] = await createFlows({ inputs: [endingFlowInput] }) ?? [];
+
+      if (!endingFlow) {
+        throw new Error('Failed to create ending flow');
+      }
+
+      // 8. Update branch/ending steps to point to their actual flows with correct step_order
+      // ADR-009: Reassign steps from intro flow to their target flows
+      const flowUpdates = getBranchFlowUpdates(
+        stepInputs,
+        createdSteps,
+        testimonialFlow?.id ?? null,
+        improvementFlow?.id ?? null,
+        endingFlow.id
+      );
+
+      if (flowUpdates.length > 0) {
+        await Promise.all(
+          flowUpdates.map(update =>
+            updateFormStepAutoSave({
+              id: update.stepId,
+              changes: {
+                flow_id: update.flowId,
+                step_order: update.stepOrder,
+              },
+            })
+          )
+        );
       }
 
       // 9. Set branching_config on form with rating step ID

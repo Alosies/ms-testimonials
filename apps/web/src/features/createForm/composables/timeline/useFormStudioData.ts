@@ -55,13 +55,18 @@ export function useFormStudioData(options: UseFormStudioDataOptions) {
   watch(form, (loadedForm) => {
     if (loadedForm) {
       // Extract flow IDs from the form's flows
-      // flow_type: 'shared' at display_order 0 is the default shared flow
-      // flow_type: 'branch' flows are testimonial/improvement based on branch_operator
+      // ADR-009: Position determined by display_order
+      // - display_order 0 (shared): intro flow
+      // - display_order 1 (branch): testimonial flow
+      // - display_order 2 (branch): improvement flow
+      // - display_order 3 (shared): ending flow
       const flowIds: FlowIds = {};
       if (loadedForm.flows) {
         for (const flow of loadedForm.flows) {
           if (flow.flow_type === 'shared' && flow.display_order === 0) {
-            flowIds.shared = flow.id;
+            flowIds.intro = flow.id;
+          } else if (flow.flow_type === 'shared' && flow.display_order === 3) {
+            flowIds.ending = flow.id;
           }
           // Branch flows will be handled when branching is enabled
         }
