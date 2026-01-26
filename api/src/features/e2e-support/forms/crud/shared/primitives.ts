@@ -37,10 +37,13 @@ export const DEFAULT_STEP_CONTENT: Partial<Record<TestStep['stepType'], object>>
         description: 'Your feedback will be used internally to improve our product.',
       },
     },
+    defaultOption: 'public',
+    required: true,
   },
   thank_you: {
     title: 'Thank you!',
-    subtitle: 'We really appreciate your feedback',
+    message: 'We really appreciate your feedback',
+    showSocialShare: false,
   },
   testimonial_write: {
     enableAIPath: true,
