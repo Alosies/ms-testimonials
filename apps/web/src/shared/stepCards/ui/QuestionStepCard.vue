@@ -40,6 +40,9 @@ const placeholderText = computed(() =>
   props.step.question?.placeholder || 'Your answer...',
 );
 
+// Get help text (hint shown below question)
+const helpText = computed(() => props.step.question?.helpText ?? null);
+
 // Input is disabled in edit mode, interactive in preview
 const isInputDisabled = computed(() => props.mode === 'edit');
 </script>
@@ -48,11 +51,20 @@ const isInputDisabled = computed(() => props.mode === 'edit');
   <div class="text-center w-full">
     <!-- Question text as heading -->
     <h3
-      class="text-2xl md:text-3xl font-bold text-gray-900 mb-8 leading-tight"
+      class="text-2xl md:text-3xl font-bold text-gray-900 leading-tight"
+      :class="helpText ? 'mb-3' : 'mb-8'"
       :data-testid="studioTestIds.questionText"
     >
       {{ displayText }}
     </h3>
+
+    <!-- Help text (hint) shown below question -->
+    <p
+      v-if="helpText"
+      class="text-base text-gray-500 mb-8 max-w-lg mx-auto"
+    >
+      {{ helpText }}
+    </p>
 
     <!-- Input field - wider for better UX -->
     <div class="w-full max-w-lg mx-auto">

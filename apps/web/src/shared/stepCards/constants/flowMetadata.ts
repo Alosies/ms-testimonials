@@ -1,6 +1,8 @@
 /**
  * Flow Metadata Constants
  * Centralized styling definitions for testimonial and improvement flows
+ *
+ * ADR-018: Position (intro vs outro) is determined by display_order, not membership.
  */
 
 import type { FlowMembership } from '../models/stepContent';
@@ -8,6 +10,7 @@ import type { FlowMetadata } from '../models/flowMetadata';
 
 /**
  * UI metadata for testimonial and improvement flows
+ * Note: 'shared' flows are excluded as they're not branch-specific
  */
 export const FLOW_METADATA: Record<Exclude<FlowMembership, 'shared'>, FlowMetadata> = {
   testimonial: {
