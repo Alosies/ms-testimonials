@@ -10,7 +10,7 @@
  *
  * Form Structure (branchedFormViaApi):
  * - Shared: welcome(0), question(1), question(2), question(3), rating(4)
- * - Testimonial (rating>=4): question(5), consent(6), thank_you(7)
+ * - Testimonial (rating>=4): question(5), testimonial_write(6), consent(7), thank_you(8)
  * - Improvement (rating<4): question(5), thank_you(6)
  *
  * ## ADR Reference
@@ -51,6 +51,22 @@ test.describe('Public Form', () => {
           await star.click();
 
           // Wait for the Continue button to become enabled after rating selection
+          await expect(publicForm.continueButton).toBeEnabled({ timeout: 3000 });
+        }
+
+        // Handle testimonial_write step - select manual path and enter text
+        if (currentStepType === 'testimonial_write') {
+          // Click "Write it yourself" button to select manual path
+          const manualPathButton = page.getByRole('button', { name: /write it yourself/i });
+          await expect(manualPathButton).toBeVisible({ timeout: 3000 });
+          await manualPathButton.click();
+
+          // Wait for textarea to appear and enter enough text (min 50 chars)
+          const textarea = page.locator('textarea');
+          await expect(textarea).toBeVisible({ timeout: 3000 });
+          await textarea.fill('This is a great product that has helped me tremendously. I would highly recommend it to anyone looking for a solution.');
+
+          // Wait for Continue button to be enabled
           await expect(publicForm.continueButton).toBeEnabled({ timeout: 3000 });
         }
 
@@ -191,6 +207,18 @@ test.describe('Public Form', () => {
         const highestStar = page.getByTestId('rating-star-5');
         await expect(highestStar).toBeVisible({ timeout: 3000 });
         await highestStar.click();
+        await page.waitForTimeout(500);
+      }
+
+      // Handle testimonial_write step - select manual path and enter text
+      if (currentStepType === 'testimonial_write') {
+        const manualPathButton = page.getByRole('button', { name: /write it yourself/i });
+        await expect(manualPathButton).toBeVisible({ timeout: 3000 });
+        await manualPathButton.click();
+
+        const textarea = page.locator('textarea');
+        await expect(textarea).toBeVisible({ timeout: 3000 });
+        await textarea.fill('This is a great product that has helped me tremendously. I would highly recommend it to anyone looking for a solution.');
         await page.waitForTimeout(500);
       }
 

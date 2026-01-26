@@ -303,6 +303,9 @@ export function createAutoSaveActions(studio: StudioPage) {
      */
     async toggleTestimonialWriteShowPrevAnswers() {
       const showPrevAnswersSwitch = page.getByTestId(studioTestIds.testimonialWriteShowPrevAnswersSwitch);
+      // Wait for element to be stable before clicking (handles re-renders)
+      await showPrevAnswersSwitch.waitFor({ state: 'visible' });
+      await page.waitForTimeout(100); // Brief pause for DOM stability
       await showPrevAnswersSwitch.click();
     },
   };
