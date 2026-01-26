@@ -56,7 +56,10 @@ export interface RoutingUtilities {
   getFormPath: (form: FormRef) => string
   getFormStudioPath: (form: FormRef) => string
   getFormResponsesPath: (form: FormRef) => string
+  getFormWidgetsPath: (form: FormRef) => string
   getFormSettingsPath: (form: FormRef) => string
+  getFormAnalyticsPath: (form: FormRef) => string
+  getFormTestimonialsPath: (form: FormRef) => string
   getTestimonialPath: (testimonial: TestimonialRef) => string
   getWidgetPath: (widget: WidgetRef) => string
 
@@ -67,7 +70,10 @@ export interface RoutingUtilities {
   goToForm: (form: FormRef, options?: NavigationOptions) => void
   goToFormStudio: (form: FormRef, options?: NavigationOptions) => void
   goToFormResponses: (form: FormRef, options?: NavigationOptions) => void
+  goToFormWidgets: (form: FormRef, options?: NavigationOptions) => void
   goToFormSettings: (form: FormRef, options?: NavigationOptions) => void
+  goToFormAnalytics: (form: FormRef, options?: NavigationOptions) => void
+  goToFormTestimonials: (form: FormRef, options?: NavigationOptions) => void
   goToTestimonials: () => void
   goToTestimonial: (testimonial: TestimonialRef, options?: NavigationOptions) => void
   goToWidgets: () => void

@@ -87,9 +87,24 @@ function useRoutingCore(): RoutingUtilities {
     return withOrgPrefix(`/forms/${urlSlug}/responses`)
   }
 
+  const getFormWidgetsPath = (form: FormRef) => {
+    const urlSlug = createEntityUrlSlug(form.name, form.id)
+    return withOrgPrefix(`/forms/${urlSlug}/widgets`)
+  }
+
   const getFormSettingsPath = (form: FormRef) => {
     const urlSlug = createEntityUrlSlug(form.name, form.id)
     return withOrgPrefix(`/forms/${urlSlug}/settings`)
+  }
+
+  const getFormAnalyticsPath = (form: FormRef) => {
+    const urlSlug = createEntityUrlSlug(form.name, form.id)
+    return withOrgPrefix(`/forms/${urlSlug}/analytics`)
+  }
+
+  const getFormTestimonialsPath = (form: FormRef) => {
+    const urlSlug = createEntityUrlSlug(form.name, form.id)
+    return withOrgPrefix(`/forms/${urlSlug}/testimonials`)
   }
 
   const getTestimonialPath = (testimonial: TestimonialRef) => {
@@ -130,8 +145,14 @@ function useRoutingCore(): RoutingUtilities {
     navigate(getFormResponsesPath(form), options)
   const goToFormStudio = (form: FormRef, options?: NavigationOptions) =>
     navigate(getFormStudioPath(form), options)
+  const goToFormWidgets = (form: FormRef, options?: NavigationOptions) =>
+    navigate(getFormWidgetsPath(form), options)
   const goToFormSettings = (form: FormRef, options?: NavigationOptions) =>
     navigate(getFormSettingsPath(form), options)
+  const goToFormAnalytics = (form: FormRef, options?: NavigationOptions) =>
+    navigate(getFormAnalyticsPath(form), options)
+  const goToFormTestimonials = (form: FormRef, options?: NavigationOptions) =>
+    navigate(getFormTestimonialsPath(form), options)
 
   // Testimonials
   const goToTestimonials = () => navigate(testimonialsPath.value)
@@ -169,7 +190,10 @@ function useRoutingCore(): RoutingUtilities {
     getFormPath,
     getFormStudioPath,
     getFormResponsesPath,
+    getFormWidgetsPath,
     getFormSettingsPath,
+    getFormAnalyticsPath,
+    getFormTestimonialsPath,
     getTestimonialPath,
     getWidgetPath,
 
@@ -180,7 +204,10 @@ function useRoutingCore(): RoutingUtilities {
     goToForm,
     goToFormStudio,
     goToFormResponses,
+    goToFormWidgets,
     goToFormSettings,
+    goToFormAnalytics,
+    goToFormTestimonials,
     goToTestimonials,
     goToTestimonial,
     goToWidgets,
