@@ -30,6 +30,7 @@ export default defineConfig({
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
+    headless: !process.env.E2E_HEADED, // Headless by default, set E2E_HEADED=1 to show browser
   },
   projects: [
     {
