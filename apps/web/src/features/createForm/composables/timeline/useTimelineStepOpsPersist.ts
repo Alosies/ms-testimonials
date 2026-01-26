@@ -35,11 +35,13 @@ function createLinkedQuestion(qId: string, qText: string, src?: LinkedQuestion |
   };
 }
 
-/** Build step creation input for persistence layer */
+/** Build step creation input for persistence layer
+ * ADR-009: flow_membership removed (deprecated, derived from flow on load)
+ */
 function buildStepInput(step: FormStep, flowId: string, orgId: string, stepOrder: number) {
   return {
     id: step.id, flow_id: flowId, organization_id: orgId, step_type: step.stepType, step_order: stepOrder,
-    flow_membership: step.flowMembership ?? 'shared', tips: step.tips ?? [], content: step.content ?? {}, is_active: true,
+    tips: step.tips ?? [], content: step.content ?? {}, is_active: true,
   };
 }
 

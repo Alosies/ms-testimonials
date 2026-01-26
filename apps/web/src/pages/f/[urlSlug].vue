@@ -52,6 +52,23 @@ const stepsVars = computed(() => ({ formId: formId.value }));
 const { formSteps, loading: stepsLoading } = useGetFormSteps(stepsVars);
 
 // Transform GraphQL form steps to FormStep type
+/**
+ * Derive flow membership from the flow relationship.
+ * ADR-009: Flow identity is determined by flow_type + branch_operator, not a separate column.
+ */
+function deriveFlowMembership(flow: { flow_type: string; branch_operator?: string | null }): FormStep['flowMembership'] {
+  if (flow.flow_type === 'shared') {
+    return 'shared';
+  }
+  if (flow.branch_operator === 'greater_than_or_equal_to') {
+    return 'testimonial';
+  }
+  if (flow.branch_operator === 'less_than') {
+    return 'improvement';
+  }
+  return 'shared';
+}
+
 // ADR-013: Access question via questions[0] array relationship
 const steps = computed((): FormStep[] => {
   return formSteps.value.map((step) => {
@@ -99,7 +116,8 @@ const steps = computed((): FormStep[] => {
         step.content,
       ) as FormStep['content'],
       tips: (step.tips as string[]) ?? [],
-      flowMembership: (step.flow_membership as FormStep['flowMembership']) ?? 'shared',
+      // ADR-009: Derived from flow relationship (not deprecated flow_membership column)
+      flowMembership: deriveFlowMembership(step.flow),
       isActive: step.is_active,
     };
   });

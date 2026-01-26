@@ -38,12 +38,22 @@ export type {
 
 /**
  * Flow IDs for step creation
- * Maps flow membership to actual database flow IDs
+ * Maps flow position to actual database flow IDs
+ *
+ * ADR-009: 4 flows with display_order:
+ * - intro (display_order=0): shared steps before branches
+ * - testimonial (display_order=1): positive rating branch
+ * - improvement (display_order=2): negative rating branch
+ * - ending (display_order=3): shared steps after branches
+ *
+ * Note: Both intro and ending have flow_type='shared' in the database.
+ * The distinction is by display_order, not flow_type.
  */
 export interface FlowIds {
-  shared?: string;
+  intro?: string;
   testimonial?: string;
   improvement?: string;
+  ending?: string;
 }
 
 /**
@@ -59,9 +69,12 @@ export interface FormContext {
 
 /**
  * Flow membership for conditional branching
- * - 'shared': Step appears in all flows (before branch point)
+ * - 'shared': Step appears in all flows (both intro AND ending)
  * - 'testimonial': Step appears only in positive rating flow
  * - 'improvement': Step appears only in negative rating flow
+ *
+ * ADR-009: Position (intro vs ending) is determined by the flow's display_order,
+ * not by a separate membership value. Both intro and ending flows have flow_type='shared'.
  */
 export type FlowMembership = 'shared' | 'testimonial' | 'improvement';
 

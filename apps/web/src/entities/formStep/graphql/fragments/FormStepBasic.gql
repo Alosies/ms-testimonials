@@ -7,10 +7,16 @@ fragment FormStepBasic on form_steps {
   step_order
   content
   tips
-  flow_membership
   is_active
   created_at
   updated_at
+  # ADR-009: Flow relationship for deriving flow identity
+  # flow_type + branch_operator + display_order determine position
+  flow {
+    flow_type
+    branch_operator
+    display_order
+  }
   # ADR-013: Relationship inverted - question now references step via step_id
   # Array relationship (0:1 in practice) - access as questions[0]
   questions {

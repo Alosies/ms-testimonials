@@ -8,8 +8,8 @@
  * 4. Deletion of improvement flow steps when branching is disabled
  * 5. Creating question records for question/rating steps that need them
  *
- * Updated for ADR-009 Phase 2: Persists flow_id instead of flow_membership.
- * flow_membership is derived from flow.flow_type on load.
+ * Updated for ADR-009 Phase 2: Persists flow_id only.
+ * flow_membership is derived from flow.flow_type + flow.branch_operator on load (not persisted).
  */
 import { ref, computed } from 'vue';
 import { createSharedComposable } from '@vueuse/core';
@@ -219,6 +219,7 @@ export const useSaveFormSteps = createSharedComposable(() => {
    * Explicitly typed to avoid readonly issues
    *
    * ADR-013: Removed formId and questionId (steps belong to flows, questions reference steps)
+   * ADR-009: Removed flowMembership (deprecated, derived from flow on load)
    */
   interface StepForMapping {
     id: string;
@@ -228,7 +229,6 @@ export const useSaveFormSteps = createSharedComposable(() => {
     tips: string[];
     // ADR-013: flowId is required (steps belong to flows)
     flowId: string;
-    flowMembership: string;
     isActive: boolean;
     isNew?: boolean;
   }
@@ -237,6 +237,7 @@ export const useSaveFormSteps = createSharedComposable(() => {
    * Convert FormStep to form_steps_insert_input format
    *
    * ADR-013: Removed form_id and question_id (steps belong to flows, questions reference steps)
+   * ADR-009: Removed flow_membership (deprecated, derived from flow.flow_type + flow.branch_operator)
    */
   function mapStepToInput(step: StepForMapping, organizationId: string, userId?: string) {
     return {
@@ -248,8 +249,6 @@ export const useSaveFormSteps = createSharedComposable(() => {
       step_order: step.stepOrder,
       content: step.content || {},
       tips: step.tips || [],
-      // Keep flow_membership for backward compatibility during migration
-      flow_membership: step.flowMembership,
       is_active: step.isActive,
       created_by: step.isNew ? userId : undefined,
       updated_by: userId,
@@ -305,7 +304,7 @@ export const useSaveFormSteps = createSharedComposable(() => {
           tips: [...(step.tips || [])],
           // ADR-013: flowId is required
           flowId: step.flowId,
-          flowMembership: step.flowMembership,
+          // ADR-009: flowMembership removed (deprecated, derived from flow on load)
           isActive: step.isActive,
           isNew: step.isNew,
         }));
@@ -380,8 +379,10 @@ export const useSaveFormSteps = createSharedComposable(() => {
    * 4. Delete those empty flows (except the shared flow)
    */
   async function deleteEmptyFlows(): Promise<boolean> {
-    // Get the shared flow ID from context (this should never be deleted)
-    const sharedFlowId = editor.formContext.value.flowIds?.shared;
+    // Get the shared flow IDs from context (intro and ending should never be deleted)
+    // ADR-009: Both intro (display_order=0) and ending (display_order=3) are shared flows
+    const introFlowId = editor.formContext.value.flowIds?.intro;
+    const endingFlowId = editor.formContext.value.flowIds?.ending;
 
     // Get all unique flowIds from original steps (steps that existed in DB)
     const originalFlowIds = new Set(
@@ -399,8 +400,8 @@ export const useSaveFormSteps = createSharedComposable(() => {
 
     // Find flowIds that existed before but have no steps now
     const emptyFlowIds = [...originalFlowIds].filter(flowId => {
-      // Skip the shared flow - never delete it
-      if (flowId === sharedFlowId) return false;
+      // Skip the shared flows (intro and ending) - never delete them
+      if (flowId === introFlowId || flowId === endingFlowId) return false;
       // Include if this flow no longer has any steps
       return !currentFlowIds.has(flowId);
     });

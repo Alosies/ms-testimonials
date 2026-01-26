@@ -68,11 +68,12 @@ export function useTimelineStepCrud(deps: StepCrudDeps): TimelineStepCrudReturn 
   /**
    * Get the flow ID to use for new steps.
    * ADR-013: Steps belong to flows, flowId is required.
+   * ADR-009: Prefer intro flow (display_order=0), fallback to other flows.
    */
   function getFlowIdForStep(): string {
     const flowIds = formContext.value.flowIds;
-    // Prefer shared flow, fallback to any available flow
-    return flowIds?.shared ?? flowIds?.testimonial ?? flowIds?.improvement ?? '';
+    // Prefer intro flow, fallback to any available flow
+    return flowIds?.intro ?? flowIds?.testimonial ?? flowIds?.improvement ?? flowIds?.ending ?? '';
   }
 
   function addStep(type: StepType, afterIndex?: number): FormStep {
@@ -247,6 +248,7 @@ export function useTimelineStepCrud(deps: StepCrudDeps): TimelineStepCrudReturn 
       const newStep = addStep(type, afterIndex);
 
       // ADR-013: Persist the step to database FIRST (step must exist for question to reference)
+      // ADR-009: flow_membership removed (deprecated, derived from flow on load)
       await createFormSteps({
         inputs: [{
           id: newStep.id,
@@ -255,7 +257,6 @@ export function useTimelineStepCrud(deps: StepCrudDeps): TimelineStepCrudReturn 
           organization_id: orgId,
           step_type: newStep.stepType,
           step_order: nextStepOrder, // Use computed order, not local array index
-          flow_membership: newStep.flowMembership ?? 'shared',
           tips: newStep.tips ?? [],
           content: newStep.content ?? {},
           is_active: true,
@@ -367,6 +368,7 @@ export function useTimelineStepCrud(deps: StepCrudDeps): TimelineStepCrudReturn 
       if (!newStep) return null;
 
       // ADR-013: Persist the step to database FIRST (step must exist for question to reference)
+      // ADR-009: flow_membership removed (deprecated, derived from flow on load)
       await createFormSteps({
         inputs: [{
           id: newStep.id,
@@ -375,7 +377,6 @@ export function useTimelineStepCrud(deps: StepCrudDeps): TimelineStepCrudReturn 
           organization_id: orgId,
           step_type: newStep.stepType,
           step_order: newStep.stepOrder,
-          flow_membership: newStep.flowMembership ?? 'shared',
           tips: newStep.tips ?? [],
           content: newStep.content ?? {},
           is_active: true,

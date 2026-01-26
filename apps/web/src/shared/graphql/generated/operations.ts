@@ -19352,14 +19352,14 @@ export type GetFormQuestionsQueryVariables = Exact<{
 
 export type GetFormQuestionsQuery = { __typename?: 'query_root', form_questions: Array<{ __typename?: 'form_questions', id: string, step_id?: string | null, organization_id: string, question_type_id: string, question_key: string, question_text: string, placeholder?: string | null, help_text?: string | null, display_order: number, is_required: boolean, min_length?: number | null, max_length?: number | null, min_value?: number | null, max_value?: number | null, validation_pattern?: string | null, allowed_file_types?: Array<string> | null, max_file_size_kb?: number | null, is_active: boolean, created_at: string, updated_at: string, question_type: { __typename?: 'question_types', id: string, unique_name: string, name: string, category: string, input_component: string } }> };
 
-export type FormStepBasicFragment = { __typename?: 'form_steps', id: string, flow_id: string, step_type: string, step_order: number, content: any, tips?: Array<string> | null, flow_membership: string, is_active: boolean, created_at: string, updated_at: string, questions: Array<{ __typename?: 'form_questions', scale_min_label?: string | null, scale_max_label?: string | null, id: string, step_id?: string | null, organization_id: string, question_type_id: string, question_key: string, question_text: string, placeholder?: string | null, help_text?: string | null, display_order: number, is_required: boolean, min_length?: number | null, max_length?: number | null, min_value?: number | null, max_value?: number | null, validation_pattern?: string | null, allowed_file_types?: Array<string> | null, max_file_size_kb?: number | null, is_active: boolean, created_at: string, updated_at: string, options: Array<{ __typename?: 'question_options', id: string, question_id: string, option_value: string, option_label: string, display_order: number, is_default: boolean, is_active: boolean }>, question_type: { __typename?: 'question_types', id: string, unique_name: string, name: string, category: string, input_component: string } }> };
+export type FormStepBasicFragment = { __typename?: 'form_steps', id: string, flow_id: string, step_type: string, step_order: number, content: any, tips?: Array<string> | null, is_active: boolean, created_at: string, updated_at: string, flow: { __typename?: 'flows', flow_type: string, branch_operator?: string | null, display_order: number }, questions: Array<{ __typename?: 'form_questions', scale_min_label?: string | null, scale_max_label?: string | null, id: string, step_id?: string | null, organization_id: string, question_type_id: string, question_key: string, question_text: string, placeholder?: string | null, help_text?: string | null, display_order: number, is_required: boolean, min_length?: number | null, max_length?: number | null, min_value?: number | null, max_value?: number | null, validation_pattern?: string | null, allowed_file_types?: Array<string> | null, max_file_size_kb?: number | null, is_active: boolean, created_at: string, updated_at: string, options: Array<{ __typename?: 'question_options', id: string, question_id: string, option_value: string, option_label: string, display_order: number, is_default: boolean, is_active: boolean }>, question_type: { __typename?: 'question_types', id: string, unique_name: string, name: string, category: string, input_component: string } }> };
 
 export type CreateFormStepsMutationVariables = Exact<{
   inputs: Array<Form_Steps_Insert_Input> | Form_Steps_Insert_Input;
 }>;
 
 
-export type CreateFormStepsMutation = { __typename?: 'mutation_root', insert_form_steps?: { __typename?: 'form_steps_mutation_response', returning: Array<{ __typename?: 'form_steps', id: string, flow_id: string, step_type: string, step_order: number, content: any, tips?: Array<string> | null, flow_membership: string, is_active: boolean, created_at: string, updated_at: string, questions: Array<{ __typename?: 'form_questions', scale_min_label?: string | null, scale_max_label?: string | null, id: string, step_id?: string | null, organization_id: string, question_type_id: string, question_key: string, question_text: string, placeholder?: string | null, help_text?: string | null, display_order: number, is_required: boolean, min_length?: number | null, max_length?: number | null, min_value?: number | null, max_value?: number | null, validation_pattern?: string | null, allowed_file_types?: Array<string> | null, max_file_size_kb?: number | null, is_active: boolean, created_at: string, updated_at: string, options: Array<{ __typename?: 'question_options', id: string, question_id: string, option_value: string, option_label: string, display_order: number, is_default: boolean, is_active: boolean }>, question_type: { __typename?: 'question_types', id: string, unique_name: string, name: string, category: string, input_component: string } }> }> } | null };
+export type CreateFormStepsMutation = { __typename?: 'mutation_root', insert_form_steps?: { __typename?: 'form_steps_mutation_response', returning: Array<{ __typename?: 'form_steps', id: string, flow_id: string, step_type: string, step_order: number, content: any, tips?: Array<string> | null, is_active: boolean, created_at: string, updated_at: string, flow: { __typename?: 'flows', flow_type: string, branch_operator?: string | null, display_order: number }, questions: Array<{ __typename?: 'form_questions', scale_min_label?: string | null, scale_max_label?: string | null, id: string, step_id?: string | null, organization_id: string, question_type_id: string, question_key: string, question_text: string, placeholder?: string | null, help_text?: string | null, display_order: number, is_required: boolean, min_length?: number | null, max_length?: number | null, min_value?: number | null, max_value?: number | null, validation_pattern?: string | null, allowed_file_types?: Array<string> | null, max_file_size_kb?: number | null, is_active: boolean, created_at: string, updated_at: string, options: Array<{ __typename?: 'question_options', id: string, question_id: string, option_value: string, option_label: string, display_order: number, is_default: boolean, is_active: boolean }>, question_type: { __typename?: 'question_types', id: string, unique_name: string, name: string, category: string, input_component: string } }> }> } | null };
 
 export type DeleteFormStepsMutationVariables = Exact<{
   ids: Array<Scalars['String']['input']> | Scalars['String']['input'];
@@ -19374,7 +19374,7 @@ export type UpdateFormStepMutationVariables = Exact<{
 }>;
 
 
-export type UpdateFormStepMutation = { __typename?: 'mutation_root', update_form_steps_by_pk?: { __typename?: 'form_steps', id: string, flow_membership: string, step_order: number, content: any, tips?: Array<string> | null, updated_at: string } | null };
+export type UpdateFormStepMutation = { __typename?: 'mutation_root', update_form_steps_by_pk?: { __typename?: 'form_steps', id: string, step_order: number, content: any, tips?: Array<string> | null, updated_at: string } | null };
 
 export type UpdateFormStepAutoSaveMutationVariables = Exact<{
   id: Scalars['String']['input'];
@@ -19389,14 +19389,14 @@ export type UpsertFormStepsMutationVariables = Exact<{
 }>;
 
 
-export type UpsertFormStepsMutation = { __typename?: 'mutation_root', insert_form_steps?: { __typename?: 'form_steps_mutation_response', returning: Array<{ __typename?: 'form_steps', id: string, flow_id: string, step_type: string, step_order: number, content: any, tips?: Array<string> | null, flow_membership: string, is_active: boolean, created_at: string, updated_at: string, questions: Array<{ __typename?: 'form_questions', scale_min_label?: string | null, scale_max_label?: string | null, id: string, step_id?: string | null, organization_id: string, question_type_id: string, question_key: string, question_text: string, placeholder?: string | null, help_text?: string | null, display_order: number, is_required: boolean, min_length?: number | null, max_length?: number | null, min_value?: number | null, max_value?: number | null, validation_pattern?: string | null, allowed_file_types?: Array<string> | null, max_file_size_kb?: number | null, is_active: boolean, created_at: string, updated_at: string, options: Array<{ __typename?: 'question_options', id: string, question_id: string, option_value: string, option_label: string, display_order: number, is_default: boolean, is_active: boolean }>, question_type: { __typename?: 'question_types', id: string, unique_name: string, name: string, category: string, input_component: string } }> }> } | null };
+export type UpsertFormStepsMutation = { __typename?: 'mutation_root', insert_form_steps?: { __typename?: 'form_steps_mutation_response', returning: Array<{ __typename?: 'form_steps', id: string, flow_id: string, step_type: string, step_order: number, content: any, tips?: Array<string> | null, is_active: boolean, created_at: string, updated_at: string, flow: { __typename?: 'flows', flow_type: string, branch_operator?: string | null, display_order: number }, questions: Array<{ __typename?: 'form_questions', scale_min_label?: string | null, scale_max_label?: string | null, id: string, step_id?: string | null, organization_id: string, question_type_id: string, question_key: string, question_text: string, placeholder?: string | null, help_text?: string | null, display_order: number, is_required: boolean, min_length?: number | null, max_length?: number | null, min_value?: number | null, max_value?: number | null, validation_pattern?: string | null, allowed_file_types?: Array<string> | null, max_file_size_kb?: number | null, is_active: boolean, created_at: string, updated_at: string, options: Array<{ __typename?: 'question_options', id: string, question_id: string, option_value: string, option_label: string, display_order: number, is_default: boolean, is_active: boolean }>, question_type: { __typename?: 'question_types', id: string, unique_name: string, name: string, category: string, input_component: string } }> }> } | null };
 
 export type GetFormStepsQueryVariables = Exact<{
   formId: Scalars['String']['input'];
 }>;
 
 
-export type GetFormStepsQuery = { __typename?: 'query_root', form_steps: Array<{ __typename?: 'form_steps', id: string, flow_id: string, step_type: string, step_order: number, content: any, tips?: Array<string> | null, flow_membership: string, is_active: boolean, created_at: string, updated_at: string, questions: Array<{ __typename?: 'form_questions', scale_min_label?: string | null, scale_max_label?: string | null, id: string, step_id?: string | null, organization_id: string, question_type_id: string, question_key: string, question_text: string, placeholder?: string | null, help_text?: string | null, display_order: number, is_required: boolean, min_length?: number | null, max_length?: number | null, min_value?: number | null, max_value?: number | null, validation_pattern?: string | null, allowed_file_types?: Array<string> | null, max_file_size_kb?: number | null, is_active: boolean, created_at: string, updated_at: string, options: Array<{ __typename?: 'question_options', id: string, question_id: string, option_value: string, option_label: string, display_order: number, is_default: boolean, is_active: boolean }>, question_type: { __typename?: 'question_types', id: string, unique_name: string, name: string, category: string, input_component: string } }> }> };
+export type GetFormStepsQuery = { __typename?: 'query_root', form_steps: Array<{ __typename?: 'form_steps', id: string, flow_id: string, step_type: string, step_order: number, content: any, tips?: Array<string> | null, is_active: boolean, created_at: string, updated_at: string, flow: { __typename?: 'flows', flow_type: string, branch_operator?: string | null, display_order: number }, questions: Array<{ __typename?: 'form_questions', scale_min_label?: string | null, scale_max_label?: string | null, id: string, step_id?: string | null, organization_id: string, question_type_id: string, question_key: string, question_text: string, placeholder?: string | null, help_text?: string | null, display_order: number, is_required: boolean, min_length?: number | null, max_length?: number | null, min_value?: number | null, max_value?: number | null, validation_pattern?: string | null, allowed_file_types?: Array<string> | null, max_file_size_kb?: number | null, is_active: boolean, created_at: string, updated_at: string, options: Array<{ __typename?: 'question_options', id: string, question_id: string, option_value: string, option_label: string, display_order: number, is_default: boolean, is_active: boolean }>, question_type: { __typename?: 'question_types', id: string, unique_name: string, name: string, category: string, input_component: string } }> }> };
 
 export type OrganizationBasicFragment = { __typename?: 'organizations', id: string, name: string, slug: string, logo_id?: string | null, setup_status: 'pending_setup' | 'completed', is_active: boolean, settings: any, created_at: string, updated_at: string, logo?: { __typename?: 'media', id: string, storage_path: string, status: string, mime_type: string, width?: number | null, height?: number | null } | null, plans: Array<{ __typename?: 'organization_plans', id: string, plan_id: string, status: string, plan: { __typename?: 'plans', id: string, unique_name: string, name: string, question_types: Array<{ __typename?: 'plan_question_types', question_type: { __typename?: 'question_types', id: string, unique_name: string, name: string, category: string, description?: string | null, icon?: string | null, input_component: string, answer_data_type: string, display_order: number, supports_options: boolean } }> } }> };
 
@@ -19667,10 +19667,14 @@ export const FormStepBasicFragmentDoc = gql`
   step_order
   content
   tips
-  flow_membership
   is_active
   created_at
   updated_at
+  flow {
+    flow_type
+    branch_operator
+    display_order
+  }
   questions {
     ...FormQuestionWithOptions
   }
@@ -20615,7 +20619,6 @@ export const UpdateFormStepDocument = gql`
     mutation UpdateFormStep($id: String!, $changes: form_steps_set_input!) {
   update_form_steps_by_pk(pk_columns: {id: $id}, _set: $changes) {
     id
-    flow_membership
     step_order
     content
     tips
@@ -20681,7 +20684,7 @@ export const UpsertFormStepsDocument = gql`
     mutation UpsertFormSteps($inputs: [form_steps_insert_input!]!) {
   insert_form_steps(
     objects: $inputs
-    on_conflict: {constraint: form_steps_pkey, update_columns: [step_order, content, tips, flow_id, flow_membership, is_active, updated_by]}
+    on_conflict: {constraint: form_steps_pkey, update_columns: [step_order, content, tips, flow_id, is_active, updated_by]}
   ) {
     returning {
       ...FormStepBasic

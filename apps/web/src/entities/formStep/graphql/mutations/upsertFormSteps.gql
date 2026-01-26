@@ -2,12 +2,13 @@
 
 # Upsert form steps - inserts new steps and updates existing ones
 # Used for saving form editor state including new improvement flow steps
+# ADR-009: flow_membership removed (deprecated - use flow_id instead)
 mutation UpsertFormSteps($inputs: [form_steps_insert_input!]!) {
   insert_form_steps(
     objects: $inputs
     on_conflict: {
       constraint: form_steps_pkey
-      update_columns: [step_order, content, tips, flow_id, flow_membership, is_active, updated_by]
+      update_columns: [step_order, content, tips, flow_id, is_active, updated_by]
     }
   ) {
     returning {
