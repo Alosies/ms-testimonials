@@ -1,13 +1,17 @@
 <script setup lang="ts">
 /**
- * Form settings page
- * Route: /:org/forms/:urlSlug/settings
+ * Form Analytics page
+ * Route: /:org/forms/:urlSlug/analytics
+ *
+ * Dedicated page for form analytics dashboard.
+ * Separated from the main form dashboard to avoid loading
+ * analytics data on every dashboard visit.
  */
 import { definePage } from 'unplugin-vue-router/runtime'
 import { useRoute } from 'vue-router'
 import { computed } from 'vue'
 import { extractEntityIdFromSlug } from '@/shared/urls'
-import { FormSubpageHeader } from '@/features/formDashboard'
+import { FormDashboard, FormSubpageHeader } from '@/features/formDashboard'
 import FormSubpageLayout from '@/layouts/FormSubpageLayout.vue'
 
 definePage({
@@ -34,19 +38,15 @@ const formRef = computed(() => ({
     <div v-if="!entityInfo?.isValid" class="text-destructive">
       Invalid form URL
     </div>
-    <template v-else>
+    <template v-else-if="formId">
       <FormSubpageHeader
         :form-ref="formRef"
-        title="Settings"
-        subtitle="Configure form options"
+        title="Analytics"
+        subtitle="View form performance metrics and insights"
       />
 
-      <!-- Placeholder -->
-      <div class="rounded-lg border border-border bg-card p-8 text-center">
-        <p class="text-muted-foreground">
-          Form settings coming soon.
-        </p>
-      </div>
+      <!-- Analytics Dashboard -->
+      <FormDashboard :form-id="formId" />
     </template>
   </FormSubpageLayout>
 </template>

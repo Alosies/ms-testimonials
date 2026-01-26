@@ -1,7 +1,9 @@
 <script setup lang="ts">
 /**
- * Form settings page
- * Route: /:org/forms/:urlSlug/settings
+ * Form Testimonials page
+ * Route: /:org/forms/:urlSlug/testimonials
+ *
+ * Shows testimonials collected from this specific form.
  */
 import { definePage } from 'unplugin-vue-router/runtime'
 import { useRoute } from 'vue-router'
@@ -34,17 +36,17 @@ const formRef = computed(() => ({
     <div v-if="!entityInfo?.isValid" class="text-destructive">
       Invalid form URL
     </div>
-    <template v-else>
+    <template v-else-if="formId">
       <FormSubpageHeader
         :form-ref="formRef"
-        title="Settings"
-        subtitle="Configure form options"
+        title="Testimonials"
+        subtitle="Testimonials collected from this form"
       />
 
-      <!-- Placeholder -->
+      <!-- Placeholder for testimonials list filtered by form -->
       <div class="rounded-lg border border-border bg-card p-8 text-center">
         <p class="text-muted-foreground">
-          Form settings coming soon.
+          Testimonials filtered by form coming soon.
         </p>
       </div>
     </template>
