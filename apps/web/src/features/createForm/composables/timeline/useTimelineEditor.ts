@@ -402,6 +402,11 @@ export const useTimelineEditor = createSharedComposable(() => {
     branchPointIndex: branching.branchPointIndex,
     branchPointStep: branching.branchPointStep,
     stepsBeforeBranch: branching.stepsBeforeBranch,
+    // ADR-018: Flow segments for generic canvas rendering
+    flowSegments: branching.flowSegments,
+    hasOutroSegment: branching.hasOutroSegment,
+    outroSegment: branching.outroSegment,
+    outroSteps: branching.outroSteps,
 
     // Branching Operations
     setBranchingConfig: branching.setBranchingConfig,

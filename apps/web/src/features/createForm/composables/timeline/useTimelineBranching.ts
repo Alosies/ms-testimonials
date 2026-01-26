@@ -20,6 +20,7 @@ import { useBranchingDisable } from './useBranchingDisable';
 import { useBranchingFlowFocus } from './useBranchingFlowFocus';
 import { useBranchingDetection } from './useBranchingDetection';
 import { useSaveLock } from '../autoSave';
+import type { FlowSegment, SharedSegment, BranchSegment } from '../../functions';
 
 interface BranchingDeps {
   steps: Ref<FormStep[]>;
@@ -77,6 +78,101 @@ export function useTimelineBranching(deps: BranchingDeps) {
   const stepsBeforeBranch = computed(() => {
     if (branchPointIndex.value === -1) return steps.value;
     return steps.value.slice(0, branchPointIndex.value + 1);
+  });
+
+  /**
+   * ADR-018: Compute flow segments for generic canvas rendering.
+   *
+   * Groups steps into segments based on flowMembership:
+   * - Shared segment (intro): Steps before branch point
+   * - Branch segment: Testimonial and improvement steps
+   * - Shared segment (outro): Steps after branches with flowMembership='shared'
+   *
+   * This computed provides a generic view for rendering any sequence of
+   * shared/branch flows, supporting future patterns like:
+   * Shared(intro) → Branch → Shared(outro) → Branch → Shared
+   */
+  const flowSegments = computed<FlowSegment[]>(() => {
+    if (!isBranchingEnabled.value || branchPointIndex.value === -1) {
+      // No branching - all steps in a single shared segment
+      if (steps.value.length === 0) return [];
+      return [{
+        type: 'shared',
+        flows: [],
+        steps: steps.value,
+      } as SharedSegment];
+    }
+
+    const segments: FlowSegment[] = [];
+
+    // Intro segment: shared steps up to and including branch point
+    const introSteps = stepsBeforeBranch.value;
+    if (introSteps.length > 0) {
+      segments.push({
+        type: 'shared',
+        flows: [],
+        steps: introSteps,
+      } as SharedSegment);
+    }
+
+    // Branch segment: testimonial and improvement steps
+    const testimSteps = testimonialSteps.value;
+    const improvSteps = improvementSteps.value;
+    if (testimSteps.length > 0 || improvSteps.length > 0) {
+      const stepsByFlow = new Map<string, FormStep[]>();
+      // Use 'testimonial' and 'improvement' as pseudo-flow IDs for now
+      if (testimSteps.length > 0) {
+        stepsByFlow.set('testimonial', testimSteps);
+      }
+      if (improvSteps.length > 0) {
+        stepsByFlow.set('improvement', improvSteps);
+      }
+      segments.push({
+        type: 'branch',
+        flows: [],
+        stepsByFlow,
+      } as BranchSegment);
+    }
+
+    // Outro segment: shared steps after branches
+    // These would be steps with flowMembership='shared' that come after the branch point
+    // Currently, the data model doesn't distinguish intro vs outro shared steps,
+    // but this is where they would go when ADR-018 is fully implemented
+    const outroSteps = steps.value.filter(
+      s => s.flowMembership === 'shared' && steps.value.indexOf(s) > branchPointIndex.value
+    );
+    if (outroSteps.length > 0) {
+      segments.push({
+        type: 'shared',
+        flows: [],
+        steps: outroSteps,
+      } as SharedSegment);
+    }
+
+    return segments;
+  });
+
+  /**
+   * ADR-018: Check if there's an outro segment (shared steps after branches).
+   */
+  const hasOutroSegment = computed(() => {
+    return flowSegments.value.length > 2 &&
+           flowSegments.value[flowSegments.value.length - 1].type === 'shared';
+  });
+
+  /**
+   * ADR-018: Get the outro segment if it exists.
+   */
+  const outroSegment = computed<SharedSegment | null>(() => {
+    if (!hasOutroSegment.value) return null;
+    return flowSegments.value[flowSegments.value.length - 1] as SharedSegment;
+  });
+
+  /**
+   * ADR-018: Get steps in the outro section.
+   */
+  const outroSteps = computed(() => {
+    return (outroSegment.value?.steps ?? []) as FormStep[];
   });
 
   // ============================================
@@ -397,6 +493,11 @@ export function useTimelineBranching(deps: BranchingDeps) {
     branchPointIndex,
     branchPointStep,
     stepsBeforeBranch,
+    // ADR-018: Flow segments
+    flowSegments,
+    hasOutroSegment,
+    outroSegment,
+    outroSteps,
 
     // Operations
     setBranchingConfig,
