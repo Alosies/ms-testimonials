@@ -28,6 +28,8 @@
     "@tanstack/vue-query": "^5.92.9",
     "@testimonials/core": "workspace:*",
     "@testimonials/icons": "workspace:*",
+    "@unovis/ts": "^1.6.2",
+    "@unovis/vue": "^1.6.2",
     "@vee-validate/zod": "^4.15.1",
     "@vue/apollo-composable": "^4.2.2",
     "@vueuse/core": "^11.3.0",
