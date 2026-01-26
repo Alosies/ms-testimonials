@@ -4,7 +4,7 @@
   "private": true,
   "description": "Testimonial collection and display widget - AI-powered smart prompts",
   "scripts": {
-    "dev": "pnpm -r --parallel dev",
+    "dev": "scripts/dev-with-worktree-port.sh",
     "dev:web": "pnpm --filter @testimonials/web dev",
     "dev:api": "pnpm --filter @testimonials/api dev",
     "dev:web:yellow": "VITE_PORT=3001 pnpm --filter @testimonials/web dev",
