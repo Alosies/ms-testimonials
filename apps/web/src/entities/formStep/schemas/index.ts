@@ -30,6 +30,7 @@ export {
   type RewardContent,
   type RewardType,
   type ThankYouContent,
+  type TestimonialWriteContent,
   type EmptyContent,
   type ParseResult,
   // Schemas (for advanced use cases)
@@ -38,6 +39,7 @@ export {
   ContactInfoContentSchema,
   RewardContentSchema,
   ThankYouContentSchema,
+  TestimonialWriteContentSchema,
   EmptyContentSchema,
   // Defaults
   defaultWelcomeContent,
@@ -45,4 +47,5 @@ export {
   defaultContactInfoContent,
   defaultRewardContent,
   defaultThankYouContent,
+  defaultTestimonialWriteContent,
 } from './stepContent.schema';

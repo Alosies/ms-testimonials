@@ -196,6 +196,32 @@ registry.set('reward', {
   category: 'flow-control',
 });
 
+registry.set('testimonial_write', {
+  type: 'testimonial_write',
+  label: 'Testimonial Write',
+  icon: 'pencil-square',
+  requiresQuestion: false,
+  allowedFlows: ['testimonial'],
+  defaultContent: {
+    enableAIPath: true,
+    title: 'Share your testimonial',
+    subtitle: 'Write your experience in your own words',
+    placeholder: 'Describe how our product helped you...',
+    minLength: 50,
+    maxLength: 1000,
+    showPreviousAnswers: true,
+    previousAnswersLabel: 'Your responses for reference',
+    aiPathTitle: 'Let AI craft your story',
+    aiPathDescription: "We'll transform your answers into a testimonial. You review and edit before submit.",
+    manualPathTitle: 'Write it yourself',
+    manualPathDescription: 'Write your own testimonial in your words.',
+  },
+  canBranch: false,
+  allowMultiple: false,
+  menuOrder: 45,
+  category: 'flow-control',
+});
+
 // =============================================================================
 // Export frozen registry (immutable after initialization)
 // =============================================================================

@@ -44,7 +44,7 @@ export interface TestQuestion {
  */
 export interface TestStep {
   id: string;
-  stepType: 'welcome' | 'question' | 'rating' | 'thank_you' | 'consent';
+  stepType: 'welcome' | 'question' | 'rating' | 'thank_you' | 'consent' | 'contact_info' | 'reward' | 'testimonial_write';
   stepOrder: number;
   questions: TestQuestion[];
   /** Flow membership for branched forms */

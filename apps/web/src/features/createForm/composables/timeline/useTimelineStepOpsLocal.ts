@@ -59,10 +59,12 @@ export const useTimelineStepOpsLocal = createSharedComposable((): TimelineStepOp
     const { afterIndex, select = true, flowMembership = 'shared', flowId = '' } = options;
     const config = getStepTypeConfig(type);
 
-    // Validate flow membership
-    const actualFlowMembership = config.allowedFlows.includes(flowMembership) ? flowMembership : 'shared';
+    // Validate flow membership - use first allowed flow as fallback if requested flow not allowed
+    const actualFlowMembership = config.allowedFlows.includes(flowMembership)
+      ? flowMembership
+      : config.allowedFlows[0] ?? 'shared';
     if (!config.allowedFlows.includes(flowMembership)) {
-      console.warn(`Step type "${type}" not allowed in flow "${flowMembership}", using 'shared'`);
+      console.warn(`Step type "${type}" not allowed in flow "${flowMembership}", using '${actualFlowMembership}'`);
     }
 
     const insertIndex = afterIndex !== undefined

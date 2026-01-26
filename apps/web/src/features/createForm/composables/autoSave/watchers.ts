@@ -190,6 +190,7 @@ export const useStepTipsWatcher = () => {
  * - consent: title, description, options.public/private labels/descriptions
  * - contact_info: title, subtitle
  * - reward: title, description, couponCode, couponDescription, downloadUrl, etc.
+ * - testimonial_write: title, subtitle, placeholder, labels, enableAIPath, etc.
  *
  * Question and Rating steps use the question watcher instead (they have no content).
  *
@@ -205,7 +206,7 @@ export const useStepContentWatcher = () => {
   const prevStepId = ref<string | null>(null);
   const prevContentHash = ref<string | null>(null);
 
-  const stepTypesWithContent = ['welcome', 'thank_you', 'consent', 'contact_info', 'reward'];
+  const stepTypesWithContent = ['welcome', 'thank_you', 'consent', 'contact_info', 'reward', 'testimonial_write'];
 
   watch(
     () => {

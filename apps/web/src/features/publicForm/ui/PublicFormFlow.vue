@@ -5,8 +5,11 @@
  * Renders form steps in preview mode for testimonial collection.
  * Uses shared step card components with mode="preview".
  * Supports conditional branching based on rating responses.
+ * Supports testimonial writing with manual and AI-assisted paths.
+ *
+ * @see PRD-005: AI Testimonial Generation
  */
-import { computed, toRef, type Component } from 'vue';
+import { computed, ref, toRef, type Component } from 'vue';
 import { Button } from '@testimonials/ui';
 import { Icon } from '@testimonials/icons';
 import type { FormStep, StepType } from '@/shared/stepCards';
@@ -20,10 +23,20 @@ import {
   ContactInfoStepCard,
   RewardStepCard,
   ThankYouStepCard,
+  TestimonialWriteStepCard,
+  TestimonialPathSelector,
+  TestimonialReviewStepCard,
+  type TestimonialPath,
 } from '@/shared/stepCards';
 import { OrganizationLogo } from '@/entities/organization';
 import { publicFormTestIds } from '@/shared/constants/testIds';
-import { usePublicFormFlow } from '../composables';
+import { useApiForAI } from '@/shared/api/ai';
+import type {
+  TestimonialSuggestion,
+  TestimonialMetadata,
+  TestimonialAnswer,
+} from '@/shared/api/ai';
+import { usePublicFormFlow, useCustomerGoogleAuth } from '../composables';
 
 interface Props {
   steps: FormStep[];
@@ -45,6 +58,10 @@ const props = withDefaults(defineProps<Props>(), {
   formId: '',
   organizationId: '',
 });
+
+// API composables (called at setup root)
+const aiApi = useApiForAI();
+const googleAuth = useCustomerGoogleAuth();
 
 // Custom styles for the entire public form (applies custom primary color)
 // Applied at root level so all elements (buttons, dots, progress bar) inherit the brand color
@@ -82,6 +99,30 @@ const ratingResponse = computed({
   },
 });
 
+// Testimonial response for v-model binding (manual path)
+const testimonialResponse = computed({
+  get: () => {
+    const stepId = flow.currentStep.value?.id;
+    if (!stepId) return '';
+    const value = flow.getResponse(stepId);
+    return typeof value === 'string' ? value : '';
+  },
+  set: (value: string) => {
+    const stepId = flow.currentStep.value?.id;
+    if (stepId) {
+      flow.setResponse(stepId, value);
+    }
+  },
+});
+
+// Testimonial write step state
+const selectedPath = ref<TestimonialPath | null>(null);
+const isGeneratingTestimonial = ref(false);
+const generatedTestimonial = ref<string | null>(null);
+const testimonialSuggestions = ref<TestimonialSuggestion[]>([]);
+const testimonialMetadata = ref<TestimonialMetadata | null>(null);
+const regenerationsRemaining = ref(3);
+
 const stepCardComponents: Record<StepType, Component> = {
   welcome: WelcomeStepCard,
   question: QuestionStepCard,
@@ -90,23 +131,180 @@ const stepCardComponents: Record<StepType, Component> = {
   contact_info: ContactInfoStepCard,
   reward: RewardStepCard,
   thank_you: ThankYouStepCard,
+  testimonial_write: TestimonialWriteStepCard,
 };
 
 const isWelcomeStep = computed(() => flow.currentStep.value?.stepType === 'welcome');
 const isThankYouStep = computed(() => flow.currentStep.value?.stepType === 'thank_you');
 const isRatingStep = computed(() => flow.currentStep.value?.stepType === 'rating');
+const isTestimonialWriteStep = computed(() => flow.currentStep.value?.stepType === 'testimonial_write');
+
+// Determine testimonial write step state
+const testimonialWriteState = computed(() => {
+  if (!isTestimonialWriteStep.value) return 'none';
+  if (selectedPath.value === null) return 'path_selection';
+  if (selectedPath.value === 'manual') return 'manual';
+  if (isGeneratingTestimonial.value) return 'generating';
+  if (generatedTestimonial.value) return 'review';
+  return 'path_selection';
+});
+
+// Previous answers for reference
+const previousAnswers = computed(() => {
+  if (!isTestimonialWriteStep.value) return [];
+
+  const answers: { questionText: string; answer: string }[] = [];
+
+  for (const step of flow.visibleSteps.value) {
+    if (step.stepType === 'question' && step.question) {
+      const response = flow.getResponse(step.id);
+      if (response && typeof response === 'string') {
+        answers.push({
+          questionText: step.question.questionText,
+          answer: response,
+        });
+      }
+    }
+  }
+
+  return answers;
+});
+
+// Build answers for AI assembly
+function buildAnswersForAI(): TestimonialAnswer[] {
+  const answers: TestimonialAnswer[] = [];
+
+  for (const step of flow.visibleSteps.value) {
+    if (step.stepType === 'question' && step.question) {
+      const response = flow.getResponse(step.id);
+      if (response && typeof response === 'string') {
+        answers.push({
+          question_text: step.question.questionText,
+          question_key: step.id, // Using step ID as key
+          answer: response,
+        });
+      }
+    }
+  }
+
+  return answers;
+}
 
 // Navigation visibility
-const showNavigation = computed(() => !isWelcomeStep.value && !isThankYouStep.value);
+const showNavigation = computed(() => {
+  if (isWelcomeStep.value || isThankYouStep.value) return false;
+  // Hide navigation in testimonial write states that manage their own flow
+  if (testimonialWriteState.value === 'generating' || testimonialWriteState.value === 'review') return false;
+  return true;
+});
 const showBackButton = computed(() => !flow.isFirstStep.value && showNavigation.value);
 // Show Continue on rating step when rating selected (flow reveals next steps after determination)
-const showNextButton = computed(() =>
-  (isRatingStep.value && ratingResponse.value !== null) ||
-  (!flow.isLastStep.value && showNavigation.value)
-);
-const isNextDisabled = computed(() => isRatingStep.value && ratingResponse.value === null);
+const showNextButton = computed(() => {
+  // Don't show next on testimonial write step (it has its own flow)
+  if (isTestimonialWriteStep.value && selectedPath.value !== 'manual') return false;
+  if (isRatingStep.value && ratingResponse.value !== null) return true;
+  if (!flow.isLastStep.value && showNavigation.value) return true;
+  return false;
+});
+const isNextDisabled = computed(() => {
+  if (isRatingStep.value) return ratingResponse.value === null;
+  if (isTestimonialWriteStep.value && selectedPath.value === 'manual') {
+    // Validate manual testimonial length
+    const content = flow.currentStep.value?.content as { minLength?: number } | undefined;
+    const minLength = content?.minLength ?? 50;
+    return testimonialResponse.value.length < minLength;
+  }
+  return false;
+});
 
 function handleWelcomeStart() {
+  flow.goToNext();
+}
+
+/**
+ * Handle path selection for testimonial write step
+ */
+function handlePathSelect(path: TestimonialPath) {
+  selectedPath.value = path;
+}
+
+/**
+ * Handle Google authentication and start AI generation
+ */
+async function handleGoogleAuth() {
+  const result = await googleAuth.signInWithGoogle();
+
+  if (result.success) {
+    selectedPath.value = 'ai';
+    await generateTestimonial();
+  }
+}
+
+/**
+ * Generate testimonial using AI
+ */
+async function generateTestimonial(modification?: { suggestion_id: string }) {
+  if (!props.formId) {
+    console.error('Form ID is required for AI testimonial generation');
+    return;
+  }
+
+  isGeneratingTestimonial.value = true;
+
+  try {
+    const answers = buildAnswersForAI();
+    const rating = ratingResponse.value ?? undefined;
+
+    const response = await aiApi.assembleTestimonial({
+      form_id: props.formId,
+      answers,
+      rating,
+      modification: modification
+        ? {
+            type: 'suggestion',
+            suggestion_id: modification.suggestion_id,
+            previous_testimonial: generatedTestimonial.value || '',
+          }
+        : undefined,
+    });
+
+    generatedTestimonial.value = response.testimonial;
+    testimonialSuggestions.value = response.suggestions;
+    testimonialMetadata.value = response.metadata;
+  } catch (error) {
+    console.error('Failed to generate testimonial:', error);
+    // Fall back to manual path on error
+    selectedPath.value = 'manual';
+  } finally {
+    isGeneratingTestimonial.value = false;
+  }
+}
+
+/**
+ * Handle testimonial regeneration
+ */
+async function handleRegenerate() {
+  if (regenerationsRemaining.value <= 0) return;
+  regenerationsRemaining.value--;
+  await generateTestimonial();
+}
+
+/**
+ * Handle applying a suggestion
+ */
+async function handleApplySuggestion(suggestionId: string) {
+  await generateTestimonial({ suggestion_id: suggestionId });
+}
+
+/**
+ * Handle accepting the AI-generated testimonial
+ */
+function handleAcceptTestimonial(testimonial: string) {
+  const stepId = flow.currentStep.value?.id;
+  if (stepId) {
+    flow.setResponse(stepId, testimonial);
+  }
+  // Continue to next step
   flow.goToNext();
 }
 
@@ -117,6 +315,21 @@ function handleWelcomeStart() {
 async function handleSubmit() {
   await flow.handleSubmission();
   flow.goToNext();
+}
+
+/**
+ * Handle back button with path reset for testimonial write
+ */
+function handleBack() {
+  if (isTestimonialWriteStep.value && selectedPath.value) {
+    // Reset path selection instead of going to previous step
+    selectedPath.value = null;
+    generatedTestimonial.value = null;
+    testimonialSuggestions.value = [];
+    testimonialMetadata.value = null;
+  } else {
+    flow.goToPrevious();
+  }
 }
 </script>
 
@@ -157,27 +370,83 @@ async function handleSubmit() {
           mode="preview"
           :step-type="flow.currentStep.value.stepType"
         >
-        <!-- Welcome step with start handler -->
-        <WelcomeStepCard
-          v-if="isWelcomeStep"
-          :step="flow.currentStep.value"
-          mode="preview"
-          @start="handleWelcomeStart"
-        />
-        <!-- Rating step with v-model for response -->
-        <RatingStepCard
-          v-else-if="isRatingStep"
-          v-model="ratingResponse"
-          :step="flow.currentStep.value"
-          mode="preview"
-        />
-        <!-- Other step types -->
-        <component
-          v-else
-          :is="stepCardComponents[flow.currentStep.value.stepType]"
-          :step="flow.currentStep.value"
-          mode="preview"
-        />
+          <!-- Welcome step with start handler -->
+          <WelcomeStepCard
+            v-if="isWelcomeStep"
+            :step="flow.currentStep.value"
+            mode="preview"
+            @start="handleWelcomeStart"
+          />
+
+          <!-- Rating step with v-model for response -->
+          <RatingStepCard
+            v-else-if="isRatingStep"
+            v-model="ratingResponse"
+            :step="flow.currentStep.value"
+            mode="preview"
+          />
+
+          <!-- Testimonial Write Step - Multiple States -->
+          <template v-else-if="isTestimonialWriteStep">
+            <!-- Path Selection -->
+            <TestimonialPathSelector
+              v-if="testimonialWriteState === 'path_selection'"
+              :step="flow.currentStep.value"
+              mode="preview"
+              :is-google-auth-loading="googleAuth.isLoading.value"
+              @select="handlePathSelect"
+              @google-auth="handleGoogleAuth"
+            />
+
+            <!-- Manual Path -->
+            <TestimonialWriteStepCard
+              v-else-if="testimonialWriteState === 'manual'"
+              v-model="testimonialResponse"
+              :step="flow.currentStep.value"
+              mode="preview"
+              :previous-answers="previousAnswers"
+            />
+
+            <!-- Generating State -->
+            <div
+              v-else-if="testimonialWriteState === 'generating'"
+              class="text-center py-12"
+            >
+              <Icon
+                icon="svg-spinners:90-ring-with-bg"
+                class="w-12 h-12 text-primary mx-auto mb-4"
+              />
+              <h3 class="text-xl font-semibold text-gray-900 mb-2">
+                Crafting your testimonial...
+              </h3>
+              <p class="text-gray-600">
+                Our AI is transforming your answers into a compelling story.
+              </p>
+            </div>
+
+            <!-- Review State -->
+            <TestimonialReviewStepCard
+              v-else-if="testimonialWriteState === 'review'"
+              :step="flow.currentStep.value"
+              mode="preview"
+              :testimonial="generatedTestimonial || ''"
+              :suggestions="testimonialSuggestions"
+              :metadata="testimonialMetadata || undefined"
+              :regenerations-remaining="regenerationsRemaining"
+              :is-regenerating="isGeneratingTestimonial"
+              @accept="handleAcceptTestimonial"
+              @regenerate="handleRegenerate"
+              @apply-suggestion="handleApplySuggestion"
+            />
+          </template>
+
+          <!-- Other step types -->
+          <component
+            v-else
+            :is="stepCardComponents[flow.currentStep.value.stepType]"
+            :step="flow.currentStep.value"
+            mode="preview"
+          />
         </StepCardContainer>
       </div>
 
@@ -192,7 +461,7 @@ async function handleSubmit() {
           variant="outline"
           class="border-gray-300 text-gray-600 hover:bg-gray-100 hover:text-gray-700"
           :data-testid="publicFormTestIds.backButton"
-          @click="flow.goToPrevious"
+          @click="handleBack"
         >
           <Icon icon="heroicons:arrow-left" class="w-4 h-4 mr-2" />
           Back

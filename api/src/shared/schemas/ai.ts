@@ -196,34 +196,139 @@ export const SuggestQuestionsResponseSchema = z.object({
 }).openapi('SuggestQuestionsResponse');
 
 /**
- * Request schema for /ai/assemble (testimonial assembly)
+ * Suggestion schema for testimonial modifications
+ */
+export const TestimonialSuggestionSchema = z.object({
+  id: z.string().openapi({
+    example: 'make_briefer',
+    description: 'Unique identifier for the suggestion',
+  }),
+  label: z.string().openapi({
+    example: 'Make it briefer',
+    description: 'Short label for the suggestion chip',
+  }),
+  description: z.string().openapi({
+    example: 'Reduce the length while keeping the key points',
+    description: 'Longer description of what this suggestion does',
+  }),
+  applicability: z.number().min(0).max(1).openapi({
+    example: 0.8,
+    description: 'How applicable this suggestion is (0-1 score)',
+  }),
+}).openapi('TestimonialSuggestion');
+
+/**
+ * Tone analysis for the generated testimonial
+ */
+export const TestimonialToneSchema = z.object({
+  formality: z.enum(['formal', 'neutral', 'casual']).openapi({
+    example: 'neutral',
+    description: 'Level of formality in the testimonial',
+  }),
+  energy: z.enum(['enthusiastic', 'neutral', 'reserved']).openapi({
+    example: 'enthusiastic',
+    description: 'Energy level of the testimonial',
+  }),
+  confidence: z.enum(['assertive', 'neutral', 'humble']).openapi({
+    example: 'assertive',
+    description: 'Confidence level expressed in the testimonial',
+  }),
+}).openapi('TestimonialTone');
+
+/**
+ * Metadata about the generated testimonial
+ */
+export const TestimonialMetadataSchema = z.object({
+  word_count: z.number().int().openapi({
+    example: 85,
+    description: 'Number of words in the testimonial',
+  }),
+  reading_time_seconds: z.number().int().openapi({
+    example: 25,
+    description: 'Estimated reading time in seconds',
+  }),
+  tone: TestimonialToneSchema.openapi({
+    description: 'Analysis of the testimonial tone',
+  }),
+  key_themes: z.array(z.string()).openapi({
+    example: ['time-saving', 'collaboration', 'efficiency'],
+    description: 'Key themes identified in the testimonial',
+  }),
+}).openapi('TestimonialMetadata');
+
+/**
+ * Modification request for refining a testimonial
+ */
+export const TestimonialModificationSchema = z.object({
+  type: z.enum(['suggestion']).openapi({
+    example: 'suggestion',
+    description: 'Type of modification',
+  }),
+  suggestion_id: z.string().openapi({
+    example: 'make_briefer',
+    description: 'ID of the suggestion to apply',
+  }),
+  previous_testimonial: z.string().openapi({
+    example: 'Before TaskFlow, I was spending hours...',
+    description: 'The previous testimonial text to modify',
+  }),
+}).openapi('TestimonialModification');
+
+/**
+ * Answer input for testimonial assembly
+ */
+export const TestimonialAnswerSchema = z.object({
+  question_text: z.string().openapi({
+    example: 'What was your biggest challenge before using TaskFlow?',
+    description: 'The question text that was shown to the customer',
+  }),
+  question_key: z.string().openapi({
+    example: 'problem_before',
+    description: 'Unique key identifier for the question',
+  }),
+  answer: z.string().openapi({
+    example: 'I was spending hours manually tracking project updates across multiple spreadsheets.',
+    description: 'The customer\'s answer to the question',
+  }),
+}).openapi('TestimonialAnswer');
+
+/**
+ * Request schema for /ai/assemble-testimonial (enhanced testimonial assembly)
  */
 export const AssembleTestimonialRequestSchema = z.object({
-  product_name: z.string().min(1).max(100).openapi({
-    example: 'TaskFlow',
-    description: 'Name of the product',
+  form_id: z.string().min(1).openapi({
+    example: 'frm_abc123xyz',
+    description: 'ID of the form (used to fetch product_name)',
   }),
-  answers: z.array(z.object({
-    question: z.string().openapi({
-      example: 'What was your biggest challenge before using TaskFlow?',
-      description: 'The question that was asked',
-    }),
-    answer: z.string().openapi({
-      example: 'I was spending hours manually tracking project updates across multiple spreadsheets.',
-      description: 'The customer\'s answer',
-    }),
-  })).min(1).openapi({
+  answers: z.array(TestimonialAnswerSchema).min(1).openapi({
     description: 'Array of question-answer pairs from the customer',
+  }),
+  rating: z.number().int().min(1).max(5).optional().openapi({
+    example: 5,
+    description: 'Customer rating (1-5 stars)',
+  }),
+  quality: z.enum(['fast', 'enhanced', 'premium']).optional().openapi({
+    example: 'enhanced',
+    description: 'Quality tier affecting model selection and processing',
+  }),
+  modification: TestimonialModificationSchema.optional().openapi({
+    description: 'Optional modification to apply to a previous testimonial',
   }),
 }).openapi('AssembleTestimonialRequest');
 
 /**
- * Response schema for /ai/assemble (testimonial assembly)
+ * Response schema for /ai/assemble-testimonial (enhanced testimonial assembly)
  */
 export const AssembleTestimonialResponseSchema = z.object({
   testimonial: z.string().openapi({
     example: 'Before TaskFlow, I was spending hours manually tracking project updates across multiple spreadsheets. Now, my team collaborates in real-time and we\'ve cut our meeting time in half. I couldn\'t imagine going back to the old way.',
     description: 'The AI-assembled testimonial text',
+  }),
+  suggestions: z.array(TestimonialSuggestionSchema).openapi({
+    description: 'Suggested modifications the customer can apply',
+  }),
+  metadata: TestimonialMetadataSchema.openapi({
+    description: 'Metadata about the generated testimonial',
   }),
 }).openapi('AssembleTestimonialResponse');
 
@@ -238,5 +343,10 @@ export type ImprovementThankYou = z.infer<typeof ImprovementThankYouSchema>;
 export type StepContent = z.infer<typeof StepContentSchema>;
 export type SuggestQuestionsRequest = z.infer<typeof SuggestQuestionsRequestSchema>;
 export type SuggestQuestionsResponse = z.infer<typeof SuggestQuestionsResponseSchema>;
+export type TestimonialAnswer = z.infer<typeof TestimonialAnswerSchema>;
+export type TestimonialSuggestion = z.infer<typeof TestimonialSuggestionSchema>;
+export type TestimonialTone = z.infer<typeof TestimonialToneSchema>;
+export type TestimonialMetadata = z.infer<typeof TestimonialMetadataSchema>;
+export type TestimonialModification = z.infer<typeof TestimonialModificationSchema>;
 export type AssembleTestimonialRequest = z.infer<typeof AssembleTestimonialRequestSchema>;
 export type AssembleTestimonialResponse = z.infer<typeof AssembleTestimonialResponseSchema>;

@@ -29,6 +29,7 @@ import ConsentStepEditor from './editors/ConsentStepEditor.vue';
 import ContactInfoStepEditor from './editors/ContactInfoStepEditor.vue';
 import RewardStepEditor from './editors/RewardStepEditor.vue';
 import ThankYouStepEditor from './editors/ThankYouStepEditor.vue';
+import TestimonialWriteStepEditor from './editors/TestimonialWriteStepEditor.vue';
 import { useTimelineEditor } from '../../composables/timeline';
 import { useAutoSaveController } from '../../composables/autoSave';
 import { SaveStatusPill, type SaveStatus } from '@/shared/widgets';
@@ -58,6 +59,7 @@ const editorComponents: Record<string, Component> = {
   contact_info: ContactInfoStepEditor,
   reward: RewardStepEditor,
   thank_you: ThankYouStepEditor,
+  testimonial_write: TestimonialWriteStepEditor,
 };
 
 const currentEditor = computed(() => {

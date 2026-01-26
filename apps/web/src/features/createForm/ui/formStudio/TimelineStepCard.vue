@@ -20,6 +20,7 @@ import {
   ContactInfoStepCard,
   RewardStepCard,
   ThankYouStepCard,
+  TestimonialPathSelector,
 } from '@/shared/stepCards';
 import { OrganizationLogo } from '@/entities/organization';
 import TimelineConnector from './TimelineConnector.vue';
@@ -73,6 +74,7 @@ const stepCardComponents: Record<StepType, Component> = {
   contact_info: ContactInfoStepCard,
   reward: RewardStepCard,
   thank_you: ThankYouStepCard,
+  testimonial_write: TestimonialPathSelector,
 };
 
 function handleInsert(type: StepType) {

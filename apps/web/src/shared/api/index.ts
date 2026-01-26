@@ -44,7 +44,12 @@ export type {
   StepContent,
   SuggestQuestionsRequest,
   SuggestQuestionsResponse,
-  QuestionAnswerPair,
+  TestimonialAnswer,
+  TestimonialModification,
+  TestimonialQuality,
+  TestimonialSuggestion,
+  TestimonialTone,
+  TestimonialMetadata,
   AssembleTestimonialRequest,
   AssembleTestimonialResponse,
 } from './ai';

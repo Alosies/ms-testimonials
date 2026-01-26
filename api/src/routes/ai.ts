@@ -1,5 +1,6 @@
 import { OpenAPIHono, createRoute } from '@hono/zod-openapi';
 import { suggestQuestions } from '@/features/ai/suggestQuestions';
+import { assembleTestimonial } from '@/features/ai/assembleTestimonial';
 import { authMiddleware } from '@/shared/middleware/auth';
 import {
   SuggestQuestionsRequestSchema,
@@ -11,6 +12,7 @@ import {
   ErrorResponseSchema,
   UnauthorizedResponseSchema,
   InternalErrorResponseSchema,
+  TooManyRequestsResponseSchema,
 } from '@/shared/schemas/common';
 
 const ai = new OpenAPIHono();
@@ -77,15 +79,17 @@ ai.use('/suggest-questions', authMiddleware);
 ai.openapi(suggestQuestionsRoute, suggestQuestions as any);
 
 /**
- * POST /ai/assemble
- * Assemble testimonial from customer answers using AI
+ * POST /ai/assemble-testimonial
+ * Assemble testimonial from customer Q&A responses using AI
+ *
+ * @see PRD-005: AI Testimonial Generation
  */
 const assembleTestimonialRoute = createRoute({
   method: 'post',
-  path: '/assemble',
+  path: '/assemble-testimonial',
   tags: ['AI'],
-  summary: 'Assemble testimonial from answers',
-  description: 'Combines customer answers into a coherent, first-person testimonial. Preserves the customer\'s voice while connecting their responses smoothly.',
+  summary: 'Assemble testimonial from Q&A responses',
+  description: 'Transforms customer question-answer responses into a coherent, first-person testimonial. Returns the testimonial along with modification suggestions and metadata analysis.',
   request: {
     body: {
       content: {
@@ -112,6 +116,14 @@ const assembleTestimonialRoute = createRoute({
         },
       },
     },
+    429: {
+      description: 'Rate limit exceeded',
+      content: {
+        'application/json': {
+          schema: TooManyRequestsResponseSchema,
+        },
+      },
+    },
     500: {
       description: 'AI service error',
       content: {
@@ -125,13 +137,7 @@ const assembleTestimonialRoute = createRoute({
 
 // Assemble endpoint (public - used during form submission)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-ai.openapi(assembleTestimonialRoute, (async (c: any) => {
-  // TODO: Implement AI testimonial assembly
-  // This will be implemented when building the form submission flow
-  return c.json({
-    testimonial: 'AI-assembled testimonial placeholder',
-  });
-}) as any);
+ai.openapi(assembleTestimonialRoute, assembleTestimonial as any);
 
 export { ai };
 export type AIRoutes = typeof ai;

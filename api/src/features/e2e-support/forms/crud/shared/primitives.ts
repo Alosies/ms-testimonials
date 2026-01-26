@@ -42,6 +42,20 @@ export const DEFAULT_STEP_CONTENT: Partial<Record<TestStep['stepType'], object>>
     title: 'Thank you!',
     subtitle: 'We really appreciate your feedback',
   },
+  testimonial_write: {
+    enableAIPath: true,
+    title: 'Share your testimonial',
+    subtitle: 'Write your experience in your own words',
+    placeholder: 'Describe how our product helped you...',
+    minLength: 50,
+    maxLength: 1000,
+    showPreviousAnswers: true,
+    previousAnswersLabel: 'Your responses for reference',
+    aiPathTitle: 'Let AI craft your story',
+    aiPathDescription: "We'll transform your answers into a testimonial. You review and edit before submit.",
+    manualPathTitle: 'Write it yourself',
+    manualPathDescription: 'Write your own testimonial in your words.',
+  },
 };
 
 /**

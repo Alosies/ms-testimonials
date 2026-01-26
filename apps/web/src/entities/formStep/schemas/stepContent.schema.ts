@@ -35,6 +35,11 @@ import {
   defaultThankYouContent,
   type ThankYouContent,
 } from './thankYouContent.schema';
+import {
+  TestimonialWriteContentSchema,
+  defaultTestimonialWriteContent,
+  type TestimonialWriteContent,
+} from './testimonialWriteContent.schema';
 
 // Re-export individual content types
 export type { WelcomeContent } from './welcomeContent.schema';
@@ -42,6 +47,7 @@ export type { ConsentContent } from './consentContent.schema';
 export type { ContactInfoContent, ContactField } from './contactInfoContent.schema';
 export type { RewardContent, RewardType } from './rewardContent.schema';
 export type { ThankYouContent } from './thankYouContent.schema';
+export type { TestimonialWriteContent } from './testimonialWriteContent.schema';
 
 /**
  * Empty content schema for question/rating steps
@@ -59,6 +65,7 @@ export type StepContent =
   | ContactInfoContent
   | RewardContent
   | ThankYouContent
+  | TestimonialWriteContent
   | EmptyContent;
 
 /**
@@ -71,7 +78,8 @@ export type StepType =
   | 'consent'
   | 'contact_info'
   | 'reward'
-  | 'thank_you';
+  | 'thank_you'
+  | 'testimonial_write';
 
 /**
  * Map of step types to their content schemas
@@ -84,6 +92,7 @@ const stepContentSchemas: Record<StepType, z.ZodSchema> = {
   contact_info: ContactInfoContentSchema,
   reward: RewardContentSchema,
   thank_you: ThankYouContentSchema,
+  testimonial_write: TestimonialWriteContentSchema,
 };
 
 /**
@@ -97,6 +106,7 @@ const defaultContentByType: Record<StepType, StepContent> = {
   contact_info: defaultContactInfoContent,
   reward: defaultRewardContent,
   thank_you: defaultThankYouContent,
+  testimonial_write: defaultTestimonialWriteContent,
 };
 
 /**
@@ -237,6 +247,7 @@ export {
   ContactInfoContentSchema,
   RewardContentSchema,
   ThankYouContentSchema,
+  TestimonialWriteContentSchema,
 };
 
 // Re-export defaults
@@ -246,4 +257,5 @@ export {
   defaultContactInfoContent,
   defaultRewardContent,
   defaultThankYouContent,
+  defaultTestimonialWriteContent,
 };

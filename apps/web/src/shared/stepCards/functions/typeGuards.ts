@@ -5,6 +5,7 @@ import type {
   ContactInfoContent,
   RewardContent,
   ThankYouContent,
+  TestimonialWriteContent,
 } from '../models/stepContent';
 
 /**
@@ -52,4 +53,10 @@ export function isThankYouStep(
   step: FormStep,
 ): step is FormStep & { stepType: 'thank_you'; content: ThankYouContent } {
   return step.stepType === 'thank_you';
+}
+
+export function isTestimonialWriteStep(
+  step: FormStep,
+): step is FormStep & { stepType: 'testimonial_write'; content: TestimonialWriteContent } {
+  return step.stepType === 'testimonial_write';
 }

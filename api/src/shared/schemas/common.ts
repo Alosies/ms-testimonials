@@ -46,6 +46,14 @@ export const InternalErrorResponseSchema = z.object({
 }).openapi('InternalErrorResponse');
 
 /**
+ * Too many requests error response (429)
+ */
+export const TooManyRequestsResponseSchema = z.object({
+  error: z.string().openapi({ example: 'Rate limit exceeded. Please try again later.' }),
+  code: z.string().optional().openapi({ example: 'RATE_LIMIT' }),
+}).openapi('TooManyRequestsResponse');
+
+/**
  * NanoID parameter (12 characters)
  */
 export const NanoIDParamSchema = z.string().min(12).max(12).openapi({

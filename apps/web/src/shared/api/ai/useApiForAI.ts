@@ -39,13 +39,15 @@ export function useApiForAI() {
   }
 
   /**
-   * Assemble customer answers into a coherent testimonial
-   * POST /ai/assemble
+   * Assemble customer Q&A responses into a coherent testimonial
+   * POST /ai/assemble-testimonial
+   *
+   * @see PRD-005: AI Testimonial Generation
    */
   async function assembleTestimonial(
     request: AssembleTestimonialRequest
   ): Promise<AssembleTestimonialResponse> {
-    const res = await api.fetch('/ai/assemble', {
+    const res = await api.fetch('/ai/assemble-testimonial', {
       method: 'POST',
       body: JSON.stringify(request),
     });

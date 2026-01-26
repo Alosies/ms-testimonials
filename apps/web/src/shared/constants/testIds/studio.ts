@@ -70,6 +70,20 @@ export const studioTestIds = {
   thankYouMessageInput: 'thankyou-editor-message-input',
   thankYouRedirectUrlInput: 'thankyou-editor-redirect-url-input',
 
+  // Testimonial Write step editor fields
+  testimonialWriteTitleInput: 'testimonial-write-editor-title-input',
+  testimonialWriteSubtitleInput: 'testimonial-write-editor-subtitle-input',
+  testimonialWritePlaceholderInput: 'testimonial-write-editor-placeholder-input',
+  testimonialWriteMinLengthInput: 'testimonial-write-editor-min-length-input',
+  testimonialWriteMaxLengthInput: 'testimonial-write-editor-max-length-input',
+  testimonialWritePrevAnswersLabelInput: 'testimonial-write-editor-prev-answers-label-input',
+  testimonialWriteAiTitleInput: 'testimonial-write-editor-ai-title-input',
+  testimonialWriteAiDescriptionInput: 'testimonial-write-editor-ai-description-input',
+  testimonialWriteManualTitleInput: 'testimonial-write-editor-manual-title-input',
+  testimonialWriteManualDescriptionInput: 'testimonial-write-editor-manual-description-input',
+  testimonialWriteEnableAiPathSwitch: 'testimonial-write-editor-enable-ai-path-switch',
+  testimonialWriteShowPrevAnswersSwitch: 'testimonial-write-editor-show-prev-answers-switch',
+
   // Question type change workflow (ADR-017)
   questionTypeDropdown: 'question-editor-type-dropdown',
   questionOptionsSection: 'question-editor-options-section',

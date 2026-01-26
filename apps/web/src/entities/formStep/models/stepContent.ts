@@ -28,6 +28,7 @@ export type {
   RewardContent,
   RewardType,
   ThankYouContent,
+  TestimonialWriteContent,
   EmptyContent,
 } from '../schemas';
 

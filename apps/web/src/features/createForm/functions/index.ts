@@ -7,6 +7,7 @@ export {
   isContactInfoStep,
   isRewardStep,
   isThankYouStep,
+  isTestimonialWriteStep,
 } from '@/shared/stepCards/functions/typeGuards';
 
 // Default content factories for new steps

@@ -17,7 +17,7 @@ import {
   parseDesignConfig,
   hexToHslCssVar,
 } from '@/entities/form';
-import { useGetFormSteps } from '@/entities/formStep';
+import { useGetFormSteps, parseStepContentWithDefaults } from '@/entities/formStep';
 import { PublicFormFlow } from '@/features/publicForm';
 import type { FormStep } from '@/shared/stepCards';
 
@@ -94,7 +94,10 @@ const steps = computed((): FormStep[] => {
               })) ?? [],
           }
         : null,
-      content: (step.content as FormStep['content']) ?? {},
+      content: parseStepContentWithDefaults(
+        step.step_type as FormStep['stepType'],
+        step.content,
+      ) as FormStep['content'],
       tips: (step.tips as string[]) ?? [],
       flowMembership: (step.flow_membership as FormStep['flowMembership']) ?? 'shared',
       isActive: step.is_active,

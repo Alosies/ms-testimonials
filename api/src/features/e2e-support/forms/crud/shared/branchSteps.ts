@@ -15,6 +15,7 @@ export interface CreateBranchStepsParams {
  *
  * Creates:
  * - Question step: recommendation
+ * - Testimonial Write step: AI/manual testimonial path selection
  * - Consent step
  * - Thank you step
  */
@@ -34,6 +35,10 @@ export async function createTestimonialSteps(params: CreateBranchStepsParams): P
   );
   questionStep.questions.push(question);
   steps.push({ ...questionStep, flowMembership: 'testimonial', flowId });
+
+  // Testimonial Write step: AI/manual path selection
+  const testimonialWriteStep = await createStep(flowId, organizationId, 'testimonial_write', stepOrder++, undefined, 'testimonial');
+  steps.push({ ...testimonialWriteStep, flowMembership: 'testimonial', flowId });
 
   // Consent step
   const consentStep = await createStep(flowId, organizationId, 'consent', stepOrder++, undefined, 'testimonial');

@@ -88,6 +88,24 @@ export const THANKYOU_STEP_FIELDS = {
 
 export type ThankYouStepField = keyof typeof THANKYOU_STEP_FIELDS;
 
+/**
+ * Testimonial Write step field identifiers mapped to data-testid values
+ */
+export const TESTIMONIAL_WRITE_STEP_FIELDS = {
+  title: studioTestIds.testimonialWriteTitleInput,
+  subtitle: studioTestIds.testimonialWriteSubtitleInput,
+  placeholder: studioTestIds.testimonialWritePlaceholderInput,
+  minLength: studioTestIds.testimonialWriteMinLengthInput,
+  maxLength: studioTestIds.testimonialWriteMaxLengthInput,
+  prevAnswersLabel: studioTestIds.testimonialWritePrevAnswersLabelInput,
+  aiTitle: studioTestIds.testimonialWriteAiTitleInput,
+  aiDescription: studioTestIds.testimonialWriteAiDescriptionInput,
+  manualTitle: studioTestIds.testimonialWriteManualTitleInput,
+  manualDescription: studioTestIds.testimonialWriteManualDescriptionInput,
+} as const;
+
+export type TestimonialWriteStepField = keyof typeof TESTIMONIAL_WRITE_STEP_FIELDS;
+
 export function createAutoSaveActions(studio: StudioPage) {
   const { page } = studio;
 
@@ -239,6 +257,53 @@ export function createAutoSaveActions(studio: StudioPage) {
       const testId = THANKYOU_STEP_FIELDS[field];
       const input = page.getByTestId(testId);
       await input.fill(value);
+    },
+
+    // ========================================
+    // Testimonial Write Step Actions
+    // ========================================
+
+    /**
+     * Fill a Testimonial Write step field using data-testid
+     */
+    async fillTestimonialWriteField(field: TestimonialWriteStepField, value: string) {
+      const testId = TESTIMONIAL_WRITE_STEP_FIELDS[field];
+      const input = page.getByTestId(testId);
+      await input.fill(value);
+    },
+
+    /**
+     * Get the current state of the Enable AI Path switch
+     */
+    async getTestimonialWriteEnableAiPathState(): Promise<boolean> {
+      const enableAiPathSwitch = page.getByTestId(studioTestIds.testimonialWriteEnableAiPathSwitch);
+      const checked = await enableAiPathSwitch.getAttribute('aria-checked');
+      return checked === 'true';
+    },
+
+    /**
+     * Toggle the Enable AI Path switch
+     */
+    async toggleTestimonialWriteEnableAiPath() {
+      const enableAiPathSwitch = page.getByTestId(studioTestIds.testimonialWriteEnableAiPathSwitch);
+      await enableAiPathSwitch.click();
+    },
+
+    /**
+     * Get the current state of the Show Previous Answers switch
+     */
+    async getTestimonialWriteShowPrevAnswersState(): Promise<boolean> {
+      const showPrevAnswersSwitch = page.getByTestId(studioTestIds.testimonialWriteShowPrevAnswersSwitch);
+      const checked = await showPrevAnswersSwitch.getAttribute('aria-checked');
+      return checked === 'true';
+    },
+
+    /**
+     * Toggle the Show Previous Answers switch
+     */
+    async toggleTestimonialWriteShowPrevAnswers() {
+      const showPrevAnswersSwitch = page.getByTestId(studioTestIds.testimonialWriteShowPrevAnswersSwitch);
+      await showPrevAnswersSwitch.click();
     },
   };
 }

@@ -63,6 +63,13 @@ export const STEP_TYPE_CONFIGS: Record<StepType, StepTypeConfig> = {
     description: 'Confirmation message',
     icon: 'heroicons:sparkles',
   },
+  testimonial_write: {
+    type: 'testimonial_write',
+    label: 'Testimonial Write',
+    shortLabel: 'Write',
+    description: 'Manual or AI-assisted writing',
+    icon: 'heroicons:pencil-square',
+  },
 };
 
 /**
@@ -72,6 +79,7 @@ export const STEP_TYPE_OPTIONS: StepTypeConfig[] = [
   STEP_TYPE_CONFIGS.welcome,
   STEP_TYPE_CONFIGS.question,
   STEP_TYPE_CONFIGS.rating,
+  STEP_TYPE_CONFIGS.testimonial_write,
   STEP_TYPE_CONFIGS.consent,
   STEP_TYPE_CONFIGS.contact_info,
   STEP_TYPE_CONFIGS.reward,

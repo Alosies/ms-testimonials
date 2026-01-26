@@ -64,4 +64,13 @@ export const STEP_HELP_CONTENT: Record<StepType, HelpContent> = {
       'Optional redirect to your site',
     ],
   },
+  testimonial_write: {
+    title: 'Testimonial Write Step',
+    description: 'Let customers write or have AI craft their testimonial from their responses.',
+    tips: [
+      'Place after question steps',
+      'AI option requires Google sign-in',
+      'Customers can edit before submitting',
+    ],
+  },
 };

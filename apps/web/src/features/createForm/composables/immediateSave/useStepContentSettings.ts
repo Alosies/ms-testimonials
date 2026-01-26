@@ -3,6 +3,7 @@
  *
  * Wraps useUpdateFormStepAutoSave with save lock for:
  * - Consent required toggle
+ * - Testimonial write toggles (enableAIPath, showPreviousAnswers)
  *
  * Uses withSaveIndicator to show the Saving → Saved chip transition.
  * Clears the step's dirty flag after save to prevent auto-save from re-saving.
@@ -14,7 +15,7 @@
  */
 import { useUpdateFormStepAutoSave, validateStepContent } from '@/entities/formStep';
 import { useSaveLock, useAutoSaveController, useDirtyTracker } from '../autoSave';
-import type { ConsentContent, StepContent, StepType } from '@/shared/stepCards';
+import type { ConsentContent, TestimonialWriteContent, StepContent, StepType } from '@/shared/stepCards';
 
 /**
  * Validate and cast strictly-typed step content for GraphQL mutations.
@@ -69,7 +70,61 @@ export function useStepContentSettings() {
     );
   };
 
+  /**
+   * Set the enableAIPath field for a testimonial_write step with immediate persistence.
+   * Clears the step's dirty flag after save to prevent auto-save from re-saving.
+   */
+  const setTestimonialEnableAIPath = async (
+    stepId: string,
+    currentContent: TestimonialWriteContent,
+    enableAIPath: boolean
+  ) => {
+    return withSaveIndicator(() =>
+      withLock('testimonial-enable-ai-path', async () => {
+        const updatedContent: TestimonialWriteContent = {
+          ...currentContent,
+          enableAIPath,
+        };
+        await updateFormStepAutoSave({
+          id: stepId,
+          changes: {
+            content: toJsonbContent('testimonial_write', updatedContent),
+          },
+        });
+        clearStep(stepId);
+      })
+    );
+  };
+
+  /**
+   * Set the showPreviousAnswers field for a testimonial_write step with immediate persistence.
+   * Clears the step's dirty flag after save to prevent auto-save from re-saving.
+   */
+  const setTestimonialShowPreviousAnswers = async (
+    stepId: string,
+    currentContent: TestimonialWriteContent,
+    showPreviousAnswers: boolean
+  ) => {
+    return withSaveIndicator(() =>
+      withLock('testimonial-show-previous-answers', async () => {
+        const updatedContent: TestimonialWriteContent = {
+          ...currentContent,
+          showPreviousAnswers,
+        };
+        await updateFormStepAutoSave({
+          id: stepId,
+          changes: {
+            content: toJsonbContent('testimonial_write', updatedContent),
+          },
+        });
+        clearStep(stepId);
+      })
+    );
+  };
+
   return {
     setConsentRequired,
+    setTestimonialEnableAIPath,
+    setTestimonialShowPreviousAnswers,
   };
 }

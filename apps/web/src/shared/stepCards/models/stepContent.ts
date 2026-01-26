@@ -15,6 +15,7 @@ export {
   type ContactInfoContent,
   type RewardContent,
   type ThankYouContent,
+  type TestimonialWriteContent,
   type StepContent,
   type LinkedQuestionType,
   type QuestionOption,

@@ -13,7 +13,12 @@ export type {
 } from './suggestQuestions';
 
 export type {
-  QuestionAnswerPair,
+  TestimonialAnswer,
+  TestimonialModification,
+  TestimonialQuality,
+  TestimonialSuggestion,
+  TestimonialTone,
+  TestimonialMetadata,
   AssembleTestimonialRequest,
   AssembleTestimonialResponse,
 } from './assembleTestimonial';
