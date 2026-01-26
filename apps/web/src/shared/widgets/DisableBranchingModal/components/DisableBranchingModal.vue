@@ -73,7 +73,7 @@ function isSelected(value: DisableBranchingChoice) {
         <div
           class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-amber-100"
         >
-          <Icon icon="mdi:source-branch" class="h-6 w-6 text-amber-600" />
+          <Icon icon="lucide:network" class="h-6 w-6 text-amber-600" />
         </div>
 
         <DialogTitle class="text-center">Disable Branching</DialogTitle>

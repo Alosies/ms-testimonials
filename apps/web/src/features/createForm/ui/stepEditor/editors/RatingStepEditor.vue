@@ -271,7 +271,7 @@ function handleThresholdChange(value: unknown) {
       <div class="flex items-center justify-between">
         <div>
           <Label class="flex items-center gap-2">
-            <Icon icon="mdi:source-branch" class="w-4 h-4 text-primary" />
+            <Icon icon="lucide:network" class="w-4 h-4 text-primary" />
             Conditional Branching
           </Label>
           <p class="text-xs text-muted-foreground">

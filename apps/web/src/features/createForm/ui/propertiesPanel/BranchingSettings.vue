@@ -109,7 +109,7 @@ function handleCancelDisable() {
 <template>
   <div v-if="isRatingStep" class="branching-settings" :data-testid="studioTestIds.propertiesBranchingSettings">
     <div class="flex items-center gap-2 mb-3">
-      <Icon icon="mdi:source-branch" class="w-4 h-4 text-primary" />
+      <Icon icon="lucide:network" class="w-4 h-4 text-primary" />
       <h4 class="text-sm font-semibold">Conditional Branching</h4>
     </div>
 
