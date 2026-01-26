@@ -33,11 +33,11 @@ function handleBack() {
       <!-- Exit Studio button -->
       <button
         :data-testid="studioTestIds.headerBackButton"
-        class="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors px-2 py-1.5 -ml-2 rounded-md hover:bg-muted/50"
+        class="flex items-center justify-center rounded-lg p-2 -ml-2 text-muted-foreground transition-all hover:bg-muted hover:text-foreground"
+        title="Back to form dashboard"
         @click="handleBack"
       >
-        <Icon icon="heroicons:arrow-left" class="size-4" />
-        <span>Exit Studio</span>
+        <Icon icon="heroicons:arrow-left" class="h-5 w-5" />
       </button>
 
       <!-- Divider -->
