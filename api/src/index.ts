@@ -8,7 +8,7 @@ import { logger } from 'hono/logger';
 import { env } from '@/shared/config/env';
 import { corsConfig } from '@/shared/config/cors';
 
-import { auth, ai, media, analytics } from '@/routes';
+import { auth, ai, media, analytics, dashboard } from '@/routes';
 import testimonialRoutes from '@/routes/testimonials';
 import formRoutes from '@/routes/forms';
 import widgetRoutes from '@/routes/widgets';
@@ -54,6 +54,7 @@ app.route('/auth', auth);
 app.route('/ai', ai);
 app.route('/media', media);
 app.route('/analytics', analytics);
+app.route('/dashboard', dashboard);
 // Non-OpenAPI routes (still using default exports)
 app.route('/testimonials', testimonialRoutes);
 app.route('/forms', formRoutes);
@@ -108,6 +109,10 @@ app.doc('/openapi.json', {
     {
       name: 'Analytics',
       description: 'Form analytics and event tracking',
+    },
+    {
+      name: 'Dashboard',
+      description: 'Form analytics dashboard with metrics, funnel, and insights',
     },
     {
       name: 'Webhooks',
