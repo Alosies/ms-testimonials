@@ -93,3 +93,21 @@ export type {
   TransferableQuestionInput,
   TransferableQuestionFields,
 } from '../models/functionTypes';
+
+// Flow segment computation (ADR-020)
+export {
+  computeFlowSegments,
+  isSharedSegment,
+  isBranchSegment,
+  getAllSegmentSteps,
+  findSegmentForStep,
+} from './computeFlowSegments';
+
+export type {
+  SegmentableFlow,
+  SegmentableStep,
+  SharedSegment,
+  BranchSegment,
+  FlowSegment,
+  ComputeSegmentsResult,
+} from './computeFlowSegments';
