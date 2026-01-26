@@ -62,7 +62,17 @@ const TestimonialWriteContentSchema = z.object({
 });
 
 /**
+ * ADR-018: Schema for shared thank you content in outro flow (shown to ALL users)
+ */
+const ThankYouSchema = z.object({
+  title: z.string().describe('Thank you title for all users (e.g., "Thank you!")'),
+  message: z.string().describe('Grateful closing message for all users'),
+});
+
+/**
  * Schema for improvement flow thank you content
+ * @deprecated Use shared thank_you in outro flow instead (ADR-018)
+ * Kept for backward compatibility with existing forms
  */
 const ImprovementThankYouSchema = z.object({
   title: z.string().describe('Thank you title for improvement flow'),
@@ -75,7 +85,8 @@ const ImprovementThankYouSchema = z.object({
 const StepContentSchema = z.object({
   testimonial_write: TestimonialWriteContentSchema.describe('Content for the testimonial write step in testimonial flow'),
   consent: ConsentContentSchema.describe('Content for the consent step in testimonial flow'),
-  improvement_thank_you: ImprovementThankYouSchema.describe('Content for thank you step in improvement flow'),
+  thank_you: ThankYouSchema.describe('ADR-018: Shared thank you for ALL users in outro flow'),
+  improvement_thank_you: ImprovementThankYouSchema.describe('DEPRECATED: kept for backward compatibility'),
 });
 
 /**
@@ -174,26 +185,35 @@ FIRST, analyze the product to infer:
 
 === FORM FLOW ARCHITECTURE ===
 
-The form uses DYNAMIC BRANCHING based on rating. This creates two paths:
+The form uses DYNAMIC BRANCHING with FOUR sections (ADR-018):
 
-SHARED FLOW (all users see these):
+INTRO FLOW (shared, display_order=0) - All users see these:
 1. Welcome step (system-generated)
 2. Questions 1-3: Narrative questions (problem → solution → results)
 3. Rating question: THE BRANCH POINT (determines next path)
 
-After rating, users are routed to one of two flows:
+BRANCH FLOWS (display_order=1,2) - Users see ONE based on rating:
 
-TESTIMONIAL FLOW (rating >= 4 stars):
+TESTIMONIAL FLOW (rating >= 4 stars, display_order=1):
 For satisfied customers - collect publishable testimonials
 - Testimonial Write Step: AI assembles testimonial from previous answers OR user writes manually (from step_content.testimonial_write)
 - Consent Step: Ask permission to share publicly (system-generated from step_content)
-- Contact Info Step (system-generated)
-- Thank You Step (system-generated)
+  Note: Consent STAYS in testimonial branch (privacy reasons - improvement feedback is always private)
 
-IMPROVEMENT FLOW (rating < 4 stars):
+IMPROVEMENT FLOW (rating < 4 stars, display_order=2):
 For unsatisfied customers - collect actionable feedback
 - Question 5: THE FEEDBACK - what could be improved
-- Thank You Step with empathetic message (from step_content.improvement_thank_you)
+  Note: No consent step - improvement feedback is always kept private
+
+OUTRO FLOW (shared, display_order=3) - All users see after branch:
+- Contact Info Step (system-generated) - collect name, email for everyone
+- Thank You Step (system-generated) - consistent ending for all users
+
+=== KEY ARCHITECTURAL DECISIONS (ADR-018) ===
+- Contact info collected from ALL users (including improvement flow)
+- Consent only for testimonials (improvement feedback remains private)
+- Single shared Thank You replaces duplicated thank you steps
+- Existing forms without outro continue working unchanged
 
 === QUESTION DESIGN PRINCIPLES ===
 
@@ -267,9 +287,14 @@ step_content.consent: Content for the consent step in testimonial flow
 - private_label: Option label for private (e.g., "Keep private")
 - private_description: What private means (e.g., "Your feedback stays internal only")
 
-step_content.improvement_thank_you: Thank you for improvement flow
+step_content.thank_you: Shared thank you for ALL users in outro flow (ADR-018)
+- title: Warm thank you (e.g., "Thank you!")
+- message: Grateful closing message (e.g., "We truly appreciate you taking the time to share your experience.")
+
+step_content.improvement_thank_you: DEPRECATED - kept for backward compatibility
 - title: Empathetic thank you (e.g., "Thank you for your honest feedback")
 - message: Acknowledge their concerns (e.g., "We take your feedback seriously and will work to improve.")
+Note: New forms use shared thank_you in outro; this is for existing forms without outro flow
 
 === FORM STRUCTURE ===
 

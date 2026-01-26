@@ -305,6 +305,12 @@ export async function suggestQuestions(c: Context) {
           private_label: sanitizeAIOutput(result.object.step_content.consent.private_label),
           private_description: sanitizeAIOutput(result.object.step_content.consent.private_description),
         },
+        // ADR-018: Shared thank you for ALL users in outro flow
+        thank_you: {
+          title: sanitizeAIOutput(result.object.step_content.thank_you.title),
+          message: sanitizeAIOutput(result.object.step_content.thank_you.message),
+        },
+        // Deprecated: kept for backward compatibility with existing forms
         improvement_thank_you: {
           title: sanitizeAIOutput(result.object.step_content.improvement_thank_you.title),
           message: sanitizeAIOutput(result.object.step_content.improvement_thank_you.message),

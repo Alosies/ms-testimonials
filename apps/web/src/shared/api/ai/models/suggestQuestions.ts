@@ -25,9 +25,12 @@ export type QuestionTypeId =
 
 /**
  * Flow membership for conditional branching
- * - 'shared': Steps visible in all flows (before branch point)
+ * - 'shared': Steps visible in all flows (both intro AND ending)
  * - 'testimonial': Steps for positive ratings (rating >= threshold)
  * - 'improvement': Steps for negative ratings (rating < threshold)
+ *
+ * ADR-009: Position (intro vs ending) is determined by the flow's display_order,
+ * not by a separate membership value.
  */
 export type FlowMembership = 'shared' | 'testimonial' | 'improvement';
 
@@ -103,7 +106,16 @@ export interface ConsentContent {
 }
 
 /**
+ * ADR-018: Shared thank you content for ALL users in outro flow
+ */
+export interface ThankYou {
+  title: string;
+  message: string;
+}
+
+/**
  * Improvement flow thank you content
+ * @deprecated Use shared thank_you in outro flow instead (ADR-018)
  */
 export interface ImprovementThankYou {
   title: string;
@@ -116,7 +128,8 @@ export interface ImprovementThankYou {
 export interface StepContent {
   testimonial_write: TestimonialWriteContent; // Content for testimonial write step in testimonial flow
   consent: ConsentContent;                   // Content for consent step in testimonial flow
-  improvement_thank_you: ImprovementThankYou; // Content for thank you step in improvement flow
+  thank_you: ThankYou;                       // ADR-018: Shared thank you for ALL users in outro flow
+  improvement_thank_you: ImprovementThankYou; // DEPRECATED: kept for backward compatibility
 }
 
 /**

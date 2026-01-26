@@ -191,7 +191,22 @@ export const ConsentContentSchema = z.object({
 }).openapi('ConsentContent');
 
 /**
+ * ADR-018: Shared thank you content for ALL users in outro flow
+ */
+export const ThankYouSchema = z.object({
+  title: z.string().openapi({
+    example: 'Thank you!',
+    description: 'Thank you title for all users',
+  }),
+  message: z.string().openapi({
+    example: 'We truly appreciate you taking the time to share your experience.',
+    description: 'Grateful closing message for all users',
+  }),
+}).openapi('ThankYou');
+
+/**
  * Improvement flow thank you content
+ * @deprecated Use shared thank_you in outro flow instead (ADR-018)
  */
 export const ImprovementThankYouSchema = z.object({
   title: z.string().openapi({
@@ -214,8 +229,11 @@ export const StepContentSchema = z.object({
   consent: ConsentContentSchema.openapi({
     description: 'Content for the consent step in testimonial flow',
   }),
+  thank_you: ThankYouSchema.openapi({
+    description: 'ADR-018: Shared thank you for ALL users in outro flow',
+  }),
   improvement_thank_you: ImprovementThankYouSchema.openapi({
-    description: 'Content for thank you step in improvement flow',
+    description: 'DEPRECATED: kept for backward compatibility',
   }),
 }).openapi('StepContent');
 
@@ -374,6 +392,7 @@ export type AIContext = z.infer<typeof AIContextSchema>;
 export type FormStructure = z.infer<typeof FormStructureSchema>;
 export type TestimonialWriteContent = z.infer<typeof TestimonialWriteContentSchema>;
 export type ConsentContent = z.infer<typeof ConsentContentSchema>;
+export type ThankYou = z.infer<typeof ThankYouSchema>;
 export type ImprovementThankYou = z.infer<typeof ImprovementThankYouSchema>;
 export type StepContent = z.infer<typeof StepContentSchema>;
 export type SuggestQuestionsRequest = z.infer<typeof SuggestQuestionsRequestSchema>;
