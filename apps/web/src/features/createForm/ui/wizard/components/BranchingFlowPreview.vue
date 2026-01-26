@@ -3,22 +3,32 @@
  * Branching Flow Preview
  *
  * Visualizes the conditional branching flow with:
- * - Branch point indicator with connecting lines
+ * - Branch point indicator with connecting lines (divergence)
  * - Side-by-side flow columns for testimonial/improvement paths
+ * - Merge point indicator (convergence) - ADR-018
+ * - Shared ending steps after branches converge
  */
+import { computed } from 'vue';
 import { Icon } from '@testimonials/icons';
 import { FLOW_METADATA } from '@/entities/form';
 import type { PreviewStep } from '@/features/createForm/models';
 import PreviewStepCard from './PreviewStepCard.vue';
 
-defineProps<{
+const props = defineProps<{
   /** Number of shared steps (for step numbering offset) */
   sharedStepsCount: number;
   /** Steps for testimonial flow (rating >= threshold) */
   testimonialSteps: PreviewStep[];
   /** Steps for improvement flow (rating < threshold) */
   improvementSteps: PreviewStep[];
+  /** Steps for ending flow (after branches converge) - ADR-018 */
+  endingSteps?: PreviewStep[];
 }>();
+
+// Compute step number offset for ending steps (shared + max of branch steps)
+const endingStepsOffset = computed(() => {
+  return props.sharedStepsCount + Math.max(props.testimonialSteps.length, props.improvementSteps.length);
+});
 </script>
 
 <template>
@@ -27,7 +37,7 @@ defineProps<{
     <div class="branch-indicator">
       <div class="branch-line branch-line-left" />
       <div class="branch-node">
-        <Icon icon="mdi:source-branch" class="h-5 w-5 text-primary" />
+        <Icon icon="lucide:network" class="h-5 w-5 text-primary" />
       </div>
       <div class="branch-line branch-line-right" />
     </div>
@@ -82,6 +92,39 @@ defineProps<{
         />
       </div>
     </div>
+  </div>
+
+  <!-- Merge Point Indicator (ADR-018: Flow Convergence) -->
+  <div
+    v-if="endingSteps && endingSteps.length > 0"
+    class="merge-point"
+  >
+    <div class="merge-indicator">
+      <div class="merge-line merge-line-left" />
+      <div class="merge-node">
+        <Icon icon="lucide:network" class="h-5 w-5 rotate-180 text-primary" />
+      </div>
+      <div class="merge-line merge-line-right" />
+    </div>
+    <div class="merge-label">
+      <span class="text-xs font-medium text-gray-500">All paths continue</span>
+    </div>
+  </div>
+
+  <!-- Ending Steps (shared after branches converge) -->
+  <div
+    v-if="endingSteps && endingSteps.length > 0"
+    class="ending-steps"
+  >
+    <PreviewStepCard
+      v-for="(step, index) in endingSteps"
+      :key="`ending-${index}`"
+      :step-number="endingStepsOffset + index + 1"
+      :step-type="step.type"
+      :title="step.title"
+      :subtitle="step.subtitle"
+      :flow-membership="step.flowMembership"
+    />
   </div>
 </template>
 
@@ -180,6 +223,58 @@ defineProps<{
   flex-direction: column;
   gap: 0.75rem;
   background: white;
+}
+
+/* Merge Point (ADR-018: Flow Convergence) */
+.merge-point {
+  padding: 1.5rem 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.merge-indicator {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.merge-line {
+  flex: 1;
+  height: 2px;
+}
+
+.merge-line-left {
+  background: linear-gradient(to right, theme('colors.gray.200'), theme('colors.teal.500'));
+}
+
+.merge-line-right {
+  background: linear-gradient(to right, theme('colors.teal.500'), theme('colors.gray.200'));
+}
+
+.merge-node {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background: white;
+  border: 2px solid theme('colors.teal.500');
+  box-shadow: 0 4px 12px -2px theme('colors.teal.500 / 0.25');
+  flex-shrink: 0;
+}
+
+.merge-label {
+  text-align: center;
+}
+
+/* Ending Steps */
+.ending-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
 }
 
 /* Responsive */

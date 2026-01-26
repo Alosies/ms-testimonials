@@ -66,7 +66,7 @@ export interface HelpContent {
 }
 
 // Wizard Preview Step type - shared across preview components
-export type PreviewStepType = 'welcome' | 'question' | 'rating' | 'thank_you' | 'consent' | 'testimonial_write';
+export type PreviewStepType = 'welcome' | 'question' | 'rating' | 'thank_you' | 'consent' | 'testimonial_write' | 'contact_info';
 
 export interface PreviewStep {
   type: PreviewStepType;

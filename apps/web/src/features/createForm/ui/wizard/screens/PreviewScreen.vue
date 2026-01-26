@@ -66,6 +66,8 @@ const sharedSteps = computed(() => {
 });
 
 // Testimonial flow steps (after rating, for happy customers)
+// Note: Consent stays in testimonial flow for privacy (only testimonial users see it)
+// Thank You is moved to shared ending flow (everyone sees it)
 const testimonialSteps = computed(() => {
   const steps: PreviewStep[] = [];
 
@@ -80,6 +82,7 @@ const testimonialSteps = computed(() => {
   });
 
   // Consent step (from step_content if available)
+  // ADR-018: Consent stays in testimonial flow - improvement feedback is always private
   if (stepContent?.consent) {
     steps.push({
       type: 'consent',
@@ -97,19 +100,12 @@ const testimonialSteps = computed(() => {
     });
   }
 
-  // Thank you step
-  const thankYouContent = getDefaultThankYouContent();
-  steps.push({
-    type: 'thank_you',
-    title: thankYouContent.title,
-    subtitle: thankYouContent.subtitle,
-    flowMembership: 'testimonial',
-  });
-
   return steps;
 });
 
 // Improvement flow steps (after rating, for unhappy customers)
+// Note: No consent for improvement flow - feedback is always private
+// Thank You is moved to shared ending flow (everyone sees it)
 const improvementSteps = computed(() => {
   const steps: PreviewStep[] = [];
 
@@ -124,31 +120,38 @@ const improvementSteps = computed(() => {
     });
   }
 
-  // Thank you step (from step_content if available)
-  const stepContent = wizard.aiContext.value?.step_content;
-  if (stepContent?.improvement_thank_you) {
-    steps.push({
-      type: 'thank_you',
-      title: stepContent.improvement_thank_you.title,
-      subtitle: stepContent.improvement_thank_you.message,
-      flowMembership: 'improvement',
-    });
-  } else {
-    // Default improvement thank you
-    steps.push({
-      type: 'thank_you',
-      title: 'Thank you for your feedback',
-      subtitle: 'We take your feedback seriously and will work to improve.',
-      flowMembership: 'improvement',
-    });
-  }
+  return steps;
+});
+
+// Ending flow steps (after branches converge, everyone sees these)
+// ADR-018: Contact Info and Thank You are shared across all users
+const endingSteps = computed(() => {
+  const steps: PreviewStep[] = [];
+
+  // Contact Info step - collect name, email, etc. from all users
+  steps.push({
+    type: 'contact_info',
+    title: 'Your contact information',
+    subtitle: 'Help us follow up with you if needed',
+    flowMembership: 'shared',
+  });
+
+  // Thank you step - shared ending for everyone
+  const thankYouContent = getDefaultThankYouContent();
+  steps.push({
+    type: 'thank_you',
+    title: thankYouContent.title,
+    subtitle: thankYouContent.message, // Schema uses 'message', preview uses 'subtitle'
+    flowMembership: 'shared',
+  });
 
   return steps;
 });
 
 // Check if we have branching (testimonial or improvement questions)
+// ADR-018: Now checks for > 0 since Thank You moved to ending flow
 const hasBranching = computed(() => {
-  return testimonialSteps.value.length > 1 || improvementSteps.value.length > 1;
+  return testimonialSteps.value.length > 0 || improvementSteps.value.length > 0;
 });
 
 function handleRegenerate() {
@@ -192,18 +195,19 @@ function handleCustomize() {
         />
       </div>
 
-      <!-- Branching Flow (branch indicator + side-by-side columns) -->
+      <!-- Branching Flow (branch indicator + side-by-side columns + ending) -->
       <BranchingFlowPreview
         v-if="hasBranching"
         :shared-steps-count="sharedSteps.length"
         :testimonial-steps="testimonialSteps"
         :improvement-steps="improvementSteps"
+        :ending-steps="endingSteps"
       />
 
       <!-- Non-branching flow (simple list) -->
       <div v-else class="space-y-3">
         <PreviewStepCard
-          v-for="(step, index) in [...testimonialSteps, ...improvementSteps]"
+          v-for="(step, index) in [...testimonialSteps, ...improvementSteps, ...endingSteps]"
           :key="`linear-${index}`"
           :step-number="sharedSteps.length + index + 1"
           :step-type="step.type"

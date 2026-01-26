@@ -53,6 +53,12 @@ const stepConfig = computed(() => {
         icon: 'heroicons:check-circle',
         color: 'text-emerald-600 bg-emerald-100',
       };
+    case 'contact_info':
+      return {
+        label: 'Contact Info',
+        icon: 'heroicons:user',
+        color: 'text-indigo-600 bg-indigo-100',
+      };
     case 'thank_you':
       return {
         label: 'Thank You',
@@ -120,7 +126,7 @@ const badgeClass = computed(() => {
           v-if="isBranchPoint"
           class="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700"
         >
-          <Icon icon="mdi:source-branch" class="h-3 w-3" />
+          <Icon icon="lucide:network" class="h-3 w-3" />
           Branch Point
         </span>
       </div>

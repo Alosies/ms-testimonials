@@ -2,9 +2,14 @@
 /**
  * Branched Timeline Canvas - Side-by-side flow columns
  *
- * Displays shared steps at top, then splits into two columns:
- * - Left: Testimonial flow (positive rating path)
- * - Right: Improvement flow (negative rating path)
+ * ADR-018: Supports segment-based rendering with optional outro section.
+ *
+ * Displays:
+ * 1. Shared steps at top (intro)
+ * 2. Branch indicator
+ * 3. Two columns: Testimonial flow (left) and Improvement flow (right)
+ * 4. Merge indicator (if outro exists)
+ * 5. Shared steps at bottom (outro)
  *
  * Supports expanded view for detailed editing of a single flow.
  */
@@ -34,6 +39,18 @@ const threshold = computed(() => editor.branchingConfig.value.threshold);
 
 // The branch point is the rating step
 const branchPointStep = computed(() => editor.branchPointStep.value);
+
+// ADR-018: Check if there are outro steps (shared steps after branches)
+const hasOutroSection = computed(() => editor.hasOutroSegment.value);
+const outroSteps = computed(() => editor.outroSteps.value);
+
+// Get the starting index for outro steps in the main steps array
+// This is needed for proper step selection/editing
+const outroStartIndex = computed(() => {
+  if (outroSteps.value.length === 0) return -1;
+  const firstOutroStep = outroSteps.value[0];
+  return editor.steps.value.findIndex(s => s.id === firstOutroStep.id);
+});
 
 // Use shared expandedFlow state from editor for keyboard navigation sync
 const expandedFlow = computed(() => editor.expandedFlow.value);
@@ -153,7 +170,7 @@ defineExpose({
       <div class="branch-indicator">
         <div class="branch-line branch-line-left" />
         <div class="branch-node">
-          <Icon icon="mdi:source-branch" class="w-5 h-5 text-primary" />
+          <Icon icon="lucide:network" class="w-5 h-5 text-primary" />
         </div>
         <div class="branch-line branch-line-right" />
       </div>
@@ -200,6 +217,42 @@ defineExpose({
         @focus="handleFocusImprovement"
         @expand="handleExpandFlow('improvement')"
       />
+    </div>
+
+    <!-- ADR-018: Merge Point Indicator - shown when outro section exists -->
+    <div v-if="hasOutroSection && !expandedFlow" class="merge-point">
+      <div class="merge-indicator">
+        <div class="merge-line merge-line-left" />
+        <div class="merge-node">
+          <Icon icon="lucide:network" class="w-5 h-5 text-muted-foreground rotate-180" />
+        </div>
+        <div class="merge-line merge-line-right" />
+      </div>
+
+      <div class="merge-label">
+        <Icon icon="heroicons:arrow-down" class="w-4 h-4 text-muted-foreground" />
+        <span class="text-sm text-muted-foreground">All users continue</span>
+      </div>
+    </div>
+
+    <!-- ADR-018: Outro Section - shared steps after branches -->
+    <div v-if="hasOutroSection && !expandedFlow" class="outro-section" data-testid="outro-section">
+      <template v-for="(step, localIndex) in outroSteps" :key="step.id">
+        <TimelineStepCard
+          :step="(step as FormStep)"
+          :index="outroStartIndex + localIndex"
+          :is-active="outroStartIndex + localIndex === editor.selectedIndex.value"
+          :is-last="localIndex === outroSteps.length - 1"
+          :content-styles="cardContentStyles"
+          :logo-url="editor.effectiveLogo.value"
+          @select="editor.selectStep"
+          @edit="editor.handleEditStep"
+          @remove="editor.handleRemoveStepWithPersist"
+          @insert="handleInsert"
+        />
+      </template>
+
+      <div class="outro-spacer" />
     </div>
 
     <!-- Expanded Flow View - full-size editing -->
@@ -359,6 +412,68 @@ defineExpose({
   width: 1px;
   background: hsl(var(--border));
   margin: 1rem 0;
+}
+
+/* ADR-018: Merge Point */
+.merge-point {
+  padding: 2rem 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.merge-indicator {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 600px;
+}
+
+.merge-line {
+  flex: 1;
+  height: 2px;
+  background: linear-gradient(
+    to right,
+    hsl(var(--border)),
+    hsl(var(--muted-foreground) / 0.3)
+  );
+}
+
+.merge-line-right {
+  background: linear-gradient(
+    to right,
+    hsl(var(--muted-foreground) / 0.3),
+    hsl(var(--border))
+  );
+}
+
+.merge-node {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background: hsl(var(--background));
+  border: 2px solid hsl(var(--border));
+}
+
+.merge-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* ADR-018: Outro Section */
+.outro-section {
+  max-width: 990px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.outro-spacer {
+  height: 20vh;
 }
 
 /* Expanded Flow View */
