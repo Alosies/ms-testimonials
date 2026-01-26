@@ -1365,6 +1365,72 @@ The flows table enables full branching flexibility without schema changes:
 | **Reorder flows** | Update `display_order` |
 | **Add/remove flows** | INSERT/DELETE rows |
 
+### Flow Convergence (Outro Support)
+
+The architecture supports **flow convergence** - branches merging back to common steps - using `display_order` positioning. No additional schema changes required.
+
+#### How It Works
+
+```
+Form
+├── Shared Flow (display_order=0)  ← Before branches (intro)
+├── Branch Flow (display_order=1)  ← Conditional branch 1
+├── Branch Flow (display_order=2)  ← Conditional branch 2
+└── Shared Flow (display_order=3)  ← After branches (outro)
+```
+
+**Semantics:**
+- `flow_type: 'shared'` = Always shown (unconditional)
+- `flow_type: 'branch'` = Shown conditionally (only ONE branch executes)
+- `display_order` determines position relative to branches
+
+**Runtime logic:**
+1. Show `shared` flows where `display_order < min(branch display_order)` → **intro**
+2. Evaluate branch conditions → show the ONE matching branch
+3. Show `shared` flows where `display_order > max(branch display_order)` → **outro**
+
+#### Runtime Implementation
+
+```typescript
+function getFlowSequence(flows: Flow[]) {
+  const shared = flows.filter(f => f.flow_type === 'shared');
+  const branches = flows.filter(f => f.flow_type === 'branch');
+
+  if (branches.length === 0) {
+    return { intro: shared, branches: [], outro: [] };
+  }
+
+  const minBranchOrder = Math.min(...branches.map(f => f.display_order));
+  const maxBranchOrder = Math.max(...branches.map(f => f.display_order));
+
+  return {
+    intro: shared.filter(f => f.display_order < minBranchOrder),
+    branches: branches,
+    outro: shared.filter(f => f.display_order > maxBranchOrder),
+  };
+}
+```
+
+#### Examples
+
+| Use Case | Flow Structure |
+|----------|----------------|
+| **2-way rating** | Shared(0) → Happy(1) OR Unhappy(2) → Shared(3) |
+| **3-way NPS** | Shared(0) → Promoters(1) OR Passives(2) OR Detractors(3) → Shared(4) |
+| **5-way custom** | Shared(0) → 5 branches(1-5) → Shared(6) |
+
+#### Advantages
+
+| Aspect | Benefit |
+|--------|---------|
+| No schema change | Existing `flow_type` constraint unchanged |
+| No data migration | All existing flows work as-is |
+| N-way branching | Supports 2, 3, or any number of branches |
+| Multiple intro/outro | Could have multiple shared sections before/after |
+| Position-based | `display_order` already exists and is indexed |
+
+For detailed analysis and alternatives considered, see [Flow Convergence Research](./flow-convergence-research.md).
+
 ### Query Patterns
 
 **Get all steps with flow info (Form Builder):**
@@ -1590,3 +1656,10 @@ ALTER TABLE form_steps ADD COLUMN parent_step_id TEXT REFERENCES form_steps(id);
 - Typeform Logic Jumps: https://www.typeform.com/help/a/add-logic-to-your-typeforms-360052749251/
 - SurveyMonkey Skip Logic: https://help.surveymonkey.com/en/create/skip-logic/
 - ADR-006: Timeline Form Editor Layout
+
+## Related Documents
+
+- [Flow Convergence Research](./flow-convergence-research.md) - Analysis of converging diverged paths, industry research, and architecture options
+- [Implementation Plan](./implementation-plan.md)
+- [Phase 2 Implementation](./phase-2-implementation.md)
+- [Testing Plan](./testing-plan.md)
