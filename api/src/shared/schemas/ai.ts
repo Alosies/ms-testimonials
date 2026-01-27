@@ -130,6 +130,37 @@ export const FormStructureSchema = z.object({
 }).openapi('FormStructure');
 
 /**
+ * Testimonial write step content for testimonial flow
+ * This step allows users to either let AI assemble their testimonial or write it manually
+ */
+export const TestimonialWriteContentSchema = z.object({
+  title: z.string().openapi({
+    example: 'Your testimonial',
+    description: 'Title for the testimonial write step',
+  }),
+  subtitle: z.string().openapi({
+    example: 'Let us craft your story or write it yourself',
+    description: 'Subtitle explaining the purpose',
+  }),
+  ai_path_title: z.string().openapi({
+    example: 'Let AI craft your story',
+    description: 'Title for AI-assisted path',
+  }),
+  ai_path_description: z.string().openapi({
+    example: "We'll transform your answers into a testimonial you can review and edit",
+    description: 'Description of what AI path does',
+  }),
+  manual_path_title: z.string().openapi({
+    example: 'Write it yourself',
+    description: 'Title for manual writing path',
+  }),
+  manual_path_description: z.string().openapi({
+    example: 'Compose your own testimonial from scratch',
+    description: 'Description of manual path',
+  }),
+}).openapi('TestimonialWriteContent');
+
+/**
  * Consent step content for testimonial flow
  */
 export const ConsentContentSchema = z.object({
@@ -177,6 +208,9 @@ export const ImprovementThankYouSchema = z.object({
  * Step content suggestions for system-generated steps
  */
 export const StepContentSchema = z.object({
+  testimonial_write: TestimonialWriteContentSchema.openapi({
+    description: 'Content for the testimonial write step in testimonial flow',
+  }),
   consent: ConsentContentSchema.openapi({
     description: 'Content for the consent step in testimonial flow',
   }),
@@ -338,6 +372,7 @@ export type AIQuestionOption = z.infer<typeof AIQuestionOptionSchema>;
 export type AIQuestion = z.infer<typeof AIQuestionSchema>;
 export type AIContext = z.infer<typeof AIContextSchema>;
 export type FormStructure = z.infer<typeof FormStructureSchema>;
+export type TestimonialWriteContent = z.infer<typeof TestimonialWriteContentSchema>;
 export type ConsentContent = z.infer<typeof ConsentContentSchema>;
 export type ImprovementThankYou = z.infer<typeof ImprovementThankYouSchema>;
 export type StepContent = z.infer<typeof StepContentSchema>;

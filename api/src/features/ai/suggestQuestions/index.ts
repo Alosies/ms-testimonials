@@ -289,6 +289,14 @@ export async function suggestQuestions(c: Context) {
         is_branch_point: q.is_branch_point,
       })),
       step_content: {
+        testimonial_write: {
+          title: sanitizeAIOutput(result.object.step_content.testimonial_write.title),
+          subtitle: sanitizeAIOutput(result.object.step_content.testimonial_write.subtitle),
+          ai_path_title: sanitizeAIOutput(result.object.step_content.testimonial_write.ai_path_title),
+          ai_path_description: sanitizeAIOutput(result.object.step_content.testimonial_write.ai_path_description),
+          manual_path_title: sanitizeAIOutput(result.object.step_content.testimonial_write.manual_path_title),
+          manual_path_description: sanitizeAIOutput(result.object.step_content.testimonial_write.manual_path_description),
+        },
         consent: {
           title: sanitizeAIOutput(result.object.step_content.consent.title),
           description: sanitizeAIOutput(result.object.step_content.consent.description),
