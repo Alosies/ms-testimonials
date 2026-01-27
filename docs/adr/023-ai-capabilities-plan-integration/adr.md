@@ -194,6 +194,32 @@ This separates "can you use this feature?" from "how much can you use?".
 
 This encourages upgrades (monthly resets) while rewarding purchases (bonus persists).
 
+**Credit Consumption Priority Logic:**
+
+When consuming credits, always deduct from monthly first (use-it-or-lose-it), then bonus:
+
+```sql
+-- Calculate how much to take from each pool
+monthly_available := monthly_credits - used_this_period;
+monthly_to_consume := LEAST(actual_credits, monthly_available);
+bonus_to_consume := actual_credits - monthly_to_consume;
+
+-- Apply consumption (in settleCredits)
+UPDATE organization_credit_balances
+SET
+  used_this_period = used_this_period + monthly_to_consume,
+  bonus_credits = bonus_credits - bonus_to_consume,
+  reserved_credits = reserved_credits - estimated_credits
+WHERE organization_id = $org_id
+  AND bonus_credits >= bonus_to_consume;  -- Prevent negative bonus
+```
+
+**Example:**
+- User has: 20 monthly remaining, 50 bonus
+- Operation costs: 25 credits
+- Consumption: 20 from monthly (depleted), 5 from bonus
+- After: 0 monthly remaining, 45 bonus
+
 #### 2. Credit Consumption Formula
 
 Credits are calculated **dynamically** based on actual token usage:
@@ -220,19 +246,55 @@ Example:
 | `monthly_credits` | **Snapshot** at subscribe | Consistent billing, upgrade incentive |
 | `bonus_credits` | **Live balance** | Always available regardless of plan |
 
-#### 4. Balance Update Strategy
+#### 4. Credit Reservation Pattern
 
-Use **atomic operations** with `RETURNING` to prevent race conditions:
+To prevent race conditions and avoid charging for failed operations, use a **reserve → execute → settle** pattern:
 
+```
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│   RESERVE   │────►│   EXECUTE   │────►│   SETTLE    │
+│ (estimated) │     │  (AI call)  │     │  (actual)   │
+└─────────────┘     └─────────────┘     └─────────────┘
+       │                   │                   │
+       │                   │                   ▼
+       │                   │           ┌─────────────┐
+       │                   └──────────►│   RELEASE   │
+       │                   (on error)  │(if failed)  │
+       │                               └─────────────┘
+       ▼
+  Blocks other
+  operations from
+  using reserved
+  credits
+```
+
+**Reserve** (before AI call):
 ```sql
 UPDATE organization_credit_balances
-SET used_this_period = used_this_period + $1
-WHERE organization_id = $2
-  AND (monthly_credits - used_this_period + bonus_credits) >= $1
+SET reserved_credits = reserved_credits + $estimated
+WHERE organization_id = $org_id
+  AND (monthly_credits - used_this_period - reserved_credits + bonus_credits) >= $estimated
 RETURNING *;
 ```
 
-If no rows returned → insufficient credits.
+**Settle** (after successful AI call):
+```sql
+UPDATE organization_credit_balances
+SET
+  used_this_period = used_this_period + $actual,
+  reserved_credits = reserved_credits - $estimated
+WHERE organization_id = $org_id
+RETURNING *;
+```
+
+**Release** (on failure):
+```sql
+UPDATE organization_credit_balances
+SET reserved_credits = reserved_credits - $estimated
+WHERE organization_id = $org_id;
+```
+
+Available credits = `monthly_credits - used_this_period - reserved_credits + bonus_credits`
 
 #### 5. Credit Transaction Types
 
@@ -245,6 +307,42 @@ If no rows returned → insufficient credits.
 | `ai_consumption` | -N | AI operation consumed credits |
 | `admin_adjustment` | ±N | Manual admin adjustment |
 | `refund` | +N | Refund for failed operation |
+| `plan_change_adjustment` | ±N | Credit adjustment on plan change |
+
+#### 6. Plan Upgrade/Downgrade Handling
+
+Plan changes have specific credit implications:
+
+**Upgrade (e.g., Pro → Team)**:
+- Immediate access to new AI capabilities
+- Monthly credits increased to new plan level
+- `used_this_period` preserved (user keeps progress)
+- Effective immediately
+
+**Downgrade (e.g., Team → Pro)**:
+- AI capabilities reduced to new plan level
+- **Critical**: If `used_this_period > new_monthly_credits`, cap it:
+  ```sql
+  used_this_period = LEAST(used_this_period, new_monthly_credits)
+  ```
+- This prevents negative available balance
+- Alternative policy: Downgrade effective at next billing cycle
+
+**Pro-rating (optional)**:
+For mid-cycle changes, credits can be pro-rated:
+```
+days_remaining = (period_end - NOW()) / 30
+prorated_credits = new_monthly_credits * days_remaining
+```
+
+#### 7. Idempotency
+
+All credit-modifying operations must be idempotent to handle retries safely:
+
+- Each API request includes an `idempotency_key` (e.g., `{request_id}-{org_id}-{capability_id}`)
+- `credit_transactions.idempotency_key` is UNIQUE
+- Duplicate requests return the original transaction result
+- Keys expire after 24 hours (can be cleaned up)
 
 ---
 
@@ -291,6 +389,16 @@ COMMENT ON COLUMN ai_capabilities.estimated_credits_fast IS
     'Estimated credits for fast quality (shown in UI before operation)';
 ```
 
+### Type: `quality_level` Enum
+
+```sql
+-- Create enum for type safety on quality levels
+CREATE TYPE quality_level AS ENUM ('fast', 'enhanced', 'premium');
+
+COMMENT ON TYPE quality_level IS
+    'AI operation quality levels. fast=cheapest, premium=best quality';
+```
+
 ### Table: `plan_ai_capabilities`
 
 Junction table defining which AI features each plan can access.
@@ -304,9 +412,14 @@ CREATE TABLE plan_ai_capabilities (
     -- Access control
     is_enabled          BOOLEAN NOT NULL DEFAULT true,
 
-    -- Quality level restrictions (NULL = all levels allowed)
-    -- Array of allowed quality levels: ['fast', 'enhanced', 'premium']
-    allowed_quality_levels  TEXT[] DEFAULT ARRAY['fast', 'enhanced', 'premium'],
+    -- Quality level restrictions (uses enum for type safety)
+    -- Empty array = no access, NULL treated as all levels
+    allowed_quality_levels  quality_level[] NOT NULL DEFAULT ARRAY['fast', 'enhanced', 'premium']::quality_level[],
+
+    -- Rate limiting (independent of credits)
+    -- NULL = unlimited, 0 = blocked
+    rate_limit_rpm      INT,  -- Requests per minute
+    rate_limit_rpd      INT,  -- Requests per day
 
     -- Audit
     created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -318,12 +431,21 @@ CREATE TABLE plan_ai_capabilities (
 CREATE INDEX idx_plan_ai_capabilities_plan ON plan_ai_capabilities(plan_id);
 CREATE INDEX idx_plan_ai_capabilities_capability ON plan_ai_capabilities(ai_capability_id);
 
+-- Trigger to auto-update updated_at
+CREATE TRIGGER update_plan_ai_capabilities_updated_at
+    BEFORE UPDATE ON plan_ai_capabilities
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 COMMENT ON TABLE plan_ai_capabilities IS
     'Junction table: which plans can access which AI features.';
 COMMENT ON COLUMN plan_ai_capabilities.is_enabled IS
-    'Whether this capability is enabled for this plan';
+    'Soft toggle. false = temporarily disabled without deleting config.';
 COMMENT ON COLUMN plan_ai_capabilities.allowed_quality_levels IS
-    'Quality levels this plan can use. NULL or empty = all levels.';
+    'Quality levels this plan can use. Uses quality_level enum for type safety.';
+COMMENT ON COLUMN plan_ai_capabilities.rate_limit_rpm IS
+    'Max requests per minute. NULL=unlimited. Enforced via Redis sliding window.';
+COMMENT ON COLUMN plan_ai_capabilities.rate_limit_rpd IS
+    'Max requests per day. NULL=unlimited. Prevents abuse on free tier.';
 ```
 
 ### Seed Data: AI Capabilities & Plan Mappings
@@ -341,40 +463,46 @@ INSERT INTO ai_capabilities (unique_name, name, description, category, estimated
      'Refine and improve existing testimonials',
      'generation', 0.5, 2.0, 5.0);
 
--- Free plan: Only question_generation with fast quality
-INSERT INTO plan_ai_capabilities (plan_id, ai_capability_id, is_enabled, allowed_quality_levels)
+-- Free plan: Only question_generation with fast quality, strict rate limits
+INSERT INTO plan_ai_capabilities (plan_id, ai_capability_id, is_enabled, allowed_quality_levels, rate_limit_rpm, rate_limit_rpd)
 SELECT p.id, ac.id,
     CASE
         WHEN ac.unique_name = 'question_generation' THEN true
         ELSE false  -- testimonial_assembly and polish disabled
     END,
     CASE
-        WHEN ac.unique_name = 'question_generation' THEN ARRAY['fast']
-        ELSE ARRAY[]::TEXT[]
-    END
+        WHEN ac.unique_name = 'question_generation' THEN ARRAY['fast']::quality_level[]
+        ELSE ARRAY[]::quality_level[]
+    END,
+    CASE WHEN ac.unique_name = 'question_generation' THEN 5 ELSE NULL END,   -- 5 RPM
+    CASE WHEN ac.unique_name = 'question_generation' THEN 20 ELSE NULL END   -- 20 RPD
 FROM plans p, ai_capabilities ac
 WHERE p.unique_name = 'free';
 
--- Pro plan: All capabilities, fast + enhanced quality
-INSERT INTO plan_ai_capabilities (plan_id, ai_capability_id, is_enabled, allowed_quality_levels)
-SELECT p.id, ac.id, true, ARRAY['fast', 'enhanced']
+-- Pro plan: All capabilities, fast + enhanced quality, moderate rate limits
+INSERT INTO plan_ai_capabilities (plan_id, ai_capability_id, is_enabled, allowed_quality_levels, rate_limit_rpm, rate_limit_rpd)
+SELECT p.id, ac.id, true, ARRAY['fast', 'enhanced']::quality_level[],
+    30,   -- 30 RPM
+    500   -- 500 RPD
 FROM plans p, ai_capabilities ac
 WHERE p.unique_name = 'pro';
 
--- Team plan: All capabilities, all quality levels
-INSERT INTO plan_ai_capabilities (plan_id, ai_capability_id, is_enabled, allowed_quality_levels)
-SELECT p.id, ac.id, true, ARRAY['fast', 'enhanced', 'premium']
+-- Team plan: All capabilities, all quality levels, generous rate limits
+INSERT INTO plan_ai_capabilities (plan_id, ai_capability_id, is_enabled, allowed_quality_levels, rate_limit_rpm, rate_limit_rpd)
+SELECT p.id, ac.id, true, ARRAY['fast', 'enhanced', 'premium']::quality_level[],
+    NULL,  -- Unlimited RPM
+    NULL   -- Unlimited RPD
 FROM plans p, ai_capabilities ac
 WHERE p.unique_name = 'team';
 ```
 
 ### Plan AI Access Summary
 
-| Plan | question_generation | testimonial_assembly | testimonial_polish | Quality Levels |
-|------|---------------------|---------------------|-------------------|----------------|
-| Free | ✅ Enabled | ❌ Disabled | ❌ Disabled | fast only |
-| Pro | ✅ Enabled | ✅ Enabled | ✅ Enabled | fast, enhanced |
-| Team | ✅ Enabled | ✅ Enabled | ✅ Enabled | all |
+| Plan | question_generation | testimonial_assembly | testimonial_polish | Quality Levels | Rate Limits |
+|------|---------------------|---------------------|-------------------|----------------|-------------|
+| Free | ✅ Enabled | ❌ Disabled | ❌ Disabled | fast only | 5/min, 20/day |
+| Pro | ✅ Enabled | ✅ Enabled | ✅ Enabled | fast, enhanced | 30/min, 500/day |
+| Team | ✅ Enabled | ✅ Enabled | ✅ Enabled | all | Unlimited |
 
 ---
 
@@ -415,30 +543,69 @@ CREATE TABLE organization_credit_balances (
     -- Monthly credits from plan (resets each period)
     monthly_credits     DECIMAL(10,2) NOT NULL DEFAULT 0,
 
-    -- Bonus credits from top-ups (never reset)
+    -- Bonus credits from top-ups (never reset, never expire)
     bonus_credits       DECIMAL(10,2) NOT NULL DEFAULT 0,
+
+    -- Reserved credits (held during AI operation execution)
+    reserved_credits    DECIMAL(10,2) NOT NULL DEFAULT 0,
 
     -- Usage tracking
     used_this_period    DECIMAL(10,2) NOT NULL DEFAULT 0,
 
+    -- Grace period: small overdraft allowed for better UX
+    overdraft_limit     DECIMAL(10,2) NOT NULL DEFAULT 2.0,
+
     -- Current billing period
     period_start        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     period_end          TIMESTAMPTZ NOT NULL DEFAULT (NOW() + INTERVAL '1 month'),
+
+    -- Constraints
+    CONSTRAINT positive_balances CHECK (
+        monthly_credits >= 0 AND
+        bonus_credits >= 0 AND
+        reserved_credits >= 0 AND
+        used_this_period >= 0 AND
+        overdraft_limit >= 0
+    ),
 
     -- Audit
     created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- Computed column helper (for queries)
-COMMENT ON TABLE organization_credit_balances IS
-    'Credit balance per organization. available = monthly_credits - used_this_period + bonus_credits';
+-- Index for monthly reset job (find orgs needing reset)
+CREATE INDEX idx_credit_balances_period_end
+    ON organization_credit_balances(period_end)
+    WHERE period_end <= NOW();
 
--- Function to get available credits
+-- Trigger to auto-update updated_at
+CREATE TRIGGER update_credit_balances_updated_at
+    BEFORE UPDATE ON organization_credit_balances
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+COMMENT ON TABLE organization_credit_balances IS
+    'Credit balance per organization. available = monthly - used - reserved + bonus + overdraft';
+COMMENT ON COLUMN organization_credit_balances.reserved_credits IS
+    'Credits held during AI operation execution. Released on completion or failure.';
+COMMENT ON COLUMN organization_credit_balances.overdraft_limit IS
+    'Small grace buffer to prevent hard cutoff. Recovered from next allocation.';
+
+-- Function to get available credits (accounts for reservations)
 CREATE OR REPLACE FUNCTION get_available_credits(org_id VARCHAR(12))
 RETURNS DECIMAL(10,2) AS $$
     SELECT COALESCE(
-        (SELECT monthly_credits - used_this_period + bonus_credits
+        (SELECT monthly_credits - used_this_period - reserved_credits + bonus_credits + overdraft_limit
+         FROM organization_credit_balances
+         WHERE organization_id = org_id),
+        0
+    );
+$$ LANGUAGE SQL STABLE;
+
+-- Function to get spendable credits (available minus overdraft buffer)
+CREATE OR REPLACE FUNCTION get_spendable_credits(org_id VARCHAR(12))
+RETURNS DECIMAL(10,2) AS $$
+    SELECT COALESCE(
+        (SELECT monthly_credits - used_this_period - reserved_credits + bonus_credits
          FROM organization_credit_balances
          WHERE organization_id = org_id),
         0
@@ -453,6 +620,9 @@ CREATE TABLE credit_transactions (
     id                  VARCHAR(12) PRIMARY KEY DEFAULT generate_nanoid_12(),
     organization_id     VARCHAR(12) NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
 
+    -- Idempotency key to prevent duplicate charges on retry
+    idempotency_key     VARCHAR(64) UNIQUE,
+
     -- Transaction details
     transaction_type    VARCHAR(30) NOT NULL
                         CHECK (transaction_type IN (
@@ -462,7 +632,8 @@ CREATE TABLE credit_transactions (
                             'referral_bonus',
                             'ai_consumption',
                             'admin_adjustment',
-                            'refund'
+                            'refund',
+                            'plan_change_adjustment'
                         )),
 
     -- Amount: positive for additions, negative for consumption
@@ -473,6 +644,9 @@ CREATE TABLE credit_transactions (
 
     -- For AI consumption: link to ai_capabilities table
     ai_capability_id    VARCHAR(12) REFERENCES ai_capabilities(id) ON DELETE SET NULL,
+
+    -- For top-up purchases: link to package
+    topup_package_id    VARCHAR(12) REFERENCES credit_topup_packages(id) ON DELETE SET NULL,
 
     -- Related entity (form, testimonial, payment, etc.)
     related_entity_type VARCHAR(50),
@@ -490,7 +664,9 @@ CREATE TABLE credit_transactions (
     --   output_tokens: number,
     --   cost_usd: number,
     --   request_id: string,
-    --   quality: 'fast' | 'enhanced' | 'premium'
+    --   quality: 'fast' | 'enhanced' | 'premium',
+    --   estimated_credits: number,  -- What was reserved
+    --   actual_credits: number      -- What was charged
     -- }
 
     -- Payment metadata (for topup transactions)
@@ -498,14 +674,34 @@ CREATE TABLE credit_transactions (
     -- Schema: {
     --   payment_provider: 'stripe',
     --   payment_intent_id: string,
-    --   amount_paid: number,
+    --   amount_paid_cents: number,
     --   currency: string
     -- }
 
     -- Optional note
     note                TEXT,
 
-    created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+    -- Estimation accuracy tracking (for ai_consumption only)
+    -- Allows analytics: "Our estimates are typically X% over/under actual"
+    estimation_variance DECIMAL(6,2) GENERATED ALWAYS AS (
+        CASE
+            WHEN provider_metadata->>'estimated_credits' IS NOT NULL
+            THEN (provider_metadata->>'estimated_credits')::DECIMAL + credits_amount
+            ELSE NULL
+        END
+    ) STORED,
+    -- Positive = overestimated (reserved more than used)
+    -- Negative = underestimated (used more than reserved)
+    -- Example: estimated 5, actual 4.2 → variance = 5 + (-4.2) = 0.8 (overestimate)
+
+    -- Enforce credit amount sign based on transaction type
+    CONSTRAINT check_credits_amount_sign CHECK (
+        (transaction_type = 'ai_consumption' AND credits_amount < 0)
+        OR (transaction_type IN ('plan_allocation', 'topup_purchase', 'promo_bonus', 'referral_bonus', 'refund') AND credits_amount > 0)
+        OR (transaction_type IN ('admin_adjustment', 'plan_change_adjustment'))  -- Can be either sign
+    )
 );
 
 -- Indexes for common queries
@@ -515,8 +711,135 @@ CREATE INDEX idx_credit_transactions_org_time
 CREATE INDEX idx_credit_transactions_type
     ON credit_transactions(transaction_type, created_at DESC);
 
+-- Index for capability usage analytics
+CREATE INDEX idx_credit_transactions_capability
+    ON credit_transactions(ai_capability_id, created_at DESC)
+    WHERE ai_capability_id IS NOT NULL;
+
+-- Index for finding duplicate requests (idempotency check)
+CREATE INDEX idx_credit_transactions_idempotency
+    ON credit_transactions(idempotency_key)
+    WHERE idempotency_key IS NOT NULL;
+
 COMMENT ON TABLE credit_transactions IS
     'Immutable audit log of all credit movements. Never UPDATE or DELETE.';
+COMMENT ON COLUMN credit_transactions.idempotency_key IS
+    'Unique key to prevent duplicate transactions on retry. Format: {request_id}-{org_id}-{capability_id}';
+COMMENT ON COLUMN credit_transactions.balance_after IS
+    'Running balance at time of transaction. Computed via trigger for consistency.';
+COMMENT ON COLUMN credit_transactions.estimation_variance IS
+    'Difference between estimated and actual credits. Positive=overestimate. For analytics.';
+```
+
+**Estimation Accuracy Analytics Query:**
+
+```sql
+-- Average estimation accuracy by capability (last 30 days)
+SELECT
+    ac.name AS capability,
+    COUNT(*) AS operations,
+    AVG(ct.estimation_variance) AS avg_variance,
+    AVG(ABS(ct.estimation_variance)) AS avg_abs_variance,
+    PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY ct.estimation_variance) AS median_variance
+FROM credit_transactions ct
+JOIN ai_capabilities ac ON ct.ai_capability_id = ac.id
+WHERE ct.transaction_type = 'ai_consumption'
+  AND ct.estimation_variance IS NOT NULL
+  AND ct.created_at > NOW() - INTERVAL '30 days'
+GROUP BY ac.name
+ORDER BY avg_abs_variance DESC;
+
+-- Example output:
+-- | capability            | operations | avg_variance | avg_abs_variance | median_variance |
+-- |-----------------------|------------|--------------|------------------|-----------------|
+-- | AI Testimonial Polish | 1523       | 0.42         | 0.68             | 0.25            |
+-- | AI Question Gen       | 892        | -0.15        | 0.32             | 0.00            |
+-- Interpretation: Testimonial Polish estimates are typically 0.42 credits too high
+```
+
+### Trigger: Auto-Calculate `balance_after`
+
+To prevent `balance_after` from drifting, calculate it automatically:
+
+```sql
+CREATE OR REPLACE FUNCTION calculate_balance_after()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Get current available balance and add the transaction amount
+    NEW.balance_after := get_spendable_credits(NEW.organization_id) + NEW.credits_amount;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER set_balance_after
+    BEFORE INSERT ON credit_transactions
+    FOR EACH ROW EXECUTE FUNCTION calculate_balance_after();
+```
+
+### Table: `credit_reservations` (For Tracking Active Reservations)
+
+Tracks individual credit reservations for debugging, cleanup, and analytics.
+
+```sql
+CREATE TABLE credit_reservations (
+    id                  VARCHAR(12) PRIMARY KEY DEFAULT generate_nanoid_12(),
+    organization_id     VARCHAR(12) NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+    ai_capability_id    VARCHAR(12) NOT NULL REFERENCES ai_capabilities(id) ON DELETE CASCADE,
+
+    -- Reservation details
+    credits_amount      DECIMAL(10,2) NOT NULL,
+    idempotency_key     VARCHAR(64) NOT NULL UNIQUE,
+
+    -- Status tracking
+    status              VARCHAR(20) NOT NULL DEFAULT 'pending'
+                        CHECK (status IN ('pending', 'settled', 'released', 'expired')),
+
+    -- Timing
+    created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    expires_at          TIMESTAMPTZ NOT NULL DEFAULT (NOW() + INTERVAL '5 minutes'),
+    settled_at          TIMESTAMPTZ,
+
+    -- Settlement details (populated on settle)
+    actual_credits      DECIMAL(10,2),
+    transaction_id      VARCHAR(12) REFERENCES credit_transactions(id),
+
+    -- Release details (populated on release/expire)
+    release_reason      VARCHAR(50)  -- 'operation_failed', 'operation_cancelled', 'timeout', 'expired'
+);
+
+-- Index for cleanup job (find expired pending reservations)
+CREATE INDEX idx_credit_reservations_cleanup
+    ON credit_reservations(expires_at)
+    WHERE status = 'pending';
+
+-- Index for org reservation lookup
+CREATE INDEX idx_credit_reservations_org
+    ON credit_reservations(organization_id, created_at DESC);
+
+-- Index for idempotency check
+CREATE INDEX idx_credit_reservations_idempotency
+    ON credit_reservations(idempotency_key);
+
+COMMENT ON TABLE credit_reservations IS
+    'Tracks individual credit reservations. Enables cleanup of orphaned reservations.';
+COMMENT ON COLUMN credit_reservations.expires_at IS
+    'Auto-release if not settled within 5 minutes. Protects against server crashes.';
+```
+
+**Reservation Cleanup Job** (runs every minute):
+
+```sql
+-- Find and release expired reservations
+WITH expired AS (
+    UPDATE credit_reservations
+    SET status = 'expired', release_reason = 'timeout'
+    WHERE status = 'pending' AND expires_at < NOW()
+    RETURNING organization_id, credits_amount
+)
+UPDATE organization_credit_balances ocb
+SET reserved_credits = reserved_credits - expired.credits_amount
+FROM expired
+WHERE ocb.organization_id = expired.organization_id;
 ```
 
 ### Table: `credit_topup_packages` (For Pricing)
@@ -649,18 +972,46 @@ async function checkAIAccess(
 ): Promise<AIAccessResult>;
 ```
 
-### Consume Credits (Atomic)
+### Credit Operations (Reserve → Settle → Release)
 
 ```typescript
-// api/src/features/credits/consumeCredits.ts
+// api/src/features/credits/creditOperations.ts
 
-interface ConsumeCreditsInput {
+// ============================================
+// RESERVE: Hold credits before AI operation
+// ============================================
+
+interface ReserveCreditsInput {
   organizationId: string;
-  aiCapabilityId: string;  // FK to ai_capabilities
-  creditsToCharge: number;
+  aiCapabilityId: string;
+  estimatedCredits: number;
+  idempotencyKey: string;  // Prevents duplicate reservations
+}
+
+interface ReserveCreditsResult {
+  success: boolean;
+  reservationId: string;  // Used for settle/release
+  creditsReserved: number;
+  availableAfterReservation: number;
+  error?: 'insufficient_credits' | 'duplicate_request';
+}
+
+async function reserveCredits(input: ReserveCreditsInput): Promise<ReserveCreditsResult>;
+
+// ============================================
+// SETTLE: Finalize credits after successful AI operation
+// ============================================
+
+interface SettleCreditsInput {
+  organizationId: string;
+  reservationId: string;
+  aiCapabilityId: string;
+  actualCredits: number;     // May differ from estimated
+  estimatedCredits: number;  // Original reservation amount
   userId?: string;
   relatedEntityType?: string;
   relatedEntityId?: string;
+  idempotencyKey: string;
   providerMetadata: {
     provider: AIProvider;
     model: string;
@@ -672,14 +1023,28 @@ interface ConsumeCreditsInput {
   };
 }
 
-interface ConsumeCreditsResult {
+interface SettleCreditsResult {
   success: boolean;
   transactionId: string;
+  creditsCharged: number;
   balanceAfter: number;
-  error?: 'insufficient_credits';
+  overageFromEstimate: number;  // actual - estimated (can be negative)
 }
 
-async function consumeCredits(input: ConsumeCreditsInput): Promise<ConsumeCreditsResult>;
+async function settleCredits(input: SettleCreditsInput): Promise<SettleCreditsResult>;
+
+// ============================================
+// RELEASE: Return reserved credits on failure
+// ============================================
+
+interface ReleaseCreditsInput {
+  organizationId: string;
+  reservationId: string;
+  estimatedCredits: number;
+  reason: 'operation_failed' | 'operation_cancelled' | 'timeout';
+}
+
+async function releaseCredits(input: ReleaseCreditsInput): Promise<{ success: boolean }>;
 ```
 
 ### Integration with Existing AI Audit
@@ -728,12 +1093,15 @@ interface AIOperationContext {
 }
 
 /**
- * Wrapper that handles capability access + credit consumption for AI operations
+ * Wrapper that handles capability access + credit reservation + consumption
+ * Uses reserve → execute → settle/release pattern for safety
  */
 async function executeWithAIAccess<T>(
   context: AIOperationContext,
   operation: () => Promise<{ result: T; response: AIResponse }>
-): Promise<T> {
+): Promise<{ result: T; creditsUsed: number; balanceRemaining: number }> {
+  const idempotencyKey = `${context.requestId}-${context.organizationId}-${context.capabilityUniqueName}`;
+
   // 1. Check capability access + credit balance (combined)
   const access = await checkAIAccess(
     context.organizationId,
@@ -756,39 +1124,71 @@ async function executeWithAIAccess<T>(
     );
   }
 
-  // 2. Execute AI operation
-  const { result, response } = await operation();
+  const estimatedCredits = access.credits.estimatedCost;
 
-  // 3. Extract actual usage and calculate credits
-  const usage = extractUsageFromResponse(response, context.provider, context.model);
-  const creditsToCharge = calculateCreditsFromCost(usage.costUsd ?? 0);
-
-  // 4. Consume credits (atomic) - linked to ai_capability
-  const consumption = await consumeCredits({
+  // 2. RESERVE credits before executing AI operation
+  const reservation = await reserveCredits({
     organizationId: context.organizationId,
-    aiCapabilityId: access.capability!.id,  // Use capability ID, not string
-    creditsToCharge,
-    userId: context.userId,
-    relatedEntityType: context.relatedEntityType,
-    relatedEntityId: context.relatedEntityId,
-    providerMetadata: {
-      provider: usage.provider ?? 'openai',
-      model: usage.model ?? 'unknown',
-      inputTokens: usage.inputTokens ?? 0,
-      outputTokens: usage.outputTokens ?? 0,
-      costUsd: usage.costUsd ?? 0,
-      requestId: usage.requestId ?? '',
-      quality: context.quality,
-    },
+    aiCapabilityId: access.capability!.id,
+    estimatedCredits,
+    idempotencyKey,
   });
 
-  if (!consumption.success) {
-    // Race condition: credits depleted between check and execute
-    // Could implement refund logic here if needed
-    throw new InsufficientCreditsError(0, creditsToCharge);
+  if (!reservation.success) {
+    if (reservation.error === 'duplicate_request') {
+      // Return cached result for idempotent request
+      throw new DuplicateRequestError(idempotencyKey);
+    }
+    throw new InsufficientCreditsError(0, estimatedCredits);
   }
 
-  return result;
+  try {
+    // 3. Execute AI operation
+    const { result, response } = await operation();
+
+    // 4. Extract actual usage and calculate credits
+    const usage = extractUsageFromResponse(response, context.provider, context.model);
+    const actualCredits = calculateCreditsFromCost(usage.costUsd ?? 0);
+
+    // 5. SETTLE: Finalize the transaction with actual credits
+    const settlement = await settleCredits({
+      organizationId: context.organizationId,
+      reservationId: reservation.reservationId,
+      aiCapabilityId: access.capability!.id,
+      actualCredits,
+      estimatedCredits,
+      userId: context.userId,
+      relatedEntityType: context.relatedEntityType,
+      relatedEntityId: context.relatedEntityId,
+      idempotencyKey,
+      providerMetadata: {
+        provider: usage.provider ?? 'openai',
+        model: usage.model ?? 'unknown',
+        inputTokens: usage.inputTokens ?? 0,
+        outputTokens: usage.outputTokens ?? 0,
+        costUsd: usage.costUsd ?? 0,
+        requestId: usage.requestId ?? '',
+        quality: context.quality,
+      },
+    });
+
+    return {
+      result,
+      creditsUsed: settlement.creditsCharged,
+      balanceRemaining: settlement.balanceAfter,
+    };
+
+  } catch (error) {
+    // 6. RELEASE: Return reserved credits on any failure
+    await releaseCredits({
+      organizationId: context.organizationId,
+      reservationId: reservation.reservationId,
+      estimatedCredits,
+      reason: 'operation_failed',
+    });
+
+    throw error;  // Re-throw original error
+  }
 }
 
 export { executeWithAIAccess, AIAccessDeniedError, InsufficientCreditsError };
@@ -819,7 +1219,7 @@ async function purchaseTopup(input: PurchaseTopupInput): Promise<{
 
 ---
 
-## Usage Flow
+## Usage Flow (Reserve → Execute → Settle)
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
@@ -855,55 +1255,103 @@ async function purchaseTopup(input: PurchaseTopupInput): Promise<{
 │ 1. Get estimated cost from ai_capabilities.estimated_credits_*      │
 │                                                                     │
 │ 2. Query organization_credit_balances                               │
-│    available = monthly_credits - used_this_period + bonus_credits   │
+│    spendable = monthly - used - reserved + bonus                    │
 │                                                                     │
-│ 3. available >= estimated_cost?                                     │
+│ 3. spendable >= estimated_cost?                                     │
 │    └── No → 402 (insufficient_credits - "Top up or wait for reset") │
 └─────────────────────────────────────────────────────────────────────┘
                                   │
                           ✅ Has credits
                                   ▼
 ┌─────────────────────────────────────────────────────────────────────┐
-│ 3. Execute AI Operation                                             │
+│ STEP 3: RESERVE CREDITS                                             │
+├─────────────────────────────────────────────────────────────────────┤
+│ UPDATE organization_credit_balances                                 │
+│ SET reserved_credits = reserved_credits + $estimated                │
+│ WHERE organization_id = $org_id                                     │
+│   AND (monthly - used - reserved + bonus) >= $estimated;            │
+│                                                                     │
+│ └── Generates idempotency_key: {request_id}-{org_id}-{capability}   │
+│ └── Returns reservation_id for settle/release                       │
+└─────────────────────────────────────────────────────────────────────┘
+                                  │
+                          ✅ Credits reserved
+                                  ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│ STEP 4: EXECUTE AI OPERATION                                        │
 │    └── Call provider (OpenAI/Anthropic/Google)                      │
 │    └── Get actual token usage from response                         │
-└─────────────────────────────────────────────────────────────────────┘
-                                  │
-                                  ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│ 4. Calculate Actual Credits                                         │
 │    └── calculateCreditsFromCost(actual_cost_usd)                    │
-│    └── May differ from estimate (based on response length)          │
 └─────────────────────────────────────────────────────────────────────┘
-                                  │
-                                  ▼
+                      │                         │
+              ✅ Success                   ❌ Failure
+                      │                         │
+                      ▼                         ▼
+┌─────────────────────────────┐   ┌─────────────────────────────────┐
+│ STEP 5a: SETTLE CREDITS     │   │ STEP 5b: RELEASE RESERVATION    │
+├─────────────────────────────┤   ├─────────────────────────────────┤
+│ BEGIN;                      │   │ UPDATE organization_credit_     │
+│                             │   │   balances                      │
+│ UPDATE org_credit_balances  │   │ SET reserved = reserved - $est  │
+│ SET                         │   │ WHERE organization_id = $org;   │
+│   used = used + $actual,    │   │                                 │
+│   reserved = reserved - $est│   │ -- No transaction recorded      │
+│ WHERE organization_id = $o; │   │ -- Credits returned to pool     │
+│                             │   └─────────────────────────────────┘
+│ INSERT INTO credit_trans (  │
+│   organization_id,          │
+│   idempotency_key,          │
+│   ai_capability_id,         │
+│   transaction_type,         │
+│   credits_amount,           │  ← Negative (consumption)
+│   balance_after,            │  ← Computed by trigger
+│   provider_metadata         │
+│ );                          │
+│                             │
+│ COMMIT;                     │
+└─────────────────────────────┘
+                      │
+                      ▼
 ┌─────────────────────────────────────────────────────────────────────┐
-│ 5. Consume Credits (atomic transaction)                             │
-├─────────────────────────────────────────────────────────────────────┤
-│ BEGIN;                                                              │
-│                                                                     │
-│   UPDATE organization_credit_balances                               │
-│   SET used_this_period = used_this_period + $credits                │
-│   WHERE organization_id = $org_id                                   │
-│     AND (monthly_credits - used_this_period + bonus_credits) >= $c; │
-│                                                                     │
-│   INSERT INTO credit_transactions (                                 │
-│     organization_id, ai_capability_id, transaction_type,            │
-│     credits_amount, balance_after, provider_metadata                │
-│   ) VALUES (...);                                                   │
-│                                                                     │
-│ COMMIT;                                                             │
-└─────────────────────────────────────────────────────────────────────┘
-                                  │
-                                  ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│ 6. Return Result to User                                            │
+│ STEP 6: RETURN RESULT TO USER                                       │
 │    {                                                                 │
 │      "testimonial": "...",                                          │
 │      "credits_used": 3.5,                                           │
+│      "credits_estimated": 4.0,                                      │
 │      "balance_remaining": 46.5                                      │
 │    }                                                                 │
 └─────────────────────────────────────────────────────────────────────┘
+```
+
+### Concurrent Request Handling
+
+The reservation pattern prevents race conditions when multiple AI operations run simultaneously:
+
+```
+Time →
+────────────────────────────────────────────────────────────────────►
+
+Request A                    Request B
+    │                            │
+    ▼                            ▼
+Reserve 5 credits           Reserve 5 credits
+    │                            │
+    │   ┌────────────────────────┘
+    │   │  Pool: 10 credits
+    │   │  Reserved: 5 (A) + 5 (B) = 10
+    │   │  Spendable: 10 - 10 = 0
+    ▼   ▼
+Both execute...             Request C arrives
+    │                            │
+    │                       Reserve 3 credits
+    │                            │
+    │                       ❌ DENIED (spendable = 0)
+    │
+Settle 4.5 (A)
+    │
+Settle 5.2 (B)
+    │
+Pool: 10 - 4.5 - 5.2 = 0.3 remaining
 ```
 
 ---
@@ -1080,6 +1528,165 @@ async function resetMonthlyCredits(organizationId: string) {
 
 ---
 
+## Welcome Bonus for New Organizations
+
+New organizations receive bonus credits to try AI features without upgrading. This follows industry practice (Vercel, Supabase, OpenAI).
+
+### Bonus Amounts by Plan
+
+| Plan | Welcome Bonus | Rationale |
+|------|---------------|-----------|
+| Free | 10 credits | Try AI question generation |
+| Pro | 25 credits | Explore enhanced quality |
+| Team | 50 credits | Test premium features |
+
+### Implementation
+
+```typescript
+// Called during organization creation
+async function initializeOrganizationCredits(
+  organizationId: string,
+  plan: Plan
+) {
+  const welcomeBonus = getWelcomeBonusByPlan(plan.unique_name);
+
+  await db.transaction(async (tx) => {
+    // 1. Create credit balance with welcome bonus
+    await tx.insert(organizationCreditBalances).values({
+      organizationId,
+      monthlyCredits: plan.monthly_ai_credits,
+      bonusCredits: welcomeBonus,
+      usedThisPeriod: 0,
+      periodStart: new Date(),
+      periodEnd: addMonths(new Date(), 1),
+    });
+
+    // 2. Record welcome bonus transaction
+    if (welcomeBonus > 0) {
+      await tx.insert(creditTransactions).values({
+        organizationId,
+        transactionType: 'promo_bonus',
+        creditsAmount: welcomeBonus,
+        balanceAfter: plan.monthly_ai_credits + welcomeBonus,
+        note: 'Welcome bonus for new organization',
+      });
+    }
+
+    // 3. Record initial allocation
+    await tx.insert(creditTransactions).values({
+      organizationId,
+      transactionType: 'plan_allocation',
+      creditsAmount: plan.monthly_ai_credits,
+      balanceAfter: plan.monthly_ai_credits + welcomeBonus,
+      note: `Initial allocation for ${plan.name} plan`,
+    });
+  });
+}
+
+function getWelcomeBonusByPlan(planName: string): number {
+  const bonuses: Record<string, number> = {
+    free: 10,
+    pro: 25,
+    team: 50,
+  };
+  return bonuses[planName] ?? 0;
+}
+```
+
+### Transaction History View
+
+After signup, the user sees:
+
+| Date | Type | Credits | Balance |
+|------|------|---------|---------|
+| Jan 27 | Welcome Bonus | +10 | 20 |
+| Jan 27 | Monthly Allocation | +10 | 10 |
+
+---
+
+## Webhook Events
+
+For external integrations and internal notifications, the credit system emits webhook events:
+
+### Event Types
+
+| Event | Trigger | Payload |
+|-------|---------|---------|
+| `credits.low_balance` | Available credits < 20% of monthly | `{ org_id, available, monthly, threshold_percent }` |
+| `credits.depleted` | Available credits ≤ 0 | `{ org_id, bonus_remaining, period_ends_at }` |
+| `credits.allocated` | Monthly reset or plan change | `{ org_id, credits_added, new_balance }` |
+| `credits.topup_purchased` | User bought credit package | `{ org_id, package_id, credits_added, payment_id }` |
+| `credits.consumption` | AI operation charged credits | `{ org_id, capability_id, credits_used, balance_after }` |
+
+### Internal Notifications
+
+```typescript
+// Triggered in settleCredits() when balance crosses threshold
+async function checkAndEmitBalanceEvents(
+  organizationId: string,
+  balanceAfter: number,
+  monthlyCredits: number
+) {
+  const thresholdPercent = 0.20;  // 20%
+  const threshold = monthlyCredits * thresholdPercent;
+
+  if (balanceAfter <= 0) {
+    await emitEvent('credits.depleted', { organizationId, ... });
+    // Send email notification to org admins
+    await sendLowBalanceEmail(organizationId, 'depleted');
+  } else if (balanceAfter <= threshold) {
+    await emitEvent('credits.low_balance', { organizationId, ... });
+    // Send email notification (debounced - max 1 per day)
+    await sendLowBalanceEmail(organizationId, 'low');
+  }
+}
+```
+
+### Notification Preferences
+
+Organizations can configure credit notification preferences:
+- Email notifications: on/off
+- Slack integration: webhook URL
+- Custom threshold: 10-50% (default 20%)
+
+---
+
+## Data Retention & Partitioning
+
+### credit_transactions Table
+
+The `credit_transactions` table will grow significantly over time. Strategy:
+
+1. **Partitioning by month** (recommended for scale):
+   ```sql
+   -- Convert to partitioned table if needed
+   CREATE TABLE credit_transactions_new (
+     LIKE credit_transactions INCLUDING ALL
+   ) PARTITION BY RANGE (created_at);
+
+   -- Create monthly partitions
+   CREATE TABLE credit_transactions_2026_01
+     PARTITION OF credit_transactions_new
+     FOR VALUES FROM ('2026-01-01') TO ('2026-02-01');
+   ```
+
+2. **Retention policy**:
+   - Keep detailed records for 2 years
+   - Aggregate older records into monthly summaries
+   - Archive raw data to cold storage after 2 years
+
+3. **Idempotency key cleanup**:
+   - `idempotency_key` only needs to prevent duplicates for ~24 hours
+   - Daily job to NULL out old idempotency keys (keeps index small):
+   ```sql
+   UPDATE credit_transactions
+   SET idempotency_key = NULL
+   WHERE idempotency_key IS NOT NULL
+     AND created_at < NOW() - INTERVAL '48 hours';
+   ```
+
+---
+
 ## Consequences
 
 ### Positive
@@ -1088,6 +1695,9 @@ async function resetMonthlyCredits(organizationId: string) {
 |---------|-------------|
 | **Two-layer control** | Separate "can use" (capabilities) from "how much" (credits) |
 | **Fair pricing** | Users pay for actual usage, not arbitrary per-feature limits |
+| **Race-condition safe** | Reservation pattern prevents concurrent overdraw |
+| **No charge on failure** | Credits released if AI operation fails |
+| **Idempotent** | Duplicate requests safely ignored via idempotency key |
 | **Extensibility** | New AI features = new row in `ai_capabilities`, not schema change |
 | **Quality tiering** | Plans can restrict quality levels (Free=fast, Pro=enhanced, Team=premium) |
 | **Revenue opportunity** | Top-up purchases create additional revenue stream |
@@ -1107,10 +1717,13 @@ async function resetMonthlyCredits(organizationId: string) {
 
 | Risk | Probability | Impact | Mitigation |
 |------|-------------|--------|------------|
-| Race condition on balance update | Medium | Low | Atomic UPDATE with WHERE clause |
-| Negative balance from async operations | Low | Medium | Pre-check + post-check with refund if needed |
+| Race condition on balance update | ~~Medium~~ **Low** | Low | ✅ Mitigated: Reservation pattern with `reserved_credits` column |
+| Negative balance from async operations | ~~Low~~ **Very Low** | Medium | ✅ Mitigated: Reserve before execute, settle/release after |
+| Orphaned reservations (server crash) | Low | Low | Background job clears reservations older than 5 minutes |
 | Provider cost changes break estimates | Low | Low | Update `COST_PER_MILLION_TOKENS` map |
 | Capability config drift between plans | Low | Low | Admin UI for plan_ai_capabilities management |
+| Idempotency key collisions | Very Low | Medium | Use UUID + org_id + capability format |
+| balance_after drift over time | ~~Low~~ **Eliminated** | Low | ✅ Mitigated: Trigger calculates balance_after on insert |
 
 ---
 
@@ -1148,17 +1761,19 @@ async function resetMonthlyCredits(organizationId: string) {
 - [ ] Add credits + capability info to AI response metadata
 - [ ] Update existing AI audit logging
 
-### Phase 4: Frontend
+### Phase 6: Frontend
 - [ ] Create `useCreditBalance` composable
+- [ ] Create `useAIAccess` composable (capability + credits)
 - [ ] Create `CreditBalanceWidget` component
 - [ ] Update AI feature UIs with credit info
 - [ ] Build credit history page
 - [ ] Build top-up purchase modal
 
-### Phase 5: Billing Integration
+### Phase 7: Billing Integration
 - [ ] Integrate Stripe for top-up payments
-- [ ] Implement monthly reset job
-- [ ] Handle plan upgrades/downgrades
+- [ ] Implement monthly reset job (cron or Stripe webhook)
+- [ ] Handle plan upgrades/downgrades with credit adjustment
+- [ ] Implement webhook events for credit notifications
 
 ---
 
@@ -1186,14 +1801,53 @@ This ADR builds on the existing audit infrastructure:
 
 ## Open Questions
 
+### Resolved in This ADR
+
 1. **What happens if a user starts an operation but credits are consumed mid-operation?**
-   - Proposal: Allow operation to complete, even if it causes slight negative balance. Refund mechanism available.
+   - ✅ Resolved: Reservation pattern prevents this. Credits are held before execution.
 
-2. **Should bonus credits ever expire?**
-   - Current: No expiration. Could add 12-month expiration for accounting reasons.
+2. **How do we handle refunds for failed AI operations?**
+   - ✅ Resolved: Release pattern returns reserved credits on failure. If tokens were partially consumed, record a refund transaction.
 
-3. **How do we handle refunds for failed AI operations?**
-   - Proposal: Automatic refund transaction if AI provider returns error after tokens consumed.
+3. **Race conditions with concurrent requests?**
+   - ✅ Resolved: `reserved_credits` column blocks concurrent requests from overdrawing.
+
+### Pending Decisions
+
+4. **Should bonus credits ever expire?**
+   - Current: No expiration
+   - Option A: Never expire (simple, user-friendly)
+   - Option B: 12-month expiration (cleaner accounting, prevents liability accumulation)
+   - Recommendation: Start with no expiration, add expiration later if accounting requires
+
+5. **Multi-currency support for top-up packages?**
+   - Current: USD only (price_usd_cents)
+   - Needs: EUR, GBP support for international customers
+   - Proposal: Add `prices JSONB` column: `{"usd": 999, "eur": 899, "gbp": 799}`
+   - Decision deferred to billing integration phase
+
+6. **What's the reservation timeout?**
+   - AI operations typically complete in 5-30 seconds
+   - Edge case: What if server crashes mid-operation?
+   - Proposal: Background job clears reservations older than 5 minutes
+   - Need: `reservation_created_at` timestamp on balance row, or separate reservations table
+
+7. **Should we track per-user credit usage within an organization?**
+   - Current: Credits tracked at org level only
+   - Use case: Team plan with multiple users, want to see who uses most
+   - Proposal: `credit_transactions.user_id` already exists; add dashboard view
+   - Decision: Implement reporting in Phase 6 (Frontend)
+
+8. **How do we handle Stripe webhook failures?**
+   - Scenario: User pays for top-up but webhook fails to deliver
+   - Mitigation 1: Stripe retries webhooks for 3 days
+   - Mitigation 2: Reconciliation job compares Stripe payments to our transactions
+   - Proposal: Daily reconciliation + alert on mismatch
+
+9. **Credit pricing model for new AI capabilities?**
+   - Current: Manual estimate columns per capability
+   - Future: May want dynamic pricing based on model costs
+   - Proposal: Store base multiplier per capability, calculate from model costs dynamically
 
 ---
 
