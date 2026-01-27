@@ -5,6 +5,7 @@ export type {
   AIQuestion,
   AIContext,
   FormStructure,
+  TestimonialWriteContent,
   ConsentContent,
   ImprovementThankYou,
   StepContent,

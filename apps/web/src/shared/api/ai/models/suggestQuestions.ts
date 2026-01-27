@@ -78,6 +78,19 @@ export interface FormStructure {
 }
 
 /**
+ * Testimonial write step content for testimonial flow
+ * This step allows users to either let AI assemble their testimonial or write it manually
+ */
+export interface TestimonialWriteContent {
+  title: string;
+  subtitle: string;
+  ai_path_title: string;
+  ai_path_description: string;
+  manual_path_title: string;
+  manual_path_description: string;
+}
+
+/**
  * Consent step content for testimonial flow
  */
 export interface ConsentContent {
@@ -101,6 +114,7 @@ export interface ImprovementThankYou {
  * Step content suggestions for system-generated steps
  */
 export interface StepContent {
+  testimonial_write: TestimonialWriteContent; // Content for testimonial write step in testimonial flow
   consent: ConsentContent;                   // Content for consent step in testimonial flow
   improvement_thank_you: ImprovementThankYou; // Content for thank you step in improvement flow
 }
