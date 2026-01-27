@@ -162,3 +162,16 @@ export function getDefaultThankYouContent() {
     subtitle: 'We really appreciate your feedback',
   };
 }
+
+export function getDefaultTestimonialWriteContent() {
+  return {
+    title: 'Your testimonial',
+    subtitle: 'Let us craft your story or write it yourself',
+    enableAIPath: true,
+    aiPathTitle: 'Let AI craft your story',
+    aiPathDescription: "We'll transform your answers into a testimonial you can review and edit",
+    manualPathTitle: 'Write it yourself',
+    manualPathDescription: 'Compose your own testimonial from scratch',
+    showPreviousAnswers: true,
+  };
+}

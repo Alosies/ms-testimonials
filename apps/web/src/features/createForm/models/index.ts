@@ -65,6 +65,17 @@ export interface HelpContent {
   tips: string[];
 }
 
+// Wizard Preview Step type - shared across preview components
+export type PreviewStepType = 'welcome' | 'question' | 'rating' | 'thank_you' | 'consent' | 'testimonial_write';
+
+export interface PreviewStep {
+  type: PreviewStepType;
+  title: string;
+  subtitle?: string;
+  flowMembership: 'shared' | 'testimonial' | 'improvement';
+  isBranchPoint?: boolean;
+}
+
 // Save Status Types
 export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
