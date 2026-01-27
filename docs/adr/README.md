@@ -48,3 +48,7 @@ Each ADR follows this structure:
 | [ADR-017](./017-question-type-change-workflow/adr.md) | Question Type Change Workflow | Proposed | 2026-01-18 |
 | [ADR-018](./018-form-persistence-analytics/adr.md) | Form Persistence & Analytics | Accepted | 2026-01-20 |
 | [ADR-019](./019-public-form-api-security/adr.md) | Public Form API Security Architecture | Proposed | 2026-01-20 |
+| [ADR-020](./020-generic-flow-segments/adr.md) | Generic Flow Segments | Proposed | 2026-01-23 |
+| [ADR-021](./021-api-service-data-layer-architecture/adr.md) | API Service Data Layer Architecture | Accepted | 2026-01-25 |
+| [ADR-022](./022-form-dashboard/adr.md) | Form Dashboard and Subpages | Accepted | 2026-01-26 |
+| [ADR-023](./023-ai-capabilities-plan-integration/adr.md) | AI Capabilities Plan Integration | Proposed | 2026-01-26 |
