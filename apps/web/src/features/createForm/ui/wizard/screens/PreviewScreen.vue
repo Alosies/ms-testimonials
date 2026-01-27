@@ -17,8 +17,12 @@
 import { inject, computed } from 'vue';
 import { Icon } from '@testimonials/icons';
 import type { FormWizardContext } from '../../../composables/wizard/useFormWizard';
-import type { FlowMembership } from '@/entities/form';
-import { getDefaultWelcomeContent, getDefaultThankYouContent } from '../../../constants/wizardConfig';
+import type { PreviewStep } from '@/features/createForm/models';
+import {
+  getDefaultWelcomeContent,
+  getDefaultThankYouContent,
+  getDefaultTestimonialWriteContent,
+} from '../../../constants/wizardConfig';
 import PreviewStepCard from '../components/PreviewStepCard.vue';
 import BranchingFlowPreview from '../components/BranchingFlowPreview.vue';
 
@@ -31,15 +35,6 @@ const wizard = inject<FormWizardContext>('wizardContext')!;
 const emit = defineEmits<{
   customize: [];
 }>();
-
-// Step type definition
-interface PreviewStep {
-  type: 'welcome' | 'question' | 'rating' | 'thank_you' | 'consent';
-  title: string;
-  subtitle?: string;
-  flowMembership: FlowMembership;
-  isBranchPoint?: boolean;
-}
 
 // Build preview steps from generated questions with branching
 const sharedSteps = computed(() => {
@@ -74,19 +69,17 @@ const sharedSteps = computed(() => {
 const testimonialSteps = computed(() => {
   const steps: PreviewStep[] = [];
 
-  // Testimonial flow questions
-  for (const question of wizard.generatedQuestions.value) {
-    if (question.flow_membership !== 'testimonial') continue;
-
-    steps.push({
-      type: 'question',
-      title: question.question_text,
-      flowMembership: 'testimonial',
-    });
-  }
+  // Testimonial Write step (AI assembles testimonial or user writes manually)
+  const stepContent = wizard.aiContext.value?.step_content;
+  const defaultContent = getDefaultTestimonialWriteContent();
+  steps.push({
+    type: 'testimonial_write',
+    title: stepContent?.testimonial_write?.title ?? defaultContent.title,
+    subtitle: stepContent?.testimonial_write?.subtitle ?? defaultContent.subtitle,
+    flowMembership: 'testimonial',
+  });
 
   // Consent step (from step_content if available)
-  const stepContent = wizard.aiContext.value?.step_content;
   if (stepContent?.consent) {
     steps.push({
       type: 'consent',

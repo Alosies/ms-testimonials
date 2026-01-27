@@ -8,10 +8,11 @@
 import { computed } from 'vue';
 import { Icon } from '@testimonials/icons';
 import { FLOW_METADATA, type FlowMembership } from '@/entities/form';
+import type { PreviewStepType } from '@/features/createForm/models';
 
 const props = defineProps<{
   stepNumber: number;
-  stepType: 'welcome' | 'question' | 'rating' | 'thank_you' | 'consent';
+  stepType: PreviewStepType;
   title: string;
   subtitle?: string;
   /** Flow membership for color coding (shared, testimonial, improvement) */
@@ -39,6 +40,12 @@ const stepConfig = computed(() => {
         label: 'Rating',
         icon: 'heroicons:star',
         color: 'text-amber-600 bg-amber-100',
+      };
+    case 'testimonial_write':
+      return {
+        label: 'Testimonial',
+        icon: 'heroicons:pencil-square',
+        color: 'text-teal-600 bg-teal-100',
       };
     case 'consent':
       return {

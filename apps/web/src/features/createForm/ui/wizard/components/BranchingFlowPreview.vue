@@ -7,16 +7,9 @@
  * - Side-by-side flow columns for testimonial/improvement paths
  */
 import { Icon } from '@testimonials/icons';
-import { FLOW_METADATA, type FlowMembership } from '@/entities/form';
+import { FLOW_METADATA } from '@/entities/form';
+import type { PreviewStep } from '@/features/createForm/models';
 import PreviewStepCard from './PreviewStepCard.vue';
-
-interface PreviewStep {
-  type: 'welcome' | 'question' | 'rating' | 'thank_you' | 'consent';
-  title: string;
-  subtitle?: string;
-  flowMembership: FlowMembership;
-  isBranchPoint?: boolean;
-}
 
 defineProps<{
   /** Number of shared steps (for step numbering offset) */
