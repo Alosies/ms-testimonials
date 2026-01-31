@@ -103,6 +103,10 @@ export interface BranchedNavigationDeps {
   onEditStep?: (index: number) => void;
   /** Called when D or Backspace key is pressed on selected step */
   onRemoveStep?: (index: number) => void;
+  /** Called when F key is pressed to expand current flow */
+  onExpandCurrentFlow?: () => void;
+  /** Called when Escape key is pressed to collapse expanded flow */
+  onCollapseFlow?: () => void;
 
   /**
    * Called to suppress scroll detection temporarily.

@@ -108,6 +108,8 @@ useBranchedKeyboardNavigation({
   setFlowFocus: editor.setFlowFocus,
   onEditStep: editor.handleEditStep,
   onRemoveStep: editor.handleRemoveStep,
+  onExpandCurrentFlow: editor.expandCurrentFlow,
+  onCollapseFlow: editor.collapseFlow,
   suppressScrollDetection: navigation.suppressDetection,
 });
 

@@ -457,6 +457,74 @@ export function createStudioPage(page: Page) {
     },
 
     // ==========================================
+    // Expanded Flow Methods (for F key expand/collapse)
+    // ==========================================
+
+    /**
+     * Get the expanded flow container locator
+     */
+    get expandedFlow(): Locator {
+      return page.getByTestId(studioTestIds.expandedFlow);
+    },
+
+    /**
+     * Get the expanded flow header locator
+     */
+    get expandedFlowHeader(): Locator {
+      return page.getByTestId(studioTestIds.expandedFlowHeader);
+    },
+
+    /**
+     * Check if a flow is currently expanded
+     */
+    async isFlowExpanded(): Promise<boolean> {
+      return await page.getByTestId(studioTestIds.expandedFlow).isVisible().catch(() => false);
+    },
+
+    /**
+     * Get the currently expanded flow type
+     * Returns 'testimonial', 'improvement', or null if no flow is expanded
+     */
+    async getExpandedFlowType(): Promise<'testimonial' | 'improvement' | null> {
+      const expandedFlow = page.getByTestId(studioTestIds.expandedFlow);
+      const isVisible = await expandedFlow.isVisible().catch(() => false);
+      if (!isVisible) return null;
+      const flowType = await expandedFlow.getAttribute('data-flow-type');
+      return flowType as 'testimonial' | 'improvement' | null;
+    },
+
+    /**
+     * Expect expanded flow view to be visible
+     */
+    async expectFlowExpanded(options?: { timeout?: number }) {
+      await expect(page.getByTestId(studioTestIds.expandedFlow)).toBeVisible(options);
+    },
+
+    /**
+     * Expect expanded flow view to be hidden (collapsed/side-by-side view)
+     */
+    async expectFlowCollapsed(options?: { timeout?: number }) {
+      await expect(page.getByTestId(studioTestIds.expandedFlow)).not.toBeVisible(options);
+    },
+
+    /**
+     * Expect a specific flow type to be expanded
+     * @param flowType - 'testimonial' or 'improvement'
+     */
+    async expectExpandedFlowType(flowType: 'testimonial' | 'improvement', options?: { timeout?: number }) {
+      const expandedFlow = page.getByTestId(studioTestIds.expandedFlow);
+      await expect(expandedFlow).toBeVisible(options);
+      await expect(expandedFlow).toHaveAttribute('data-flow-type', flowType, options);
+    },
+
+    /**
+     * Expect flow columns to be visible (side-by-side view)
+     */
+    async expectFlowColumnsVisible(options?: { timeout?: number }) {
+      await expect(page.getByTestId(studioTestIds.flowColumn).first()).toBeVisible(options);
+    },
+
+    // ==========================================
     // Properties Panel Assertions
     // ==========================================
 

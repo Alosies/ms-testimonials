@@ -18,6 +18,7 @@ import { Icon } from '@testimonials/icons';
 import { Kbd, Button } from '@testimonials/ui';
 import { FLOW_METADATA, hexToHslCssVar } from '@/entities/form';
 import type { FlowMembership } from '@/shared/stepCards';
+import { studioTestIds } from '@/shared/constants/testIds';
 import { useTimelineEditor } from '../../composables/timeline';
 import type { FormStep } from '../../models';
 import type { StepType } from '@/shared/stepCards';
@@ -256,11 +257,17 @@ defineExpose({
     </div>
 
     <!-- Expanded Flow View - full-size editing -->
-    <div v-if="expandedFlow && expandedFlowMetadata" class="expanded-flow">
+    <div
+      v-if="expandedFlow && expandedFlowMetadata"
+      class="expanded-flow"
+      :data-testid="studioTestIds.expandedFlow"
+      :data-flow-type="expandedFlow"
+    >
       <!-- Expanded Header -->
       <div
         class="expanded-header"
         :class="[expandedFlowMetadata.bgClass, expandedFlowMetadata.borderClass]"
+        :data-testid="studioTestIds.expandedFlowHeader"
       >
         <div class="flex items-center gap-3">
           <Button

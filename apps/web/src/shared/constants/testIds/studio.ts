@@ -16,6 +16,8 @@ export const studioTestIds = {
 
   // Flow columns (for branched forms)
   flowColumn: 'studio-flow-column',
+  expandedFlow: 'studio-expanded-flow',
+  expandedFlowHeader: 'studio-expanded-flow-header',
 
   // Header elements
   headerSaveStatus: 'studio-header-save-status',

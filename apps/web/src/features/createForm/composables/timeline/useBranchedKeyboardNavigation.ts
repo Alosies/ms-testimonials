@@ -40,6 +40,8 @@ export function useBranchedKeyboardNavigation(deps: BranchedNavigationDeps): Bra
     setFlowFocus,
     onEditStep,
     onRemoveStep,
+    onExpandCurrentFlow,
+    onCollapseFlow,
     suppressScrollDetection,
   } = deps;
 
@@ -263,6 +265,34 @@ export function useBranchedKeyboardNavigation(deps: BranchedNavigationDeps): Bra
     onRemoveStep(index);
   }
 
+  /**
+   * Handle Expand action (F key)
+   * Expands the current flow to full-size view when in a branch.
+   */
+  function handleKeyExpand(e: KeyboardEvent): void {
+    if (isInputFocused()) return;
+    if (!onExpandCurrentFlow) return;
+    if (!isBranchingEnabled.value) return;
+
+    // Only expand if we're currently in a branch
+    if (!isInBranch.value) return;
+
+    e.preventDefault();
+    onExpandCurrentFlow();
+  }
+
+  /**
+   * Handle Collapse action (Escape key)
+   * Collapses the expanded flow view back to side-by-side.
+   */
+  function handleKeyCollapse(e: KeyboardEvent): void {
+    if (isInputFocused()) return;
+    if (!onCollapseFlow) return;
+
+    e.preventDefault();
+    onCollapseFlow();
+  }
+
   // Register keyboard handlers
   onKeyStroke(['ArrowDown', 'j'], handleKeyDown, { eventName: 'keydown' });
   onKeyStroke(['ArrowUp', 'k'], handleKeyUp, { eventName: 'keydown' });
@@ -270,6 +300,8 @@ export function useBranchedKeyboardNavigation(deps: BranchedNavigationDeps): Bra
   onKeyStroke(['ArrowRight', 'l'], handleKeyRight, { eventName: 'keydown' });
   onKeyStroke(['e'], handleKeyEdit, { eventName: 'keydown' });
   onKeyStroke(['d'], handleKeyRemove, { eventName: 'keydown' });
+  onKeyStroke(['f'], handleKeyExpand, { eventName: 'keydown' });
+  onKeyStroke(['Escape'], handleKeyCollapse, { eventName: 'keydown' });
 
   return {
     // Exposed state for debugging/UI

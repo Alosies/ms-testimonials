@@ -125,5 +125,34 @@ export function createBranchingActions(studio: StudioPage) {
       const currentId = await studio.getSelectedStepId();
       expect(currentId).toBe(firstOutroStep.id);
     },
+
+    /**
+     * Expand current flow (F key)
+     * Must be focused on a branch step first
+     */
+    async expandCurrentFlow() {
+      await studio.expandFlow();
+      await studio.waitForScrollSettle();
+      await studio.expectFlowExpanded();
+    },
+
+    /**
+     * Collapse expanded flow (Escape key)
+     * Returns to side-by-side view
+     */
+    async collapseExpandedFlow() {
+      await studio.collapseFlow();
+      await studio.waitForScrollSettle();
+      await studio.expectFlowCollapsed();
+    },
+
+    /**
+     * Expand and verify a specific flow type
+     */
+    async expandAndVerifyFlow(flowType: 'testimonial' | 'improvement') {
+      await studio.expandFlow();
+      await studio.waitForScrollSettle();
+      await studio.expectExpandedFlowType(flowType);
+    },
   };
 }
