@@ -109,10 +109,23 @@ This separates "can you use this feature?" from "how much can you use?".
 │ id                  │◄──────│ ai_capability_id     │       │ id              │
 │ unique_name         │       │ plan_id              │──────►│ unique_name     │
 │ name                │       │ is_enabled           │       │ monthly_ai_     │
-│ description         │       │ quality_levels[]     │       │   credits       │
-│ category            │       └──────────────────────┘       └─────────────────┘
-│ is_active           │                                              │
-└─────────────────────┘                                              │
+│ description         │       │ rate_limit_rpm/rpd   │       │   credits       │
+│ category            │       └──────────┬───────────┘       └─────────────────┘
+│ is_active           │                  │
+└─────────────────────┘                  │
+                                         │ 1:N
+                                         ▼
+                       ┌─────────────────────────────────────┐
+                       │ plan_ai_capability_quality_levels   │
+                       ├─────────────────────────────────────┤
+┌─────────────────┐    │ plan_ai_capability_id               │
+│ quality_levels  │◄───│ quality_level_id                    │
+├─────────────────┤    │ allowed_models[]                    │
+│ id (nanoid)     │    └─────────────────────────────────────┘
+│ unique_name     │
+│ name            │
+│ credit_multipli │
+└─────────────────┘                                              │
                                                                      │ (snapshot)
                                                                      ▼
                                                       ┌──────────────────────┐
@@ -128,8 +141,9 @@ This separates "can you use this feature?" from "how much can you use?".
 │ organization_id     │ FK → organizations                                     │
 │ monthly_credits     │ Credits from plan (resets each period)                 │
 │ bonus_credits       │ Credits from top-ups/promos (never reset)              │
-│ used_this_period    │ Credits consumed this billing period                   │
+│ reserved_credits    │ Credits held during active AI operations               │
 │ period_start/end    │ Current billing period boundaries                      │
+│ [used_this_period]  │ COMPUTED from credit_transactions (not stored)         │
 └─────────────────────────────────────────────────────────────────────────────┘
                                         │
                                         │ Audit trail
@@ -200,18 +214,26 @@ When consuming credits, always deduct from monthly first (use-it-or-lose-it), th
 
 ```sql
 -- Calculate how much to take from each pool
-monthly_available := monthly_credits - used_this_period;
+monthly_available := monthly_credits - get_used_this_period(org_id);
 monthly_to_consume := LEAST(actual_credits, monthly_available);
 bonus_to_consume := actual_credits - monthly_to_consume;
 
 -- Apply consumption (in settleCredits)
+-- Monthly consumption is tracked automatically via credit_transactions
+-- Only bonus_credits needs explicit update when monthly is exhausted
 UPDATE organization_credit_balances
 SET
-  used_this_period = used_this_period + monthly_to_consume,
   bonus_credits = bonus_credits - bonus_to_consume,
   reserved_credits = reserved_credits - estimated_credits
 WHERE organization_id = $org_id
   AND bonus_credits >= bonus_to_consume;  -- Prevent negative bonus
+
+-- Record the transaction (this is what tracks monthly usage)
+INSERT INTO credit_transactions (
+  organization_id, transaction_type, credits_amount, ...
+) VALUES (
+  $org_id, 'ai_consumption', -$actual_credits, ...
+);
 ```
 
 **Example:**
@@ -219,6 +241,7 @@ WHERE organization_id = $org_id
 - Operation costs: 25 credits
 - Consumption: 20 from monthly (depleted), 5 from bonus
 - After: 0 monthly remaining, 45 bonus
+- Transaction recorded: -25 credits (used_this_period now computed as 20 more)
 
 #### 2. Credit Consumption Formula
 
@@ -273,18 +296,26 @@ To prevent race conditions and avoid charging for failed operations, use a **res
 UPDATE organization_credit_balances
 SET reserved_credits = reserved_credits + $estimated
 WHERE organization_id = $org_id
-  AND (monthly_credits - used_this_period - reserved_credits + bonus_credits) >= $estimated
+  AND (monthly_credits - get_used_this_period($org_id) - reserved_credits + bonus_credits) >= $estimated
 RETURNING *;
 ```
 
 **Settle** (after successful AI call):
 ```sql
+-- 1. Release the reservation and deduct from bonus if monthly exhausted
 UPDATE organization_credit_balances
 SET
-  used_this_period = used_this_period + $actual,
+  bonus_credits = bonus_credits - $bonus_to_consume,  -- Only if monthly exhausted
   reserved_credits = reserved_credits - $estimated
 WHERE organization_id = $org_id
 RETURNING *;
+
+-- 2. Record the consumption (this is what tracks used_this_period)
+INSERT INTO credit_transactions (
+  organization_id, transaction_type, credits_amount, ai_capability_id, ...
+) VALUES (
+  $org_id, 'ai_consumption', -$actual, $capability_id, ...
+);
 ```
 
 **Release** (on failure):
@@ -294,7 +325,7 @@ SET reserved_credits = reserved_credits - $estimated
 WHERE organization_id = $org_id;
 ```
 
-Available credits = `monthly_credits - used_this_period - reserved_credits + bonus_credits`
+Available credits = `monthly_credits - get_used_this_period() - reserved_credits + bonus_credits`
 
 #### 5. Credit Transaction Types
 
@@ -311,29 +342,169 @@ Available credits = `monthly_credits - used_this_period - reserved_credits + bon
 
 #### 6. Plan Upgrade/Downgrade Handling
 
-Plan changes have specific credit implications:
+**Policy: Immediate upgrades, end-of-cycle downgrades.**
 
-**Upgrade (e.g., Pro → Team)**:
-- Immediate access to new AI capabilities
-- Monthly credits increased to new plan level
-- `used_this_period` preserved (user keeps progress)
-- Effective immediately
+This follows the industry standard (Anthropic, Vercel, etc.) to avoid negative balance confusion and honor the period users have paid for.
 
-**Downgrade (e.g., Team → Pro)**:
-- AI capabilities reduced to new plan level
-- **Critical**: If `used_this_period > new_monthly_credits`, cap it:
-  ```sql
-  used_this_period = LEAST(used_this_period, new_monthly_credits)
-  ```
-- This prevents negative available balance
-- Alternative policy: Downgrade effective at next billing cycle
+##### What Changes on Plan Change
 
-**Pro-rating (optional)**:
-For mid-cycle changes, credits can be pro-rated:
+| Area | Source Table | Effect |
+|------|--------------|--------|
+| AI Capabilities | `plan_ai_capabilities` | Which AI features are enabled |
+| Quality Levels | `plan_ai_capability_quality_levels` | Which quality tiers are available |
+| Monthly Credits | `organization_credit_balances.monthly_credits` | Credit allocation per period |
+
+##### Upgrade Flow (Immediate)
+
+Upgrades take effect **immediately**. User paid more, give access now.
+
 ```
-days_remaining = (period_end - NOW()) / 30
-prorated_credits = new_monthly_credits * days_remaining
+┌─────────────────────────────────────────────────────────────────────┐
+│ UPGRADE: Pro → Team (Immediate)                                     │
+├─────────────────────────────────────────────────────────────────────┤
+│ 1. Update organization_plans.plan_id → Team plan                    │
+│                                                                     │
+│ 2. Update organization_credit_balances:                             │
+│    SET monthly_credits = 2000  (was 500)                            │
+│    -- period_start/end unchanged (mid-cycle upgrade)                │
+│    -- used_this_period unchanged (computed from transactions)       │
+│    -- bonus_credits unchanged                                       │
+│                                                                     │
+│ 3. Record transaction:                                              │
+│    INSERT INTO credit_transactions (                                │
+│      transaction_type = 'plan_change_adjustment',                   │
+│      credits_amount = +1500,  -- difference                         │
+│      note = 'Upgrade from Pro to Team'                              │
+│    )                                                                │
+│                                                                     │
+│ 4. New capabilities/quality levels available immediately            │
+│    (looked up via new plan_id → plan_ai_capabilities)               │
+└─────────────────────────────────────────────────────────────────────┘
 ```
+
+**Example - Mid-cycle Upgrade:**
+```
+Before (Pro plan, day 15 of 30):
+  monthly_credits = 500
+  used_this_period = 200 (computed)
+  available = 500 - 200 = 300
+
+After upgrade to Team:
+  monthly_credits = 2000
+  used_this_period = 200 (unchanged - same transactions)
+  available = 2000 - 200 = 1800  ✓ User gains 1500 credits immediately
+```
+
+##### Downgrade Flow (End-of-Cycle)
+
+Downgrades are **scheduled for end of billing period**. User keeps current plan benefits until then.
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│ DOWNGRADE: Team → Pro (End of Cycle)                                │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│ STEP 1: User requests downgrade                                     │
+│ ─────────────────────────────────────────────────────────────────── │
+│ UPDATE organization_plans                                           │
+│ SET pending_plan_id = (Pro plan id),                                │
+│     pending_change_at = period_end;                                 │
+│                                                                     │
+│ → User keeps Team capabilities until period_end                     │
+│ → UI shows: "Your plan will change to Pro on Feb 15"                │
+│                                                                     │
+│ STEP 2: At period_end (scheduled job or Stripe webhook)             │
+│ ─────────────────────────────────────────────────────────────────── │
+│ UPDATE organization_plans                                           │
+│ SET plan_id = pending_plan_id,                                      │
+│     pending_plan_id = NULL,                                         │
+│     pending_change_at = NULL;                                       │
+│                                                                     │
+│ UPDATE organization_credit_balances                                 │
+│ SET monthly_credits = 500,        -- New plan's allocation          │
+│     period_start = NOW(),         -- Start fresh period             │
+│     period_end = NOW() + '1 month';                                 │
+│                                                                     │
+│ INSERT INTO credit_transactions (                                   │
+│   transaction_type = 'plan_allocation',                             │
+│   credits_amount = 500,                                             │
+│   note = 'Monthly allocation for Pro plan'                          │
+│ );                                                                  │
+│                                                                     │
+│ → used_this_period resets to 0 (new period, no transactions yet)    │
+│ → No negative balance possible                                      │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+**Example - End-of-Cycle Downgrade:**
+```
+Day 20: User requests downgrade Team → Pro
+  Current: monthly_credits = 2000, used = 800, available = 1200
+  UI shows: "Downgrade scheduled for Feb 15. You'll keep Team until then."
+
+Day 30 (period_end): Scheduled job runs
+  New period starts:
+    monthly_credits = 500 (Pro plan)
+    used_this_period = 0 (fresh period)
+    available = 500  ✓ Clean slate, no negative balance
+```
+
+##### Cancellation
+
+Cancellation follows the same pattern as downgrade:
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│ CANCELLATION                                                        │
+├─────────────────────────────────────────────────────────────────────┤
+│ 1. Set pending cancellation:                                        │
+│    UPDATE organization_plans                                        │
+│    SET pending_plan_id = NULL,  -- NULL = cancelled                 │
+│        pending_change_at = period_end;                              │
+│                                                                     │
+│ 2. User keeps current plan until period_end                         │
+│                                                                     │
+│ 3. At period_end:                                                   │
+│    - Downgrade to Free plan (if available) or                       │
+│    - Suspend AI access (set monthly_credits = 0)                    │
+│    - Bonus credits preserved (they paid for those)                  │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+##### Database Support
+
+Add pending change columns to `organization_plans`:
+
+```sql
+ALTER TABLE organization_plans
+ADD COLUMN pending_plan_id VARCHAR(12) REFERENCES plans(id),
+ADD COLUMN pending_change_at TIMESTAMPTZ;
+
+COMMENT ON COLUMN organization_plans.pending_plan_id IS
+    'Plan to switch to at pending_change_at. NULL with pending_change_at = cancellation.';
+COMMENT ON COLUMN organization_plans.pending_change_at IS
+    'When the pending plan change takes effect. Processed by scheduled job.';
+
+-- Index for scheduled job to find pending changes
+CREATE INDEX idx_organization_plans_pending
+    ON organization_plans(pending_change_at)
+    WHERE pending_change_at IS NOT NULL;
+```
+
+##### Summary
+
+| Action | When Applied | Credits | Capabilities |
+|--------|--------------|---------|--------------|
+| **Upgrade** | Immediately | Increased to new plan level | Expanded immediately |
+| **Downgrade** | End of billing period | Reset to new plan level | Reduced at period end |
+| **Cancellation** | End of billing period | Set to 0 (or Free tier) | Removed at period end |
+
+This approach:
+- ✅ No negative balance scenarios
+- ✅ Users get what they paid for until period ends
+- ✅ Clean billing boundaries
+- ✅ Matches user expectations from other SaaS products
 
 #### 7. Idempotency
 
@@ -389,14 +560,40 @@ COMMENT ON COLUMN ai_capabilities.estimated_credits_fast IS
     'Estimated credits for fast quality (shown in UI before operation)';
 ```
 
-### Type: `quality_level` Enum
+### Table: `quality_levels`
+
+Reference table for AI quality tiers. Using a table instead of an enum allows:
+- Easy addition/removal of quality levels without `ALTER TYPE`
+- Metadata per level (display name, description, pricing multiplier)
+- Extensibility for model mappings per capability
 
 ```sql
--- Create enum for type safety on quality levels
-CREATE TYPE quality_level AS ENUM ('fast', 'enhanced', 'premium');
+CREATE TABLE quality_levels (
+    id              VARCHAR(12) PRIMARY KEY DEFAULT generate_nanoid_12(),
+    unique_name     VARCHAR(30) NOT NULL UNIQUE,  -- 'fast', 'enhanced', 'premium'
+    name            VARCHAR(50) NOT NULL,
+    description     TEXT,
+    display_order   INT NOT NULL DEFAULT 0,
 
-COMMENT ON TYPE quality_level IS
-    'AI operation quality levels. fast=cheapest, premium=best quality';
+    -- Pricing hint (actual cost computed from tokens)
+    credit_multiplier   DECIMAL(4,2) NOT NULL DEFAULT 1.0,
+
+    is_active       BOOLEAN NOT NULL DEFAULT true,
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Seed quality levels
+INSERT INTO quality_levels (unique_name, name, description, display_order, credit_multiplier) VALUES
+    ('fast', 'Fast', 'Quick results using efficient models (GPT-4o-mini)', 1, 1.0),
+    ('enhanced', 'Enhanced', 'Better quality with more capable models (GPT-4o)', 2, 4.0),
+    ('premium', 'Premium', 'Best quality using top-tier models (Claude Sonnet)', 3, 10.0);
+
+COMMENT ON TABLE quality_levels IS
+    'Reference table for AI quality tiers. Replaces enum for flexibility.';
+COMMENT ON COLUMN quality_levels.unique_name IS
+    'Code identifier: fast, enhanced, premium. Used in API requests.';
+COMMENT ON COLUMN quality_levels.credit_multiplier IS
+    'Relative cost multiplier for UI estimates. Actual cost from token usage.';
 ```
 
 ### Table: `plan_ai_capabilities`
@@ -412,9 +609,8 @@ CREATE TABLE plan_ai_capabilities (
     -- Access control
     is_enabled          BOOLEAN NOT NULL DEFAULT true,
 
-    -- Quality level restrictions (uses enum for type safety)
-    -- Empty array = no access, NULL treated as all levels
-    allowed_quality_levels  quality_level[] NOT NULL DEFAULT ARRAY['fast', 'enhanced', 'premium']::quality_level[],
+    -- NOTE: Quality levels moved to plan_ai_capability_quality_levels table
+    -- This allows per-quality-level configuration (e.g., allowed models)
 
     -- Rate limiting (independent of credits)
     -- NULL = unlimited, 0 = blocked
@@ -440,12 +636,50 @@ COMMENT ON TABLE plan_ai_capabilities IS
     'Junction table: which plans can access which AI features.';
 COMMENT ON COLUMN plan_ai_capabilities.is_enabled IS
     'Soft toggle. false = temporarily disabled without deleting config.';
-COMMENT ON COLUMN plan_ai_capabilities.allowed_quality_levels IS
-    'Quality levels this plan can use. Uses quality_level enum for type safety.';
 COMMENT ON COLUMN plan_ai_capabilities.rate_limit_rpm IS
     'Max requests per minute. NULL=unlimited. Enforced via Redis sliding window.';
 COMMENT ON COLUMN plan_ai_capabilities.rate_limit_rpd IS
     'Max requests per day. NULL=unlimited. Prevents abuse on free tier.';
+```
+
+### Table: `plan_ai_capability_quality_levels`
+
+Junction table defining which quality levels each plan can use for each capability,
+with extensibility for model restrictions.
+
+```sql
+CREATE TABLE plan_ai_capability_quality_levels (
+    id                      VARCHAR(12) PRIMARY KEY DEFAULT generate_nanoid_12(),
+    plan_ai_capability_id   VARCHAR(12) NOT NULL
+                            REFERENCES plan_ai_capabilities(id) ON DELETE CASCADE,
+    quality_level_id        VARCHAR(12) NOT NULL
+                            REFERENCES quality_levels(id) ON DELETE CASCADE,
+
+    -- Model restrictions (NULL = use capability defaults)
+    -- Allows different plans to access different models at the same quality level
+    allowed_models          TEXT[],  -- e.g., ['gpt-4o-mini', 'claude-3-haiku']
+
+    -- Future extensibility
+    -- max_tokens_override  INT,     -- Override default token limits
+    -- priority             INT,     -- Queue priority for this plan
+
+    created_at              TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+    UNIQUE(plan_ai_capability_id, quality_level_id)
+);
+
+-- Index for checking "can this plan use this quality level?"
+CREATE INDEX idx_pacql_lookup
+    ON plan_ai_capability_quality_levels(plan_ai_capability_id, quality_level_id);
+
+-- Index for reverse lookup ("which plans have premium access?")
+CREATE INDEX idx_pacql_quality
+    ON plan_ai_capability_quality_levels(quality_level_id);
+
+COMMENT ON TABLE plan_ai_capability_quality_levels IS
+    'Which quality levels each plan can use per capability. Extensible for model restrictions.';
+COMMENT ON COLUMN plan_ai_capability_quality_levels.allowed_models IS
+    'Restrict models for this plan+capability+quality. NULL = use capability defaults.';
 ```
 
 ### Seed Data: AI Capabilities & Plan Mappings
@@ -463,46 +697,77 @@ INSERT INTO ai_capabilities (unique_name, name, description, category, estimated
      'Refine and improve existing testimonials',
      'generation', 0.5, 2.0, 5.0);
 
--- Free plan: Only question_generation with fast quality, strict rate limits
-INSERT INTO plan_ai_capabilities (plan_id, ai_capability_id, is_enabled, allowed_quality_levels, rate_limit_rpm, rate_limit_rpd)
+-- =============================================================================
+-- Plan AI Capabilities (base access)
+-- =============================================================================
+
+-- Free plan: Only question_generation enabled, strict rate limits
+INSERT INTO plan_ai_capabilities (plan_id, ai_capability_id, is_enabled, rate_limit_rpm, rate_limit_rpd)
 SELECT p.id, ac.id,
-    CASE
-        WHEN ac.unique_name = 'question_generation' THEN true
-        ELSE false  -- testimonial_assembly and polish disabled
-    END,
-    CASE
-        WHEN ac.unique_name = 'question_generation' THEN ARRAY['fast']::quality_level[]
-        ELSE ARRAY[]::quality_level[]
-    END,
-    CASE WHEN ac.unique_name = 'question_generation' THEN 5 ELSE NULL END,   -- 5 RPM
-    CASE WHEN ac.unique_name = 'question_generation' THEN 20 ELSE NULL END   -- 20 RPD
+    ac.unique_name = 'question_generation',  -- Only enable question_generation
+    CASE WHEN ac.unique_name = 'question_generation' THEN 5 ELSE NULL END,
+    CASE WHEN ac.unique_name = 'question_generation' THEN 20 ELSE NULL END
 FROM plans p, ai_capabilities ac
 WHERE p.unique_name = 'free';
 
--- Pro plan: All capabilities, fast + enhanced quality, moderate rate limits
-INSERT INTO plan_ai_capabilities (plan_id, ai_capability_id, is_enabled, allowed_quality_levels, rate_limit_rpm, rate_limit_rpd)
-SELECT p.id, ac.id, true, ARRAY['fast', 'enhanced']::quality_level[],
-    30,   -- 30 RPM
-    500   -- 500 RPD
+-- Pro plan: All capabilities enabled, moderate rate limits
+INSERT INTO plan_ai_capabilities (plan_id, ai_capability_id, is_enabled, rate_limit_rpm, rate_limit_rpd)
+SELECT p.id, ac.id, true, 30, 500
 FROM plans p, ai_capabilities ac
 WHERE p.unique_name = 'pro';
 
--- Team plan: All capabilities, all quality levels, generous rate limits
-INSERT INTO plan_ai_capabilities (plan_id, ai_capability_id, is_enabled, allowed_quality_levels, rate_limit_rpm, rate_limit_rpd)
-SELECT p.id, ac.id, true, ARRAY['fast', 'enhanced', 'premium']::quality_level[],
-    NULL,  -- Unlimited RPM
-    NULL   -- Unlimited RPD
+-- Team plan: All capabilities enabled, unlimited rate limits
+INSERT INTO plan_ai_capabilities (plan_id, ai_capability_id, is_enabled, rate_limit_rpm, rate_limit_rpd)
+SELECT p.id, ac.id, true, NULL, NULL
 FROM plans p, ai_capabilities ac
+WHERE p.unique_name = 'team';
+
+-- =============================================================================
+-- Quality Level Access (per plan + capability)
+-- =============================================================================
+
+-- Free plan: Only 'fast' quality for question_generation
+INSERT INTO plan_ai_capability_quality_levels (plan_ai_capability_id, quality_level_id, allowed_models)
+SELECT pac.id, ql.id, ARRAY['gpt-4o-mini']
+FROM plan_ai_capabilities pac
+JOIN plans p ON p.id = pac.plan_id
+JOIN ai_capabilities ac ON ac.id = pac.ai_capability_id
+JOIN quality_levels ql ON ql.unique_name = 'fast'
+WHERE p.unique_name = 'free' AND ac.unique_name = 'question_generation';
+
+-- Pro plan: 'fast' + 'enhanced' for all capabilities
+INSERT INTO plan_ai_capability_quality_levels (plan_ai_capability_id, quality_level_id, allowed_models)
+SELECT pac.id, ql.id,
+    CASE ql.unique_name
+        WHEN 'fast' THEN ARRAY['gpt-4o-mini', 'claude-3-haiku']
+        WHEN 'enhanced' THEN ARRAY['gpt-4o', 'claude-3-5-sonnet']
+    END
+FROM plan_ai_capabilities pac
+JOIN plans p ON p.id = pac.plan_id
+CROSS JOIN quality_levels ql
+WHERE p.unique_name = 'pro' AND ql.unique_name IN ('fast', 'enhanced');
+
+-- Team plan: All quality levels for all capabilities
+INSERT INTO plan_ai_capability_quality_levels (plan_ai_capability_id, quality_level_id, allowed_models)
+SELECT pac.id, ql.id,
+    CASE ql.unique_name
+        WHEN 'fast' THEN ARRAY['gpt-4o-mini', 'claude-3-haiku']
+        WHEN 'enhanced' THEN ARRAY['gpt-4o', 'claude-3-5-sonnet']
+        WHEN 'premium' THEN ARRAY['gpt-4o', 'claude-3-5-sonnet', 'claude-3-opus']
+    END
+FROM plan_ai_capabilities pac
+JOIN plans p ON p.id = pac.plan_id
+CROSS JOIN quality_levels ql
 WHERE p.unique_name = 'team';
 ```
 
 ### Plan AI Access Summary
 
-| Plan | question_generation | testimonial_assembly | testimonial_polish | Quality Levels | Rate Limits |
-|------|---------------------|---------------------|-------------------|----------------|-------------|
-| Free | ✅ Enabled | ❌ Disabled | ❌ Disabled | fast only | 5/min, 20/day |
-| Pro | ✅ Enabled | ✅ Enabled | ✅ Enabled | fast, enhanced | 30/min, 500/day |
-| Team | ✅ Enabled | ✅ Enabled | ✅ Enabled | all | Unlimited |
+| Plan | question_generation | testimonial_assembly | testimonial_polish | Quality Levels | Models | Rate Limits |
+|------|---------------------|---------------------|-------------------|----------------|--------|-------------|
+| Free | ✅ Enabled | ❌ Disabled | ❌ Disabled | fast | gpt-4o-mini | 5/min, 20/day |
+| Pro | ✅ Enabled | ✅ Enabled | ✅ Enabled | fast, enhanced | gpt-4o-mini, claude-3-haiku, gpt-4o, claude-3-5-sonnet | 30/min, 500/day |
+| Team | ✅ Enabled | ✅ Enabled | ✅ Enabled | all | All models including claude-3-opus | Unlimited |
 
 ---
 
@@ -549,8 +814,8 @@ CREATE TABLE organization_credit_balances (
     -- Reserved credits (held during AI operation execution)
     reserved_credits    DECIMAL(10,2) NOT NULL DEFAULT 0,
 
-    -- Usage tracking
-    used_this_period    DECIMAL(10,2) NOT NULL DEFAULT 0,
+    -- NOTE: used_this_period is COMPUTED from credit_transactions, not stored
+    -- See get_used_this_period() function below
 
     -- Grace period: small overdraft allowed for better UX
     overdraft_limit     DECIMAL(10,2) NOT NULL DEFAULT 2.0,
@@ -564,7 +829,6 @@ CREATE TABLE organization_credit_balances (
         monthly_credits >= 0 AND
         bonus_credits >= 0 AND
         reserved_credits >= 0 AND
-        used_this_period >= 0 AND
         overdraft_limit >= 0
     ),
 
@@ -590,11 +854,42 @@ COMMENT ON COLUMN organization_credit_balances.reserved_credits IS
 COMMENT ON COLUMN organization_credit_balances.overdraft_limit IS
     'Small grace buffer to prevent hard cutoff. Recovered from next allocation.';
 
+-- =============================================================================
+-- COMPUTED FIELD: used_this_period
+-- =============================================================================
+-- Instead of storing used_this_period as a column, we compute it from
+-- credit_transactions. This eliminates drift between the balance table and
+-- the audit log, making credit_transactions the single source of truth.
+--
+-- Performance: With proper indexing, aggregating 1,000-5,000 rows takes 1-5ms.
+-- This is negligible compared to AI operation latency (2-10 seconds).
+-- =============================================================================
+
+-- Partial covering index optimized for consumption aggregation
+CREATE INDEX idx_credit_transactions_consumption_sum
+    ON credit_transactions(organization_id, created_at)
+    INCLUDE (credits_amount)
+    WHERE transaction_type = 'ai_consumption';
+
+-- Function to compute used credits this period from transactions
+CREATE OR REPLACE FUNCTION get_used_this_period(org_id VARCHAR(12))
+RETURNS DECIMAL(10,2) AS $$
+    SELECT COALESCE(
+        (SELECT SUM(-ct.credits_amount)
+         FROM credit_transactions ct
+         JOIN organization_credit_balances ocb ON ocb.organization_id = ct.organization_id
+         WHERE ct.organization_id = org_id
+           AND ct.transaction_type = 'ai_consumption'
+           AND ct.created_at >= ocb.period_start),
+        0
+    );
+$$ LANGUAGE SQL STABLE;
+
 -- Function to get available credits (accounts for reservations)
 CREATE OR REPLACE FUNCTION get_available_credits(org_id VARCHAR(12))
 RETURNS DECIMAL(10,2) AS $$
     SELECT COALESCE(
-        (SELECT monthly_credits - used_this_period - reserved_credits + bonus_credits + overdraft_limit
+        (SELECT monthly_credits - get_used_this_period(org_id) - reserved_credits + bonus_credits + overdraft_limit
          FROM organization_credit_balances
          WHERE organization_id = org_id),
         0
@@ -605,7 +900,7 @@ $$ LANGUAGE SQL STABLE;
 CREATE OR REPLACE FUNCTION get_spendable_credits(org_id VARCHAR(12))
 RETURNS DECIMAL(10,2) AS $$
     SELECT COALESCE(
-        (SELECT monthly_credits - used_this_period - reserved_credits + bonus_credits
+        (SELECT monthly_credits - get_used_this_period(org_id) - reserved_credits + bonus_credits
          FROM organization_credit_balances
          WHERE organization_id = org_id),
         0
@@ -664,7 +959,7 @@ CREATE TABLE credit_transactions (
     --   output_tokens: number,
     --   cost_usd: number,
     --   request_id: string,
-    --   quality: 'fast' | 'enhanced' | 'premium',
+    --   quality_level: string,      -- unique_name: 'fast' | 'enhanced' | 'premium'
     --   estimated_credits: number,  -- What was reserved
     --   actual_credits: number      -- What was charged
     -- }
@@ -900,17 +1195,21 @@ interface AICapabilityAccessResult {
     | 'capability_disabled'       // ai_capabilities.is_active = false (global)
     | 'not_in_plan'              // No row in plan_ai_capabilities for this plan
     | 'plan_disabled'            // plan_ai_capabilities.is_enabled = false
-    | 'quality_not_allowed';     // Requested quality not in allowed_quality_levels
-  allowedQualityLevels?: QualityLevel[];  // What this plan CAN use
+    | 'quality_not_allowed'      // No row in plan_ai_capability_quality_levels
+    | 'model_not_allowed';       // Requested model not in allowed_models
+  allowedQualityLevels?: string[];  // Quality level IDs this plan CAN use
+  allowedModels?: string[];         // Models allowed for requested quality
 }
 
 /**
  * Check if an organization's plan allows access to an AI capability
+ * @param qualityLevelUniqueName - Quality level unique_name: 'fast' | 'enhanced' | 'premium'
  */
 async function checkCapabilityAccess(
   organizationId: string,
   capabilityUniqueName: string,
-  requestedQuality: QualityLevel = 'fast'
+  qualityLevelUniqueName: string = 'fast',
+  requestedModel?: string  // Optional: check specific model access
 ): Promise<AICapabilityAccessResult>;
 ```
 
@@ -921,7 +1220,7 @@ async function checkCapabilityAccess(
 
 interface CreditBalanceResult {
   available: number;       // Total available (monthly remaining + bonus)
-  monthlyRemaining: number; // monthly_credits - used_this_period
+  monthlyRemaining: number; // monthly_credits - get_used_this_period()
   bonusCredits: number;     // From top-ups
   periodEndsAt: Date;       // When monthly resets
   estimatedCost: number;    // Estimated credits for this operation
@@ -931,7 +1230,7 @@ interface CreditBalanceResult {
 async function checkCreditBalance(
   organizationId: string,
   capabilityId: string,
-  quality: QualityLevel = 'fast'
+  qualityLevelUniqueName: string = 'fast'
 ): Promise<CreditBalanceResult>;
 ```
 
@@ -964,11 +1263,13 @@ interface AIAccessResult {
 /**
  * Combined check: capability access + credit balance
  * Use this in API endpoints before executing AI operations
+ * @param qualityLevelUniqueName - Quality level unique_name: 'fast' | 'enhanced' | 'premium'
  */
 async function checkAIAccess(
   organizationId: string,
   capabilityUniqueName: string,
-  quality: QualityLevel = 'fast'
+  qualityLevelUniqueName: string = 'fast',
+  requestedModel?: string
 ): Promise<AIAccessResult>;
 ```
 
@@ -1019,7 +1320,7 @@ interface SettleCreditsInput {
     outputTokens: number;
     costUsd: number;
     requestId: string;
-    quality: QualityLevel;
+    qualityLevel: string;  // unique_name: 'fast' | 'enhanced' | 'premium'
   };
 }
 
@@ -1085,8 +1386,9 @@ class InsufficientCreditsError extends Error {
  */
 interface AIOperationContext {
   organizationId: string;
-  capabilityUniqueName: string;  // e.g., 'question_generation'
-  quality: QualityLevel;
+  capabilityUniqueName: string;      // e.g., 'question_generation'
+  qualityLevelUniqueName: string;    // 'fast' | 'enhanced' | 'premium'
+  model?: string;                    // Specific model, or let system choose from allowed
   userId?: string;
   relatedEntityType?: string;
   relatedEntityId?: string;
@@ -1106,7 +1408,8 @@ async function executeWithAIAccess<T>(
   const access = await checkAIAccess(
     context.organizationId,
     context.capabilityUniqueName,
-    context.quality
+    context.qualityLevelUniqueName,
+    context.model
   );
 
   if (!access.allowed) {
@@ -1168,7 +1471,7 @@ async function executeWithAIAccess<T>(
         outputTokens: usage.outputTokens ?? 0,
         costUsd: usage.costUsd ?? 0,
         requestId: usage.requestId ?? '',
-        quality: context.quality,
+        qualityLevel: context.qualityLevelUniqueName,  // 'fast' | 'enhanced' | 'premium'
       },
     });
 
@@ -1243,8 +1546,11 @@ async function purchaseTopup(input: PurchaseTopupInput): Promise<{
 │ 4. Check plan_ai_capabilities.is_enabled = true                     │
 │    └── false → 403 (plan_disabled)                                  │
 │                                                                     │
-│ 5. Check requested quality in allowed_quality_levels                │
-│    └── 'premium' not in ['fast','enhanced'] → 403 (quality_denied)  │
+│ 5. Check quality in plan_ai_capability_quality_levels               │
+│    └── No row for 'premium' → 403 (quality_not_allowed)             │
+│                                                                     │
+│ 6. Check model in allowed_models (if specified)                     │
+│    └── 'claude-3-opus' not in allowed_models → 403 (model_denied)   │
 └─────────────────────────────────────────────────────────────────────┘
                                   │
                           ✅ Capability allowed
@@ -1254,8 +1560,8 @@ async function purchaseTopup(input: PurchaseTopupInput): Promise<{
 ├─────────────────────────────────────────────────────────────────────┤
 │ 1. Get estimated cost from ai_capabilities.estimated_credits_*      │
 │                                                                     │
-│ 2. Query organization_credit_balances                               │
-│    spendable = monthly - used - reserved + bonus                    │
+│ 2. Query organization_credit_balances + get_used_this_period()      │
+│    spendable = monthly - get_used_this_period() - reserved + bonus  │
 │                                                                     │
 │ 3. spendable >= estimated_cost?                                     │
 │    └── No → 402 (insufficient_credits - "Top up or wait for reset") │
@@ -1269,7 +1575,7 @@ async function purchaseTopup(input: PurchaseTopupInput): Promise<{
 │ UPDATE organization_credit_balances                                 │
 │ SET reserved_credits = reserved_credits + $estimated                │
 │ WHERE organization_id = $org_id                                     │
-│   AND (monthly - used - reserved + bonus) >= $estimated;            │
+│   AND (monthly - get_used_this_period() - reserved + bonus) >= $est;│
 │                                                                     │
 │ └── Generates idempotency_key: {request_id}-{org_id}-{capability}   │
 │ └── Returns reservation_id for settle/release                       │
@@ -1294,7 +1600,7 @@ async function purchaseTopup(input: PurchaseTopupInput): Promise<{
 │                             │   │   balances                      │
 │ UPDATE org_credit_balances  │   │ SET reserved = reserved - $est  │
 │ SET                         │   │ WHERE organization_id = $org;   │
-│   used = used + $actual,    │   │                                 │
+│   bonus = bonus - $overflow,│   │                                 │
 │   reserved = reserved - $est│   │ -- No transaction recorded      │
 │ WHERE organization_id = $o; │   │ -- Credits returned to pool     │
 │                             │   └─────────────────────────────────┘
@@ -1306,8 +1612,8 @@ async function purchaseTopup(input: PurchaseTopupInput): Promise<{
 │   credits_amount,           │  ← Negative (consumption)
 │   balance_after,            │  ← Computed by trigger
 │   provider_metadata         │
-│ );                          │
-│                             │
+│ );                          │  ← This INSERT updates used_this_period
+│                             │    (computed from transactions)
 │ COMMIT;                     │
 └─────────────────────────────┘
                       │
@@ -1389,11 +1695,19 @@ Pool: 10 - 4.5 - 5.2 = 0.3 remaining
 ```typescript
 // apps/web/src/features/ai/composables/useAIAccess.ts
 
+interface QualityLevelOption {
+  id: string;           // NanoID
+  uniqueName: string;   // 'fast', 'enhanced', 'premium'
+  name: string;         // 'Fast', 'Enhanced', 'Premium'
+  allowedModels: string[];
+  estimatedCredits: number;
+}
+
 interface AIAccessState {
   // Layer 1: Capability access
   capabilityAllowed: boolean;
   capabilityDeniedReason?: string;
-  allowedQualityLevels: QualityLevel[];
+  allowedQualityLevels: QualityLevelOption[];
 
   // Layer 2: Credit balance
   creditsAvailable: number;
@@ -1406,7 +1720,7 @@ interface AIAccessState {
   topupRequired: boolean;
 }
 
-function useAIAccess(capabilityName: string, quality: QualityLevel = 'fast') {
+function useAIAccess(capabilityUniqueName: string, qualityLevelUniqueName: string = 'fast') {
   // Fetches from checkAIAccess API
   // Returns reactive state for UI binding
 }
@@ -1443,11 +1757,11 @@ function useAIAccess(capabilityName: string, quality: QualityLevel = 'fast') {
 </template>
 
 <script setup>
-const selectedQuality = ref<QualityLevel>('fast');
+const selectedQuality = ref('fast');
 
 const {
   capabilityAllowed,
-  allowedQualityLevels,
+  allowedQualityLevels,  // QualityLevelOption[] with models info
   creditsAvailable,
   estimatedCost,
   hasEnoughCredits,
@@ -1494,7 +1808,7 @@ const {
 
 ## Monthly Reset Process
 
-When billing period ends, a scheduled job resets monthly usage:
+When billing period ends, a scheduled job advances the billing period. Since `used_this_period` is computed from `credit_transactions` filtered by `period_start`, simply advancing the period "resets" usage automatically.
 
 ```typescript
 // Scheduled job (daily or webhook from Stripe)
@@ -1504,10 +1818,11 @@ async function resetMonthlyCredits(organizationId: string) {
 
   // Record the reset as a transaction
   await db.transaction(async (tx) => {
-    // 1. Reset used_this_period
+    // 1. Advance the billing period
+    // NOTE: No need to reset used_this_period - it's computed from transactions
+    // filtered by period_start, so advancing period_start automatically "resets" it
     await tx.update(organizationCreditBalances)
       .set({
-        used_this_period: 0,
         monthly_credits: plan.monthly_ai_credits,
         period_start: new Date(),
         period_end: addMonths(new Date(), 1),
@@ -1525,6 +1840,11 @@ async function resetMonthlyCredits(organizationId: string) {
   });
 }
 ```
+
+**How the reset works:**
+- `get_used_this_period()` filters transactions by `created_at >= period_start`
+- When `period_start` advances to today, old consumption transactions are excluded
+- Historical transactions remain in `credit_transactions` for audit purposes
 
 ---
 
@@ -1552,11 +1872,11 @@ async function initializeOrganizationCredits(
 
   await db.transaction(async (tx) => {
     // 1. Create credit balance with welcome bonus
+    // NOTE: No usedThisPeriod field - it's computed from transactions
     await tx.insert(organizationCreditBalances).values({
       organizationId,
       monthlyCredits: plan.monthly_ai_credits,
       bonusCredits: welcomeBonus,
-      usedThisPeriod: 0,
       periodStart: new Date(),
       periodEnd: addMonths(new Date(), 1),
     });
@@ -1703,6 +2023,7 @@ The `credit_transactions` table will grow significantly over time. Strategy:
 | **Revenue opportunity** | Top-up purchases create additional revenue stream |
 | **Full audit trail** | Every credit movement tracked with ai_capability reference |
 | **Leverages existing code** | Uses `calculateCreditsFromCost()` already in codebase |
+| **Single source of truth** | `used_this_period` computed from transactions, no drift possible |
 
 ### Negative
 
@@ -1712,6 +2033,7 @@ The `credit_transactions` table will grow significantly over time. Strategy:
 | Credit estimation may differ from actual | Show "~X credits" with tooltip explaining variance |
 | Monthly reset requires scheduled job | Can trigger from Stripe webhook on billing cycle |
 | More tables to maintain | Well-documented relationships, Hasura handles joins |
+| Computed `used_this_period` slightly slower (~1-5ms vs <0.1ms) | Negligible vs AI operation latency (2-10s). Add Redis cache if needed later. |
 
 ### Risks
 
@@ -1724,16 +2046,20 @@ The `credit_transactions` table will grow significantly over time. Strategy:
 | Capability config drift between plans | Low | Low | Admin UI for plan_ai_capabilities management |
 | Idempotency key collisions | Very Low | Medium | Use UUID + org_id + capability format |
 | balance_after drift over time | ~~Low~~ **Eliminated** | Low | ✅ Mitigated: Trigger calculates balance_after on insert |
+| used_this_period drift | **Eliminated** | N/A | ✅ Mitigated: Computed from transactions, not stored |
 
 ---
 
 ## Implementation Phases
 
 ### Phase 1: Schema & Migrations (Capabilities)
+- [ ] Create `quality_levels` reference table
 - [ ] Create `ai_capabilities` table
 - [ ] Create `plan_ai_capabilities` table
+- [ ] Create `plan_ai_capability_quality_levels` junction table
+- [ ] Seed quality levels (fast, enhanced, premium)
 - [ ] Seed initial capabilities (question_generation, testimonial_assembly, testimonial_polish)
-- [ ] Seed plan mappings (Free, Pro, Team)
+- [ ] Seed plan mappings (Free, Pro, Team) with quality levels and allowed models
 - [ ] Add Hasura metadata (permissions, relationships)
 
 ### Phase 2: Schema & Migrations (Credits)
@@ -1811,6 +2137,11 @@ This ADR builds on the existing audit infrastructure:
 
 3. **Race conditions with concurrent requests?**
    - ✅ Resolved: `reserved_credits` column blocks concurrent requests from overdrawing.
+
+4. **Should `used_this_period` be stored or computed?**
+   - ✅ Resolved: Computed from `credit_transactions`. Single source of truth, no drift risk.
+   - Performance: 1-5ms with proper indexing, negligible vs AI operation latency.
+   - Fallback: Add Redis cache (5s TTL) if UI polling causes issues at scale.
 
 ### Pending Decisions
 
