@@ -1,19 +1,32 @@
 ---
 name: pw-auth
-description: Use isolated Playwright MCP with authentication. Use when you need browser automation that won't be affected by Chrome profile switches, or when the user asks to use "isolated" playwright. Triggers on "isolated playwright", "pw-auth", "browser auth", "login with playwright".
+description: Use Playwright MCP with authentication. Use when you need browser automation for testing or workflows. Triggers on "playwright", "pw-auth", "browser auth", "login with playwright".
 allowed-tools: Bash, Read
 ---
 
-# Playwright Isolated with Authentication
+# Playwright MCP with Authentication
 
-Use the isolated Playwright MCP (`playwright-yellow-isolated`) for browser automation that runs independently of the user's Chrome profiles.
+Use the Playwright MCP for browser automation. Each color agent has its own isolated Playwright instance.
+
+## Determine Your MCP and Port
+
+Use your worktree folder name to determine which MCP to use:
+
+| Worktree | MCP Name | Tools Prefix | Web Port |
+|----------|----------|--------------|----------|
+| `ms-testimonials-yellow` | `playwright-yellow` | `mcp__playwright-yellow__` | 3001 |
+| `ms-testimonials-green` | `playwright-green` | `mcp__playwright-green__` | 3002 |
+| `ms-testimonials-blue` | `playwright-blue` | `mcp__playwright-blue__` | 3003 |
+| `ms-testimonials` (parent) | N/A | N/A | 3000 |
 
 ## Quick Start (Copy-Paste Ready)
+
+Replace `{PORT}` with your worktree's port (3001/3002/3003).
 
 **Login (1 tool call):**
 ```javascript
 browser_run_code({ code: `async (page) => {
-  await page.goto('http://localhost:3001/auth/login', { waitUntil: 'networkidle' });
+  await page.goto('http://localhost:{PORT}/auth/login', { waitUntil: 'networkidle' });
   if (page.url().includes('/dashboard')) return { status: 'already_authenticated', url: page.url() };
   await page.getByTestId('auth-login-email-input').fill('testimonials-ms-e2e-tests@brownforge.com');
   await page.getByTestId('auth-login-password-input').fill('Kh5x%8-Q6-qpU+D');
@@ -26,7 +39,7 @@ browser_run_code({ code: `async (page) => {
 **Logout (1 tool call):**
 ```javascript
 browser_run_code({ code: `async (page) => {
-  await page.goto('http://localhost:3001/auth/logout');
+  await page.goto('http://localhost:{PORT}/auth/logout');
   await page.waitForURL('**/login', { timeout: 10000 });
   return { status: 'signed_out', url: page.url() };
 }` })
@@ -35,10 +48,10 @@ browser_run_code({ code: `async (page) => {
 **Ensure Authenticated (for starting workflows):**
 ```javascript
 browser_run_code({ code: `async (page) => {
-  await page.goto('http://localhost:3001/', { waitUntil: 'networkidle' });
+  await page.goto('http://localhost:{PORT}/', { waitUntil: 'networkidle' });
   if (page.url().includes('/dashboard')) return { status: 'ready', url: page.url() };
   // Not logged in - do login
-  await page.goto('http://localhost:3001/auth/login');
+  await page.goto('http://localhost:{PORT}/auth/login');
   await page.getByTestId('auth-login-email-input').fill('testimonials-ms-e2e-tests@brownforge.com');
   await page.getByTestId('auth-login-password-input').fill('Kh5x%8-Q6-qpU+D');
   await page.getByTestId('auth-login-submit-button').click();
@@ -49,24 +62,13 @@ browser_run_code({ code: `async (page) => {
 
 ---
 
-## When to Use Isolated vs Extension Mode
+## Example Tool Calls
 
-| Mode | MCP Name | Use When |
-|------|----------|----------|
-| **Extension** | `playwright-yellow` | User wants to leverage existing authenticated sessions in their Chrome profile |
-| **Isolated** | `playwright-yellow-isolated` | Long-running workflows, background tasks, or when user may switch Chrome profiles |
-
-## Invoking Isolated Playwright
-
-When the user requests isolated mode, use tools prefixed with `mcp__playwright-yellow-isolated__` instead of `mcp__playwright-yellow__`.
-
-Example:
+Use the tools prefix matching your worktree:
 ```
-# Extension mode (default)
-mcp__playwright-yellow__browser_navigate
-
-# Isolated mode
-mcp__playwright-yellow-isolated__browser_navigate
+mcp__playwright-{color}__browser_navigate
+mcp__playwright-{color}__browser_snapshot
+mcp__playwright-{color}__browser_click
 ```
 
 ## Dev Server Authentication
@@ -100,17 +102,19 @@ For manual step-by-step control, these stable test IDs are available (no snapsho
 
 After login, user lands at:
 ```
-http://localhost:3001/{workspace-slug}/dashboard
+http://localhost:{PORT}/{workspace-slug}/dashboard
 ```
 
 Example: `http://localhost:3001/testimonials-ms-e2e-tests-8q2r0w/dashboard`
 
 ## URLs Reference
 
-| Environment | Base URL |
-|-------------|----------|
-| Local Dev | `http://localhost:3001` |
-| API | `http://localhost:4000` |
+| Worktree | Web URL | API URL |
+|----------|---------|---------|
+| yellow | `http://localhost:3001` | `http://localhost:4001` |
+| green | `http://localhost:3002` | `http://localhost:4002` |
+| blue | `http://localhost:3003` | `http://localhost:4003` |
+| parent | `http://localhost:3000` | `http://localhost:4000` |
 
 ## Troubleshooting
 
@@ -121,4 +125,4 @@ browser_install()
 ```
 
 ### Session Persistence
-The isolated browser starts fresh each time. Auth state is not persisted between MCP restarts. Re-authenticate if needed.
+The browser starts fresh each time. Auth state is not persisted between MCP restarts. Re-authenticate if needed.
