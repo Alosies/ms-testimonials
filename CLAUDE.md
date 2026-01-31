@@ -54,21 +54,23 @@ Each agent automatically uses an isolated session with separate cookies/storage:
 
 Auth states are persisted to `.agent-browser-states/` and can be restored across sessions.
 
-### Playwright MCP (for E2E Test Debugging)
+### Playwright MCP (Browser Automation)
 
-For debugging Playwright E2E tests, use the Playwright MCP that matches your worktree:
+**IMPORTANT:** When the user asks to visit a URL, open a page, or perform browser automation:
+1. Use the `/pw-auth` skill to get authentication and usage instructions
+2. Use the Playwright MCP tools that match your worktree color
 
-| Folder Contains | Use This MCP |
-|-----------------|--------------|
-| `ms-testimonials-yellow` | `playwright-yellow` |
-| `ms-testimonials-green` | `playwright-green` |
-| `ms-testimonials-blue` | `playwright-blue` |
+| Folder Contains | Use This MCP | Tools Prefix |
+|-----------------|--------------|--------------|
+| `ms-testimonials-yellow` | `playwright-yellow` | `mcp__playwright-yellow__` |
+| `ms-testimonials-green` | `playwright-green` | `mcp__playwright-green__` |
+| `ms-testimonials-blue` | `playwright-blue` | `mcp__playwright-blue__` |
 
-Each Playwright MCP connects to a separate Chrome profile to avoid conflicts between agents.
+Each Playwright MCP runs in an isolated browser instance to avoid conflicts between agents.
 
 **When to use which:**
-- **agent-browser**: General browser automation (form filling, screenshots, navigation)
-- **Playwright MCP**: Debugging E2E tests, running Playwright interactively, test development
+- **Playwright MCP**: Visiting URLs, browser automation, form filling, screenshots, E2E test debugging
+- **agent-browser CLI**: Alternative for shell-based browser automation (see above)
 
 ### Branch Naming Convention
 - Yellow agent: `yellow/*` (e.g., `yellow/feature-x`)
