@@ -70,9 +70,10 @@ export async function createTestForm(
  * Create a test form with branching via E2E API.
  *
  * Creates a form with multiple flows for testing branched navigation:
- * - Shared flow: welcome, question, rating (branch point)
- * - Testimonial flow: question, consent, thank_you (rating >= 4)
- * - Improvement flow: question, thank_you (rating < 4)
+ * - Shared flow: welcome, questions x3, rating (branch point)
+ * - Testimonial flow: testimonial_write, consent (rating >= 4)
+ * - Improvement flow: question (rating < 4)
+ * - Outro flow: contact_info, thank_you (shared, after branches)
  *
  * @param orgSlug - Organization slug (for building studioUrl)
  * @param name - Optional form name (defaults to timestamped name)
@@ -86,6 +87,10 @@ export async function createTestForm(
  * // Navigate to testimonial flow steps
  * const testimonialStep = form.testimonialFlow.steps[0];
  * await page.locator(`[data-step-id="${testimonialStep.id}"]`).click();
+ *
+ * // Navigate to outro steps
+ * const contactInfoStep = form.outroFlow.steps[0];
+ * await page.locator(`[data-step-id="${contactInfoStep.id}"]`).click();
  * ```
  */
 export async function createTestBranchedForm(
@@ -114,6 +119,7 @@ export async function createTestBranchedForm(
     sharedFlow: result.sharedFlow,
     testimonialFlow: result.testimonialFlow,
     improvementFlow: result.improvementFlow,
+    outroFlow: result.outroFlow,
     allSteps: result.allSteps,
     branchQuestionId: result.branchQuestionId,
   };

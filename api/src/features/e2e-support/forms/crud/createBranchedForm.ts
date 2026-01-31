@@ -1,11 +1,12 @@
 /**
- * Create a test form with branching (shared + testimonial + improvement flows).
+ * Create a test form with branching (shared + testimonial + improvement + outro flows).
  *
  * Creates a complete branched form structure for E2E testing:
  * - 1 form with "E2E Branched Form" prefix
- * - 1 shared flow with: welcome, 3 questions, rating steps
- * - 1 testimonial flow (rating >= 4)
- * - 1 improvement flow (rating < 4)
+ * - 1 shared flow with: welcome, 3 questions, rating steps (branch point)
+ * - 1 testimonial flow (rating >= 4): testimonial_write, consent
+ * - 1 improvement flow (rating < 4): question
+ * - 1 outro flow (shared): contact_info, thank_you
  */
 import type { TestStep, TestFlow, TestBranchedFormResult } from '../types';
 import { QUESTION_TYPE_IDS } from '../constants';
@@ -13,8 +14,8 @@ import {
   createTestForm,
   createPrimaryFlow,
   createBranchFlows,
-  createTestimonialSteps,
-  createImprovementSteps,
+  createTestimonialStepsWithoutThankYou,
+  createImprovementStepsWithoutThankYou,
   createStep,
   createQuestion,
 } from './shared';
@@ -52,18 +53,21 @@ export async function createTestFormWithBranching(
     ratingStepId,
   });
 
-  // 5. Create branch flow steps
-  const testimonialSteps = await createTestimonialSteps({
+  // 5. Create branch flow steps (without thank_you - that's in outro)
+  const testimonialSteps = await createTestimonialStepsWithoutThankYou({
     flowId: testimonialFlowId,
     organizationId,
     questionTypeId: QUESTION_TYPE_IDS.TEXT_LONG,
   });
 
-  const improvementSteps = await createImprovementSteps({
+  const improvementSteps = await createImprovementStepsWithoutThankYou({
     flowId: improvementFlowId,
     organizationId,
     questionTypeId: QUESTION_TYPE_IDS.TEXT_LONG,
   });
+
+  // 6. Create outro steps (shared steps after branches)
+  const outroSteps = await createOutroSteps(sharedFlowId, organizationId, sharedSteps.length);
 
   // Build result
   const sharedFlow: TestFlow = {
@@ -93,13 +97,23 @@ export async function createTestFormWithBranching(
     steps: improvementSteps,
   };
 
+  const outroFlow: TestFlow = {
+    id: sharedFlowId, // Outro uses the shared flow ID
+    name: 'Outro Steps',
+    flowType: 'shared',
+    isPrimary: false,
+    displayOrder: 3,
+    steps: outroSteps,
+  };
+
   return {
     formId,
     formName,
     sharedFlow,
     testimonialFlow,
     improvementFlow,
-    allSteps: [...sharedSteps, ...testimonialSteps, ...improvementSteps],
+    outroFlow,
+    allSteps: [...sharedSteps, ...testimonialSteps, ...improvementSteps, ...outroSteps],
     branchQuestionId,
   };
 }
@@ -150,4 +164,27 @@ async function createSharedSteps(
     branchQuestionId: ratingQuestion.id,
     ratingStepId: ratingStep.id,
   };
+}
+
+/**
+ * Create outro steps (shared steps after branches).
+ * Steps: contact_info, thank_you
+ */
+async function createOutroSteps(
+  flowId: string,
+  organizationId: string,
+  startOrder: number
+): Promise<TestStep[]> {
+  const steps: TestStep[] = [];
+  let stepOrder = startOrder;
+
+  // Contact info step
+  const contactInfoStep = await createStep(flowId, organizationId, 'contact_info', stepOrder++);
+  steps.push({ ...contactInfoStep, flowMembership: 'shared', flowId });
+
+  // Thank you step
+  const thankYouStep = await createStep(flowId, organizationId, 'thank_you', stepOrder++);
+  steps.push({ ...thankYouStep, flowMembership: 'shared', flowId });
+
+  return steps;
 }

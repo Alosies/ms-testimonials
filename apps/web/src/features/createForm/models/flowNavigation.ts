@@ -29,6 +29,9 @@ export interface FlowNavigationDeps {
   /** Steps in improvement flow */
   improvementSteps: ComputedRef<readonly FlowStep[]>;
 
+  /** ADR-018: Steps in outro section (shared steps after branches) */
+  outroSteps: ComputedRef<readonly FlowStep[]>;
+
   /** Whether branching is enabled */
   isBranchingEnabled: ComputedRef<boolean>;
 
@@ -58,8 +61,14 @@ export interface FlowNavigationResult {
   /** Check if a step is in a branch (testimonial or improvement) */
   isInBranch: (stepId: string) => boolean;
 
+  /** Check if a step is in the outro section */
+  isInOutro: (stepId: string) => boolean;
+
   /** Get the first step of a specific branch */
   getBranchEntryStepId: (branch: 'testimonial' | 'improvement') => string | null;
+
+  /** Get the last step of a specific branch */
+  getLastBranchStepId: (branch: 'testimonial' | 'improvement') => string | null;
 
   /** Get the branch point step ID */
   getBranchPointStepId: () => string | null;
@@ -79,6 +88,11 @@ export interface BranchedNavigationDeps {
   stepsBeforeBranch: ComputedRef<readonly FlowStep[]>;
   testimonialSteps: ComputedRef<readonly FlowStep[]>;
   improvementSteps: ComputedRef<readonly FlowStep[]>;
+  /** ADR-018: Steps in outro section (shared steps after branches) */
+  outroSteps: ComputedRef<readonly FlowStep[]>;
+
+  // Flow focus state (remembered branch for navigation back from outro)
+  currentFlowFocus: Ref<'testimonial' | 'improvement' | null> | ComputedRef<'testimonial' | 'improvement' | null>;
 
   // Actions
   selectStepById: (id: string) => void;

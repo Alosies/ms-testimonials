@@ -34,6 +34,8 @@ export function useBranchedKeyboardNavigation(deps: BranchedNavigationDeps): Bra
     stepsBeforeBranch,
     testimonialSteps,
     improvementSteps,
+    outroSteps,
+    currentFlowFocus,
     selectStepById,
     setFlowFocus,
     onEditStep,
@@ -47,6 +49,7 @@ export function useBranchedKeyboardNavigation(deps: BranchedNavigationDeps): Bra
     stepsBeforeBranch,
     testimonialSteps,
     improvementSteps,
+    outroSteps,
     isBranchingEnabled,
     branchPointIndex,
   });
@@ -70,6 +73,12 @@ export function useBranchedKeyboardNavigation(deps: BranchedNavigationDeps): Bra
     return flowNav.isInBranch(stepId);
   });
 
+  const isInOutro = computed(() => {
+    const stepId = selectedStepId.value;
+    if (!stepId) return false;
+    return flowNav.isInOutro(stepId);
+  });
+
   // Get index of selected step in main steps array
   const selectedIndex = computed(() => {
     const stepId = selectedStepId.value;
@@ -80,15 +89,27 @@ export function useBranchedKeyboardNavigation(deps: BranchedNavigationDeps): Bra
   /**
    * Navigate to a step by ID, updating focus flow if entering a branch.
    * Uses setFlowFocus (not focusFlow) to avoid auto-selecting the first step.
+   *
+   * Suppresses scroll detection to prevent it from overriding the selection
+   * with a step from the wrong branch (in side-by-side branch view).
+   *
+   * NOTE: Flow focus is NOT cleared when entering outro steps, so we remember
+   * which branch the user came from and can navigate back to it.
    */
   function navigateToStep(stepId: string | null): void {
     if (!stepId) return;
 
+    // Suppress scroll detection to prevent it from overriding our selection
+    // This is critical for branched views where both columns are at similar
+    // vertical positions and scroll detection could pick the wrong column.
+    suppressScrollDetection?.();
+
     const flow = flowNav.getStepFlow(stepId);
     if (flow === 'testimonial' || flow === 'improvement') {
       setFlowFocus(flow);
-    } else {
-      // Clear flow focus when navigating to shared steps
+    } else if (!flowNav.isInOutro(stepId)) {
+      // Only clear flow focus when navigating to shared INTRO steps (before branch)
+      // Keep flow focus when entering outro so we can navigate back to the branch
       setFlowFocus(null);
     }
     selectStepById(stepId);
@@ -111,6 +132,9 @@ export function useBranchedKeyboardNavigation(deps: BranchedNavigationDeps): Bra
 
   /**
    * Handle Up navigation
+   *
+   * Special case for outro: When at first outro step, navigate to the last
+   * step of the remembered branch (from currentFlowFocus), not the branch point.
    */
   function handleKeyUp(e: KeyboardEvent): void {
     if (isInputFocused()) return;
@@ -119,6 +143,17 @@ export function useBranchedKeyboardNavigation(deps: BranchedNavigationDeps): Bra
     if (!currentId) return;
 
     e.preventDefault();
+
+    // Special handling for first outro step: go back into branch
+    if (isInOutro.value && outroSteps.value[0]?.id === currentId) {
+      // Use remembered flow focus, default to testimonial if none
+      const branch = currentFlowFocus.value ?? 'testimonial';
+      const lastBranchStepId = flowNav.getLastBranchStepId(branch);
+      if (lastBranchStepId) {
+        navigateToStep(lastBranchStepId);
+        return;
+      }
+    }
 
     const prevId = flowNav.getPrevStepId(currentId);
     navigateToStep(prevId);

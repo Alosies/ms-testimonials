@@ -44,7 +44,10 @@ export function useScrollDetection(
   let container: HTMLElement | null = null;
   let scrollDebounceTimeout: ReturnType<typeof setTimeout> | null = null;
   let lastSelectionTime = 0;
-  const SELECTION_COOLDOWN_MS = 500; // Ignore scroll detection for 500ms after selection
+  // Ignore scroll detection for 800ms after selection.
+  // This needs to be longer than typical smooth scroll animations to prevent
+  // scroll detection from overriding keyboard navigation in branched views.
+  const SELECTION_COOLDOWN_MS = 800;
 
   const hasScrollEndSupport = supportsScrollEndEvent();
 
@@ -99,12 +102,19 @@ export function useScrollDetection(
   /**
    * Handle scrollend event.
    * Clears the programmatic flag and runs detection.
+   *
+   * IMPORTANT: Check flag BEFORE clearing it, not after.
+   * The old logic cleared the flag then checked it, which was always false.
    */
   function handleScrollEnd(): void {
+    // Check if scroll was programmatic BEFORE clearing the flag
+    const wasProgrammatic = isProgrammaticScroll.value;
+
     onScrollEnd();
 
-    // Also run detection in case we need to sync
-    if (!isProgrammaticScroll.value) {
+    // Only run detection if scroll was NOT programmatic
+    // This prevents scroll detection from overriding keyboard navigation
+    if (!wasProgrammatic) {
       detectCenteredItem();
     }
   }

@@ -35,6 +35,7 @@ export function useFlowNavigation(deps: FlowNavigationDeps): FlowNavigationResul
     stepsBeforeBranch,
     testimonialSteps,
     improvementSteps,
+    outroSteps,
     isBranchingEnabled,
     branchPointIndex,
   } = deps;
@@ -102,12 +103,29 @@ export function useFlowNavigation(deps: FlowNavigationDeps): FlowNavigationResul
   }
 
   /**
+   * Get last step of a branch
+   */
+  function getLastBranchStepId(branch: 'testimonial' | 'improvement'): string | null {
+    const branchSteps = branch === 'testimonial' ? testimonialSteps.value : improvementSteps.value;
+    if (branchSteps.length === 0) return null;
+    return branchSteps[branchSteps.length - 1]?.id ?? null;
+  }
+
+  /**
+   * Check if a step is in the outro section (shared steps after branches)
+   */
+  function isInOutro(stepId: string): boolean {
+    return outroSteps.value.some((s) => s.id === stepId);
+  }
+
+  /**
    * Navigate DOWN from a step
    *
    * Rules:
-   * - In shared (not at branch point): next shared step
-   * - At branch point: enter testimonial flow (default)
-   * - In branch: next step in same branch (or null if at end)
+   * - In shared intro (not at branch point): next shared step
+   * - At branch point: enter first branch flow (default)
+   * - In branch: next step in same branch, or first outro step if at end
+   * - In outro: next outro step
    * - No branching: simple linear navigation
    */
   function getNextStepId(currentStepId: string): string | null {
@@ -118,21 +136,41 @@ export function useFlowNavigation(deps: FlowNavigationDeps): FlowNavigationResul
       return steps.value[currentIndex + 1]?.id ?? null;
     }
 
-    // At branch point: enter default branch (testimonial)
+    // At branch point: enter first branch (uses first available branch)
     if (isAtBranchPoint(currentStepId)) {
-      return getBranchEntryStepId('testimonial');
+      // Try testimonial first, then improvement
+      const testimonialEntry = testimonialSteps.value[0]?.id;
+      if (testimonialEntry) return testimonialEntry;
+      const improvementEntry = improvementSteps.value[0]?.id;
+      if (improvementEntry) return improvementEntry;
+      // No branch steps, go to outro if available
+      return outroSteps.value[0]?.id ?? null;
     }
 
-    // In a branch: navigate within the branch
+    // In a branch: navigate within the branch, then to outro
     const flow = getStepFlow(currentStepId);
     if (flow === 'testimonial' || flow === 'improvement') {
       const branchSteps = flow === 'testimonial' ? testimonialSteps.value : improvementSteps.value;
       const posInBranch = findPositionInFlow(branchSteps, currentStepId);
-      if (posInBranch === -1 || posInBranch >= branchSteps.length - 1) return null;
-      return branchSteps[posInBranch + 1]?.id ?? null;
+      if (posInBranch === -1) return null;
+
+      // If not at last step of branch, continue within branch
+      if (posInBranch < branchSteps.length - 1) {
+        return branchSteps[posInBranch + 1]?.id ?? null;
+      }
+
+      // At last step of branch: go to first outro step if available
+      return outroSteps.value[0]?.id ?? null;
     }
 
-    // In shared steps: navigate to next shared step
+    // In outro section: navigate to next outro step
+    if (isInOutro(currentStepId)) {
+      const posInOutro = findPositionInFlow(outroSteps.value, currentStepId);
+      if (posInOutro === -1 || posInOutro >= outroSteps.value.length - 1) return null;
+      return outroSteps.value[posInOutro + 1]?.id ?? null;
+    }
+
+    // In shared intro steps: navigate to next shared step
     const posInShared = findPositionInFlow(stepsBeforeBranch.value, currentStepId);
     if (posInShared === -1 || posInShared >= stepsBeforeBranch.value.length - 1) return null;
     return stepsBeforeBranch.value[posInShared + 1]?.id ?? null;
@@ -142,9 +180,11 @@ export function useFlowNavigation(deps: FlowNavigationDeps): FlowNavigationResul
    * Navigate UP from a step
    *
    * Rules:
-   * - In shared: previous shared step (or null if at first)
+   * - In shared intro: previous shared step (or null if at first)
    * - In branch at first step: exit to branch point
    * - In branch: previous step in same branch
+   * - In outro at first step: exit to branch point (user can then choose branch)
+   * - In outro: previous outro step
    * - No branching: simple linear navigation
    */
   function getPrevStepId(currentStepId: string): string | null {
@@ -153,6 +193,24 @@ export function useFlowNavigation(deps: FlowNavigationDeps): FlowNavigationResul
       const currentIndex = steps.value.findIndex((s) => s.id === currentStepId);
       if (currentIndex <= 0) return null;
       return steps.value[currentIndex - 1]?.id ?? null;
+    }
+
+    // In outro section
+    if (isInOutro(currentStepId)) {
+      const posInOutro = findPositionInFlow(outroSteps.value, currentStepId);
+
+      // At first outro step: exit to branch point
+      // User can then use left/right to enter desired branch
+      if (posInOutro === 0) {
+        return getBranchPointStepId();
+      }
+
+      // Navigate within outro
+      if (posInOutro > 0) {
+        return outroSteps.value[posInOutro - 1]?.id ?? null;
+      }
+
+      return null;
     }
 
     // In a branch
@@ -174,7 +232,7 @@ export function useFlowNavigation(deps: FlowNavigationDeps): FlowNavigationResul
       return null;
     }
 
-    // In shared steps: navigate to previous shared step
+    // In shared intro steps: navigate to previous shared step
     const posInShared = findPositionInFlow(stepsBeforeBranch.value, currentStepId);
     if (posInShared <= 0) return null;
     return stepsBeforeBranch.value[posInShared - 1]?.id ?? null;
@@ -226,7 +284,9 @@ export function useFlowNavigation(deps: FlowNavigationDeps): FlowNavigationResul
     getStepFlow,
     isAtBranchPoint,
     isInBranch,
+    isInOutro,
     getBranchEntryStepId,
+    getLastBranchStepId,
     getBranchPointStepId,
   };
 }

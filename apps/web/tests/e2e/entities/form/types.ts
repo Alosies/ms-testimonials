@@ -123,6 +123,8 @@ export interface TestBranchedFormData {
   testimonialFlow: TestFlow;
   /** Improvement flow (rating < 4) */
   improvementFlow: TestFlow;
+  /** Outro flow (shared steps after branches: contact_info, thank_you) */
+  outroFlow: TestFlow;
   /** All steps flattened for easy access */
   allSteps: TestStep[];
   /** The rating question that serves as branch point */
@@ -139,6 +141,7 @@ export interface CreateBranchedFormResponse {
   sharedFlow: TestFlow;
   testimonialFlow: TestFlow;
   improvementFlow: TestFlow;
+  outroFlow: TestFlow;
   allSteps: TestStep[];
   branchQuestionId: string;
 }

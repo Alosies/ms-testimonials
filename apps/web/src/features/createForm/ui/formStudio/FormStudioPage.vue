@@ -70,7 +70,22 @@ const navigation = useScrollSnapNavigation({
   itemCount: () => editor.steps.value.length,
   selectedIndex: editor.selectedIndex,
   onSelect: (index) => editor.selectStep(index),
-  onSelectById: (id) => editor.selectStepById(id),
+  onSelectById: (id) => {
+    // When there's an active flow focus (during keyboard navigation into a branch),
+    // only accept selections from that flow to prevent scroll detection from
+    // picking steps from the wrong branch in side-by-side view.
+    const currentFocus = editor.currentFlowFocus.value;
+    if (currentFocus && editor.isBranchingEnabled.value) {
+      const step = editor.steps.value.find(s => s.id === id);
+      // If step is in a branch but not the focused flow, ignore this selection
+      if (step?.flowMembership === 'testimonial' || step?.flowMembership === 'improvement') {
+        if (step.flowMembership !== currentFocus) {
+          return; // Ignore selection from wrong branch
+        }
+      }
+    }
+    editor.selectStepById(id);
+  },
   enableKeyboard: false, // Keyboard handled by useBranchedKeyboardNavigation
   enableScrollDetection: true,
 });
@@ -87,6 +102,8 @@ useBranchedKeyboardNavigation({
   stepsBeforeBranch: editor.stepsBeforeBranch,
   testimonialSteps: editor.testimonialSteps,
   improvementSteps: editor.improvementSteps,
+  outroSteps: editor.outroSteps,
+  currentFlowFocus: editor.currentFlowFocus,
   selectStepById: editor.selectStepById,
   setFlowFocus: editor.setFlowFocus,
   onEditStep: editor.handleEditStep,

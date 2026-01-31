@@ -33,5 +33,7 @@ export {
 export {
   createTestimonialSteps,
   createImprovementSteps,
+  createTestimonialStepsWithoutThankYou,
+  createImprovementStepsWithoutThankYou,
   type CreateBranchStepsParams,
 } from './branchSteps';

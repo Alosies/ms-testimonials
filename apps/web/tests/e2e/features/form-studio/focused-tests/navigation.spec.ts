@@ -191,7 +191,7 @@ test.describe('Studio Navigation', () => {
       const improvementSteps = branchedFormViaApi.improvementFlow.steps;
 
       expect(testimonialSteps.length).toBeGreaterThanOrEqual(2);
-      expect(improvementSteps.length).toBeGreaterThanOrEqual(2);
+      expect(improvementSteps.length).toBeGreaterThanOrEqual(1);
 
       // Click on second step in testimonial flow (not the first)
       const secondTestimonialStep = testimonialSteps[1];
@@ -210,6 +210,101 @@ test.describe('Studio Navigation', () => {
       // Verify the correct step is selected and flow switched
       await studio.expectSidebarStepSelected(lastImprovementStep.id);
       await studio.expectFlowFocused('improvement');
+    });
+
+    /**
+     * Tests for flow navigation improvements (branch → outro → branch).
+     * These tests verify the fixes for:
+     * - Navigation from last branch step to first outro step
+     * - Navigation from first outro step back to last branch step (not branch point)
+     * - Branch entry from branch point stays in correct branch
+     */
+    test('navigating down from last branch step goes to first outro step', async ({ authedPage, branchedFormViaApi }) => {
+      const studio = createStudioPage(authedPage);
+      const actions = createStudioActions(studio);
+
+      await actions.setup.loadStudio(branchedFormViaApi.studioUrl);
+
+      // Navigate to last step in testimonial branch (consent)
+      await actions.branch.navigateToLastTestimonialStep(branchedFormViaApi);
+      await actions.branch.expectAtLastTestimonialStep(branchedFormViaApi);
+
+      // Press down to navigate to outro
+      await studio.navigateDown();
+      await studio.waitForScrollSettle();
+
+      // Verify we're now at the first outro step (contact_info)
+      await actions.branch.expectAtFirstOutroStep(branchedFormViaApi);
+      await actions.branch.expectInOutro(branchedFormViaApi);
+    });
+
+    test('navigating up from first outro step returns to last step of remembered branch', async ({ authedPage, branchedFormViaApi }) => {
+      const studio = createStudioPage(authedPage);
+      const actions = createStudioActions(studio);
+
+      await actions.setup.loadStudio(branchedFormViaApi.studioUrl);
+
+      // Navigate through testimonial branch to outro (this sets flow focus to testimonial)
+      await actions.branch.enterBranchArea(branchedFormViaApi);
+      await actions.branch.expectInTestimonialBranch(branchedFormViaApi);
+
+      // Navigate down through all testimonial steps to reach outro
+      const testimonialSteps = branchedFormViaApi.testimonialFlow.steps;
+      for (let i = 0; i < testimonialSteps.length; i++) {
+        await studio.navigateDown();
+        await studio.waitForScrollSettle();
+      }
+
+      // Should now be at first outro step
+      await actions.branch.expectAtFirstOutroStep(branchedFormViaApi);
+
+      // Press up - should return to LAST testimonial step (not branch point)
+      await studio.navigateUp();
+      await studio.waitForScrollSettle();
+
+      // Verify we're back at last testimonial step (consent), not at rating
+      await actions.branch.expectAtLastTestimonialStep(branchedFormViaApi);
+      await studio.expectFlowFocused('testimonial');
+    });
+
+    test('entering branch from branch point stays in same branch column', async ({ authedPage, branchedFormViaApi }) => {
+      const studio = createStudioPage(authedPage);
+      const actions = createStudioActions(studio);
+
+      await actions.setup.loadStudio(branchedFormViaApi.studioUrl);
+
+      // Find the rating step (branch point)
+      const ratingStep = branchedFormViaApi.sharedFlow.steps.find(s => s.stepType === 'rating');
+      expect(ratingStep).toBeDefined();
+
+      // Navigate to rating step
+      await studio.selectStepById(ratingStep!.id);
+      await studio.waitForScrollSettle();
+
+      // Press down to enter branch - should go to testimonial (default)
+      await studio.navigateDown();
+      await studio.waitForScrollSettle();
+
+      // Verify we entered testimonial branch (not improvement)
+      await actions.branch.expectInTestimonialBranch(branchedFormViaApi);
+      await studio.expectFlowFocused('testimonial');
+
+      // Navigate through entire testimonial branch - should never jump to improvement
+      const testimonialSteps = branchedFormViaApi.testimonialFlow.steps;
+      for (let i = 1; i < testimonialSteps.length; i++) {
+        await studio.navigateDown();
+        await studio.waitForScrollSettle();
+
+        // After each navigation, verify still in testimonial branch (not jumped to improvement)
+        const currentId = await studio.getSelectedStepId();
+        const testimonialStepIds = new Set(testimonialSteps.map(s => s.id));
+        const outroStepIds = new Set(branchedFormViaApi.outroFlow.steps.map(s => s.id));
+
+        // Should be either in testimonial or outro, never in improvement
+        const inTestimonial = testimonialStepIds.has(currentId!);
+        const inOutro = outroStepIds.has(currentId!);
+        expect(inTestimonial || inOutro).toBe(true);
+      }
     });
   });
 });

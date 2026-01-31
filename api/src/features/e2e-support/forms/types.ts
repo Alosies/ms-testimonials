@@ -85,6 +85,8 @@ export interface TestBranchedFormResult {
   testimonialFlow: TestFlow;
   /** Improvement flow (rating < threshold) */
   improvementFlow: TestFlow;
+  /** Outro flow (shared steps after branches: contact_info, thank_you) */
+  outroFlow: TestFlow;
   /** All steps flattened for easy access */
   allSteps: TestStep[];
   /** The rating question that serves as branch point */

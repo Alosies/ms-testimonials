@@ -52,6 +52,29 @@ export async function createTestimonialSteps(params: CreateBranchStepsParams): P
 }
 
 /**
+ * Create testimonial flow steps WITHOUT thank_you (for forms with shared outro).
+ *
+ * Creates:
+ * - Testimonial Write step: AI/manual testimonial path selection
+ * - Consent step
+ */
+export async function createTestimonialStepsWithoutThankYou(params: CreateBranchStepsParams): Promise<TestStep[]> {
+  const { flowId, organizationId } = params;
+  const steps: TestStep[] = [];
+  let stepOrder = 0;
+
+  // Testimonial Write step: AI/manual path selection
+  const testimonialWriteStep = await createStep(flowId, organizationId, 'testimonial_write', stepOrder++, undefined, 'testimonial');
+  steps.push({ ...testimonialWriteStep, flowMembership: 'testimonial', flowId });
+
+  // Consent step
+  const consentStep = await createStep(flowId, organizationId, 'consent', stepOrder++, undefined, 'testimonial');
+  steps.push({ ...consentStep, flowMembership: 'testimonial', flowId });
+
+  return steps;
+}
+
+/**
  * Create improvement flow steps (for rating < 4).
  *
  * Creates:
@@ -81,6 +104,32 @@ export async function createImprovementSteps(params: CreateBranchStepsParams): P
     subtitle: 'We take your feedback seriously and will use it to improve our product.',
   }, 'improvement');
   steps.push({ ...thankYouStep, flowMembership: 'improvement', flowId });
+
+  return steps;
+}
+
+/**
+ * Create improvement flow steps WITHOUT thank_you (for forms with shared outro).
+ *
+ * Creates:
+ * - Question step: improvement feedback
+ */
+export async function createImprovementStepsWithoutThankYou(params: CreateBranchStepsParams): Promise<TestStep[]> {
+  const { flowId, organizationId, questionTypeId } = params;
+  const steps: TestStep[] = [];
+  let stepOrder = 0;
+
+  // Question step: improvement feedback
+  const questionStep = await createStep(flowId, organizationId, 'question', stepOrder++, undefined, 'improvement');
+  const question = await createQuestion(
+    questionStep.id,
+    organizationId,
+    'What could we do to improve your experience?',
+    'improvement_feedback',
+    questionTypeId
+  );
+  questionStep.questions.push(question);
+  steps.push({ ...questionStep, flowMembership: 'improvement', flowId });
 
   return steps;
 }
