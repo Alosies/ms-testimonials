@@ -15,11 +15,11 @@
  */
 
 // =============================================================================
-// Functions
+// Operations (impure - database, API, I/O)
 // =============================================================================
 
-export { checkCapabilityAccess } from './functions';
-export { checkAIAccess, type CheckAIAccessParams } from './functions';
+export { checkCapabilityAccess } from './operations';
+export { checkAIAccess, type CheckAIAccessParams } from './operations';
 export {
   executeWithAIAccess,
   type ExecuteWithAIAccessParams,
@@ -27,7 +27,7 @@ export {
   type AIOperationResult,
   type AIExecutionError,
   type AIExecutionResult,
-} from './functions';
+} from './operations';
 
 // =============================================================================
 // Types - AI Capability Identifiers

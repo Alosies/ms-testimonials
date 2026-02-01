@@ -30,10 +30,13 @@ api/src/features/{feature}/
 ├── schemas/           # Zod schemas for validation
 │   ├── {schema}.ts
 │   └── index.ts
-├── functions/         # Pure functions ONLY
+├── functions/         # Pure functions ONLY (no side effects)
 │   ├── {function}.ts
 │   └── index.ts
-├── handlers/          # HTTP handlers + impure operations
+├── operations/        # Impure operations (DB, API, I/O) - NOT HTTP handlers
+│   ├── {operation}.ts
+│   └── index.ts
+├── handlers/          # HTTP handlers (Hono route handlers)
 │   ├── {handler}.ts
 │   └── index.ts
 └── index.ts           # Barrel exports
@@ -204,43 +207,31 @@ export { analyzeTestimonial } from './analyzeTestimonial';
 
 ---
 
-### `handlers/` - HTTP Handlers & Impure Operations
+### `operations/` - Impure Operations
 
-**Contains**: HTTP route handlers and any impure operations.
+**Contains**: Impure operations that are NOT HTTP handlers (database calls, API calls, AI SDK calls).
 
 **Rules**:
-- HTTP handlers receive Hono `Context` and return responses
-- Impure operations (API calls, database, AI SDK) belong here
-- Can import from `functions/` for pure logic
+- **IMPURE**: Makes database calls, API calls, file I/O, or has side effects
+- NOT HTTP handlers (those go in `handlers/`)
+- Reusable across multiple handlers or features
 - Export types for operation results
 
-**HTTP Handler Example**:
-```typescript
-// handlers/assembleTestimonial.ts
-import type { Context } from 'hono';
-import { successResponse, errorResponse } from '@/shared/utils/http';
-import { deriveSuggestions } from '../functions';
+**When to use `operations/` vs `handlers/`**:
+- `operations/` = Reusable impure logic (database queries, API calls, AI SDK)
+- `handlers/` = HTTP request handlers (receive Hono Context, return Response)
 
-export async function assembleTestimonial(c: Context) {
-  try {
-    const body = await c.req.json();
-    // ... validation, business logic
-    const suggestions = deriveSuggestions(testimonial, rating);
-    return successResponse(c, response);
-  } catch (error) {
-    return errorResponse(c, 'Failed', 500, 'ERROR');
-  }
-}
-```
-
-**Impure Operation Example**:
+**Example**:
 ```typescript
-// handlers/getFormById.ts
+// operations/getFormById.ts
 import { executeGraphQLAsAdmin } from '@/shared/libs/hasura';
 import { GetFormByIdForAssemblyDocument } from '@/graphql/generated/operations';
 
+/**
+ * Fetch form by ID from database.
+ * Impure: makes GraphQL API call.
+ */
 export async function getFormById(id: string): Promise<GetFormByIdResult> {
-  // Impure: makes GraphQL API call
   const { data, error } = await executeGraphQLAsAdmin(
     GetFormByIdForAssemblyDocument,
     { id }
@@ -250,13 +241,70 @@ export async function getFormById(id: string): Promise<GetFormByIdResult> {
 ```
 
 ```typescript
-// handlers/index.ts
-// HTTP handlers
-export { assembleTestimonial } from './assembleTestimonial';
+// operations/executeAssembly.ts
+import { openai } from '@/shared/libs/openai';
 
-// Impure operations
+/**
+ * Execute AI testimonial assembly.
+ * Impure: calls OpenAI API.
+ */
+export async function executeAssembly(
+  context: AssemblyContext
+): Promise<AssemblyResult> {
+  const response = await openai.chat.completions.create({
+    // ...
+  });
+  // ...
+}
+```
+
+```typescript
+// operations/index.ts
 export { getFormById, type FormData, type GetFormByIdResult } from './getFormById';
 export { executeAssembly, type AssemblyResult } from './executeAssembly';
+```
+
+---
+
+### `handlers/` - HTTP Handlers
+
+**Contains**: HTTP route handlers only.
+
+**Rules**:
+- HTTP handlers receive Hono `Context` and return responses
+- Import from `functions/` for pure logic
+- Import from `operations/` for impure operations
+- Keep handlers thin - delegate to operations
+
+**Example**:
+```typescript
+// handlers/assembleTestimonial.ts
+import type { Context } from 'hono';
+import { successResponse, errorResponse } from '@/shared/utils/http';
+import { deriveSuggestions } from '../functions';
+import { getFormById, executeAssembly } from '../operations';
+
+export async function assembleTestimonial(c: Context) {
+  try {
+    const body = await c.req.json();
+
+    // Use operations for impure work
+    const form = await getFormById(body.formId);
+    const result = await executeAssembly(form, body.responses);
+
+    // Use functions for pure logic
+    const suggestions = deriveSuggestions(result.testimonial, result.rating);
+
+    return successResponse(c, { ...result, suggestions });
+  } catch (error) {
+    return errorResponse(c, 'Failed', 500, 'ERROR');
+  }
+}
+```
+
+```typescript
+// handlers/index.ts
+export { assembleTestimonial } from './assembleTestimonial';
 ```
 
 ---
@@ -278,16 +326,21 @@ export { executeAssembly, type AssemblyResult } from './executeAssembly';
  */
 
 // =============================================================================
-// Handlers (HTTP handlers and impure operations)
+// Handlers (HTTP handlers)
+// =============================================================================
+
+export { assembleTestimonial } from './handlers';
+
+// =============================================================================
+// Operations (Impure - DB, API, I/O)
 // =============================================================================
 
 export {
-  assembleTestimonial,
   getFormById,
   type FormData,
   executeAssembly,
   type AssemblyResult,
-} from './handlers';
+} from './operations';
 
 // =============================================================================
 // Functions (Pure functions)
@@ -325,10 +378,21 @@ export { assembleTestimonial as default } from './handlers';
 | String manipulation | `functions/` | `buildUserMessage.ts` |
 | Data transformation | `functions/` | `analyzeTestimonial.ts` |
 | Compute derived values | `functions/` | `deriveSuggestions.ts` |
+| Database/GraphQL call | `operations/` | `getFormById.ts` |
+| AI SDK call | `operations/` | `executeAssembly.ts` |
+| External API call | `operations/` | `sendNotification.ts` |
 | HTTP request handler | `handlers/` | `assembleTestimonial.ts` |
-| Database/GraphQL call | `handlers/` | `getFormById.ts` |
-| AI SDK call | `handlers/` | `executeAssembly.ts` |
-| External API call | `handlers/` | `sendNotification.ts` |
+
+### Quick Decision Guide
+
+```
+Is it a Hono HTTP handler (receives Context, returns Response)?
+  └─ Yes → handlers/
+
+Does it have side effects (DB, API, I/O)?
+  └─ Yes → operations/
+  └─ No  → functions/
+```
 
 ---
 
@@ -371,6 +435,10 @@ features/ai/suggestQuestions/
 │   ├── buildUserMessage.ts
 │   ├── buildAvailableTypesSection.ts
 │   ├── buildDynamicAIResponseSchema.ts
+│   └── index.ts
+├── operations/
+│   ├── fetchFormData.ts
+│   ├── executeAIGeneration.ts
 │   └── index.ts
 ├── handlers/
 │   ├── suggestQuestions.ts
@@ -417,7 +485,82 @@ features/ai/suggestQuestions/
 - [ ] Add `prompts/` folder if feature uses AI (with system prompts)
 - [ ] Add `schemas/` folder for Zod validation schemas
 - [ ] Add `functions/` folder for pure functions (no side effects)
-- [ ] Add `handlers/` folder for HTTP handlers and impure operations
+- [ ] Add `operations/` folder for impure operations (DB, API, I/O)
+- [ ] Add `handlers/` folder for HTTP handlers
 - [ ] Create `index.ts` with organized barrel exports
 - [ ] Run `pnpm codegen` if GraphQL files were added
 - [ ] Run `pnpm typecheck` to verify all types
+
+---
+
+## Shared Libraries (`shared/libs/`)
+
+Shared libraries follow similar conventions but without HTTP handlers.
+
+### Shared Lib Structure
+
+```
+api/src/shared/libs/{libName}/
+├── types/             # Type definitions (pure)
+│   ├── {types}.ts
+│   └── index.ts
+├── errors/            # Error types and factory functions (pure)
+│   ├── {errors}.ts
+│   └── index.ts
+├── functions/         # Pure functions ONLY (no side effects)
+│   ├── {function}.ts
+│   └── index.ts
+├── operations/        # Impure operations (DB, API, I/O)
+│   ├── {operation}.ts
+│   └── index.ts
+└── index.ts           # Barrel exports
+```
+
+### Example: `shared/libs/aiAccess`
+
+```
+shared/libs/aiAccess/
+├── types/
+│   ├── aiCapability.ts    # Type definitions
+│   └── index.ts
+├── errors/
+│   ├── aiAccessErrors.ts  # Error types and factories
+│   └── index.ts
+├── operations/
+│   ├── checkAIAccess.ts       # Checks capability + credits (DB calls)
+│   ├── checkCapabilityAccess.ts  # Plan capability check (DB calls)
+│   ├── executeWithAIAccess.ts    # HOF wrapping AI ops (orchestrates)
+│   └── index.ts
+└── index.ts
+```
+
+### Shared Lib Barrel Export
+
+```typescript
+/**
+ * AI Access Library
+ * Shared library for AI capability access control.
+ */
+
+// =============================================================================
+// Operations (impure - database, API, I/O)
+// =============================================================================
+
+export { checkCapabilityAccess } from './operations';
+export { checkAIAccess } from './operations';
+export { executeWithAIAccess } from './operations';
+
+// =============================================================================
+// Types
+// =============================================================================
+
+export type { AICapabilityId, QualityLevelId } from './types';
+export type { AIAccessResult, AICapabilityAccessResult } from './types';
+
+// =============================================================================
+// Errors
+// =============================================================================
+
+export type { AIAccessError, InsufficientCreditsError } from './errors';
+export { isAIAccessError, createInsufficientCreditsError } from './errors';
+```
