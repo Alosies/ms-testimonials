@@ -26,8 +26,8 @@ test.describe('Auto-Save - Thank You Step', { tag: '@autosave' }, () => {
 
     await actions.setup.loadStudio(branchedFormViaApi.studioUrl);
 
-    // Find the Thank You step in the testimonial flow
-    const thankYouStep = branchedFormViaApi.testimonialFlow.steps.find(s => s.stepType === 'thank_you')!;
+    // Find the Thank You step in the outro flow (shared ending section)
+    const thankYouStep = branchedFormViaApi.outroFlow.steps.find(s => s.stepType === 'thank_you')!;
 
     // Edit the Thank You step
     await actions.select.selectStep(thankYouStep.id);
@@ -62,8 +62,8 @@ test.describe('Auto-Save - Thank You Step', { tag: '@autosave' }, () => {
 
     await actions.setup.loadStudio(branchedFormViaApi.studioUrl);
 
-    // Find the Thank You step
-    const thankYouStep = branchedFormViaApi.testimonialFlow.steps.find(s => s.stepType === 'thank_you')!;
+    // Find the Thank You step in the outro flow (shared ending section)
+    const thankYouStep = branchedFormViaApi.outroFlow.steps.find(s => s.stepType === 'thank_you')!;
 
     // Edit the Thank You step
     await actions.select.selectStep(thankYouStep.id);
@@ -98,8 +98,8 @@ test.describe('Auto-Save - Thank You Step', { tag: '@autosave' }, () => {
 
     await actions.setup.loadStudio(branchedFormViaApi.studioUrl);
 
-    // Find the Thank You step
-    const thankYouStep = branchedFormViaApi.testimonialFlow.steps.find(s => s.stepType === 'thank_you')!;
+    // Find the Thank You step in the outro flow (shared ending section)
+    const thankYouStep = branchedFormViaApi.outroFlow.steps.find(s => s.stepType === 'thank_you')!;
 
     // Edit the Thank You step
     await actions.select.selectStep(thankYouStep.id);
@@ -136,8 +136,8 @@ test.describe('Auto-Save - Thank You Step', { tag: '@autosave' }, () => {
 
     await actions.setup.loadStudio(branchedFormViaApi.studioUrl);
 
-    // Find the Thank You step
-    const thankYouStep = branchedFormViaApi.testimonialFlow.steps.find(s => s.stepType === 'thank_you')!;
+    // Find the Thank You step in the outro flow (shared ending section)
+    const thankYouStep = branchedFormViaApi.outroFlow.steps.find(s => s.stepType === 'thank_you')!;
 
     // Edit the Thank You step
     await actions.select.selectStep(thankYouStep.id);
