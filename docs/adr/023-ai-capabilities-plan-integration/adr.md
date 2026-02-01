@@ -16,7 +16,9 @@
 
 ## Status
 
-**Proposed** - 2026-01-26
+**Implemented** - 2026-02-01 (Phases 1-6 complete, Phase 7 deferred)
+
+*Originally Proposed: 2026-01-26*
 
 ## Context
 
@@ -514,6 +516,74 @@ All credit-modifying operations must be idempotent to handle retries safely:
 - `credit_transactions.idempotency_key` is UNIQUE
 - Duplicate requests return the original transaction result
 - Keys expire after 24 hours (can be cleaned up)
+
+#### 8. Audit Log Snapshot Pattern
+
+**Problem:** Credit transactions must maintain historical accuracy even when related entities (users, forms) are renamed or deleted.
+
+**Decision:** Use a **snapshot + FK hybrid pattern** for audit context:
+
+| Field | Type | Purpose |
+|-------|------|---------|
+| `user_id` | FK (SET NULL) | Links to current user (for navigation) |
+| `user_display_name` | TEXT | Snapshot of user email/name at transaction time |
+| `form_id` | FK (SET NULL) | Links to current form (for navigation) |
+| `form_name` | TEXT | Snapshot of form name at transaction time |
+
+**Why Snapshot Pattern?**
+
+Audit logs must capture **point-in-time truth**:
+
+| Scenario | FK Only (❌) | Snapshot (✅) |
+|----------|-------------|---------------|
+| Form renamed | Shows new name (misleading) | Shows name at transaction time |
+| Form deleted | Shows NULL or error | Preserves historical name |
+| User deleted | Shows NULL | Preserves email for accountability |
+| Investigating "Why 500 credits in Jan?" | Broken context | Complete historical record |
+
+**Display Logic:**
+
+```typescript
+// UI display logic for actor column
+function getActorDisplay(tx: CreditTransaction): string {
+  if (tx.user_display_name) return tx.user_display_name;
+  if (tx.form_name) return `Anonymous • ${tx.form_name}`;
+  return 'System';
+}
+```
+
+**Transaction Types & Context:**
+
+| Transaction Type | User Context | Form Context |
+|------------------|--------------|--------------|
+| `ai_consumption` (logged-in user) | ✅ User email | ✅ Form name |
+| `ai_consumption` (anonymous testimonial) | "Anonymous" | ✅ Form name |
+| `plan_allocation` | "System" | — |
+| `topup_purchase` | ✅ User email | — |
+| `admin_adjustment` | ✅ Admin email | — |
+
+**Migration Required:**
+
+Add to `credit_transactions`:
+```sql
+-- User context (nullable for system operations)
+user_id TEXT REFERENCES users(id) ON DELETE SET NULL,
+user_display_name TEXT,  -- Snapshot: "john@company.com" or "Anonymous"
+
+-- Form context (nullable for non-form operations)
+form_id TEXT REFERENCES forms(id) ON DELETE SET NULL,
+form_name TEXT,  -- Snapshot: "Product Feedback Form"
+```
+
+Add to `credit_reservations` (to capture context at reserve time):
+```sql
+user_id TEXT REFERENCES users(id) ON DELETE SET NULL,
+user_display_name TEXT,
+form_id TEXT REFERENCES forms(id) ON DELETE SET NULL,
+form_name TEXT,
+```
+
+**Reference:** This pattern is inspired by Cursor's Usage page which shows minimal but transparent audit info: Date | User | Type | Credits.
 
 ---
 
@@ -2052,54 +2122,82 @@ The `credit_transactions` table will grow significantly over time. Strategy:
 
 ## Implementation Phases
 
-### Phase 1: Schema & Migrations (Capabilities)
-- [ ] Create `quality_levels` reference table
-- [ ] Create `ai_capabilities` table
-- [ ] Create `plan_ai_capabilities` table
-- [ ] Create `plan_ai_capability_quality_levels` junction table
-- [ ] Seed quality levels (fast, enhanced, premium)
-- [ ] Seed initial capabilities (question_generation, testimonial_assembly, testimonial_polish)
-- [ ] Seed plan mappings (Free, Pro, Team) with quality levels and allowed models
-- [ ] Add Hasura metadata (permissions, relationships)
+> **Implementation Status**: Updated 2026-02-01
 
-### Phase 2: Schema & Migrations (Credits)
-- [ ] Add `monthly_ai_credits` to `plans` table
-- [ ] Add `monthly_ai_credits` to `organization_plans` table
-- [ ] Create `organization_credit_balances` table
-- [ ] Create `credit_transactions` table
-- [ ] Create `credit_topup_packages` table
-- [ ] Seed topup packages
+### Phase 1: Schema & Migrations (Capabilities) ✅ COMPLETE
+- [x] Create `quality_levels` reference table
+- [x] Create `ai_capabilities` table
+- [x] Create `plan_ai_capabilities` table
+- [x] Create `plan_ai_capability_quality_levels` junction table
+- [x] Create `plan_quality_level_models` junction table (normalized model mapping)
+- [x] Create `llm_models` reference table (7 models with pricing)
+- [x] Seed quality levels (fast, enhanced, premium)
+- [x] Seed initial capabilities (question_generation, testimonial_assembly, testimonial_polish)
+- [x] Seed plan mappings (Free, Pro, Team) with quality levels and allowed models
+- [x] Add Hasura metadata (permissions, relationships)
 
-### Phase 3: API - Capability Access
-- [ ] Implement `checkCapabilityAccess()` function
-- [ ] Implement `checkAIAccess()` combined function
-- [ ] Add error types (AIAccessDeniedError, InsufficientCreditsError)
+### Phase 2: Schema & Migrations (Credits) ✅ COMPLETE
+- [x] Add `monthly_ai_credits` to `plans` table
+- [x] Add `monthly_ai_credits` to `organization_plans` table
+- [x] Create `organization_credit_balances` table
+- [x] Create `credit_transactions` table (with audit context: user_email, form_name snapshots)
+- [x] Create `credit_reservations` table
+- [x] Create `credit_topup_packages` table
+- [x] Seed topup packages (starter, popular, power)
+- [x] Create utility SQL functions (`get_used_this_period`, `get_available_credits`)
 
-### Phase 4: API - Credit Management
-- [ ] Implement `checkCreditBalance()` function
-- [ ] Implement `consumeCredits()` function (atomic)
-- [ ] Implement `purchaseTopup()` endpoint
-- [ ] Create `executeWithAIAccess()` wrapper
+### Phase 3: API - Capability Access ✅ COMPLETE
+- [x] Implement `checkCapabilityAccess()` function (`api/src/shared/libs/aiAccess/operations/checkCapabilityAccess.ts`)
+- [x] Implement `checkAIAccess()` combined function (`api/src/shared/libs/aiAccess/operations/checkAIAccess.ts`)
+- [x] Add error types (AIAccessDeniedError, InsufficientCreditsError)
 
-### Phase 5: Integration with AI Operations
-- [ ] Wrap `/ai/suggest-questions` with `executeWithAIAccess`
-- [ ] Wrap `/ai/assemble-testimonial` with `executeWithAIAccess`
-- [ ] Add credits + capability info to AI response metadata
-- [ ] Update existing AI audit logging
+### Phase 4: API - Credit Management ✅ COMPLETE
+- [x] Implement `checkCreditBalance()` function (`api/src/features/credits/operations/checkBalance.ts`)
+- [x] Implement `reserveCredits()` function (`api/src/features/credits/operations/reserveCredits.ts`)
+- [x] Implement `settleCredits()` function (`api/src/features/credits/operations/settleCredits.ts`)
+- [x] Implement `releaseCredits()` function (`api/src/features/credits/operations/releaseCredits.ts`)
+- [x] Create `executeWithAIAccess()` wrapper (`api/src/shared/libs/aiAccess/operations/executeWithAIAccess.ts`)
+- [x] Implement low balance notifications (`api/src/features/credits/operations/notifications.ts`)
+- [x] Create REST endpoints: `GET /credits/balance`, `GET /credits/transactions`
+- [x] Create purchase initiation endpoint: `POST /credits/purchase` (initiates Stripe checkout)
 
-### Phase 6: Frontend
-- [ ] Create `useCreditBalance` composable
-- [ ] Create `useAIAccess` composable (capability + credits)
-- [ ] Create `CreditBalanceWidget` component
-- [ ] Update AI feature UIs with credit info
-- [ ] Build credit history page
-- [ ] Build top-up purchase modal
+### Phase 5: Integration with AI Operations ✅ COMPLETE
+- [x] Wrap `/ai/suggest-questions` with `executeWithAIAccess`
+- [x] Wrap `/ai/assemble-testimonial` with `executeWithAIAccess`
+- [x] Add credits + capability info to AI response body and headers (`X-Credits-Used`, `X-Balance-Remaining`)
+- [x] Pass audit context (userId, userEmail, formId, formName) to transactions
+- [ ] Implement `/ai/polish-testimonial` handler (capability seeded but no handler)
 
-### Phase 7: Billing Integration
-- [ ] Integrate Stripe for top-up payments
-- [ ] Implement monthly reset job (cron or Stripe webhook)
-- [ ] Handle plan upgrades/downgrades with credit adjustment
-- [ ] Implement webhook events for credit notifications
+### Phase 6: Frontend ✅ COMPLETE
+- [x] Create `useCreditBalance` composable (`apps/web/src/features/credits/composables/useCreditBalance.ts`)
+- [x] Create `useCreditHistory` composable (`apps/web/src/features/credits/composables/useCreditHistory.ts`)
+- [x] Create `useAIAccess` composable (`apps/web/src/features/ai/composables/useAIAccess.ts`)
+- [x] Create `CreditBalanceWidget` component (`apps/web/src/features/credits/ui/CreditBalanceWidget.vue`)
+- [x] Create `CreditHistoryTable` component with audit context display
+- [x] Create `CreditHistoryRow` component (shows user/form snapshots)
+- [x] Create `TopupPurchaseModal` component (Stripe checkout redirect)
+- [x] Create credit models and types (`apps/web/src/features/credits/models/index.ts`)
+
+### Phase 7: Billing Integration ⏳ DEFERRED
+Stripe integration is deferred to a later stage.
+
+- [ ] Implement Stripe webhook handler (`POST /webhooks/stripe`)
+- [ ] Process `checkout.session.completed` events to provision credits
+- [x] Implement monthly reset job (`api/src/jobs/resetMonthlyCredits.ts`)
+- [x] Implement reservation cleanup job (`api/src/jobs/cleanupReservations.ts`)
+- [x] Configure cron triggers in Hasura (`cleanup_credit_reservations` every 5 min, `reset_monthly_credits` daily)
+- [ ] Handle plan upgrades/downgrades with credit adjustment (partially implemented in reset job)
+
+### Known Gaps (Not Blocking)
+
+| Gap | Description | Priority |
+|-----|-------------|----------|
+| Rate limit enforcement | `rate_limit_rpm`/`rpd` values returned but not enforced at runtime | Medium |
+| Usage tracking for rate limits | `usedToday`/`usedThisMonth` hardcoded to 0 in `checkCapabilityAccess` | Medium |
+| Model fallback on failure | No logic to try alternate models from `allowedModels` on failure | Low |
+| Model deprecation handling | `llm_models.replacement_model_id` exists but no auto-fallback logic | Low |
+| Admin adjustment endpoint | No API to manually adjust credits (transaction type exists) | Low |
+| Testimonial polish handler | Capability seeded but `/ai/polish-testimonial` not implemented | Low |
 
 ---
 
