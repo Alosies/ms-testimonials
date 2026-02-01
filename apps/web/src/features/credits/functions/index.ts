@@ -5,3 +5,4 @@
  */
 
 export { getActorInfo, hasActorInfo } from './actorInfo';
+export { TRANSACTION_TYPE_LABELS } from './transactionLabels';

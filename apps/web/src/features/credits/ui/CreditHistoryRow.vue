@@ -5,12 +5,12 @@
  * Renders a single row in the credit history table.
  * Extracted to keep CreditHistoryTable under 250 lines.
  */
-import { getActorInfo, hasActorInfo } from '../functions';
 import {
+  getActorInfo,
+  hasActorInfo,
   TRANSACTION_TYPE_LABELS,
-  type CreditTransaction,
-  type TransactionType,
-} from '../models';
+} from '../functions';
+import type { CreditTransaction, TransactionType } from '../models';
 
 defineProps<{
   transaction: CreditTransaction;

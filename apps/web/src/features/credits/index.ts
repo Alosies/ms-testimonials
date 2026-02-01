@@ -6,10 +6,26 @@
  */
 
 // Composables
-export * from './composables';
+export { useCreditBalance, useCreditHistory } from './composables';
 
-// Models
-export * from './models';
+// Types (exported from models per FSD guidelines)
+export type {
+  TransactionType,
+  ActorInfo,
+  CreditTransaction,
+  PaginationMeta,
+  CreditTransactionsResponse,
+  CreditTransactionsParams,
+  CreditBalance,
+  UseCreditBalanceOptions,
+  UseCreditBalanceReturn,
+  CreditTopupPackage,
+  GetTopupPackagesResponse,
+  PurchaseCreditsResponse,
+} from './models';
+
+// Functions (constants and pure functions)
+export { TRANSACTION_TYPE_LABELS, getActorInfo, hasActorInfo } from './functions';
 
 // UI Components
 export { default as CreditBalanceWidget } from './ui/CreditBalanceWidget.vue';

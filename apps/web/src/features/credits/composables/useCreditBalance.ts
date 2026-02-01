@@ -19,61 +19,13 @@
  * ```
  */
 
-import { ref, computed, onMounted, onUnmounted, type Ref, type ComputedRef } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useApi } from '@/shared/api/rest';
-import type { GetBalanceResponse } from '@api/shared/schemas/credits';
-
-/**
- * Credit balance data structure
- */
-export type CreditBalance = GetBalanceResponse;
-
-/**
- * Options for useCreditBalance composable
- */
-export interface UseCreditBalanceOptions {
-  /**
-   * Whether to fetch balance automatically on mount.
-   * @default true
-   */
-  autoFetch?: boolean;
-
-  /**
-   * Auto-refresh interval in milliseconds.
-   * Set to 0 to disable auto-refresh.
-   * @default 0
-   */
-  refreshInterval?: number;
-}
-
-/**
- * Return type for useCreditBalance composable
- */
-export interface UseCreditBalanceReturn {
-  /** Current credit balance data, null if not yet fetched */
-  balance: Ref<CreditBalance | null>;
-
-  /** Whether a fetch is currently in progress */
-  loading: Ref<boolean>;
-
-  /** Error from the last fetch attempt, null if successful */
-  error: Ref<Error | null>;
-
-  /** Fetch the current credit balance from the API */
-  fetchBalance: () => Promise<void>;
-
-  /** Alias for fetchBalance */
-  refresh: () => Promise<void>;
-
-  /** Percentage of monthly credits used this period (0-100) */
-  percentUsed: ComputedRef<number>;
-
-  /** Whether remaining credits are low (< 20% of monthly allocation remaining) */
-  isLow: ComputedRef<boolean>;
-
-  /** Number of days until the billing period resets */
-  daysUntilReset: ComputedRef<number>;
-}
+import type {
+  CreditBalance,
+  UseCreditBalanceOptions,
+  UseCreditBalanceReturn,
+} from '../models';
 
 /**
  * Composable for fetching and managing credit balance state.

@@ -1,8 +1,17 @@
 /**
- * Credit History Models
+ * Credits Feature Models
  *
- * Types for credit transaction history and pagination.
+ * Types for credit transactions, balances, and packages.
+ *
+ * @see ADR-023 AI Capabilities Plan Integration
  */
+
+import type { Ref, ComputedRef } from 'vue';
+import type { GetBalanceResponse } from '@api/shared/schemas/credits';
+
+// =============================================================================
+// Transaction Types
+// =============================================================================
 
 /**
  * Transaction types from the credits system
@@ -15,19 +24,6 @@ export type TransactionType =
   | 'admin_adjustment'
   | 'plan_change_adjustment'
   | 'expiration';
-
-/**
- * Human-readable labels for transaction types
- */
-export const TRANSACTION_TYPE_LABELS: Record<TransactionType, string> = {
-  ai_consumption: 'AI Usage',
-  plan_allocation: 'Monthly Credit',
-  topup_purchase: 'Credit Purchase',
-  promo_bonus: 'Promotional Bonus',
-  admin_adjustment: 'Admin Adjustment',
-  plan_change_adjustment: 'Plan Change',
-  expiration: 'Expired',
-};
 
 /**
  * Actor display info extracted from a transaction
@@ -86,9 +82,65 @@ export interface CreditTransactionsParams {
   transactionType?: TransactionType;
 }
 
-// ============================================================
+// =============================================================================
+// Credit Balance Types
+// =============================================================================
+
+/**
+ * Credit balance data structure (from API response)
+ */
+export type CreditBalance = GetBalanceResponse;
+
+/**
+ * Options for useCreditBalance composable
+ */
+export interface UseCreditBalanceOptions {
+  /**
+   * Whether to fetch balance automatically on mount.
+   * @default true
+   */
+  autoFetch?: boolean;
+
+  /**
+   * Auto-refresh interval in milliseconds.
+   * Set to 0 to disable auto-refresh.
+   * @default 0
+   */
+  refreshInterval?: number;
+}
+
+/**
+ * Return type for useCreditBalance composable
+ */
+export interface UseCreditBalanceReturn {
+  /** Current credit balance data, null if not yet fetched */
+  balance: Ref<CreditBalance | null>;
+
+  /** Whether a fetch is currently in progress */
+  loading: Ref<boolean>;
+
+  /** Error from the last fetch attempt, null if successful */
+  error: Ref<Error | null>;
+
+  /** Fetch the current credit balance from the API */
+  fetchBalance: () => Promise<void>;
+
+  /** Alias for fetchBalance */
+  refresh: () => Promise<void>;
+
+  /** Percentage of monthly credits used this period (0-100) */
+  percentUsed: ComputedRef<number>;
+
+  /** Whether remaining credits are low (< 20% of monthly allocation remaining) */
+  isLow: ComputedRef<boolean>;
+
+  /** Number of days until the billing period resets */
+  daysUntilReset: ComputedRef<number>;
+}
+
+// =============================================================================
 // Credit Topup Package Types
-// ============================================================
+// =============================================================================
 
 /**
  * A credit topup package available for purchase
