@@ -30,6 +30,9 @@ api/src/features/{feature}/
 ├── schemas/           # Zod schemas for validation
 │   ├── {schema}.ts
 │   └── index.ts
+├── types/             # Type definitions (interfaces, type aliases)
+│   ├── {types}.ts
+│   └── index.ts
 ├── functions/         # Pure functions ONLY (no side effects)
 │   ├── {function}.ts
 │   └── index.ts
@@ -156,6 +159,67 @@ export {
   type FormStructure,
 } from './aiResponse';
 ```
+
+---
+
+### `types/` - Type Definitions
+
+**Contains**: TypeScript interfaces and type aliases.
+
+**Rules**:
+- **Types only**: No runtime code, no functions, no constants
+- Group related types in logical files
+- Export all types from `index.ts`
+- Use for domain types, error types, result types, etc.
+
+**Important**: Types/interfaces should NEVER be defined in function files, operation files, or other code files. Always put them in `types/`.
+
+**Example**:
+```typescript
+// types/result.ts
+/**
+ * Result types for assembly operations
+ */
+
+/** Successful assembly result */
+export interface AssemblyResult {
+  testimonial: string;
+  sentiment: 'positive' | 'neutral' | 'negative';
+  wordCount: number;
+}
+
+/** Assembly error details */
+export interface AssemblyError {
+  code: string;
+  message: string;
+  retryable: boolean;
+}
+
+/** Union result type */
+export type AssemblyOutcome =
+  | { success: true; data: AssemblyResult }
+  | { success: false; error: AssemblyError };
+```
+
+```typescript
+// types/index.ts
+export type {
+  AssemblyResult,
+  AssemblyError,
+  AssemblyOutcome,
+} from './result';
+
+export type {
+  FormContext,
+  QuestionData,
+} from './context';
+```
+
+**When to use `types/` vs `schemas/`**:
+- `types/` = Plain TypeScript types (interfaces, type aliases)
+- `schemas/` = Zod schemas for runtime validation (request/response validation)
+
+If you need both validation AND types, define Zod schemas in `schemas/` and infer types from them using `z.infer<>`.
 
 ---
 
@@ -326,6 +390,16 @@ export { assembleTestimonial } from './assembleTestimonial';
  */
 
 // =============================================================================
+// Types
+// =============================================================================
+
+export type {
+  AssemblyResult,
+  AssemblyError,
+  AssemblyOutcome,
+} from './types';
+
+// =============================================================================
 // Handlers (HTTP handlers)
 // =============================================================================
 
@@ -335,12 +409,7 @@ export { assembleTestimonial } from './handlers';
 // Operations (Impure - DB, API, I/O)
 // =============================================================================
 
-export {
-  getFormById,
-  type FormData,
-  executeAssembly,
-  type AssemblyResult,
-} from './operations';
+export { getFormById, executeAssembly } from './operations';
 
 // =============================================================================
 // Functions (Pure functions)
@@ -374,7 +443,9 @@ export { assembleTestimonial as default } from './handlers';
 | GraphQL query/mutation | `graphql/` | `getFormById.gql` |
 | AI system prompt | `prompts/` | `systemPrompt.ts` |
 | Zod validation schema | `schemas/` | `aiResponse.ts` |
-| Request/response types | `schemas/` | `request.ts` |
+| Interface/type alias | `types/` | `result.ts` |
+| Error type definitions | `types/` | `errors.ts` |
+| Domain model types | `types/` | `context.ts` |
 | String manipulation | `functions/` | `buildUserMessage.ts` |
 | Data transformation | `functions/` | `analyzeTestimonial.ts` |
 | Compute derived values | `functions/` | `deriveSuggestions.ts` |
@@ -386,6 +457,12 @@ export { assembleTestimonial as default } from './handlers';
 ### Quick Decision Guide
 
 ```
+Is it a type/interface definition?
+  └─ Yes → types/
+
+Is it a Zod schema for validation?
+  └─ Yes → schemas/
+
 Is it a Hono HTTP handler (receives Context, returns Response)?
   └─ Yes → handlers/
 
@@ -431,6 +508,10 @@ features/ai/suggestQuestions/
 ├── schemas/
 │   ├── aiResponse.ts
 │   └── index.ts
+├── types/
+│   ├── context.ts
+│   ├── result.ts
+│   └── index.ts
 ├── functions/
 │   ├── buildUserMessage.ts
 │   ├── buildAvailableTypesSection.ts
@@ -456,7 +537,9 @@ features/ai/suggestQuestions/
 |------|------------|---------|
 | GraphQL operation | camelCase.gql | `getFormById.gql` |
 | Zod schema | camelCase.ts | `aiResponse.ts` |
+| Type definitions | camelCase.ts | `result.ts`, `context.ts` |
 | Pure function | camelCase.ts | `buildUserMessage.ts` |
+| Impure operation | camelCase.ts | `fetchFormData.ts` |
 | HTTP handler | camelCase.ts | `assembleTestimonial.ts` |
 | Prompt constant | camelCase.ts | `systemPrompt.ts` |
 | Barrel export | index.ts | `index.ts` |
@@ -484,6 +567,7 @@ features/ai/suggestQuestions/
 - [ ] Add `graphql/` folder if feature needs GraphQL operations
 - [ ] Add `prompts/` folder if feature uses AI (with system prompts)
 - [ ] Add `schemas/` folder for Zod validation schemas
+- [ ] Add `types/` folder for type definitions (interfaces, type aliases)
 - [ ] Add `functions/` folder for pure functions (no side effects)
 - [ ] Add `operations/` folder for impure operations (DB, API, I/O)
 - [ ] Add `handlers/` folder for HTTP handlers
@@ -503,7 +587,7 @@ Entities represent domain objects and their data access operations.
 api/src/entities/{entityName}/
 ├── graphql/           # GraphQL operations for this entity
 │   └── {operation}.gql
-├── models/            # Type definitions and re-exports
+├── types/             # Type definitions (or models/ for legacy)
 │   └── index.ts
 ├── functions/         # Pure functions ONLY (no side effects)
 │   ├── {function}.ts
@@ -514,6 +598,9 @@ api/src/entities/{entityName}/
 └── index.ts           # Barrel exports
 ```
 
+> **Note**: Entities may use `models/` instead of `types/` (legacy convention).
+> Both serve the same purpose: holding type definitions. Prefer `types/` for new entities.
+
 ### Example: `entities/user`
 
 ```
@@ -522,7 +609,7 @@ entities/user/
 │   ├── findUserById.gql
 │   ├── findUserByEmail.gql
 │   └── createUser.gql
-├── models/
+├── types/
 │   └── index.ts           # Type definitions
 ├── functions/
 │   ├── formatUserName.ts  # Pure: string manipulation
@@ -543,10 +630,10 @@ entities/user/
  */
 
 // =============================================================================
-// Models (Types)
+// Types
 // =============================================================================
 
-export type { User, UserRole } from './models';
+export type { User, UserRole } from './types';
 
 // =============================================================================
 // Operations (Impure - DB queries/mutations)
@@ -579,11 +666,11 @@ Shared libraries follow similar conventions but without HTTP handlers.
 
 ```
 api/src/shared/libs/{libName}/
-├── types/             # Type definitions (pure)
+├── types/             # Type definitions (interfaces, type aliases)
 │   ├── {types}.ts
 │   └── index.ts
-├── errors/            # Error types and factory functions (pure)
-│   ├── {errors}.ts
+├── errors/            # Error factory functions and type guards (pure)
+│   ├── {errors}.ts    # Note: error TYPES go in types/, functions here
 │   └── index.ts
 ├── functions/         # Pure functions ONLY (no side effects)
 │   ├── {function}.ts
@@ -599,10 +686,11 @@ api/src/shared/libs/{libName}/
 ```
 shared/libs/aiAccess/
 ├── types/
-│   ├── aiCapability.ts    # Type definitions
+│   ├── aiCapability.ts    # Capability type definitions
+│   ├── aiAccessErrors.ts  # Error type definitions
 │   └── index.ts
 ├── errors/
-│   ├── aiAccessErrors.ts  # Error types and factories
+│   ├── aiAccessErrors.ts  # Type guards + factory functions only
 │   └── index.ts
 ├── operations/
 │   ├── checkAIAccess.ts       # Checks capability + credits (DB calls)
