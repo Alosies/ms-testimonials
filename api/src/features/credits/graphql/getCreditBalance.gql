@@ -1,0 +1,22 @@
+# Get credit balance for an organization
+query GetCreditBalance($organizationId: String!) {
+  organization_credit_balances(
+    where: { organization_id: { _eq: $organizationId } }
+    limit: 1
+  ) {
+    id
+    organization_id
+    monthly_credits
+    bonus_credits
+    reserved_credits
+    overdraft_limit
+    period_start
+    period_end
+    created_at
+    updated_at
+    # Computed fields
+    available_credits
+    spendable_credits
+    used_this_period
+  }
+}

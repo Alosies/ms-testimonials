@@ -16214,9 +16214,11 @@ enum order_by {
 }
 
 """
-Tracks credit balance state for each organization. One row per org. used_this_period is computed from credit_transactions.
+Tracks credit balance state for each organization. One row per org. Initialized with monthly allocation from plan and welcome bonus. ADR-023.
 """
 type organization_credit_balances {
+  """Available credits (monthly + bonus - reserved - used)"""
+  available_credits: numeric
   """
   Additional credits from purchases or promotions. Does not reset monthly.
   """
@@ -16255,10 +16257,14 @@ type organization_credit_balances {
   Credits currently reserved for in-flight AI operations. Released on completion or timeout.
   """
   reserved_credits: numeric!
+  """Spendable credits (available + overdraft allowance)"""
+  spendable_credits: numeric
   """
   Timestamp of last modification. Automatically updated by database trigger on any column change.
   """
   updated_at: timestamptz!
+  """Credits consumed during current billing period"""
+  used_this_period: numeric
 }
 
 """
@@ -16288,6 +16294,8 @@ type organization_credit_balances_aggregate_fields {
 
 """aggregate avg on columns"""
 type organization_credit_balances_avg_fields {
+  """Available credits (monthly + bonus - reserved - used)"""
+  available_credits: numeric
   """
   Additional credits from purchases or promotions. Does not reset monthly.
   """
@@ -16304,6 +16312,10 @@ type organization_credit_balances_avg_fields {
   Credits currently reserved for in-flight AI operations. Released on completion or timeout.
   """
   reserved_credits: Float
+  """Spendable credits (available + overdraft allowance)"""
+  spendable_credits: numeric
+  """Credits consumed during current billing period"""
+  used_this_period: numeric
 }
 
 """
@@ -16313,6 +16325,7 @@ input organization_credit_balances_bool_exp {
   _and: [organization_credit_balances_bool_exp!]
   _not: organization_credit_balances_bool_exp
   _or: [organization_credit_balances_bool_exp!]
+  available_credits: numeric_comparison_exp
   bonus_credits: numeric_comparison_exp
   created_at: timestamptz_comparison_exp
   id: String_comparison_exp
@@ -16323,7 +16336,9 @@ input organization_credit_balances_bool_exp {
   period_end: timestamptz_comparison_exp
   period_start: timestamptz_comparison_exp
   reserved_credits: numeric_comparison_exp
+  spendable_credits: numeric_comparison_exp
   updated_at: timestamptz_comparison_exp
+  used_this_period: numeric_comparison_exp
 }
 
 """
@@ -16411,6 +16426,8 @@ input organization_credit_balances_insert_input {
 
 """aggregate max on columns"""
 type organization_credit_balances_max_fields {
+  """Available credits (monthly + bonus - reserved - used)"""
+  available_credits: numeric
   """
   Additional credits from purchases or promotions. Does not reset monthly.
   """
@@ -16447,14 +16464,20 @@ type organization_credit_balances_max_fields {
   Credits currently reserved for in-flight AI operations. Released on completion or timeout.
   """
   reserved_credits: numeric
+  """Spendable credits (available + overdraft allowance)"""
+  spendable_credits: numeric
   """
   Timestamp of last modification. Automatically updated by database trigger on any column change.
   """
   updated_at: timestamptz
+  """Credits consumed during current billing period"""
+  used_this_period: numeric
 }
 
 """aggregate min on columns"""
 type organization_credit_balances_min_fields {
+  """Available credits (monthly + bonus - reserved - used)"""
+  available_credits: numeric
   """
   Additional credits from purchases or promotions. Does not reset monthly.
   """
@@ -16491,10 +16514,14 @@ type organization_credit_balances_min_fields {
   Credits currently reserved for in-flight AI operations. Released on completion or timeout.
   """
   reserved_credits: numeric
+  """Spendable credits (available + overdraft allowance)"""
+  spendable_credits: numeric
   """
   Timestamp of last modification. Automatically updated by database trigger on any column change.
   """
   updated_at: timestamptz
+  """Credits consumed during current billing period"""
+  used_this_period: numeric
 }
 
 """
@@ -16520,6 +16547,7 @@ input organization_credit_balances_on_conflict {
 Ordering options when selecting data from "organization_credit_balances".
 """
 input organization_credit_balances_order_by {
+  available_credits: order_by
   bonus_credits: order_by
   created_at: order_by
   id: order_by
@@ -16530,7 +16558,9 @@ input organization_credit_balances_order_by {
   period_end: order_by
   period_start: order_by
   reserved_credits: order_by
+  spendable_credits: order_by
   updated_at: order_by
+  used_this_period: order_by
 }
 
 """primary key columns input for table: organization_credit_balances"""
@@ -16615,6 +16645,8 @@ input organization_credit_balances_set_input {
 
 """aggregate stddev on columns"""
 type organization_credit_balances_stddev_fields {
+  """Available credits (monthly + bonus - reserved - used)"""
+  available_credits: numeric
   """
   Additional credits from purchases or promotions. Does not reset monthly.
   """
@@ -16631,10 +16663,16 @@ type organization_credit_balances_stddev_fields {
   Credits currently reserved for in-flight AI operations. Released on completion or timeout.
   """
   reserved_credits: Float
+  """Spendable credits (available + overdraft allowance)"""
+  spendable_credits: numeric
+  """Credits consumed during current billing period"""
+  used_this_period: numeric
 }
 
 """aggregate stddev_pop on columns"""
 type organization_credit_balances_stddev_pop_fields {
+  """Available credits (monthly + bonus - reserved - used)"""
+  available_credits: numeric
   """
   Additional credits from purchases or promotions. Does not reset monthly.
   """
@@ -16651,10 +16689,16 @@ type organization_credit_balances_stddev_pop_fields {
   Credits currently reserved for in-flight AI operations. Released on completion or timeout.
   """
   reserved_credits: Float
+  """Spendable credits (available + overdraft allowance)"""
+  spendable_credits: numeric
+  """Credits consumed during current billing period"""
+  used_this_period: numeric
 }
 
 """aggregate stddev_samp on columns"""
 type organization_credit_balances_stddev_samp_fields {
+  """Available credits (monthly + bonus - reserved - used)"""
+  available_credits: numeric
   """
   Additional credits from purchases or promotions. Does not reset monthly.
   """
@@ -16671,6 +16715,10 @@ type organization_credit_balances_stddev_samp_fields {
   Credits currently reserved for in-flight AI operations. Released on completion or timeout.
   """
   reserved_credits: Float
+  """Spendable credits (available + overdraft allowance)"""
+  spendable_credits: numeric
+  """Credits consumed during current billing period"""
+  used_this_period: numeric
 }
 
 """
@@ -16729,6 +16777,8 @@ input organization_credit_balances_stream_cursor_value_input {
 
 """aggregate sum on columns"""
 type organization_credit_balances_sum_fields {
+  """Available credits (monthly + bonus - reserved - used)"""
+  available_credits: numeric
   """
   Additional credits from purchases or promotions. Does not reset monthly.
   """
@@ -16745,6 +16795,10 @@ type organization_credit_balances_sum_fields {
   Credits currently reserved for in-flight AI operations. Released on completion or timeout.
   """
   reserved_credits: numeric
+  """Spendable credits (available + overdraft allowance)"""
+  spendable_credits: numeric
+  """Credits consumed during current billing period"""
+  used_this_period: numeric
 }
 
 """
@@ -16784,6 +16838,8 @@ input organization_credit_balances_updates {
 
 """aggregate var_pop on columns"""
 type organization_credit_balances_var_pop_fields {
+  """Available credits (monthly + bonus - reserved - used)"""
+  available_credits: numeric
   """
   Additional credits from purchases or promotions. Does not reset monthly.
   """
@@ -16800,10 +16856,16 @@ type organization_credit_balances_var_pop_fields {
   Credits currently reserved for in-flight AI operations. Released on completion or timeout.
   """
   reserved_credits: Float
+  """Spendable credits (available + overdraft allowance)"""
+  spendable_credits: numeric
+  """Credits consumed during current billing period"""
+  used_this_period: numeric
 }
 
 """aggregate var_samp on columns"""
 type organization_credit_balances_var_samp_fields {
+  """Available credits (monthly + bonus - reserved - used)"""
+  available_credits: numeric
   """
   Additional credits from purchases or promotions. Does not reset monthly.
   """
@@ -16820,10 +16882,16 @@ type organization_credit_balances_var_samp_fields {
   Credits currently reserved for in-flight AI operations. Released on completion or timeout.
   """
   reserved_credits: Float
+  """Spendable credits (available + overdraft allowance)"""
+  spendable_credits: numeric
+  """Credits consumed during current billing period"""
+  used_this_period: numeric
 }
 
 """aggregate variance on columns"""
 type organization_credit_balances_variance_fields {
+  """Available credits (monthly + bonus - reserved - used)"""
+  available_credits: numeric
   """
   Additional credits from purchases or promotions. Does not reset monthly.
   """
@@ -16840,6 +16908,10 @@ type organization_credit_balances_variance_fields {
   Credits currently reserved for in-flight AI operations. Released on completion or timeout.
   """
   reserved_credits: Float
+  """Spendable credits (available + overdraft allowance)"""
+  spendable_credits: numeric
+  """Credits consumed during current billing period"""
+  used_this_period: numeric
 }
 
 """Subscription records - plan values copied at subscription time"""

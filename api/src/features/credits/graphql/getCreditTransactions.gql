@@ -1,0 +1,47 @@
+# Get paginated credit transactions for an organization
+# Includes related ai_capability and quality_level names
+query GetCreditTransactions(
+  $organizationId: String!
+  $limit: Int!
+  $offset: Int!
+  $transactionType: String
+  $fromDate: timestamptz
+  $toDate: timestamptz
+) {
+  credit_transactions(
+    where: {
+      organization_id: { _eq: $organizationId }
+      transaction_type: { _eq: $transactionType }
+      created_at: { _gte: $fromDate, _lte: $toDate }
+    }
+    order_by: { created_at: desc }
+    limit: $limit
+    offset: $offset
+  ) {
+    id
+    transaction_type
+    credits_amount
+    balance_after
+    description
+    created_at
+    # Related entities
+    ai_capability {
+      name
+    }
+    quality_level {
+      name
+    }
+  }
+  # Get total count for pagination
+  credit_transactions_aggregate(
+    where: {
+      organization_id: { _eq: $organizationId }
+      transaction_type: { _eq: $transactionType }
+      created_at: { _gte: $fromDate, _lte: $toDate }
+    }
+  ) {
+    aggregate {
+      count
+    }
+  }
+}

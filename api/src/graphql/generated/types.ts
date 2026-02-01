@@ -13142,9 +13142,11 @@ export const Order_By = {
 } as const;
 
 export type Order_By = typeof Order_By[keyof typeof Order_By];
-/** Tracks credit balance state for each organization. One row per org. used_this_period is computed from credit_transactions. */
+/** Tracks credit balance state for each organization. One row per org. Initialized with monthly allocation from plan and welcome bonus. ADR-023. */
 export interface Organization_Credit_Balances {
   __typename?: 'organization_credit_balances';
+  /** Available credits (monthly + bonus - reserved - used) */
+  available_credits: Maybe<Scalars['numeric']['output']>;
   /** Additional credits from purchases or promotions. Does not reset monthly. */
   bonus_credits: Scalars['numeric']['output'];
   /** Timestamp when this record was first created. Set automatically, never modified. */
@@ -13165,8 +13167,12 @@ export interface Organization_Credit_Balances {
   period_start: Scalars['timestamptz']['output'];
   /** Credits currently reserved for in-flight AI operations. Released on completion or timeout. */
   reserved_credits: Scalars['numeric']['output'];
+  /** Spendable credits (available + overdraft allowance) */
+  spendable_credits: Maybe<Scalars['numeric']['output']>;
   /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
   updated_at: Scalars['timestamptz']['output'];
+  /** Credits consumed during current billing period */
+  used_this_period: Maybe<Scalars['numeric']['output']>;
 }
 
 /** aggregated selection of "organization_credit_balances" */
@@ -13202,6 +13208,8 @@ export interface Organization_Credit_Balances_Aggregate_Fields_CountArgs {
 /** aggregate avg on columns */
 export interface Organization_Credit_Balances_Avg_Fields {
   __typename?: 'organization_credit_balances_avg_fields';
+  /** Available credits (monthly + bonus - reserved - used) */
+  available_credits: Maybe<Scalars['numeric']['output']>;
   /** Additional credits from purchases or promotions. Does not reset monthly. */
   bonus_credits: Maybe<Scalars['Float']['output']>;
   /** Credits allocated for the current billing period from the plan. Reset monthly. */
@@ -13210,6 +13218,10 @@ export interface Organization_Credit_Balances_Avg_Fields {
   overdraft_limit: Maybe<Scalars['Float']['output']>;
   /** Credits currently reserved for in-flight AI operations. Released on completion or timeout. */
   reserved_credits: Maybe<Scalars['Float']['output']>;
+  /** Spendable credits (available + overdraft allowance) */
+  spendable_credits: Maybe<Scalars['numeric']['output']>;
+  /** Credits consumed during current billing period */
+  used_this_period: Maybe<Scalars['numeric']['output']>;
 }
 
 /** Boolean expression to filter rows from the table "organization_credit_balances". All fields are combined with a logical 'AND'. */
@@ -13217,6 +13229,7 @@ export interface Organization_Credit_Balances_Bool_Exp {
   _and?: InputMaybe<Array<Organization_Credit_Balances_Bool_Exp>>;
   _not?: InputMaybe<Organization_Credit_Balances_Bool_Exp>;
   _or?: InputMaybe<Array<Organization_Credit_Balances_Bool_Exp>>;
+  available_credits?: InputMaybe<Numeric_Comparison_Exp>;
   bonus_credits?: InputMaybe<Numeric_Comparison_Exp>;
   created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
   id?: InputMaybe<String_Comparison_Exp>;
@@ -13227,7 +13240,9 @@ export interface Organization_Credit_Balances_Bool_Exp {
   period_end?: InputMaybe<Timestamptz_Comparison_Exp>;
   period_start?: InputMaybe<Timestamptz_Comparison_Exp>;
   reserved_credits?: InputMaybe<Numeric_Comparison_Exp>;
+  spendable_credits?: InputMaybe<Numeric_Comparison_Exp>;
   updated_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  used_this_period?: InputMaybe<Numeric_Comparison_Exp>;
 }
 
 /** unique or primary key constraints on table "organization_credit_balances" */
@@ -13279,6 +13294,8 @@ export interface Organization_Credit_Balances_Insert_Input {
 /** aggregate max on columns */
 export interface Organization_Credit_Balances_Max_Fields {
   __typename?: 'organization_credit_balances_max_fields';
+  /** Available credits (monthly + bonus - reserved - used) */
+  available_credits: Maybe<Scalars['numeric']['output']>;
   /** Additional credits from purchases or promotions. Does not reset monthly. */
   bonus_credits: Maybe<Scalars['numeric']['output']>;
   /** Timestamp when this record was first created. Set automatically, never modified. */
@@ -13297,13 +13314,19 @@ export interface Organization_Credit_Balances_Max_Fields {
   period_start: Maybe<Scalars['timestamptz']['output']>;
   /** Credits currently reserved for in-flight AI operations. Released on completion or timeout. */
   reserved_credits: Maybe<Scalars['numeric']['output']>;
+  /** Spendable credits (available + overdraft allowance) */
+  spendable_credits: Maybe<Scalars['numeric']['output']>;
   /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
   updated_at: Maybe<Scalars['timestamptz']['output']>;
+  /** Credits consumed during current billing period */
+  used_this_period: Maybe<Scalars['numeric']['output']>;
 }
 
 /** aggregate min on columns */
 export interface Organization_Credit_Balances_Min_Fields {
   __typename?: 'organization_credit_balances_min_fields';
+  /** Available credits (monthly + bonus - reserved - used) */
+  available_credits: Maybe<Scalars['numeric']['output']>;
   /** Additional credits from purchases or promotions. Does not reset monthly. */
   bonus_credits: Maybe<Scalars['numeric']['output']>;
   /** Timestamp when this record was first created. Set automatically, never modified. */
@@ -13322,8 +13345,12 @@ export interface Organization_Credit_Balances_Min_Fields {
   period_start: Maybe<Scalars['timestamptz']['output']>;
   /** Credits currently reserved for in-flight AI operations. Released on completion or timeout. */
   reserved_credits: Maybe<Scalars['numeric']['output']>;
+  /** Spendable credits (available + overdraft allowance) */
+  spendable_credits: Maybe<Scalars['numeric']['output']>;
   /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
   updated_at: Maybe<Scalars['timestamptz']['output']>;
+  /** Credits consumed during current billing period */
+  used_this_period: Maybe<Scalars['numeric']['output']>;
 }
 
 /** response of any mutation on the table "organization_credit_balances" */
@@ -13344,6 +13371,7 @@ export interface Organization_Credit_Balances_On_Conflict {
 
 /** Ordering options when selecting data from "organization_credit_balances". */
 export interface Organization_Credit_Balances_Order_By {
+  available_credits?: InputMaybe<Order_By>;
   bonus_credits?: InputMaybe<Order_By>;
   created_at?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
@@ -13354,7 +13382,9 @@ export interface Organization_Credit_Balances_Order_By {
   period_end?: InputMaybe<Order_By>;
   period_start?: InputMaybe<Order_By>;
   reserved_credits?: InputMaybe<Order_By>;
+  spendable_credits?: InputMaybe<Order_By>;
   updated_at?: InputMaybe<Order_By>;
+  used_this_period?: InputMaybe<Order_By>;
 }
 
 /** primary key columns input for table: organization_credit_balances */
@@ -13415,6 +13445,8 @@ export interface Organization_Credit_Balances_Set_Input {
 /** aggregate stddev on columns */
 export interface Organization_Credit_Balances_Stddev_Fields {
   __typename?: 'organization_credit_balances_stddev_fields';
+  /** Available credits (monthly + bonus - reserved - used) */
+  available_credits: Maybe<Scalars['numeric']['output']>;
   /** Additional credits from purchases or promotions. Does not reset monthly. */
   bonus_credits: Maybe<Scalars['Float']['output']>;
   /** Credits allocated for the current billing period from the plan. Reset monthly. */
@@ -13423,11 +13455,17 @@ export interface Organization_Credit_Balances_Stddev_Fields {
   overdraft_limit: Maybe<Scalars['Float']['output']>;
   /** Credits currently reserved for in-flight AI operations. Released on completion or timeout. */
   reserved_credits: Maybe<Scalars['Float']['output']>;
+  /** Spendable credits (available + overdraft allowance) */
+  spendable_credits: Maybe<Scalars['numeric']['output']>;
+  /** Credits consumed during current billing period */
+  used_this_period: Maybe<Scalars['numeric']['output']>;
 }
 
 /** aggregate stddev_pop on columns */
 export interface Organization_Credit_Balances_Stddev_Pop_Fields {
   __typename?: 'organization_credit_balances_stddev_pop_fields';
+  /** Available credits (monthly + bonus - reserved - used) */
+  available_credits: Maybe<Scalars['numeric']['output']>;
   /** Additional credits from purchases or promotions. Does not reset monthly. */
   bonus_credits: Maybe<Scalars['Float']['output']>;
   /** Credits allocated for the current billing period from the plan. Reset monthly. */
@@ -13436,11 +13474,17 @@ export interface Organization_Credit_Balances_Stddev_Pop_Fields {
   overdraft_limit: Maybe<Scalars['Float']['output']>;
   /** Credits currently reserved for in-flight AI operations. Released on completion or timeout. */
   reserved_credits: Maybe<Scalars['Float']['output']>;
+  /** Spendable credits (available + overdraft allowance) */
+  spendable_credits: Maybe<Scalars['numeric']['output']>;
+  /** Credits consumed during current billing period */
+  used_this_period: Maybe<Scalars['numeric']['output']>;
 }
 
 /** aggregate stddev_samp on columns */
 export interface Organization_Credit_Balances_Stddev_Samp_Fields {
   __typename?: 'organization_credit_balances_stddev_samp_fields';
+  /** Available credits (monthly + bonus - reserved - used) */
+  available_credits: Maybe<Scalars['numeric']['output']>;
   /** Additional credits from purchases or promotions. Does not reset monthly. */
   bonus_credits: Maybe<Scalars['Float']['output']>;
   /** Credits allocated for the current billing period from the plan. Reset monthly. */
@@ -13449,6 +13493,10 @@ export interface Organization_Credit_Balances_Stddev_Samp_Fields {
   overdraft_limit: Maybe<Scalars['Float']['output']>;
   /** Credits currently reserved for in-flight AI operations. Released on completion or timeout. */
   reserved_credits: Maybe<Scalars['Float']['output']>;
+  /** Spendable credits (available + overdraft allowance) */
+  spendable_credits: Maybe<Scalars['numeric']['output']>;
+  /** Credits consumed during current billing period */
+  used_this_period: Maybe<Scalars['numeric']['output']>;
 }
 
 /** Streaming cursor of the table "organization_credit_balances" */
@@ -13486,6 +13534,8 @@ export interface Organization_Credit_Balances_Stream_Cursor_Value_Input {
 /** aggregate sum on columns */
 export interface Organization_Credit_Balances_Sum_Fields {
   __typename?: 'organization_credit_balances_sum_fields';
+  /** Available credits (monthly + bonus - reserved - used) */
+  available_credits: Maybe<Scalars['numeric']['output']>;
   /** Additional credits from purchases or promotions. Does not reset monthly. */
   bonus_credits: Maybe<Scalars['numeric']['output']>;
   /** Credits allocated for the current billing period from the plan. Reset monthly. */
@@ -13494,6 +13544,10 @@ export interface Organization_Credit_Balances_Sum_Fields {
   overdraft_limit: Maybe<Scalars['numeric']['output']>;
   /** Credits currently reserved for in-flight AI operations. Released on completion or timeout. */
   reserved_credits: Maybe<Scalars['numeric']['output']>;
+  /** Spendable credits (available + overdraft allowance) */
+  spendable_credits: Maybe<Scalars['numeric']['output']>;
+  /** Credits consumed during current billing period */
+  used_this_period: Maybe<Scalars['numeric']['output']>;
 }
 
 /** update columns of table "organization_credit_balances" */
@@ -13533,6 +13587,8 @@ export interface Organization_Credit_Balances_Updates {
 /** aggregate var_pop on columns */
 export interface Organization_Credit_Balances_Var_Pop_Fields {
   __typename?: 'organization_credit_balances_var_pop_fields';
+  /** Available credits (monthly + bonus - reserved - used) */
+  available_credits: Maybe<Scalars['numeric']['output']>;
   /** Additional credits from purchases or promotions. Does not reset monthly. */
   bonus_credits: Maybe<Scalars['Float']['output']>;
   /** Credits allocated for the current billing period from the plan. Reset monthly. */
@@ -13541,11 +13597,17 @@ export interface Organization_Credit_Balances_Var_Pop_Fields {
   overdraft_limit: Maybe<Scalars['Float']['output']>;
   /** Credits currently reserved for in-flight AI operations. Released on completion or timeout. */
   reserved_credits: Maybe<Scalars['Float']['output']>;
+  /** Spendable credits (available + overdraft allowance) */
+  spendable_credits: Maybe<Scalars['numeric']['output']>;
+  /** Credits consumed during current billing period */
+  used_this_period: Maybe<Scalars['numeric']['output']>;
 }
 
 /** aggregate var_samp on columns */
 export interface Organization_Credit_Balances_Var_Samp_Fields {
   __typename?: 'organization_credit_balances_var_samp_fields';
+  /** Available credits (monthly + bonus - reserved - used) */
+  available_credits: Maybe<Scalars['numeric']['output']>;
   /** Additional credits from purchases or promotions. Does not reset monthly. */
   bonus_credits: Maybe<Scalars['Float']['output']>;
   /** Credits allocated for the current billing period from the plan. Reset monthly. */
@@ -13554,11 +13616,17 @@ export interface Organization_Credit_Balances_Var_Samp_Fields {
   overdraft_limit: Maybe<Scalars['Float']['output']>;
   /** Credits currently reserved for in-flight AI operations. Released on completion or timeout. */
   reserved_credits: Maybe<Scalars['Float']['output']>;
+  /** Spendable credits (available + overdraft allowance) */
+  spendable_credits: Maybe<Scalars['numeric']['output']>;
+  /** Credits consumed during current billing period */
+  used_this_period: Maybe<Scalars['numeric']['output']>;
 }
 
 /** aggregate variance on columns */
 export interface Organization_Credit_Balances_Variance_Fields {
   __typename?: 'organization_credit_balances_variance_fields';
+  /** Available credits (monthly + bonus - reserved - used) */
+  available_credits: Maybe<Scalars['numeric']['output']>;
   /** Additional credits from purchases or promotions. Does not reset monthly. */
   bonus_credits: Maybe<Scalars['Float']['output']>;
   /** Credits allocated for the current billing period from the plan. Reset monthly. */
@@ -13567,6 +13635,10 @@ export interface Organization_Credit_Balances_Variance_Fields {
   overdraft_limit: Maybe<Scalars['Float']['output']>;
   /** Credits currently reserved for in-flight AI operations. Released on completion or timeout. */
   reserved_credits: Maybe<Scalars['Float']['output']>;
+  /** Spendable credits (available + overdraft allowance) */
+  spendable_credits: Maybe<Scalars['numeric']['output']>;
+  /** Credits consumed during current billing period */
+  used_this_period: Maybe<Scalars['numeric']['output']>;
 }
 
 /** Subscription records - plan values copied at subscription time */

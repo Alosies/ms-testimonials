@@ -1,0 +1,17 @@
+# Get credit balance for checking if an operation can proceed
+query GetCreditBalanceForCheck($organizationId: String!) {
+  organization_credit_balances(
+    where: { organization_id: { _eq: $organizationId } }
+    limit: 1
+  ) {
+    monthly_credits
+    bonus_credits
+    reserved_credits
+    overdraft_limit
+    period_end
+    # Computed fields
+    available_credits
+    spendable_credits
+    used_this_period
+  }
+}
