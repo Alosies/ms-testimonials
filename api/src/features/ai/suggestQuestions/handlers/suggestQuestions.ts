@@ -23,8 +23,8 @@ import {
   executeWithAIAccess,
   type AIExecutionContext,
   type AIOperationResult,
-} from '@/features/ai';
-import type { QualityLevelId } from '@/features/ai/types';
+  type QualityLevelId,
+} from '@/shared/libs/aiAccess';
 
 // Import pure functions
 import {
