@@ -9,56 +9,10 @@
  */
 import { ref, computed } from 'vue';
 import { useApi } from '@/shared/api/rest';
-
-// ============================================================================
-// Types
-// ============================================================================
-
-export interface AIAccessCheckModel {
-  id: string;
-  name: string;
-  isDefault: boolean;
-}
-
-export interface AIAccessCheckQualityLevel {
-  id: string;
-  name: string;
-  creditCost: number;
-  allowedModels: AIAccessCheckModel[];
-}
-
-export interface AIAccessCheckQualityLevelSummary {
-  id: string;
-  name: string;
-  creditCost: number;
-}
-
-export interface AIAccessCheckCapability {
-  id: string;
-  name: string;
-  hasAccess: boolean;
-}
-
-export interface AIAccessCheckCredits {
-  available: number;
-  required: number;
-  hasEnough: boolean;
-}
-
-export interface AIAccessCheck {
-  canProceed: boolean;
-  capability: AIAccessCheckCapability;
-  credits: AIAccessCheckCredits;
-  selectedQualityLevel: AIAccessCheckQualityLevel | null;
-  availableQualityLevels: AIAccessCheckQualityLevelSummary[];
-  upgradeHint?: string;
-  topupHint?: string;
-}
-
-export interface AIAccessCheckRequest {
-  capabilityUniqueName: string;
-  qualityLevelUniqueName?: string;
-}
+import type {
+  AIAccessCheck,
+  AIAccessCheckRequest,
+} from '../models';
 
 // ============================================================================
 // Composable

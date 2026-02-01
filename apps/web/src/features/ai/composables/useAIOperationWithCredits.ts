@@ -38,69 +38,15 @@
  */
 
 import { ref, computed } from 'vue';
-import { useAIAccess, type AIAccessCheck } from './useAIAccess';
-
-// ============================================================================
-// Types
-// ============================================================================
-
-/**
- * Capability unique names for AI operations
- */
-export type AICapabilityName = 'question_generation' | 'testimonial_assembly' | 'testimonial_polish';
-
-/**
- * Quality level unique names
- */
-export type AIQualityLevel = 'fast' | 'enhanced' | 'premium';
-
-/**
- * Options for executing an AI operation with credits
- */
-export interface ExecuteWithCreditsOptions<T> {
-  /** The capability being used */
-  capability: AICapabilityName;
-  /** Optional quality level (defaults to cheapest available) */
-  qualityLevel?: AIQualityLevel;
-  /** The actual AI operation to execute */
-  execute: () => Promise<T>;
-  /** Optional idempotency key to prevent duplicate charges */
-  idempotencyKey?: string;
-}
-
-/**
- * Result of an AI operation with credits
- */
-export interface AIOperationWithCreditsResult<T> {
-  /** Whether the operation succeeded */
-  success: boolean;
-  /** The result data if successful */
-  data?: T;
-  /** Credits consumed by the operation */
-  creditsUsed?: number;
-  /** Remaining balance after the operation */
-  balanceRemaining?: number;
-  /** Error message if failed */
-  error?: string;
-  /** Whether access was denied (needs upgrade or topup) */
-  accessDenied?: boolean;
-  /** The access check result (for detailed info) */
-  accessCheck?: AIAccessCheck;
-}
-
-/**
- * Stored result of the last AI operation
- */
-export interface LastAIOperationResult {
-  capability: AICapabilityName;
-  qualityLevel?: AIQualityLevel;
-  success: boolean;
-  creditsUsed?: number;
-  balanceRemaining?: number;
-  error?: string;
-  accessDenied?: boolean;
-  timestamp: Date;
-}
+import { useAIAccess } from './useAIAccess';
+import type {
+  AIAccessCheck,
+  AICapabilityName,
+  AIQualityLevel,
+  ExecuteWithCreditsOptions,
+  AIOperationWithCreditsResult,
+  LastAIOperationResult,
+} from '../models';
 
 // ============================================================================
 // Composable
