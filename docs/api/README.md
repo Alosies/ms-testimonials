@@ -13,6 +13,8 @@
 - `api-endpoint-creation` - Step-by-step endpoint creation
 - `api-feature-structure` - Internal feature folder structure standards
 - `api-data-access-strategy` - When to use Hasura GraphQL vs Drizzle ORM
+- `api-deployment` - Koyeb deployment and infrastructure
+- `api-scheduled-jobs` - Background job execution with Hasura cron triggers
 - `graphql-code-skill` - GraphQL/Hasura patterns (complementary)
 
 ---
