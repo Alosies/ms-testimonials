@@ -76,6 +76,11 @@ export type SettlementReservationRow = {
   reserved_credits: string;
   status: string;
   idempotency_key: string;
+  // Audit context (ADR-023 Decision 8)
+  user_id: string | null;
+  user_email: string | null;
+  form_id: string | null;
+  form_name: string | null;
   [key: string]: unknown;
 };
 

@@ -176,15 +176,31 @@ credits.openapi(getTransactionsRoute, async (c: any) => {
     // - Type-safe with generated types
     // - Hasura handles joins and filtering
     // - Consistent with frontend data patterns
+    //
+    // Build where clause dynamically to handle optional filters.
+    // In Hasura, passing null to _eq means "equals null", not "skip filter".
+    // We build the where clause as a variable to include only active filters.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const where: Record<string, any> = {
+      organization_id: { _eq: organizationId },
+    };
+
+    if (transaction_type) {
+      where.transaction_type = { _eq: transaction_type };
+    }
+    if (from_date) {
+      where.created_at = { ...where.created_at, _gte: from_date };
+    }
+    if (to_date) {
+      where.created_at = { ...where.created_at, _lte: to_date };
+    }
+
     const { data, error } = await executeGraphQLAsAdmin<GetCreditTransactionsQuery>(
       GetCreditTransactionsDocument,
       {
-        organizationId,
         limit,
         offset,
-        transactionType: transaction_type || null,
-        fromDate: from_date || null,
-        toDate: to_date || null,
+        where,
       }
     );
 
@@ -212,6 +228,11 @@ credits.openapi(getTransactionsRoute, async (c: any) => {
       aiCapabilityName: tx.ai_capability?.name ?? null,
       qualityLevelName: tx.quality_level?.name ?? null,
       createdAt: tx.created_at,
+      // Audit context (ADR-023 Decision 8)
+      userId: tx.user_id ?? null,
+      userEmail: tx.user_email ?? null,
+      formId: tx.form_id ?? null,
+      formName: tx.form_name ?? null,
     }));
 
     return c.json(

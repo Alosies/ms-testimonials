@@ -81,6 +81,12 @@ export async function assembleTestimonial(c: Context) {
       capabilityUniqueName: 'testimonial_assembly' as AICapabilityId,
       qualityLevelUniqueName: selectedQuality as QualityLevelId,
       idempotencyKey: effectiveIdempotencyKey,
+      // Audit context (ADR-023 Decision 8)
+      // Note: This is a public endpoint (form submission), so no authenticated user
+      userId: null,
+      userEmail: null,
+      formId: form_id,
+      formName: formResult.form.name ?? null,
       execute: async (context: AIExecutionContext) => {
         return executeAssembly({
           context,

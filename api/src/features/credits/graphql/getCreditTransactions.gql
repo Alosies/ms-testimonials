@@ -1,19 +1,14 @@
 # Get paginated credit transactions for an organization
 # Includes related ai_capability and quality_level names
+# Includes audit context: user and form snapshots
+# Note: Uses where clause variable for flexible filtering
 query GetCreditTransactions(
-  $organizationId: String!
   $limit: Int!
   $offset: Int!
-  $transactionType: String
-  $fromDate: timestamptz
-  $toDate: timestamptz
+  $where: credit_transactions_bool_exp!
 ) {
   credit_transactions(
-    where: {
-      organization_id: { _eq: $organizationId }
-      transaction_type: { _eq: $transactionType }
-      created_at: { _gte: $fromDate, _lte: $toDate }
-    }
+    where: $where
     order_by: { created_at: desc }
     limit: $limit
     offset: $offset
@@ -31,15 +26,14 @@ query GetCreditTransactions(
     quality_level {
       name
     }
+    # Audit context (ADR-023 Decision 8)
+    user_id
+    user_email
+    form_id
+    form_name
   }
   # Get total count for pagination
-  credit_transactions_aggregate(
-    where: {
-      organization_id: { _eq: $organizationId }
-      transaction_type: { _eq: $transactionType }
-      created_at: { _gte: $fromDate, _lte: $toDate }
-    }
-  ) {
+  credit_transactions_aggregate(where: $where) {
     aggregate {
       count
     }

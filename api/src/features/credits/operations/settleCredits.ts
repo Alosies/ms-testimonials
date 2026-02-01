@@ -71,6 +71,7 @@ export async function settleCredits(
   const db = getDb();
 
   // Step 1: Look up the reservation and verify status is 'pending'
+  // Include audit context fields to copy to transaction (ADR-023 Decision 8)
   const reservationResult = await db.execute<SettlementReservationRow>(sql`
     SELECT
       id,
@@ -79,7 +80,11 @@ export async function settleCredits(
       quality_level_id,
       reserved_credits::text,
       status,
-      idempotency_key
+      idempotency_key,
+      user_id,
+      user_email,
+      form_id,
+      form_name
     FROM credit_reservations
     WHERE id = ${reservationId}
   `);
@@ -101,6 +106,12 @@ export async function settleCredits(
   const aiCapabilityId = reservation.ai_capability_id;
   const qualityLevelId = reservation.quality_level_id;
   const idempotencyKey = reservation.idempotency_key;
+
+  // Audit context (ADR-023 Decision 8) - copy from reservation to transaction
+  const userId = reservation.user_id;
+  const userEmail = reservation.user_email;
+  const formId = reservation.form_id;
+  const formName = reservation.form_name;
 
   // Step 2: Get current credit balance to calculate deduction split
   const balanceResult = await db.execute<SettlementBalanceRow>(sql`
@@ -173,7 +184,11 @@ export async function settleCredits(
           balance_after,
           description,
           idempotency_key,
-          provider_metadata
+          provider_metadata,
+          user_id,
+          user_email,
+          form_id,
+          form_name
         )
         VALUES (
           ${organizationId},
@@ -185,7 +200,11 @@ export async function settleCredits(
           ${balanceAfter},
           ${description || 'AI operation consumption'},
           ${idempotencyKey},
-          ${JSON.stringify(providerMetadata)}::jsonb
+          ${JSON.stringify(providerMetadata)}::jsonb,
+          ${userId},
+          ${userEmail},
+          ${formId},
+          ${formName}
         )
         RETURNING id
       `);
@@ -200,7 +219,11 @@ export async function settleCredits(
           estimated_credits,
           balance_after,
           description,
-          idempotency_key
+          idempotency_key,
+          user_id,
+          user_email,
+          form_id,
+          form_name
         )
         VALUES (
           ${organizationId},
@@ -211,7 +234,11 @@ export async function settleCredits(
           ${-reservedCredits},
           ${balanceAfter},
           ${description || 'AI operation consumption'},
-          ${idempotencyKey}
+          ${idempotencyKey},
+          ${userId},
+          ${userEmail},
+          ${formId},
+          ${formName}
         )
         RETURNING id
       `);

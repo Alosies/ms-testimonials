@@ -9,6 +9,7 @@
 import { definePage } from 'unplugin-vue-router/runtime';
 import AuthLayout from '@/layouts/AuthLayout.vue';
 import { CreditHistoryTable } from '@/features/credits';
+import SettingsTabNav from '@/shared/ui/SettingsTabNav.vue';
 
 definePage({
   meta: {
@@ -22,16 +23,20 @@ definePage({
     <div class="min-h-screen bg-gray-50">
       <!-- Header -->
       <div class="bg-white border-b border-gray-200">
-        <div class="max-w-4xl mx-auto px-6 py-6">
-          <h1 class="text-2xl font-semibold text-gray-900">Credit History</h1>
+        <div class="max-w-7xl mx-auto px-6 py-6">
+          <h1 class="text-2xl font-semibold text-gray-900">Settings</h1>
           <p class="mt-1 text-sm text-gray-600">
-            View your AI credit usage and transaction history.
+            Manage your organization settings and preferences.
           </p>
         </div>
       </div>
 
       <!-- Content -->
-      <div class="max-w-4xl mx-auto px-6 py-8">
+      <div class="max-w-7xl mx-auto px-6 py-8">
+        <!-- Settings Tab Navigation -->
+        <SettingsTabNav class="mb-8" />
+
+        <!-- Credit History Content -->
         <CreditHistoryTable />
       </div>
     </div>

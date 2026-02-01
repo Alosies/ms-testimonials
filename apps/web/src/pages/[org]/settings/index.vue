@@ -9,6 +9,7 @@ import AuthLayout from '@/layouts/AuthLayout.vue';
 import { OrganizationSettingsForm, useOrganizationStore } from '@/entities/organization';
 import type { UserDefaultOrganization } from '@/entities/organization';
 import { useRouting } from '@/shared/routing';
+import SettingsTabNav from '@/shared/ui/SettingsTabNav.vue';
 
 definePage({
   meta: {
@@ -36,7 +37,7 @@ function handleSaved(updatedOrg: UserDefaultOrganization) {
     <div class="min-h-screen bg-gray-50">
       <!-- Header -->
       <div class="bg-white border-b border-gray-200">
-        <div class="max-w-4xl mx-auto px-6 py-6">
+        <div class="max-w-7xl mx-auto px-6 py-6">
           <h1 class="text-2xl font-semibold text-gray-900">Settings</h1>
           <p class="mt-1 text-sm text-gray-600">
             Manage your organization settings and preferences.
@@ -45,7 +46,10 @@ function handleSaved(updatedOrg: UserDefaultOrganization) {
       </div>
 
       <!-- Content -->
-      <div class="max-w-4xl mx-auto px-6 py-8">
+      <div class="max-w-7xl mx-auto px-6 py-8">
+        <!-- Settings Tab Navigation (Linear/Notion style) -->
+        <SettingsTabNav class="mb-8" />
+
         <!-- Organization Settings Form -->
         <OrganizationSettingsForm
           v-if="currentOrganization"

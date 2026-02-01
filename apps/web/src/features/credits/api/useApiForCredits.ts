@@ -38,7 +38,7 @@ export function useApiForCredits() {
       queryParams.limit = String(params.limit);
     }
     if (params.transactionType) {
-      queryParams.transactionType = params.transactionType;
+      queryParams.transaction_type = params.transactionType;
     }
 
     return api.get<CreditTransactionsResponse>('/credits/transactions', queryParams);

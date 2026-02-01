@@ -30,6 +30,17 @@ export const TRANSACTION_TYPE_LABELS: Record<TransactionType, string> = {
 };
 
 /**
+ * Actor display info extracted from a transaction
+ * ADR-023 Decision 8: Audit Log Snapshot Pattern
+ */
+export interface ActorInfo {
+  /** Form name the operation relates to */
+  form: string | null;
+  /** User email who triggered the operation */
+  user: string | null;
+}
+
+/**
  * A single credit transaction record
  */
 export interface CreditTransaction {
@@ -41,6 +52,11 @@ export interface CreditTransaction {
   aiCapabilityName: string | null;
   qualityLevelName: string | null;
   createdAt: string;
+  // Audit context (ADR-023 Decision 8)
+  userId: string | null;
+  userEmail: string | null;
+  formId: string | null;
+  formName: string | null;
 }
 
 /**

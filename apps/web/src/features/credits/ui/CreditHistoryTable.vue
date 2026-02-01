@@ -1,10 +1,17 @@
 <script setup lang="ts">
+/**
+ * Credit History Table
+ *
+ * Displays paginated credit transaction history with filtering.
+ * Uses CreditHistoryRow for individual row rendering.
+ */
 import { onMounted } from 'vue';
 import { Icon } from '@testimonials/icons';
 import { useCreditHistory } from '../composables';
-import { TRANSACTION_TYPE_LABELS, type TransactionType } from '../models';
+import { type TransactionType } from '../models';
 import CreditHistoryTableSkeleton from './CreditHistoryTableSkeleton.vue';
 import CreditHistoryEmptyState from './CreditHistoryEmptyState.vue';
+import CreditHistoryRow from './CreditHistoryRow.vue';
 
 const {
   transactions,
@@ -32,59 +39,6 @@ const filterOptions: { value: TransactionType | ''; label: string }[] = [
   { value: 'plan_change_adjustment', label: 'Plan Change' },
   { value: 'expiration', label: 'Expired' },
 ];
-
-/**
- * Format date for display
- */
-function formatDate(dateString: string): string {
-  const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-  });
-}
-
-/**
- * Get label for transaction type
- */
-function getTypeLabel(type: TransactionType): string {
-  return TRANSACTION_TYPE_LABELS[type] || type;
-}
-
-/**
- * Get badge style for transaction type
- */
-function getTypeBadgeClass(type: TransactionType): string {
-  switch (type) {
-    case 'ai_consumption':
-      return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400';
-    case 'plan_allocation':
-      return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400';
-    case 'topup_purchase':
-      return 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400';
-    case 'promo_bonus':
-      return 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400';
-    case 'admin_adjustment':
-      return 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400';
-    case 'plan_change_adjustment':
-      return 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400';
-    case 'expiration':
-      return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
-    default:
-      return 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400';
-  }
-}
-
-/**
- * Format credits amount with sign
- */
-function formatCredits(amount: number): string {
-  const sign = amount >= 0 ? '+' : '';
-  return `${sign}${amount.toLocaleString()}`;
-}
 
 /**
  * Handle filter change
@@ -122,6 +76,20 @@ onMounted(() => {
           </option>
         </select>
       </div>
+
+      <!-- Refresh Button -->
+      <button
+        class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground border border-border rounded-lg bg-background hover:bg-muted transition-colors disabled:opacity-50"
+        :disabled="loading"
+        @click="fetchTransactions()"
+      >
+        <Icon
+          icon="heroicons:arrow-path"
+          class="h-4 w-4"
+          :class="{ 'animate-spin': loading }"
+        />
+        Refresh
+      </button>
     </div>
 
     <!-- Loading State -->
@@ -151,81 +119,48 @@ onMounted(() => {
       class="rounded-xl border border-border bg-card overflow-hidden"
       data-testid="credit-history-table"
     >
-      <table class="w-full">
+      <table class="w-full table-fixed">
+        <!-- Column widths (percentage-based for balanced distribution) -->
+        <colgroup>
+          <col style="width: 15%" /><!-- Date -->
+          <col style="width: 12%" /><!-- Type -->
+          <col class="hidden lg:table-column" style="width: 25%" /><!-- Actor -->
+          <col class="hidden md:table-column" style="width: 20%" /><!-- Capability -->
+          <col style="width: 10%" /><!-- Credits -->
+          <col class="hidden sm:table-column" style="width: 10%" /><!-- Balance -->
+        </colgroup>
+
         <!-- Table Header -->
         <thead>
           <tr class="border-b border-border bg-muted/30">
-            <th class="text-left py-3 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            <th class="text-left py-2.5 px-4 text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
               Date
             </th>
-            <th class="text-left py-3 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            <th class="text-left py-2.5 px-4 text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
               Type
             </th>
-            <th class="text-left py-3 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider hidden md:table-cell">
+            <th class="text-left py-2.5 px-4 text-[11px] font-medium text-muted-foreground uppercase tracking-wider hidden lg:table-cell">
+              Actor
+            </th>
+            <th class="text-left py-2.5 px-4 text-[11px] font-medium text-muted-foreground uppercase tracking-wider hidden md:table-cell">
               Capability
             </th>
-            <th class="text-right py-3 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            <th class="text-right py-2.5 px-4 text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
               Credits
             </th>
-            <th class="text-right py-3 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider hidden sm:table-cell">
-              Balance After
+            <th class="text-right py-2.5 px-4 text-[11px] font-medium text-muted-foreground uppercase tracking-wider hidden sm:table-cell">
+              Balance
             </th>
           </tr>
         </thead>
 
         <!-- Table Body -->
         <tbody class="divide-y divide-border/50">
-          <tr
+          <CreditHistoryRow
             v-for="transaction in transactions"
             :key="transaction.id"
-            class="group hover:bg-muted/30 transition-colors"
-            data-testid="transaction-row"
-          >
-            <!-- Date -->
-            <td class="py-3 px-4">
-              <span class="text-sm text-foreground">
-                {{ formatDate(transaction.createdAt) }}
-              </span>
-            </td>
-
-            <!-- Type -->
-            <td class="py-3 px-4">
-              <span
-                class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
-                :class="getTypeBadgeClass(transaction.transactionType)"
-              >
-                {{ getTypeLabel(transaction.transactionType) }}
-              </span>
-            </td>
-
-            <!-- Capability -->
-            <td class="py-3 px-4 hidden md:table-cell">
-              <span v-if="transaction.aiCapabilityName" class="text-sm text-muted-foreground">
-                {{ transaction.aiCapabilityName }}
-                <span v-if="transaction.qualityLevelName" class="text-xs">
-                  ({{ transaction.qualityLevelName }})
-                </span>
-              </span>
-              <span v-else class="text-sm text-muted-foreground/50">-</span>
-            </td>
-
-            <!-- Credits -->
-            <td class="py-3 px-4 text-right">
-              <span
-                class="text-sm font-medium font-mono"
-                :class="transaction.creditsAmount >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'"
-              >
-                {{ formatCredits(transaction.creditsAmount) }}
-              </span>
-            </td>
-
-            <!-- Balance After -->
-            <td class="py-3 px-4 text-right hidden sm:table-cell">
-              <span class="text-sm text-muted-foreground font-mono">
-                {{ transaction.balanceAfter.toLocaleString() }}
-              </span>
-            </td>
-          </tr>
+            :transaction="transaction"
+          />
         </tbody>
       </table>
 

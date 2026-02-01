@@ -220,6 +220,12 @@ export async function suggestQuestions(c: Context) {
       capabilityUniqueName: 'question_generation',
       qualityLevelUniqueName: selectedQualityLevel,
       idempotencyKey: effectiveIdempotencyKey,
+      // Audit context (ADR-023 Decision 8)
+      // Note: formId/formName are null because form doesn't exist yet during question generation
+      userId: userId ?? null,
+      userEmail: auth?.email ?? null,
+      formId: null,
+      formName: null,
       execute: async (context: AIExecutionContext) => {
         // Map quality level to legacy quality for model selection
         // The context.defaultModelId comes from the database, but we still need

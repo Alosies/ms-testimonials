@@ -66,6 +66,11 @@ export async function reserveCredits(
     qualityLevelId,
     idempotencyKey,
     expiresInSeconds = 300, // 5 minutes default
+    // Audit context (ADR-023 Decision 8)
+    userId = null,
+    userEmail = null,
+    formId = null,
+    formName = null,
   } = params;
 
   const db = getDb();
@@ -142,7 +147,7 @@ export async function reserveCredits(
       );
     }
 
-    // Insert the reservation record
+    // Insert the reservation record with audit context (ADR-023 Decision 8)
     const insertResult = await tx.execute<NewReservationRow>(sql`
       INSERT INTO credit_reservations (
         organization_id,
@@ -151,7 +156,11 @@ export async function reserveCredits(
         reserved_credits,
         status,
         idempotency_key,
-        expires_at
+        expires_at,
+        user_id,
+        user_email,
+        form_id,
+        form_name
       )
       VALUES (
         ${organizationId},
@@ -160,7 +169,11 @@ export async function reserveCredits(
         ${estimatedCredits},
         'pending',
         ${idempotencyKey},
-        ${expiresAt.toISOString()}
+        ${expiresAt.toISOString()},
+        ${userId},
+        ${userEmail},
+        ${formId},
+        ${formName}
       )
       RETURNING id, reserved_credits::text, expires_at::text, status
     `);

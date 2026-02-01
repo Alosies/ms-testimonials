@@ -85,6 +85,23 @@ export const CreditTransactionSchema = z.object({
     description: 'When the transaction occurred (ISO 8601)',
     example: '2025-01-15T10:30:00Z',
   }),
+  // Audit context (ADR-023 Decision 8)
+  userId: z.string().nullable().openapi({
+    description: 'FK to user who triggered this transaction (null for anonymous/system)',
+    example: 'usr_abc123',
+  }),
+  userEmail: z.string().nullable().openapi({
+    description: 'Snapshot of user email at transaction time',
+    example: 'john@company.com',
+  }),
+  formId: z.string().nullable().openapi({
+    description: 'FK to form this transaction relates to (null for non-form operations)',
+    example: 'frm_xyz789',
+  }),
+  formName: z.string().nullable().openapi({
+    description: 'Snapshot of form name at transaction time',
+    example: 'Product Feedback Form',
+  }),
 });
 
 export type CreditTransaction = z.infer<typeof CreditTransactionSchema>;

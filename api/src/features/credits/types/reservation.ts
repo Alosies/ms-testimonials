@@ -29,6 +29,20 @@ export interface ReserveCreditParams {
 
   /** Seconds until reservation expires (default: 300 = 5 minutes) */
   expiresInSeconds?: number;
+
+  // Audit context (ADR-023 Decision 8)
+
+  /** User who initiated the operation (null for anonymous/system) */
+  userId?: string | null;
+
+  /** Email of user at reservation time (snapshot) */
+  userEmail?: string | null;
+
+  /** Form this operation relates to (null for non-form operations) */
+  formId?: string | null;
+
+  /** Name of form at reservation time (snapshot) */
+  formName?: string | null;
 }
 
 /**

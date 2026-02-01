@@ -44,6 +44,20 @@ export interface ExecuteWithAIAccessParams<T> {
 
   /** The AI operation to execute with access context */
   execute: (context: AIExecutionContext) => Promise<AIOperationResult<T>>;
+
+  // Audit context (ADR-023 Decision 8)
+
+  /** User who initiated the operation (null for anonymous/system) */
+  userId?: string | null;
+
+  /** Email of user at operation time (snapshot) */
+  userEmail?: string | null;
+
+  /** Form this operation relates to (null for non-form operations) */
+  formId?: string | null;
+
+  /** Name of form at operation time (snapshot) */
+  formName?: string | null;
 }
 
 /**
@@ -190,6 +204,11 @@ export async function executeWithAIAccess<T>(
     qualityLevelUniqueName,
     idempotencyKey,
     execute,
+    // Audit context (ADR-023 Decision 8)
+    userId,
+    userEmail,
+    formId,
+    formName,
   } = params;
 
   // Step 1: Check AI access (capability + credits)
@@ -206,7 +225,7 @@ export async function executeWithAIAccess<T>(
 
   const { selectedQualityLevel, capability, credits } = accessResult;
 
-  // Step 3: Reserve credits for the operation
+  // Step 3: Reserve credits for the operation (with audit context - ADR-023 Decision 8)
   let reservationId: string;
   try {
     const reservation = await reserveCredits({
@@ -215,6 +234,11 @@ export async function executeWithAIAccess<T>(
       aiCapabilityId: capability.capabilityId,
       qualityLevelId: selectedQualityLevel.id,
       idempotencyKey,
+      // Audit context - captured at reserve time, copied to transaction on settle
+      userId,
+      userEmail,
+      formId,
+      formName,
     });
     reservationId = reservation.id;
   } catch (error) {
