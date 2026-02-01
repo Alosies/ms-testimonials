@@ -32,6 +32,7 @@ declare module 'vue-router/auto-routes' {
     '/[org]/forms/creating': RouteRecordInfo<'/[org]/forms/creating', '/:org/forms/creating', { org: ParamValue<true> }, { org: ParamValue<false> }>,
     '/[org]/settings/': RouteRecordInfo<'/[org]/settings/', '/:org/settings', { org: ParamValue<true> }, { org: ParamValue<false> }>,
     '/[org]/settings/billing': RouteRecordInfo<'/[org]/settings/billing', '/:org/settings/billing', { org: ParamValue<true> }, { org: ParamValue<false> }>,
+    '/[org]/settings/credits/': RouteRecordInfo<'/[org]/settings/credits/', '/:org/settings/credits', { org: ParamValue<true> }, { org: ParamValue<false> }>,
     '/[org]/settings/team': RouteRecordInfo<'/[org]/settings/team', '/:org/settings/team', { org: ParamValue<true> }, { org: ParamValue<false> }>,
     '/[org]/testimonials/': RouteRecordInfo<'/[org]/testimonials/', '/:org/testimonials', { org: ParamValue<true> }, { org: ParamValue<false> }>,
     '/[org]/testimonials/[urlSlug]': RouteRecordInfo<'/[org]/testimonials/[urlSlug]', '/:org/testimonials/:urlSlug', { org: ParamValue<true>, urlSlug: ParamValue<true> }, { org: ParamValue<false>, urlSlug: ParamValue<false> }>,

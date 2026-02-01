@@ -4,6 +4,25 @@
 
 import { z } from '@hono/zod-openapi';
 
+// =============================================================================
+// Quality Level Schema (defined early for use in request schemas)
+// =============================================================================
+
+/**
+ * Quality level identifier enum
+ * Defined early because it's used in SuggestQuestionsRequestSchema
+ */
+export const QualityLevelIdSchema = z.enum(['fast', 'enhanced', 'premium']).openapi({
+  description: 'Quality level for AI operations',
+  example: 'fast',
+});
+
+export type QualityLevelIdType = z.infer<typeof QualityLevelIdSchema>;
+
+// =============================================================================
+// Question & Form Schemas
+// =============================================================================
+
 /**
  * Question option for choice_single and choice_multiple questions
  */
@@ -112,6 +131,14 @@ export const SuggestQuestionsRequestSchema = z.object({
   focus_areas: z.string().max(500).optional().openapi({
     example: 'ease of onboarding, time saved on reporting, customer support quality',
     description: 'Optional guidance for question generation - specific aspects to focus on',
+  }),
+  qualityLevel: QualityLevelIdSchema.optional().openapi({
+    example: 'fast',
+    description: 'Quality level for AI generation. Defaults to "fast".',
+  }),
+  idempotencyKey: z.string().max(255).optional().openapi({
+    example: 'suggest-frm_abc123-1706886400000',
+    description: 'Client-provided key to prevent duplicate operations. If not provided, one will be generated.',
   }),
 }).openapi('SuggestQuestionsRequest');
 
@@ -245,6 +272,14 @@ export const SuggestQuestionsResponseSchema = z.object({
   form_structure: FormStructureSchema,
   questions: z.array(AIQuestionSchema),
   step_content: StepContentSchema,
+  credits_used: z.number().openapi({
+    example: 1.5,
+    description: 'Credits consumed by this operation',
+  }),
+  balance_remaining: z.number().openapi({
+    example: 48.5,
+    description: 'Credit balance remaining after this operation',
+  }),
 }).openapi('SuggestQuestionsResponse');
 
 /**
@@ -350,7 +385,7 @@ export const TestimonialAnswerSchema = z.object({
 export const AssembleTestimonialRequestSchema = z.object({
   form_id: z.string().min(1).openapi({
     example: 'frm_abc123xyz',
-    description: 'ID of the form (used to fetch product_name)',
+    description: 'ID of the form (used to fetch product_name and organization_id)',
   }),
   answers: z.array(TestimonialAnswerSchema).min(1).openapi({
     description: 'Array of question-answer pairs from the customer',
@@ -361,7 +396,15 @@ export const AssembleTestimonialRequestSchema = z.object({
   }),
   quality: z.enum(['fast', 'enhanced', 'premium']).optional().openapi({
     example: 'enhanced',
-    description: 'Quality tier affecting model selection and processing',
+    description: 'Quality tier affecting model selection and processing (deprecated, use qualityLevel)',
+  }),
+  qualityLevel: z.enum(['fast', 'enhanced', 'premium']).optional().openapi({
+    example: 'fast',
+    description: 'Quality level for the AI operation (fast, enhanced, premium). Defaults to fast.',
+  }),
+  idempotencyKey: z.string().max(128).optional().openapi({
+    example: 'assemble-abc123-1706745600000',
+    description: 'Client-provided idempotency key to prevent duplicate operations',
   }),
   modification: TestimonialModificationSchema.optional().openapi({
     description: 'Optional modification to apply to a previous testimonial',
@@ -381,6 +424,14 @@ export const AssembleTestimonialResponseSchema = z.object({
   }),
   metadata: TestimonialMetadataSchema.openapi({
     description: 'Metadata about the generated testimonial',
+  }),
+  credits_used: z.number().optional().openapi({
+    example: 1.5,
+    description: 'Number of credits consumed by this operation',
+  }),
+  balance_remaining: z.number().optional().openapi({
+    example: 73.5,
+    description: 'Remaining credit balance after this operation',
   }),
 }).openapi('AssembleTestimonialResponse');
 
@@ -404,3 +455,188 @@ export type TestimonialMetadata = z.infer<typeof TestimonialMetadataSchema>;
 export type TestimonialModification = z.infer<typeof TestimonialModificationSchema>;
 export type AssembleTestimonialRequest = z.infer<typeof AssembleTestimonialRequestSchema>;
 export type AssembleTestimonialResponse = z.infer<typeof AssembleTestimonialResponseSchema>;
+
+// =============================================================================
+// AI Access Check Schemas (ADR-023)
+// =============================================================================
+
+// Note: QualityLevelIdSchema is defined at the top of the file since it's used
+// in request schemas like SuggestQuestionsRequestSchema.
+
+/**
+ * AI capability identifier enum
+ */
+export const AICapabilityIdSchema = z.enum([
+  'question_generation',
+  'testimonial_assembly',
+  'testimonial_polish',
+]).openapi({
+  description: 'AI capability identifier',
+  example: 'question_generation',
+});
+
+export type AICapabilityIdType = z.infer<typeof AICapabilityIdSchema>;
+
+/**
+ * Request schema for POST /ai/access-check
+ */
+export const AccessCheckRequestSchema = z.object({
+  capabilityUniqueName: AICapabilityIdSchema.openapi({
+    example: 'question_generation',
+    description: 'The unique name of the AI capability to check access for',
+  }),
+  qualityLevelUniqueName: QualityLevelIdSchema.optional().openapi({
+    example: 'fast',
+    description: 'Optional specific quality level to check. If not provided, uses the first available.',
+  }),
+}).openapi('AccessCheckRequest');
+
+export type AccessCheckRequest = z.infer<typeof AccessCheckRequestSchema>;
+
+/**
+ * Allowed model in a quality level
+ */
+export const AllowedModelSchema = z.object({
+  id: z.string().openapi({
+    example: 'mdl_abc123',
+    description: 'Model ID',
+  }),
+  name: z.string().openapi({
+    example: 'GPT-4o Mini',
+    description: 'Model display name',
+  }),
+  isDefault: z.boolean().openapi({
+    example: true,
+    description: 'Whether this is the default model for this quality level',
+  }),
+}).openapi('AllowedModel');
+
+export type AllowedModel = z.infer<typeof AllowedModelSchema>;
+
+/**
+ * Selected quality level info
+ */
+export const SelectedQualityLevelSchema = z.object({
+  id: z.string().openapi({
+    example: 'ql_fast123',
+    description: 'Quality level ID',
+  }),
+  name: z.string().openapi({
+    example: 'Fast',
+    description: 'Quality level display name',
+  }),
+  creditCost: z.number().openapi({
+    example: 1.0,
+    description: 'Credit cost per operation at this quality level',
+  }),
+  allowedModels: z.array(AllowedModelSchema).openapi({
+    description: 'List of models available at this quality level',
+  }),
+}).openapi('SelectedQualityLevel');
+
+export type SelectedQualityLevel = z.infer<typeof SelectedQualityLevelSchema>;
+
+/**
+ * Available quality level summary (for listing all options)
+ */
+export const AvailableQualityLevelSchema = z.object({
+  id: z.string().openapi({
+    example: 'ql_fast123',
+    description: 'Quality level ID',
+  }),
+  name: z.string().openapi({
+    example: 'Fast',
+    description: 'Quality level display name',
+  }),
+  creditCost: z.number().openapi({
+    example: 1.0,
+    description: 'Credit cost per operation at this quality level',
+  }),
+}).openapi('AvailableQualityLevel');
+
+export type AvailableQualityLevel = z.infer<typeof AvailableQualityLevelSchema>;
+
+/**
+ * Capability info in access check response
+ */
+export const CapabilityInfoSchema = z.object({
+  id: z.string().openapi({
+    example: 'cap_qgen123',
+    description: 'Capability ID',
+  }),
+  name: z.string().openapi({
+    example: 'Smart Question Generation',
+    description: 'Capability display name',
+  }),
+  hasAccess: z.boolean().openapi({
+    example: true,
+    description: 'Whether the organization has access to this capability',
+  }),
+}).openapi('CapabilityInfo');
+
+export type CapabilityInfo = z.infer<typeof CapabilityInfoSchema>;
+
+/**
+ * Credit info in access check response
+ */
+export const CreditInfoSchema = z.object({
+  available: z.number().openapi({
+    example: 75.5,
+    description: 'Credits currently available',
+  }),
+  required: z.number().openapi({
+    example: 1.0,
+    description: 'Credits required for this operation',
+  }),
+  hasEnough: z.boolean().openapi({
+    example: true,
+    description: 'Whether there are enough credits to proceed',
+  }),
+}).openapi('CreditInfo');
+
+export type CreditInfo = z.infer<typeof CreditInfoSchema>;
+
+/**
+ * Response schema for POST /ai/access-check
+ */
+export const AccessCheckResponseSchema = z.object({
+  canProceed: z.boolean().openapi({
+    example: true,
+    description: 'Whether the AI operation can proceed',
+  }),
+  capability: CapabilityInfoSchema.openapi({
+    description: 'Information about the requested capability',
+  }),
+  credits: CreditInfoSchema.openapi({
+    description: 'Credit balance and requirements',
+  }),
+  selectedQualityLevel: SelectedQualityLevelSchema.nullable().openapi({
+    description: 'The quality level that would be used for the operation. Null if no access.',
+  }),
+  availableQualityLevels: z.array(AvailableQualityLevelSchema).openapi({
+    description: 'All quality levels available to the organization for this capability',
+  }),
+  upgradeHint: z.string().optional().openapi({
+    example: 'Upgrade to Pro plan to access premium quality level',
+    description: 'Hint about upgrading plan for more features',
+  }),
+  topupHint: z.string().optional().openapi({
+    example: 'You need 5.0 more credits to proceed. Purchase a credit pack to continue.',
+    description: 'Hint about purchasing more credits',
+  }),
+}).openapi('AccessCheckResponse');
+
+export type AccessCheckResponse = z.infer<typeof AccessCheckResponseSchema>;
+
+/**
+ * Error response for access check (403 - no organization context)
+ */
+export const AccessCheckForbiddenResponseSchema = z.object({
+  success: z.literal(false),
+  error: z.string().openapi({
+    example: 'Organization context required',
+    description: 'Error message',
+  }),
+}).openapi('AccessCheckForbiddenResponse');
+
+export type AccessCheckForbiddenResponse = z.infer<typeof AccessCheckForbiddenResponseSchema>;

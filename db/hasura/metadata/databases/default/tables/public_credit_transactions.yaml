@@ -1,0 +1,60 @@
+table:
+  name: credit_transactions
+  schema: public
+object_relationships:
+  - name: ai_capability
+    using:
+      foreign_key_constraint_on: ai_capability_id
+  - name: organization
+    using:
+      foreign_key_constraint_on: organization_id
+  - name: quality_level
+    using:
+      foreign_key_constraint_on: quality_level_id
+select_permissions:
+  - role: member
+    permission:
+      columns:
+        - id
+        - organization_id
+        - ai_capability_id
+        - quality_level_id
+        - transaction_type
+        - credits_amount
+        - estimated_credits
+        - estimation_variance
+        - balance_after
+        - description
+        - created_at
+      filter:
+        organization_id:
+          _eq: X-Hasura-Organization-Id
+  - role: org_admin
+    permission:
+      columns: '*'
+      filter:
+        organization_id:
+          _eq: X-Hasura-Organization-Id
+      allow_aggregations: true
+  - role: owner
+    permission:
+      columns: '*'
+      filter:
+        organization_id:
+          _eq: X-Hasura-Organization-Id
+      allow_aggregations: true
+  - role: viewer
+    permission:
+      columns:
+        - id
+        - organization_id
+        - ai_capability_id
+        - quality_level_id
+        - transaction_type
+        - credits_amount
+        - balance_after
+        - description
+        - created_at
+      filter:
+        organization_id:
+          _eq: X-Hasura-Organization-Id

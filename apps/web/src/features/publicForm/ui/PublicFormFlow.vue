@@ -123,6 +123,11 @@ const testimonialSuggestions = ref<TestimonialSuggestion[]>([]);
 const testimonialMetadata = ref<TestimonialMetadata | null>(null);
 const regenerationsRemaining = ref(3);
 
+// AI credit error state (ADR-023)
+// Note: Credits are consumed from the form owner's account, not the customer's.
+// This error state handles when the form owner has run out of credits.
+const aiCreditsError = ref<string | null>(null);
+
 const stepCardComponents: Record<StepType, Component> = {
   welcome: WelcomeStepCard,
   question: QuestionStepCard,
@@ -242,6 +247,9 @@ async function handleGoogleAuth() {
 
 /**
  * Generate testimonial using AI
+ *
+ * Credits are consumed from the form owner's account (ADR-023).
+ * If the form owner has insufficient credits, we gracefully fall back to manual mode.
  */
 async function generateTestimonial(modification?: { suggestion_id: string }) {
   if (!props.formId) {
@@ -250,6 +258,7 @@ async function generateTestimonial(modification?: { suggestion_id: string }) {
   }
 
   isGeneratingTestimonial.value = true;
+  aiCreditsError.value = null;
 
   try {
     const answers = buildAnswersForAI();
@@ -273,6 +282,20 @@ async function generateTestimonial(modification?: { suggestion_id: string }) {
     testimonialMetadata.value = response.metadata;
   } catch (error) {
     console.error('Failed to generate testimonial:', error);
+
+    // Check if the error is credit-related (ADR-023)
+    const errorMessage = error instanceof Error ? error.message : '';
+    const isCreditError =
+      errorMessage.includes('insufficient') ||
+      errorMessage.includes('credits') ||
+      errorMessage.includes('access denied');
+
+    if (isCreditError) {
+      // Show a user-friendly message and fall back to manual
+      aiCreditsError.value =
+        'AI testimonial generation is temporarily unavailable. Please write your testimonial manually.';
+    }
+
     // Fall back to manual path on error
     selectedPath.value = 'manual';
   } finally {
@@ -399,13 +422,22 @@ function handleBack() {
             />
 
             <!-- Manual Path -->
-            <TestimonialWriteStepCard
-              v-else-if="testimonialWriteState === 'manual'"
-              v-model="testimonialResponse"
-              :step="flow.currentStep.value"
-              mode="preview"
-              :previous-answers="previousAnswers"
-            />
+            <div v-else-if="testimonialWriteState === 'manual'">
+              <!-- Credit error notice (shown when AI was unavailable) -->
+              <div
+                v-if="aiCreditsError"
+                class="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-700"
+                data-testid="ai-credits-error-notice"
+              >
+                <p>{{ aiCreditsError }}</p>
+              </div>
+              <TestimonialWriteStepCard
+                v-model="testimonialResponse"
+                :step="flow.currentStep.value"
+                mode="preview"
+                :previous-answers="previousAnswers"
+              />
+            </div>
 
             <!-- Generating State -->
             <div

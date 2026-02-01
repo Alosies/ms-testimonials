@@ -1,6 +1,10 @@
 import { ref, computed, readonly } from 'vue';
 import { useApiForAI, getErrorMessage } from '@/shared/api';
-import type { AIQuestion, AIContext, StepContent } from '@/shared/api';
+import {
+  useAIOperationWithCredits,
+  type AIQualityLevel,
+} from '@/features/ai';
+import type { AIQuestion, AIContext, StepContent, SuggestQuestionsResponse } from '@/shared/api';
 
 /**
  * Extended AI context that includes step content for system-generated steps
@@ -45,6 +49,7 @@ export interface WizardState {
  */
 export function useFormWizard() {
   const aiApi = useApiForAI();
+  const aiOperation = useAIOperationWithCredits();
 
   // ============================================================================
   // State
@@ -68,6 +73,12 @@ export function useFormWizard() {
   const aiContext = ref<WizardAIContext | null>(null);
   const isGenerating = ref(false);
   const generationError = ref<string | null>(null);
+
+  // Credit state (ADR-023)
+  const selectedQualityLevel = ref<AIQualityLevel>('fast');
+  const lastCreditsUsed = ref<number | undefined>(undefined);
+  const lastBalanceRemaining = ref<number | undefined>(undefined);
+  const accessDenied = ref(false);
 
   // ============================================================================
   // Validation
@@ -143,22 +154,61 @@ export function useFormWizard() {
   }
 
   /**
-   * Generate questions using AI
+   * Pre-check AI access before generation
+   * Returns the access check result for showing credit info
+   */
+  async function preCheckAccess() {
+    return await aiOperation.preCheckAccess(
+      'question_generation',
+      selectedQualityLevel.value
+    );
+  }
+
+  /**
+   * Generate questions using AI with credit handling (ADR-023)
    */
   async function generateQuestions(): Promise<boolean> {
     if (isGenerating.value) return false;
 
     isGenerating.value = true;
     generationError.value = null;
+    accessDenied.value = false;
+    lastCreditsUsed.value = undefined;
+    lastBalanceRemaining.value = undefined;
     currentScreen.value = 4;
 
     try {
-      const result = await aiApi.suggestQuestions({
-        product_name: conceptName.value,
-        product_description: description.value,
-        focus_areas: buildFocusAreasString() || undefined,
+      // Execute with credit handling
+      const operationResult = await aiOperation.executeWithCredits<SuggestQuestionsResponse>({
+        capability: 'question_generation',
+        qualityLevel: selectedQualityLevel.value,
+        execute: async () => {
+          return await aiApi.suggestQuestions({
+            product_name: conceptName.value,
+            product_description: description.value,
+            focus_areas: buildFocusAreasString() || undefined,
+          });
+        },
       });
 
+      // Handle access denied
+      if (operationResult.accessDenied) {
+        accessDenied.value = true;
+        generationError.value = operationResult.error || 'Access denied';
+        return false;
+      }
+
+      // Handle other errors
+      if (!operationResult.success || !operationResult.data) {
+        generationError.value = operationResult.error || 'Failed to generate questions';
+        return false;
+      }
+
+      // Track credits used
+      lastCreditsUsed.value = operationResult.creditsUsed;
+      lastBalanceRemaining.value = operationResult.balanceRemaining;
+
+      const result = operationResult.data;
       generatedQuestions.value = result.questions;
       aiContext.value = {
         ...result.inferred_context,
@@ -216,6 +266,12 @@ export function useFormWizard() {
     aiContext.value = null;
     isGenerating.value = false;
     generationError.value = null;
+    // Reset credit state
+    selectedQualityLevel.value = 'fast';
+    lastCreditsUsed.value = undefined;
+    lastBalanceRemaining.value = undefined;
+    accessDenied.value = false;
+    aiOperation.reset();
   }
 
   // ============================================================================
@@ -235,6 +291,16 @@ export function useFormWizard() {
     isGenerating: readonly(isGenerating),
     generationError: readonly(generationError),
 
+    // Credit state (ADR-023)
+    selectedQualityLevel,
+    lastCreditsUsed: readonly(lastCreditsUsed),
+    lastBalanceRemaining: readonly(lastBalanceRemaining),
+    accessDenied: readonly(accessDenied),
+    availableQualityLevels: aiOperation.availableQualityLevels,
+    estimatedCredits: aiOperation.estimatedCredits,
+    upgradeRequired: aiOperation.upgradeRequired,
+    topupRequired: aiOperation.topupRequired,
+
     // Computed
     canProceedToScreen2,
     canProceedToScreen3,
@@ -251,6 +317,7 @@ export function useFormWizard() {
     isFocusAreaSelected,
 
     // Generation
+    preCheckAccess,
     generateQuestions,
     regenerate,
     retryGeneration,

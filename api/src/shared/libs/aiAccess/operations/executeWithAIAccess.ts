@@ -14,9 +14,11 @@
  */
 
 import { checkAIAccess } from './checkAIAccess';
-import { reserveCredits } from '@/features/credits/reserveCredits';
-import { settleCredits } from '@/features/credits/settleCredits';
-import { releaseCredits } from '@/features/credits/releaseCredits';
+import {
+  reserveCredits,
+  settleCredits,
+  releaseCredits,
+} from '@/features/credits';
 import { isAIAccessError } from '../errors';
 import type { AICapabilityId, QualityLevelId } from '../types';
 

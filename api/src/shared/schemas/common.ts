@@ -54,6 +54,26 @@ export const TooManyRequestsResponseSchema = z.object({
 }).openapi('TooManyRequestsResponse');
 
 /**
+ * Payment required error response (402)
+ * Used when credits are insufficient for an operation
+ */
+export const PaymentRequiredResponseSchema = z.object({
+  error: z.string().openapi({ example: 'Insufficient credits. Purchase more credits to continue.' }),
+  code: z.string().optional().openapi({ example: 'INSUFFICIENT_CREDITS' }),
+  credits_available: z.number().optional().openapi({ example: 0.5 }),
+  credits_required: z.number().optional().openapi({ example: 1.0 }),
+}).openapi('PaymentRequiredResponse');
+
+/**
+ * Forbidden error response (403)
+ * Used when access is denied due to plan restrictions
+ */
+export const ForbiddenResponseSchema = z.object({
+  error: z.string().openapi({ example: 'Access denied. Upgrade your plan to use this feature.' }),
+  code: z.string().optional().openapi({ example: 'CAPABILITY_DENIED' }),
+}).openapi('ForbiddenResponse');
+
+/**
  * NanoID parameter (12 characters)
  */
 export const NanoIDParamSchema = z.string().min(12).max(12).openapi({

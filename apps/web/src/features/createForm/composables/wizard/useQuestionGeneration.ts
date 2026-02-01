@@ -4,7 +4,11 @@ import { useCreateForm } from '@/entities/form';
 import { useCreateFormQuestions, useDeactivateFormQuestions } from '@/entities/formQuestion';
 import { useCurrentContextStore } from '@/shared/currentContext';
 import { useQuestionSave } from './useQuestionSave';
-import type { AIContext, AIQuestion } from '@/shared/api';
+import {
+  useAIOperationWithCredits,
+  type AIQualityLevel,
+} from '@/features/ai';
+import type { AIContext, AIQuestion, SuggestQuestionsResponse } from '@/shared/api';
 import type { FormData, QuestionData } from '../../models';
 
 interface UseQuestionGenerationOptions {
@@ -15,6 +19,8 @@ interface UseQuestionGenerationOptions {
   onQuestionsSaved: (questions: QuestionData[]) => void;
   onFormCreated: (id: string) => void;
   onError: (error: string) => void;
+  /** Callback when AI access is denied (upgrade or topup required) */
+  onAccessDenied?: (upgradeRequired: boolean, topupRequired: boolean) => void;
 }
 
 /**
@@ -24,6 +30,7 @@ interface UseQuestionGenerationOptions {
  * - Initial question generation
  * - Question regeneration (with deactivation of old questions)
  * - Saving questions to database after generation
+ * - Credit pre-checking and consumption tracking (ADR-023)
  */
 export function useQuestionGeneration(options: UseQuestionGenerationOptions) {
   const {
@@ -34,6 +41,7 @@ export function useQuestionGeneration(options: UseQuestionGenerationOptions) {
     onQuestionsSaved,
     onFormCreated,
     onError,
+    onAccessDenied,
   } = options;
 
   const aiApi = useApiForAI();
@@ -42,6 +50,9 @@ export function useQuestionGeneration(options: UseQuestionGenerationOptions) {
   const { deactivateFormQuestions } = useDeactivateFormQuestions();
   const contextStore = useCurrentContextStore();
   const { currentOrganizationId } = toRefs(contextStore);
+
+  // AI operation with credits composable
+  const aiOperation = useAIOperationWithCredits();
 
   // Use the question save composable for individual/bulk saves
   const questionSave = useQuestionSave({
@@ -54,13 +65,43 @@ export function useQuestionGeneration(options: UseQuestionGenerationOptions) {
   // State
   const isGenerating = ref(false);
 
+  // Credit tracking state
+  const selectedQualityLevel = ref<AIQualityLevel>('fast');
+  const lastCreditsUsed = ref<number | undefined>(undefined);
+  const lastBalanceRemaining = ref<number | undefined>(undefined);
+
   // Animation states for staggered reveal
   const showSuccess = ref(false);
   const revealQuestions = ref(false);
   const visibleCards = ref<number[]>([]);
 
   /**
-   * Generate questions using AI
+   * Pre-check AI access before generation
+   * Returns true if access is allowed, false otherwise
+   */
+  async function preCheckAccess(): Promise<boolean> {
+    try {
+      const accessCheck = await aiOperation.preCheckAccess(
+        'question_generation',
+        selectedQualityLevel.value
+      );
+
+      if (!accessCheck.canProceed) {
+        const upgradeRequired = !accessCheck.capability.hasAccess;
+        const topupRequired = accessCheck.capability.hasAccess && !accessCheck.credits.hasEnough;
+        onAccessDenied?.(upgradeRequired, topupRequired);
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      onError(getErrorMessage(error));
+      return false;
+    }
+  }
+
+  /**
+   * Generate questions using AI with credit handling
    */
   async function generateQuestions(): Promise<boolean> {
     if (isGenerating.value) return false;
@@ -69,14 +110,42 @@ export function useQuestionGeneration(options: UseQuestionGenerationOptions) {
     showSuccess.value = false;
     revealQuestions.value = false;
     visibleCards.value = [];
+    lastCreditsUsed.value = undefined;
+    lastBalanceRemaining.value = undefined;
 
     try {
-      const result = await aiApi.suggestQuestions({
-        product_name: formData.product_name,
-        product_description: formData.product_description,
-        focus_areas: formData.focus_areas || undefined,
+      // Execute with credit handling
+      const operationResult = await aiOperation.executeWithCredits<SuggestQuestionsResponse>({
+        capability: 'question_generation',
+        qualityLevel: selectedQualityLevel.value,
+        execute: async () => {
+          return await aiApi.suggestQuestions({
+            product_name: formData.product_name,
+            product_description: formData.product_description,
+            focus_areas: formData.focus_areas || undefined,
+          });
+        },
       });
 
+      // Handle access denied
+      if (operationResult.accessDenied) {
+        const upgradeRequired = aiOperation.upgradeRequired.value;
+        const topupRequired = aiOperation.topupRequired.value;
+        onAccessDenied?.(upgradeRequired, topupRequired);
+        return false;
+      }
+
+      // Handle other errors
+      if (!operationResult.success || !operationResult.data) {
+        onError(operationResult.error || 'Failed to generate questions');
+        return false;
+      }
+
+      // Track credits used
+      lastCreditsUsed.value = operationResult.creditsUsed;
+      lastBalanceRemaining.value = operationResult.balanceRemaining;
+
+      const result = operationResult.data;
       onQuestionsGenerated(result.questions, result.inferred_context);
 
       // Trigger success animation sequence
@@ -215,12 +284,22 @@ export function useQuestionGeneration(options: UseQuestionGenerationOptions) {
     isGenerating,
     isSaving: questionSave.isSaving,
 
+    // Credit state (ADR-023)
+    selectedQualityLevel,
+    lastCreditsUsed,
+    lastBalanceRemaining,
+    availableQualityLevels: aiOperation.availableQualityLevels,
+    estimatedCredits: aiOperation.estimatedCredits,
+    upgradeRequired: aiOperation.upgradeRequired,
+    topupRequired: aiOperation.topupRequired,
+
     // Animation state
     showSuccess,
     revealQuestions,
     visibleCards,
 
     // Actions
+    preCheckAccess,
     generateQuestions,
     regenerateQuestions,
     saveQuestions: questionSave.saveQuestions,

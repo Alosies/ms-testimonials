@@ -1,0 +1,28 @@
+# Caddyfile for Hasura GraphQL reverse proxy
+# Used in production with the 'production' docker-compose profile
+#
+# Local development: Access Hasura directly at http://localhost:8080
+# Production: Caddy provides HTTPS termination and reverse proxy
+
+graphql.testimonial.brownforge.com {
+    # Reverse proxy to Hasura GraphQL Engine
+    reverse_proxy hasura:8080
+
+    # Enable gzip compression
+    encode gzip
+
+    # Basic logging
+    log {
+        output file /var/log/caddy/access.log
+    }
+
+    # Handle errors
+    handle_errors {
+        respond "{err.status_code} {err.status_text}"
+    }
+
+    # TLS with automatic HTTPS by Caddy
+    tls {
+        protocols tls1.2 tls1.3
+    }
+}

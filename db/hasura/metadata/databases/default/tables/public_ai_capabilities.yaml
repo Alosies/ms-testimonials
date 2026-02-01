@@ -1,0 +1,65 @@
+table:
+  name: ai_capabilities
+  schema: public
+array_relationships:
+  - name: credit_reservations
+    using:
+      foreign_key_constraint_on:
+        column: ai_capability_id
+        table:
+          name: credit_reservations
+          schema: public
+  - name: credit_transactions
+    using:
+      foreign_key_constraint_on:
+        column: ai_capability_id
+        table:
+          name: credit_transactions
+          schema: public
+  - name: plan_ai_capabilities
+    using:
+      foreign_key_constraint_on:
+        column: ai_capability_id
+        table:
+          name: plan_ai_capabilities
+          schema: public
+select_permissions:
+  - role: anonymous
+    permission:
+      columns:
+        - id
+        - unique_name
+        - name
+        - description
+        - category
+        - icon
+        - estimated_credits_fast
+        - estimated_credits_enhanced
+        - estimated_credits_premium
+      filter:
+        is_active:
+          _eq: true
+  - role: member
+    permission:
+      columns: '*'
+      filter:
+        is_active:
+          _eq: true
+  - role: org_admin
+    permission:
+      columns: '*'
+      filter:
+        is_active:
+          _eq: true
+  - role: owner
+    permission:
+      columns: '*'
+      filter:
+        is_active:
+          _eq: true
+  - role: viewer
+    permission:
+      columns: '*'
+      filter:
+        is_active:
+          _eq: true

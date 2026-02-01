@@ -1,0 +1,63 @@
+# Root-level .dockerignore for API Docker builds
+# The Dockerfile is in api/ but builds from monorepo root
+
+# Node modules (will be installed fresh in container)
+**/node_modules
+
+# Build outputs
+**/dist
+**/*.tsbuildinfo
+
+# Environment files (injected at runtime)
+**/.env
+**/.env.local
+**/.env.*
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# IDE and editors
+.vscode
+.idea
+.cursor
+**/*.swp
+**/*.swo
+
+# OS files
+**/.DS_Store
+
+# Documentation (not needed in production)
+**/*.md
+**/docs/
+**/CLAUDE.md
+
+# Test files
+**/*.test.ts
+**/*.spec.ts
+**/coverage/
+**/tests/
+**/__tests__/
+**/playwright-report/
+**/test-results/
+
+# Development tools
+.claude/
+.husky/
+.github/
+scripts/
+
+# Apps not needed for API
+apps/
+infrastructure/
+
+# Other packages not needed (keep only api and core)
+packages/libs/ui/
+packages/libs/icons/
+packages/libs/media-service/
+
+# Temporary files
+**/*.tmp
+**/*.temp
+**/*.log

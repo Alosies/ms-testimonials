@@ -19,7 +19,7 @@ import { checkCapabilityAccess } from './checkCapabilityAccess';
 import {
   checkCreditBalance,
   type CreditBalanceCheck,
-} from '@/features/credits/checkBalance';
+} from '@/features/credits';
 import type {
   AICapabilityId,
   QualityLevelId,

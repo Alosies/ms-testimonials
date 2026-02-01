@@ -1,0 +1,201 @@
+/**
+ * Credit Balance Composable
+ *
+ * Provides reactive credit balance state and fetching for the current organization.
+ * Part of ADR-023 AI Capabilities Plan Integration.
+ *
+ * @example
+ * ```typescript
+ * // Basic usage
+ * const { balance, loading, error, fetchBalance } = useCreditBalance();
+ *
+ * // With auto-refresh every 30 seconds
+ * const { balance, percentUsed, isLow } = useCreditBalance({
+ *   refreshInterval: 30000,
+ * });
+ *
+ * // Without auto-fetch on mount
+ * const { balance, fetchBalance } = useCreditBalance({ autoFetch: false });
+ * ```
+ */
+
+import { ref, computed, onMounted, onUnmounted, type Ref, type ComputedRef } from 'vue';
+import { useApi } from '@/shared/api/rest';
+import type { GetBalanceResponse } from '@api/shared/schemas/credits';
+
+/**
+ * Credit balance data structure
+ */
+export type CreditBalance = GetBalanceResponse;
+
+/**
+ * Options for useCreditBalance composable
+ */
+export interface UseCreditBalanceOptions {
+  /**
+   * Whether to fetch balance automatically on mount.
+   * @default true
+   */
+  autoFetch?: boolean;
+
+  /**
+   * Auto-refresh interval in milliseconds.
+   * Set to 0 to disable auto-refresh.
+   * @default 0
+   */
+  refreshInterval?: number;
+}
+
+/**
+ * Return type for useCreditBalance composable
+ */
+export interface UseCreditBalanceReturn {
+  /** Current credit balance data, null if not yet fetched */
+  balance: Ref<CreditBalance | null>;
+
+  /** Whether a fetch is currently in progress */
+  loading: Ref<boolean>;
+
+  /** Error from the last fetch attempt, null if successful */
+  error: Ref<Error | null>;
+
+  /** Fetch the current credit balance from the API */
+  fetchBalance: () => Promise<void>;
+
+  /** Alias for fetchBalance */
+  refresh: () => Promise<void>;
+
+  /** Percentage of monthly credits used this period (0-100) */
+  percentUsed: ComputedRef<number>;
+
+  /** Whether remaining credits are low (< 20% of monthly allocation remaining) */
+  isLow: ComputedRef<boolean>;
+
+  /** Number of days until the billing period resets */
+  daysUntilReset: ComputedRef<number>;
+}
+
+/**
+ * Composable for fetching and managing credit balance state.
+ *
+ * Provides reactive access to the organization's credit balance with
+ * optional auto-refresh and computed helpers for UI display.
+ *
+ * @param options - Configuration options
+ * @returns Reactive balance state and helper functions
+ */
+export function useCreditBalance(
+  options: UseCreditBalanceOptions = {}
+): UseCreditBalanceReturn {
+  const { autoFetch = true, refreshInterval = 0 } = options;
+
+  // Initialize API client at setup time (per Vue composable rules)
+  const api = useApi();
+
+  // Reactive state
+  const balance = ref<CreditBalance | null>(null);
+  const loading = ref(false);
+  const error = ref<Error | null>(null);
+
+  // Interval timer for auto-refresh
+  let refreshTimer: ReturnType<typeof setInterval> | null = null;
+
+  /**
+   * Fetch the current credit balance from the API
+   */
+  async function fetchBalance(): Promise<void> {
+    loading.value = true;
+    error.value = null;
+
+    try {
+      const response = await api.fetch('/credits/balance');
+
+      if (!response.ok) {
+        // Try to parse error message from response
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          errorData.error || `Failed to fetch balance (status ${response.status})`
+        );
+      }
+
+      balance.value = await response.json();
+    } catch (e) {
+      error.value = e instanceof Error ? e : new Error('Unknown error fetching balance');
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  // Computed: Percentage of monthly credits used this period
+  const percentUsed = computed<number>(() => {
+    if (!balance.value || balance.value.monthlyCredits === 0) {
+      return 0;
+    }
+    const used = balance.value.usedThisPeriod;
+    const monthly = balance.value.monthlyCredits;
+    return Math.min(100, Math.round((used / monthly) * 100));
+  });
+
+  // Computed: Whether remaining credits are low (< 20% of monthly allocation remaining)
+  const isLow = computed<boolean>(() => {
+    if (!balance.value || balance.value.monthlyCredits === 0) {
+      return false;
+    }
+    const remaining = balance.value.monthlyCredits - balance.value.usedThisPeriod;
+    const threshold = balance.value.monthlyCredits * 0.2;
+    return remaining < threshold;
+  });
+
+  // Computed: Days until the billing period resets
+  const daysUntilReset = computed<number>(() => {
+    if (!balance.value?.periodEndsAt) {
+      return 0;
+    }
+    const now = new Date();
+    const periodEnd = new Date(balance.value.periodEndsAt);
+    const diffMs = periodEnd.getTime() - now.getTime();
+    const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+    return Math.max(0, diffDays);
+  });
+
+  // Setup auto-refresh timer
+  function startRefreshTimer(): void {
+    if (refreshInterval > 0 && !refreshTimer) {
+      refreshTimer = setInterval(() => {
+        fetchBalance();
+      }, refreshInterval);
+    }
+  }
+
+  // Cleanup timer
+  function stopRefreshTimer(): void {
+    if (refreshTimer) {
+      clearInterval(refreshTimer);
+      refreshTimer = null;
+    }
+  }
+
+  // Auto-fetch on mount if enabled
+  onMounted(() => {
+    if (autoFetch) {
+      fetchBalance();
+    }
+    startRefreshTimer();
+  });
+
+  // Cleanup on unmount
+  onUnmounted(() => {
+    stopRefreshTimer();
+  });
+
+  return {
+    balance,
+    loading,
+    error,
+    fetchBalance,
+    refresh: fetchBalance,
+    percentUsed,
+    isLow,
+    daysUntilReset,
+  };
+}

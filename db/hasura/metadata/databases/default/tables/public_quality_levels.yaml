@@ -1,0 +1,62 @@
+table:
+  name: quality_levels
+  schema: public
+array_relationships:
+  - name: credit_reservations
+    using:
+      foreign_key_constraint_on:
+        column: quality_level_id
+        table:
+          name: credit_reservations
+          schema: public
+  - name: credit_transactions
+    using:
+      foreign_key_constraint_on:
+        column: quality_level_id
+        table:
+          name: credit_transactions
+          schema: public
+  - name: plan_ai_capability_quality_levels
+    using:
+      foreign_key_constraint_on:
+        column: quality_level_id
+        table:
+          name: plan_ai_capability_quality_levels
+          schema: public
+select_permissions:
+  - role: anonymous
+    permission:
+      columns:
+        - id
+        - unique_name
+        - name
+        - description
+        - display_order
+        - credit_multiplier
+      filter:
+        is_active:
+          _eq: true
+  - role: member
+    permission:
+      columns: '*'
+      filter:
+        is_active:
+          _eq: true
+  - role: org_admin
+    permission:
+      columns: '*'
+      filter:
+        is_active:
+          _eq: true
+  - role: owner
+    permission:
+      columns: '*'
+      filter:
+        is_active:
+          _eq: true
+  - role: viewer
+    permission:
+      columns: '*'
+      filter:
+        is_active:
+          _eq: true

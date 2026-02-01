@@ -1,0 +1,42 @@
+table:
+  name: credit_topup_packages
+  schema: public
+select_permissions:
+  - role: anonymous
+    permission:
+      columns:
+        - id
+        - unique_name
+        - name
+        - description
+        - credits
+        - price_usd_cents
+        - price_per_credit
+        - display_order
+      filter:
+        is_active:
+          _eq: true
+  - role: member
+    permission:
+      columns: '*'
+      filter:
+        is_active:
+          _eq: true
+  - role: org_admin
+    permission:
+      columns: '*'
+      filter:
+        is_active:
+          _eq: true
+  - role: owner
+    permission:
+      columns: '*'
+      filter:
+        is_active:
+          _eq: true
+  - role: viewer
+    permission:
+      columns: '*'
+      filter:
+        is_active:
+          _eq: true

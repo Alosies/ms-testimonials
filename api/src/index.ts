@@ -8,7 +8,7 @@ import { logger } from 'hono/logger';
 import { env } from '@/shared/config/env';
 import { corsConfig } from '@/shared/config/cors';
 
-import { auth, ai, media, analytics, dashboard } from '@/routes';
+import { auth, ai, media, analytics, dashboard, credits, billing, webhooks, jobs } from '@/routes';
 import testimonialRoutes from '@/routes/testimonials';
 import formRoutes from '@/routes/forms';
 import widgetRoutes from '@/routes/widgets';
@@ -55,6 +55,10 @@ app.route('/ai', ai);
 app.route('/media', media);
 app.route('/analytics', analytics);
 app.route('/dashboard', dashboard);
+app.route('/credits', credits);
+app.route('/billing', billing);
+app.route('/webhooks', webhooks);
+app.route('/jobs', jobs);
 // Non-OpenAPI routes (still using default exports)
 app.route('/testimonials', testimonialRoutes);
 app.route('/forms', formRoutes);
@@ -115,8 +119,20 @@ app.doc('/openapi.json', {
       description: 'Form analytics dashboard with metrics, funnel, and insights',
     },
     {
+      name: 'Credits',
+      description: 'Credit balance and transaction history for AI operations',
+    },
+    {
+      name: 'Billing',
+      description: 'Plan upgrades, downgrades, and subscription management',
+    },
+    {
       name: 'Webhooks',
       description: 'Internal webhook endpoints',
+    },
+    {
+      name: 'Scheduled Jobs',
+      description: 'Hasura scheduled trigger endpoints for background job execution',
     },
     {
       name: 'System',

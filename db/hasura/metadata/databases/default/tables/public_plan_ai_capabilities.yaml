@@ -1,0 +1,35 @@
+table:
+  name: plan_ai_capabilities
+  schema: public
+object_relationships:
+  - name: ai_capability
+    using:
+      foreign_key_constraint_on: ai_capability_id
+  - name: plan
+    using:
+      foreign_key_constraint_on: plan_id
+array_relationships:
+  - name: quality_levels
+    using:
+      foreign_key_constraint_on:
+        column: plan_ai_capability_id
+        table:
+          name: plan_ai_capability_quality_levels
+          schema: public
+select_permissions:
+  - role: member
+    permission:
+      columns: '*'
+      filter: {}
+  - role: org_admin
+    permission:
+      columns: '*'
+      filter: {}
+  - role: owner
+    permission:
+      columns: '*'
+      filter: {}
+  - role: viewer
+    permission:
+      columns: '*'
+      filter: {}

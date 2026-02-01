@@ -26,6 +26,9 @@ export const env = {
   // Hasura
   HASURA_URL: getEnvVar('HASURA_URL', 'http://localhost:8080/v1/graphql'),
   HASURA_ADMIN_SECRET: getEnvVar('HASURA_ADMIN_SECRET', ''),
+  // Hasura Scheduled Triggers webhook authentication
+  // Used to verify requests from Hasura cron triggers to /jobs/* endpoints
+  HASURA_WEBHOOK_SECRET: getEnvVar('HASURA_WEBHOOK_SECRET', ''),
 
   // AI Providers
   AI_PROVIDER: getEnvVar('AI_PROVIDER', 'openai'), // 'openai', 'anthropic', or 'google'
@@ -53,6 +56,10 @@ export const env = {
 
   // AWS Lambda Media Webhook (Lambda uses this secret to authenticate callbacks)
   AWS_LAMBDA_MEDIA_WEBHOOK_SECRET: getEnvVar('AWS_LAMBDA_MEDIA_WEBHOOK_SECRET', 'dev-webhook-secret'),
+
+  // Stripe
+  STRIPE_SECRET_KEY: getEnvVar('STRIPE_SECRET_KEY', ''),
+  STRIPE_WEBHOOK_SECRET: getEnvVar('STRIPE_WEBHOOK_SECRET', ''),
 
   // E2E Testing Support
   // These enable the /e2e/* endpoints for Playwright tests

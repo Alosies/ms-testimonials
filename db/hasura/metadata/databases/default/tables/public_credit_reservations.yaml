@@ -1,0 +1,58 @@
+table:
+  name: credit_reservations
+  schema: public
+object_relationships:
+  - name: ai_capability
+    using:
+      foreign_key_constraint_on: ai_capability_id
+  - name: organization
+    using:
+      foreign_key_constraint_on: organization_id
+  - name: quality_level
+    using:
+      foreign_key_constraint_on: quality_level_id
+select_permissions:
+  - role: member
+    permission:
+      columns:
+        - id
+        - organization_id
+        - ai_capability_id
+        - quality_level_id
+        - reserved_credits
+        - status
+        - expires_at
+        - settled_credits
+        - created_at
+        - updated_at
+      filter:
+        organization_id:
+          _eq: X-Hasura-Organization-Id
+  - role: org_admin
+    permission:
+      columns: '*'
+      filter:
+        organization_id:
+          _eq: X-Hasura-Organization-Id
+  - role: owner
+    permission:
+      columns: '*'
+      filter:
+        organization_id:
+          _eq: X-Hasura-Organization-Id
+      allow_aggregations: true
+  - role: viewer
+    permission:
+      columns:
+        - id
+        - organization_id
+        - ai_capability_id
+        - quality_level_id
+        - reserved_credits
+        - status
+        - expires_at
+        - settled_credits
+        - created_at
+      filter:
+        organization_id:
+          _eq: X-Hasura-Organization-Id

@@ -1,41 +1,67 @@
-version: '3.8'
+version: "3.8"
 
 services:
   postgres:
     image: postgres:16
-    container_name: testimonials-postgres
-    restart: unless-stopped
+    container_name: postgres
+    restart: always
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: testimonials
-    ports:
-      - '5432:5432'
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_USER: ${POSTGRES_USER:-testimonials_admin}
+      POSTGRES_DB: ${POSTGRES_DB:-testimonials}
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U postgres']
-      interval: 5s
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-testimonials_admin} -d ${POSTGRES_DB:-testimonials}"]
+      interval: 10s
       timeout: 5s
       retries: 5
 
   hasura:
     image: hasura/graphql-engine:v2.43.0
-    container_name: testimonials-hasura
-    restart: unless-stopped
+    container_name: hasura
     depends_on:
       postgres:
         condition: service_healthy
-    ports:
-      - '8080:8080'
+    restart: always
     environment:
-      HASURA_GRAPHQL_DATABASE_URL: postgres://postgres:postgres@postgres:5432/testimonials
-      HASURA_GRAPHQL_ENABLE_CONSOLE: 'true'
-      HASURA_GRAPHQL_DEV_MODE: 'true'
+      HASURA_GRAPHQL_DATABASE_URL: postgres://${POSTGRES_USER:-testimonials_admin}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-testimonials}
+      HASURA_GRAPHQL_ENABLE_CONSOLE: "true"
+      HASURA_GRAPHQL_DEV_MODE: "true"
+      HASURA_GRAPHQL_ENABLED_LOG_TYPES: startup, http-log, webhook-log, websocket-log, query-log
       HASURA_GRAPHQL_ADMIN_SECRET: ${HASURA_ADMIN_SECRET:-hasura-admin-secret}
-      HASURA_GRAPHQL_JWT_SECRET: '{"type":"HS256","key":"${JWT_SECRET:-your-jwt-secret-min-32-chars-long}"}'
-      HASURA_GRAPHQL_UNAUTHORIZED_ROLE: anonymous
-      HASURA_GRAPHQL_ENABLE_REMOTE_SCHEMA_PERMISSIONS: 'true'
+      HASURA_GRAPHQL_JWT_SECRET: ${JWT_SECRET}
+      HASURA_GRAPHQL_UNAUTHORIZED_ROLE: "anonymous"
+      HASURA_GRAPHQL_ENABLE_INTROSPECTION: ${ENABLE_INTROSPECTION:-true}
+      # Scheduled Triggers (cron jobs) configuration
+      # Used by Hasura to authenticate webhook calls to /jobs/* endpoints
+      HASURA_WEBHOOK_SECRET: ${HASURA_WEBHOOK_SECRET:-}
+      # API URL for Hasura to call scheduled trigger webhooks
+      # Local: http://host.docker.internal:4000 (Docker Desktop)
+      # Production: https://api.yourdomain.com
+      API_URL: ${API_URL:-http://host.docker.internal:4000}
+    ports:
+      - "8080:8080"
+
+  caddy:
+    image: caddy:2.7
+    container_name: caddy
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - hasura
+    profiles:
+      - production
 
 volumes:
-  postgres_data:
+  postgres-data:
+  caddy_data:
+  caddy_config:

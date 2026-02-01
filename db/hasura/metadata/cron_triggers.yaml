@@ -1,1 +1,71 @@
-[]
+# Hasura Scheduled Triggers (Cron Triggers)
+#
+# These triggers invoke API endpoints on a schedule.
+# All triggers use webhook authentication via X-Hasura-Webhook-Secret header.
+#
+# ADR Reference: ADR-023 AI Capabilities Plan Integration (T7)
+#
+# IMPORTANT:
+# - HASURA_WEBHOOK_SECRET env var must be set in both Hasura and API
+# - API_URL env var must point to the API server (e.g., http://api:4000 in Docker)
+#
+# Retry Configuration:
+# - num_retries: Number of retry attempts on failure (5xx responses)
+# - retry_interval_seconds: Wait time between retries
+# - timeout_seconds: Request timeout
+# - tolerance_seconds: How late the trigger can fire and still run
+
+# =============================================================================
+# Credit Reservation Cleanup
+# =============================================================================
+# Expires stale credit reservations and returns credits to organizations.
+# Runs every 5 minutes to ensure timely cleanup of abandoned operations.
+- name: cleanup_credit_reservations
+  webhook: '{{API_URL}}/jobs/cleanup-reservations'
+  schedule: '*/5 * * * *'
+  include_in_metadata: true
+  payload: {}
+  headers:
+    - name: X-Hasura-Webhook-Secret
+      value_from_env: HASURA_WEBHOOK_SECRET
+    - name: Content-Type
+      value: application/json
+  retry_conf:
+    num_retries: 3
+    retry_interval_seconds: 30
+    timeout_seconds: 60
+    tolerance_seconds: 300
+  comment: |
+    Cleanup expired credit reservations every 5 minutes.
+    Finds reservations where status='pending' AND expires_at < NOW(),
+    marks them as 'expired', and releases reserved credits.
+
+# =============================================================================
+# Monthly Credit Reset
+# =============================================================================
+# Resets monthly credit allocations at billing period end.
+# Runs daily at midnight UTC to process all expired billing periods.
+- name: reset_monthly_credits
+  webhook: '{{API_URL}}/jobs/reset-credits'
+  schedule: '0 0 * * *'
+  include_in_metadata: true
+  payload: {}
+  headers:
+    - name: X-Hasura-Webhook-Secret
+      value_from_env: HASURA_WEBHOOK_SECRET
+    - name: Content-Type
+      value: application/json
+  retry_conf:
+    num_retries: 5
+    retry_interval_seconds: 300
+    timeout_seconds: 300
+    tolerance_seconds: 3600
+  comment: |
+    Reset monthly credits for organizations at billing period end.
+    Runs daily at midnight UTC. For each org where period_end <= NOW():
+    - Apply pending plan changes if any
+    - Set new billing period (period_end + 1 month)
+    - Allocate new monthly credits from plan
+    - Keep bonus credits (carry over)
+    - Reset reserved credits to 0
+    - Create audit transactions

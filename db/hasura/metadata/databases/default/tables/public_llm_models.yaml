@@ -1,0 +1,54 @@
+table:
+  name: llm_models
+  schema: public
+object_relationships:
+  - name: replacement_model
+    using:
+      foreign_key_constraint_on: replacement_model_id
+array_relationships:
+  - name: plan_quality_level_models
+    using:
+      foreign_key_constraint_on:
+        column: llm_model_id
+        table:
+          name: plan_quality_level_models
+          schema: public
+select_permissions:
+  - role: anonymous
+    permission:
+      columns:
+        - id
+        - unique_name
+        - provider
+        - model_id
+        - display_name
+        - quality_tier
+        - context_window
+        - display_order
+      filter:
+        is_active:
+          _eq: true
+  - role: member
+    permission:
+      columns: '*'
+      filter:
+        is_active:
+          _eq: true
+  - role: org_admin
+    permission:
+      columns: '*'
+      filter:
+        is_active:
+          _eq: true
+  - role: owner
+    permission:
+      columns: '*'
+      filter:
+        is_active:
+          _eq: true
+  - role: viewer
+    permission:
+      columns: '*'
+      filter:
+        is_active:
+          _eq: true
