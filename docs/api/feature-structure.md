@@ -493,6 +493,84 @@ features/ai/suggestQuestions/
 
 ---
 
+## Entities (`entities/`)
+
+Entities represent domain objects and their data access operations.
+
+### Entity Folder Structure
+
+```
+api/src/entities/{entityName}/
+├── graphql/           # GraphQL operations for this entity
+│   └── {operation}.gql
+├── models/            # Type definitions and re-exports
+│   └── index.ts
+├── functions/         # Pure functions ONLY (no side effects)
+│   ├── {function}.ts
+│   └── index.ts
+├── operations/        # Impure operations (DB queries, mutations)
+│   ├── {operation}.ts
+│   └── index.ts
+└── index.ts           # Barrel exports
+```
+
+### Example: `entities/user`
+
+```
+entities/user/
+├── graphql/
+│   ├── findUserById.gql
+│   ├── findUserByEmail.gql
+│   └── createUser.gql
+├── models/
+│   └── index.ts           # Type definitions
+├── functions/
+│   ├── formatUserName.ts  # Pure: string manipulation
+│   └── index.ts
+├── operations/
+│   ├── findUserById.ts    # Impure: GraphQL query
+│   ├── findUserByEmail.ts # Impure: GraphQL query
+│   ├── createUser.ts      # Impure: GraphQL mutation
+│   └── index.ts
+└── index.ts
+```
+
+### Entity Barrel Export
+
+```typescript
+/**
+ * User Entity
+ */
+
+// =============================================================================
+// Models (Types)
+// =============================================================================
+
+export type { User, UserRole } from './models';
+
+// =============================================================================
+// Operations (Impure - DB queries/mutations)
+// =============================================================================
+
+export { findUserById } from './operations';
+export { findUserByEmail } from './operations';
+export { createUser } from './operations';
+
+// =============================================================================
+// Functions (Pure)
+// =============================================================================
+
+export { formatUserName } from './functions';
+```
+
+### Migration Note
+
+> **Legacy `utils/` folders**: Some entities may have a `utils/` folder that mixes
+> pure and impure code. When modifying these entities, migrate to the standard
+> structure by splitting into `functions/` (pure) and `operations/` (impure).
+
+---
+
 ## Shared Libraries (`shared/libs/`)
 
 Shared libraries follow similar conventions but without HTTP handlers.
