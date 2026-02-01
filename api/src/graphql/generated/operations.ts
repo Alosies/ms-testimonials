@@ -1389,6 +1389,10 @@ export type Credit_Reservations = {
   created_at: Scalars['timestamptz']['output'];
   /** When this reservation expires if not settled. Expired reservations are automatically released by cleanup jobs. */
   expires_at: Scalars['timestamptz']['output'];
+  /** FK to forms table. Which form this operation relates to. SET NULL on delete preserves history. */
+  form_id: Maybe<Scalars['String']['output']>;
+  /** Snapshot of form name at reservation time. Copied to transaction on settle. Example: "Product Feedback Form". */
+  form_name: Maybe<Scalars['String']['output']>;
   /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
   id: Scalars['String']['output'];
   /** Unique key to prevent duplicate reservations for the same request. Usually the client request ID. */
@@ -1411,6 +1415,10 @@ export type Credit_Reservations = {
   status: Scalars['String']['output'];
   /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
   updated_at: Scalars['timestamptz']['output'];
+  /** Snapshot of user email/name at reservation time. Copied to transaction on settle. Values: email, "Anonymous". */
+  user_email: Maybe<Scalars['String']['output']>;
+  /** FK to users table. Who initiated this reservation. NULL for anonymous operations. SET NULL on delete preserves history. */
+  user_id: Maybe<Scalars['String']['output']>;
 };
 
 /** aggregated selection of "credit_reservations" */
@@ -1502,6 +1510,8 @@ export type Credit_Reservations_Bool_Exp = {
   ai_capability_id?: InputMaybe<String_Comparison_Exp>;
   created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
   expires_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  form_id?: InputMaybe<String_Comparison_Exp>;
+  form_name?: InputMaybe<String_Comparison_Exp>;
   id?: InputMaybe<String_Comparison_Exp>;
   idempotency_key?: InputMaybe<String_Comparison_Exp>;
   organization?: InputMaybe<Organizations_Bool_Exp>;
@@ -1513,6 +1523,8 @@ export type Credit_Reservations_Bool_Exp = {
   settled_credits?: InputMaybe<Numeric_Comparison_Exp>;
   status?: InputMaybe<String_Comparison_Exp>;
   updated_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  user_email?: InputMaybe<String_Comparison_Exp>;
+  user_id?: InputMaybe<String_Comparison_Exp>;
 };
 
 /** unique or primary key constraints on table "credit_reservations" */
@@ -1541,6 +1553,10 @@ export type Credit_Reservations_Insert_Input = {
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
   /** When this reservation expires if not settled. Expired reservations are automatically released by cleanup jobs. */
   expires_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** FK to forms table. Which form this operation relates to. SET NULL on delete preserves history. */
+  form_id?: InputMaybe<Scalars['String']['input']>;
+  /** Snapshot of form name at reservation time. Copied to transaction on settle. Example: "Product Feedback Form". */
+  form_name?: InputMaybe<Scalars['String']['input']>;
   /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
   id?: InputMaybe<Scalars['String']['input']>;
   /** Unique key to prevent duplicate reservations for the same request. Usually the client request ID. */
@@ -1561,6 +1577,10 @@ export type Credit_Reservations_Insert_Input = {
   status?: InputMaybe<Scalars['String']['input']>;
   /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
   updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Snapshot of user email/name at reservation time. Copied to transaction on settle. Values: email, "Anonymous". */
+  user_email?: InputMaybe<Scalars['String']['input']>;
+  /** FK to users table. Who initiated this reservation. NULL for anonymous operations. SET NULL on delete preserves history. */
+  user_id?: InputMaybe<Scalars['String']['input']>;
 };
 
 /** aggregate max on columns */
@@ -1572,6 +1592,10 @@ export type Credit_Reservations_Max_Fields = {
   created_at: Maybe<Scalars['timestamptz']['output']>;
   /** When this reservation expires if not settled. Expired reservations are automatically released by cleanup jobs. */
   expires_at: Maybe<Scalars['timestamptz']['output']>;
+  /** FK to forms table. Which form this operation relates to. SET NULL on delete preserves history. */
+  form_id: Maybe<Scalars['String']['output']>;
+  /** Snapshot of form name at reservation time. Copied to transaction on settle. Example: "Product Feedback Form". */
+  form_name: Maybe<Scalars['String']['output']>;
   /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
   id: Maybe<Scalars['String']['output']>;
   /** Unique key to prevent duplicate reservations for the same request. Usually the client request ID. */
@@ -1590,6 +1614,10 @@ export type Credit_Reservations_Max_Fields = {
   status: Maybe<Scalars['String']['output']>;
   /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
   updated_at: Maybe<Scalars['timestamptz']['output']>;
+  /** Snapshot of user email/name at reservation time. Copied to transaction on settle. Values: email, "Anonymous". */
+  user_email: Maybe<Scalars['String']['output']>;
+  /** FK to users table. Who initiated this reservation. NULL for anonymous operations. SET NULL on delete preserves history. */
+  user_id: Maybe<Scalars['String']['output']>;
 };
 
 /** order by max() on columns of table "credit_reservations" */
@@ -1600,6 +1628,10 @@ export type Credit_Reservations_Max_Order_By = {
   created_at?: InputMaybe<Order_By>;
   /** When this reservation expires if not settled. Expired reservations are automatically released by cleanup jobs. */
   expires_at?: InputMaybe<Order_By>;
+  /** FK to forms table. Which form this operation relates to. SET NULL on delete preserves history. */
+  form_id?: InputMaybe<Order_By>;
+  /** Snapshot of form name at reservation time. Copied to transaction on settle. Example: "Product Feedback Form". */
+  form_name?: InputMaybe<Order_By>;
   /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
   id?: InputMaybe<Order_By>;
   /** Unique key to prevent duplicate reservations for the same request. Usually the client request ID. */
@@ -1618,6 +1650,10 @@ export type Credit_Reservations_Max_Order_By = {
   status?: InputMaybe<Order_By>;
   /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
   updated_at?: InputMaybe<Order_By>;
+  /** Snapshot of user email/name at reservation time. Copied to transaction on settle. Values: email, "Anonymous". */
+  user_email?: InputMaybe<Order_By>;
+  /** FK to users table. Who initiated this reservation. NULL for anonymous operations. SET NULL on delete preserves history. */
+  user_id?: InputMaybe<Order_By>;
 };
 
 /** aggregate min on columns */
@@ -1629,6 +1665,10 @@ export type Credit_Reservations_Min_Fields = {
   created_at: Maybe<Scalars['timestamptz']['output']>;
   /** When this reservation expires if not settled. Expired reservations are automatically released by cleanup jobs. */
   expires_at: Maybe<Scalars['timestamptz']['output']>;
+  /** FK to forms table. Which form this operation relates to. SET NULL on delete preserves history. */
+  form_id: Maybe<Scalars['String']['output']>;
+  /** Snapshot of form name at reservation time. Copied to transaction on settle. Example: "Product Feedback Form". */
+  form_name: Maybe<Scalars['String']['output']>;
   /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
   id: Maybe<Scalars['String']['output']>;
   /** Unique key to prevent duplicate reservations for the same request. Usually the client request ID. */
@@ -1647,6 +1687,10 @@ export type Credit_Reservations_Min_Fields = {
   status: Maybe<Scalars['String']['output']>;
   /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
   updated_at: Maybe<Scalars['timestamptz']['output']>;
+  /** Snapshot of user email/name at reservation time. Copied to transaction on settle. Values: email, "Anonymous". */
+  user_email: Maybe<Scalars['String']['output']>;
+  /** FK to users table. Who initiated this reservation. NULL for anonymous operations. SET NULL on delete preserves history. */
+  user_id: Maybe<Scalars['String']['output']>;
 };
 
 /** order by min() on columns of table "credit_reservations" */
@@ -1657,6 +1701,10 @@ export type Credit_Reservations_Min_Order_By = {
   created_at?: InputMaybe<Order_By>;
   /** When this reservation expires if not settled. Expired reservations are automatically released by cleanup jobs. */
   expires_at?: InputMaybe<Order_By>;
+  /** FK to forms table. Which form this operation relates to. SET NULL on delete preserves history. */
+  form_id?: InputMaybe<Order_By>;
+  /** Snapshot of form name at reservation time. Copied to transaction on settle. Example: "Product Feedback Form". */
+  form_name?: InputMaybe<Order_By>;
   /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
   id?: InputMaybe<Order_By>;
   /** Unique key to prevent duplicate reservations for the same request. Usually the client request ID. */
@@ -1675,6 +1723,10 @@ export type Credit_Reservations_Min_Order_By = {
   status?: InputMaybe<Order_By>;
   /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
   updated_at?: InputMaybe<Order_By>;
+  /** Snapshot of user email/name at reservation time. Copied to transaction on settle. Values: email, "Anonymous". */
+  user_email?: InputMaybe<Order_By>;
+  /** FK to users table. Who initiated this reservation. NULL for anonymous operations. SET NULL on delete preserves history. */
+  user_id?: InputMaybe<Order_By>;
 };
 
 /** response of any mutation on the table "credit_reservations" */
@@ -1699,6 +1751,8 @@ export type Credit_Reservations_Order_By = {
   ai_capability_id?: InputMaybe<Order_By>;
   created_at?: InputMaybe<Order_By>;
   expires_at?: InputMaybe<Order_By>;
+  form_id?: InputMaybe<Order_By>;
+  form_name?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
   idempotency_key?: InputMaybe<Order_By>;
   organization?: InputMaybe<Organizations_Order_By>;
@@ -1710,6 +1764,8 @@ export type Credit_Reservations_Order_By = {
   settled_credits?: InputMaybe<Order_By>;
   status?: InputMaybe<Order_By>;
   updated_at?: InputMaybe<Order_By>;
+  user_email?: InputMaybe<Order_By>;
+  user_id?: InputMaybe<Order_By>;
 };
 
 /** primary key columns input for table: credit_reservations */
@@ -1727,6 +1783,10 @@ export const Credit_Reservations_Select_Column = {
   /** column name */
   ExpiresAt: 'expires_at',
   /** column name */
+  FormId: 'form_id',
+  /** column name */
+  FormName: 'form_name',
+  /** column name */
   Id: 'id',
   /** column name */
   IdempotencyKey: 'idempotency_key',
@@ -1743,7 +1803,11 @@ export const Credit_Reservations_Select_Column = {
   /** column name */
   Status: 'status',
   /** column name */
-  UpdatedAt: 'updated_at'
+  UpdatedAt: 'updated_at',
+  /** column name */
+  UserEmail: 'user_email',
+  /** column name */
+  UserId: 'user_id'
 } as const;
 
 export type Credit_Reservations_Select_Column = typeof Credit_Reservations_Select_Column[keyof typeof Credit_Reservations_Select_Column];
@@ -1755,6 +1819,10 @@ export type Credit_Reservations_Set_Input = {
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
   /** When this reservation expires if not settled. Expired reservations are automatically released by cleanup jobs. */
   expires_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** FK to forms table. Which form this operation relates to. SET NULL on delete preserves history. */
+  form_id?: InputMaybe<Scalars['String']['input']>;
+  /** Snapshot of form name at reservation time. Copied to transaction on settle. Example: "Product Feedback Form". */
+  form_name?: InputMaybe<Scalars['String']['input']>;
   /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
   id?: InputMaybe<Scalars['String']['input']>;
   /** Unique key to prevent duplicate reservations for the same request. Usually the client request ID. */
@@ -1773,6 +1841,10 @@ export type Credit_Reservations_Set_Input = {
   status?: InputMaybe<Scalars['String']['input']>;
   /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
   updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Snapshot of user email/name at reservation time. Copied to transaction on settle. Values: email, "Anonymous". */
+  user_email?: InputMaybe<Scalars['String']['input']>;
+  /** FK to users table. Who initiated this reservation. NULL for anonymous operations. SET NULL on delete preserves history. */
+  user_id?: InputMaybe<Scalars['String']['input']>;
 };
 
 /** aggregate stddev on columns */
@@ -1842,6 +1914,10 @@ export type Credit_Reservations_Stream_Cursor_Value_Input = {
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
   /** When this reservation expires if not settled. Expired reservations are automatically released by cleanup jobs. */
   expires_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** FK to forms table. Which form this operation relates to. SET NULL on delete preserves history. */
+  form_id?: InputMaybe<Scalars['String']['input']>;
+  /** Snapshot of form name at reservation time. Copied to transaction on settle. Example: "Product Feedback Form". */
+  form_name?: InputMaybe<Scalars['String']['input']>;
   /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
   id?: InputMaybe<Scalars['String']['input']>;
   /** Unique key to prevent duplicate reservations for the same request. Usually the client request ID. */
@@ -1860,6 +1936,10 @@ export type Credit_Reservations_Stream_Cursor_Value_Input = {
   status?: InputMaybe<Scalars['String']['input']>;
   /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
   updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Snapshot of user email/name at reservation time. Copied to transaction on settle. Values: email, "Anonymous". */
+  user_email?: InputMaybe<Scalars['String']['input']>;
+  /** FK to users table. Who initiated this reservation. NULL for anonymous operations. SET NULL on delete preserves history. */
+  user_id?: InputMaybe<Scalars['String']['input']>;
 };
 
 /** aggregate sum on columns */
@@ -1888,6 +1968,10 @@ export const Credit_Reservations_Update_Column = {
   /** column name */
   ExpiresAt: 'expires_at',
   /** column name */
+  FormId: 'form_id',
+  /** column name */
+  FormName: 'form_name',
+  /** column name */
   Id: 'id',
   /** column name */
   IdempotencyKey: 'idempotency_key',
@@ -1904,7 +1988,11 @@ export const Credit_Reservations_Update_Column = {
   /** column name */
   Status: 'status',
   /** column name */
-  UpdatedAt: 'updated_at'
+  UpdatedAt: 'updated_at',
+  /** column name */
+  UserEmail: 'user_email',
+  /** column name */
+  UserId: 'user_id'
 } as const;
 
 export type Credit_Reservations_Update_Column = typeof Credit_Reservations_Update_Column[keyof typeof Credit_Reservations_Update_Column];
@@ -2397,6 +2485,10 @@ export type Credit_Transactions = {
   estimated_credits: Maybe<Scalars['numeric']['output']>;
   /** Computed: credits_amount - estimated_credits. Positive = used more than estimated. NULL when estimated_credits is NULL. */
   estimation_variance: Maybe<Scalars['numeric']['output']>;
+  /** FK to forms table. Which form this operation relates to. NULL for non-form operations. SET NULL on delete preserves history. */
+  form_id: Maybe<Scalars['String']['output']>;
+  /** Snapshot of form name at transaction time. Preserved when form renamed/deleted. Example: "Product Feedback Form". */
+  form_name: Maybe<Scalars['String']['output']>;
   /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
   id: Scalars['String']['output'];
   /** Unique key for deduplication. Prevents duplicate charges from retries or network issues. NULL if not needed. */
@@ -2415,6 +2507,10 @@ export type Credit_Transactions = {
   quality_level_id: Maybe<Scalars['String']['output']>;
   /** Type of credit transaction: ai_consumption, plan_allocation, topup_purchase, promo_bonus, admin_adjustment, plan_change_adjustment, expiration. */
   transaction_type: Scalars['String']['output'];
+  /** Snapshot of user email/name at transaction time. Preserved when user deleted. Values: email, "Anonymous", "System". */
+  user_email: Maybe<Scalars['String']['output']>;
+  /** FK to users table. Who triggered this transaction. NULL for anonymous/system operations. SET NULL on delete preserves history. */
+  user_id: Maybe<Scalars['String']['output']>;
 };
 
 
@@ -2530,6 +2626,8 @@ export type Credit_Transactions_Bool_Exp = {
   description?: InputMaybe<String_Comparison_Exp>;
   estimated_credits?: InputMaybe<Numeric_Comparison_Exp>;
   estimation_variance?: InputMaybe<Numeric_Comparison_Exp>;
+  form_id?: InputMaybe<String_Comparison_Exp>;
+  form_name?: InputMaybe<String_Comparison_Exp>;
   id?: InputMaybe<String_Comparison_Exp>;
   idempotency_key?: InputMaybe<String_Comparison_Exp>;
   organization?: InputMaybe<Organizations_Bool_Exp>;
@@ -2539,6 +2637,8 @@ export type Credit_Transactions_Bool_Exp = {
   quality_level?: InputMaybe<Quality_Levels_Bool_Exp>;
   quality_level_id?: InputMaybe<String_Comparison_Exp>;
   transaction_type?: InputMaybe<String_Comparison_Exp>;
+  user_email?: InputMaybe<String_Comparison_Exp>;
+  user_id?: InputMaybe<String_Comparison_Exp>;
 };
 
 /** unique or primary key constraints on table "credit_transactions" */
@@ -2593,6 +2693,10 @@ export type Credit_Transactions_Insert_Input = {
   description?: InputMaybe<Scalars['String']['input']>;
   /** Estimated credits before AI execution. Used to track estimation accuracy. NULL for non-AI transactions. */
   estimated_credits?: InputMaybe<Scalars['numeric']['input']>;
+  /** FK to forms table. Which form this operation relates to. NULL for non-form operations. SET NULL on delete preserves history. */
+  form_id?: InputMaybe<Scalars['String']['input']>;
+  /** Snapshot of form name at transaction time. Preserved when form renamed/deleted. Example: "Product Feedback Form". */
+  form_name?: InputMaybe<Scalars['String']['input']>;
   /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
   id?: InputMaybe<Scalars['String']['input']>;
   /** Unique key for deduplication. Prevents duplicate charges from retries or network issues. NULL if not needed. */
@@ -2609,6 +2713,10 @@ export type Credit_Transactions_Insert_Input = {
   quality_level_id?: InputMaybe<Scalars['String']['input']>;
   /** Type of credit transaction: ai_consumption, plan_allocation, topup_purchase, promo_bonus, admin_adjustment, plan_change_adjustment, expiration. */
   transaction_type?: InputMaybe<Scalars['String']['input']>;
+  /** Snapshot of user email/name at transaction time. Preserved when user deleted. Values: email, "Anonymous", "System". */
+  user_email?: InputMaybe<Scalars['String']['input']>;
+  /** FK to users table. Who triggered this transaction. NULL for anonymous/system operations. SET NULL on delete preserves history. */
+  user_id?: InputMaybe<Scalars['String']['input']>;
 };
 
 /** aggregate max on columns */
@@ -2628,6 +2736,10 @@ export type Credit_Transactions_Max_Fields = {
   estimated_credits: Maybe<Scalars['numeric']['output']>;
   /** Computed: credits_amount - estimated_credits. Positive = used more than estimated. NULL when estimated_credits is NULL. */
   estimation_variance: Maybe<Scalars['numeric']['output']>;
+  /** FK to forms table. Which form this operation relates to. NULL for non-form operations. SET NULL on delete preserves history. */
+  form_id: Maybe<Scalars['String']['output']>;
+  /** Snapshot of form name at transaction time. Preserved when form renamed/deleted. Example: "Product Feedback Form". */
+  form_name: Maybe<Scalars['String']['output']>;
   /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
   id: Maybe<Scalars['String']['output']>;
   /** Unique key for deduplication. Prevents duplicate charges from retries or network issues. NULL if not needed. */
@@ -2640,6 +2752,10 @@ export type Credit_Transactions_Max_Fields = {
   quality_level_id: Maybe<Scalars['String']['output']>;
   /** Type of credit transaction: ai_consumption, plan_allocation, topup_purchase, promo_bonus, admin_adjustment, plan_change_adjustment, expiration. */
   transaction_type: Maybe<Scalars['String']['output']>;
+  /** Snapshot of user email/name at transaction time. Preserved when user deleted. Values: email, "Anonymous", "System". */
+  user_email: Maybe<Scalars['String']['output']>;
+  /** FK to users table. Who triggered this transaction. NULL for anonymous/system operations. SET NULL on delete preserves history. */
+  user_id: Maybe<Scalars['String']['output']>;
 };
 
 /** order by max() on columns of table "credit_transactions" */
@@ -2658,6 +2774,10 @@ export type Credit_Transactions_Max_Order_By = {
   estimated_credits?: InputMaybe<Order_By>;
   /** Computed: credits_amount - estimated_credits. Positive = used more than estimated. NULL when estimated_credits is NULL. */
   estimation_variance?: InputMaybe<Order_By>;
+  /** FK to forms table. Which form this operation relates to. NULL for non-form operations. SET NULL on delete preserves history. */
+  form_id?: InputMaybe<Order_By>;
+  /** Snapshot of form name at transaction time. Preserved when form renamed/deleted. Example: "Product Feedback Form". */
+  form_name?: InputMaybe<Order_By>;
   /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
   id?: InputMaybe<Order_By>;
   /** Unique key for deduplication. Prevents duplicate charges from retries or network issues. NULL if not needed. */
@@ -2670,6 +2790,10 @@ export type Credit_Transactions_Max_Order_By = {
   quality_level_id?: InputMaybe<Order_By>;
   /** Type of credit transaction: ai_consumption, plan_allocation, topup_purchase, promo_bonus, admin_adjustment, plan_change_adjustment, expiration. */
   transaction_type?: InputMaybe<Order_By>;
+  /** Snapshot of user email/name at transaction time. Preserved when user deleted. Values: email, "Anonymous", "System". */
+  user_email?: InputMaybe<Order_By>;
+  /** FK to users table. Who triggered this transaction. NULL for anonymous/system operations. SET NULL on delete preserves history. */
+  user_id?: InputMaybe<Order_By>;
 };
 
 /** aggregate min on columns */
@@ -2689,6 +2813,10 @@ export type Credit_Transactions_Min_Fields = {
   estimated_credits: Maybe<Scalars['numeric']['output']>;
   /** Computed: credits_amount - estimated_credits. Positive = used more than estimated. NULL when estimated_credits is NULL. */
   estimation_variance: Maybe<Scalars['numeric']['output']>;
+  /** FK to forms table. Which form this operation relates to. NULL for non-form operations. SET NULL on delete preserves history. */
+  form_id: Maybe<Scalars['String']['output']>;
+  /** Snapshot of form name at transaction time. Preserved when form renamed/deleted. Example: "Product Feedback Form". */
+  form_name: Maybe<Scalars['String']['output']>;
   /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
   id: Maybe<Scalars['String']['output']>;
   /** Unique key for deduplication. Prevents duplicate charges from retries or network issues. NULL if not needed. */
@@ -2701,6 +2829,10 @@ export type Credit_Transactions_Min_Fields = {
   quality_level_id: Maybe<Scalars['String']['output']>;
   /** Type of credit transaction: ai_consumption, plan_allocation, topup_purchase, promo_bonus, admin_adjustment, plan_change_adjustment, expiration. */
   transaction_type: Maybe<Scalars['String']['output']>;
+  /** Snapshot of user email/name at transaction time. Preserved when user deleted. Values: email, "Anonymous", "System". */
+  user_email: Maybe<Scalars['String']['output']>;
+  /** FK to users table. Who triggered this transaction. NULL for anonymous/system operations. SET NULL on delete preserves history. */
+  user_id: Maybe<Scalars['String']['output']>;
 };
 
 /** order by min() on columns of table "credit_transactions" */
@@ -2719,6 +2851,10 @@ export type Credit_Transactions_Min_Order_By = {
   estimated_credits?: InputMaybe<Order_By>;
   /** Computed: credits_amount - estimated_credits. Positive = used more than estimated. NULL when estimated_credits is NULL. */
   estimation_variance?: InputMaybe<Order_By>;
+  /** FK to forms table. Which form this operation relates to. NULL for non-form operations. SET NULL on delete preserves history. */
+  form_id?: InputMaybe<Order_By>;
+  /** Snapshot of form name at transaction time. Preserved when form renamed/deleted. Example: "Product Feedback Form". */
+  form_name?: InputMaybe<Order_By>;
   /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
   id?: InputMaybe<Order_By>;
   /** Unique key for deduplication. Prevents duplicate charges from retries or network issues. NULL if not needed. */
@@ -2731,6 +2867,10 @@ export type Credit_Transactions_Min_Order_By = {
   quality_level_id?: InputMaybe<Order_By>;
   /** Type of credit transaction: ai_consumption, plan_allocation, topup_purchase, promo_bonus, admin_adjustment, plan_change_adjustment, expiration. */
   transaction_type?: InputMaybe<Order_By>;
+  /** Snapshot of user email/name at transaction time. Preserved when user deleted. Values: email, "Anonymous", "System". */
+  user_email?: InputMaybe<Order_By>;
+  /** FK to users table. Who triggered this transaction. NULL for anonymous/system operations. SET NULL on delete preserves history. */
+  user_id?: InputMaybe<Order_By>;
 };
 
 /** response of any mutation on the table "credit_transactions" */
@@ -2759,6 +2899,8 @@ export type Credit_Transactions_Order_By = {
   description?: InputMaybe<Order_By>;
   estimated_credits?: InputMaybe<Order_By>;
   estimation_variance?: InputMaybe<Order_By>;
+  form_id?: InputMaybe<Order_By>;
+  form_name?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
   idempotency_key?: InputMaybe<Order_By>;
   organization?: InputMaybe<Organizations_Order_By>;
@@ -2768,6 +2910,8 @@ export type Credit_Transactions_Order_By = {
   quality_level?: InputMaybe<Quality_Levels_Order_By>;
   quality_level_id?: InputMaybe<Order_By>;
   transaction_type?: InputMaybe<Order_By>;
+  user_email?: InputMaybe<Order_By>;
+  user_id?: InputMaybe<Order_By>;
 };
 
 /** primary key columns input for table: credit_transactions */
@@ -2799,6 +2943,10 @@ export const Credit_Transactions_Select_Column = {
   /** column name */
   EstimationVariance: 'estimation_variance',
   /** column name */
+  FormId: 'form_id',
+  /** column name */
+  FormName: 'form_name',
+  /** column name */
   Id: 'id',
   /** column name */
   IdempotencyKey: 'idempotency_key',
@@ -2811,7 +2959,11 @@ export const Credit_Transactions_Select_Column = {
   /** column name */
   QualityLevelId: 'quality_level_id',
   /** column name */
-  TransactionType: 'transaction_type'
+  TransactionType: 'transaction_type',
+  /** column name */
+  UserEmail: 'user_email',
+  /** column name */
+  UserId: 'user_id'
 } as const;
 
 export type Credit_Transactions_Select_Column = typeof Credit_Transactions_Select_Column[keyof typeof Credit_Transactions_Select_Column];
@@ -2829,6 +2981,10 @@ export type Credit_Transactions_Set_Input = {
   description?: InputMaybe<Scalars['String']['input']>;
   /** Estimated credits before AI execution. Used to track estimation accuracy. NULL for non-AI transactions. */
   estimated_credits?: InputMaybe<Scalars['numeric']['input']>;
+  /** FK to forms table. Which form this operation relates to. NULL for non-form operations. SET NULL on delete preserves history. */
+  form_id?: InputMaybe<Scalars['String']['input']>;
+  /** Snapshot of form name at transaction time. Preserved when form renamed/deleted. Example: "Product Feedback Form". */
+  form_name?: InputMaybe<Scalars['String']['input']>;
   /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
   id?: InputMaybe<Scalars['String']['input']>;
   /** Unique key for deduplication. Prevents duplicate charges from retries or network issues. NULL if not needed. */
@@ -2843,6 +2999,10 @@ export type Credit_Transactions_Set_Input = {
   quality_level_id?: InputMaybe<Scalars['String']['input']>;
   /** Type of credit transaction: ai_consumption, plan_allocation, topup_purchase, promo_bonus, admin_adjustment, plan_change_adjustment, expiration. */
   transaction_type?: InputMaybe<Scalars['String']['input']>;
+  /** Snapshot of user email/name at transaction time. Preserved when user deleted. Values: email, "Anonymous", "System". */
+  user_email?: InputMaybe<Scalars['String']['input']>;
+  /** FK to users table. Who triggered this transaction. NULL for anonymous/system operations. SET NULL on delete preserves history. */
+  user_id?: InputMaybe<Scalars['String']['input']>;
 };
 
 /** aggregate stddev on columns */
@@ -2944,6 +3104,10 @@ export type Credit_Transactions_Stream_Cursor_Value_Input = {
   estimated_credits?: InputMaybe<Scalars['numeric']['input']>;
   /** Computed: credits_amount - estimated_credits. Positive = used more than estimated. NULL when estimated_credits is NULL. */
   estimation_variance?: InputMaybe<Scalars['numeric']['input']>;
+  /** FK to forms table. Which form this operation relates to. NULL for non-form operations. SET NULL on delete preserves history. */
+  form_id?: InputMaybe<Scalars['String']['input']>;
+  /** Snapshot of form name at transaction time. Preserved when form renamed/deleted. Example: "Product Feedback Form". */
+  form_name?: InputMaybe<Scalars['String']['input']>;
   /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
   id?: InputMaybe<Scalars['String']['input']>;
   /** Unique key for deduplication. Prevents duplicate charges from retries or network issues. NULL if not needed. */
@@ -2958,6 +3122,10 @@ export type Credit_Transactions_Stream_Cursor_Value_Input = {
   quality_level_id?: InputMaybe<Scalars['String']['input']>;
   /** Type of credit transaction: ai_consumption, plan_allocation, topup_purchase, promo_bonus, admin_adjustment, plan_change_adjustment, expiration. */
   transaction_type?: InputMaybe<Scalars['String']['input']>;
+  /** Snapshot of user email/name at transaction time. Preserved when user deleted. Values: email, "Anonymous", "System". */
+  user_email?: InputMaybe<Scalars['String']['input']>;
+  /** FK to users table. Who triggered this transaction. NULL for anonymous/system operations. SET NULL on delete preserves history. */
+  user_id?: InputMaybe<Scalars['String']['input']>;
 };
 
 /** aggregate sum on columns */
@@ -3000,6 +3168,10 @@ export const Credit_Transactions_Update_Column = {
   /** column name */
   EstimatedCredits: 'estimated_credits',
   /** column name */
+  FormId: 'form_id',
+  /** column name */
+  FormName: 'form_name',
+  /** column name */
   Id: 'id',
   /** column name */
   IdempotencyKey: 'idempotency_key',
@@ -3012,7 +3184,11 @@ export const Credit_Transactions_Update_Column = {
   /** column name */
   QualityLevelId: 'quality_level_id',
   /** column name */
-  TransactionType: 'transaction_type'
+  TransactionType: 'transaction_type',
+  /** column name */
+  UserEmail: 'user_email',
+  /** column name */
+  UserId: 'user_id'
 } as const;
 
 export type Credit_Transactions_Update_Column = typeof Credit_Transactions_Update_Column[keyof typeof Credit_Transactions_Update_Column];
@@ -26099,16 +26275,13 @@ export type GetCreditBalanceForCheckQueryVariables = Exact<{
 export type GetCreditBalanceForCheckQuery = { __typename?: 'query_root', organization_credit_balances: Array<{ __typename?: 'organization_credit_balances', monthly_credits: number, bonus_credits: number, reserved_credits: number, overdraft_limit: number, period_end: string, available_credits: number | null, spendable_credits: number | null, used_this_period: number | null }> };
 
 export type GetCreditTransactionsQueryVariables = Exact<{
-  organizationId: Scalars['String']['input'];
   limit: Scalars['Int']['input'];
   offset: Scalars['Int']['input'];
-  transactionType?: InputMaybe<Scalars['String']['input']>;
-  fromDate?: InputMaybe<Scalars['timestamptz']['input']>;
-  toDate?: InputMaybe<Scalars['timestamptz']['input']>;
+  where: Credit_Transactions_Bool_Exp;
 }>;
 
 
-export type GetCreditTransactionsQuery = { __typename?: 'query_root', credit_transactions: Array<{ __typename?: 'credit_transactions', id: string, transaction_type: string, credits_amount: number, balance_after: number, description: string | null, created_at: string, ai_capability: { __typename?: 'ai_capabilities', name: string } | null, quality_level: { __typename?: 'quality_levels', name: string } | null }>, credit_transactions_aggregate: { __typename?: 'credit_transactions_aggregate', aggregate: { __typename?: 'credit_transactions_aggregate_fields', count: number } | null } };
+export type GetCreditTransactionsQuery = { __typename?: 'query_root', credit_transactions: Array<{ __typename?: 'credit_transactions', id: string, transaction_type: string, credits_amount: number, balance_after: number, description: string | null, created_at: string, user_id: string | null, user_email: string | null, form_id: string | null, form_name: string | null, ai_capability: { __typename?: 'ai_capabilities', name: string } | null, quality_level: { __typename?: 'quality_levels', name: string } | null }>, credit_transactions_aggregate: { __typename?: 'credit_transactions_aggregate', aggregate: { __typename?: 'credit_transactions_aggregate_fields', count: number } | null } };
 
 
 export const CreateBranchFlowDocument = `
@@ -26589,9 +26762,9 @@ export const GetCreditBalanceForCheckDocument = `
 }
     `;
 export const GetCreditTransactionsDocument = `
-    query GetCreditTransactions($organizationId: String!, $limit: Int!, $offset: Int!, $transactionType: String, $fromDate: timestamptz, $toDate: timestamptz) {
+    query GetCreditTransactions($limit: Int!, $offset: Int!, $where: credit_transactions_bool_exp!) {
   credit_transactions(
-    where: {organization_id: {_eq: $organizationId}, transaction_type: {_eq: $transactionType}, created_at: {_gte: $fromDate, _lte: $toDate}}
+    where: $where
     order_by: {created_at: desc}
     limit: $limit
     offset: $offset
@@ -26608,10 +26781,12 @@ export const GetCreditTransactionsDocument = `
     quality_level {
       name
     }
+    user_id
+    user_email
+    form_id
+    form_name
   }
-  credit_transactions_aggregate(
-    where: {organization_id: {_eq: $organizationId}, transaction_type: {_eq: $transactionType}, created_at: {_gte: $fromDate, _lte: $toDate}}
-  ) {
+  credit_transactions_aggregate(where: $where) {
     aggregate {
       count
     }

@@ -1969,6 +1969,14 @@ type credit_reservations {
   """
   expires_at: timestamptz!
   """
+  FK to forms table. Which form this operation relates to. SET NULL on delete preserves history.
+  """
+  form_id: String
+  """
+  Snapshot of form name at reservation time. Copied to transaction on settle. Example: "Product Feedback Form".
+  """
+  form_name: String
+  """
   Primary key using NanoID 12-character format for URL-safe, collision-resistant identification.
   """
   id: String!
@@ -2008,6 +2016,14 @@ type credit_reservations {
   Timestamp of last modification. Automatically updated by database trigger on any column change.
   """
   updated_at: timestamptz!
+  """
+  Snapshot of user email/name at reservation time. Copied to transaction on settle. Values: email, "Anonymous".
+  """
+  user_display_name: String
+  """
+  FK to users table. Who initiated this reservation. NULL for anonymous operations. SET NULL on delete preserves history.
+  """
+  user_id: String
 }
 
 """
@@ -2109,6 +2125,8 @@ input credit_reservations_bool_exp {
   ai_capability_id: String_comparison_exp
   created_at: timestamptz_comparison_exp
   expires_at: timestamptz_comparison_exp
+  form_id: String_comparison_exp
+  form_name: String_comparison_exp
   id: String_comparison_exp
   idempotency_key: String_comparison_exp
   organization: organizations_bool_exp
@@ -2120,6 +2138,8 @@ input credit_reservations_bool_exp {
   settled_credits: numeric_comparison_exp
   status: String_comparison_exp
   updated_at: timestamptz_comparison_exp
+  user_display_name: String_comparison_exp
+  user_id: String_comparison_exp
 }
 
 """
@@ -2168,6 +2188,14 @@ input credit_reservations_insert_input {
   """
   expires_at: timestamptz
   """
+  FK to forms table. Which form this operation relates to. SET NULL on delete preserves history.
+  """
+  form_id: String
+  """
+  Snapshot of form name at reservation time. Copied to transaction on settle. Example: "Product Feedback Form".
+  """
+  form_name: String
+  """
   Primary key using NanoID 12-character format for URL-safe, collision-resistant identification.
   """
   id: String
@@ -2205,6 +2233,14 @@ input credit_reservations_insert_input {
   Timestamp of last modification. Automatically updated by database trigger on any column change.
   """
   updated_at: timestamptz
+  """
+  Snapshot of user email/name at reservation time. Copied to transaction on settle. Values: email, "Anonymous".
+  """
+  user_display_name: String
+  """
+  FK to users table. Who initiated this reservation. NULL for anonymous operations. SET NULL on delete preserves history.
+  """
+  user_id: String
 }
 
 """aggregate max on columns"""
@@ -2221,6 +2257,14 @@ type credit_reservations_max_fields {
   When this reservation expires if not settled. Expired reservations are automatically released by cleanup jobs.
   """
   expires_at: timestamptz
+  """
+  FK to forms table. Which form this operation relates to. SET NULL on delete preserves history.
+  """
+  form_id: String
+  """
+  Snapshot of form name at reservation time. Copied to transaction on settle. Example: "Product Feedback Form".
+  """
+  form_name: String
   """
   Primary key using NanoID 12-character format for URL-safe, collision-resistant identification.
   """
@@ -2257,6 +2301,14 @@ type credit_reservations_max_fields {
   Timestamp of last modification. Automatically updated by database trigger on any column change.
   """
   updated_at: timestamptz
+  """
+  Snapshot of user email/name at reservation time. Copied to transaction on settle. Values: email, "Anonymous".
+  """
+  user_display_name: String
+  """
+  FK to users table. Who initiated this reservation. NULL for anonymous operations. SET NULL on delete preserves history.
+  """
+  user_id: String
 }
 
 """
@@ -2276,6 +2328,14 @@ input credit_reservations_max_order_by {
   """
   expires_at: order_by
   """
+  FK to forms table. Which form this operation relates to. SET NULL on delete preserves history.
+  """
+  form_id: order_by
+  """
+  Snapshot of form name at reservation time. Copied to transaction on settle. Example: "Product Feedback Form".
+  """
+  form_name: order_by
+  """
   Primary key using NanoID 12-character format for URL-safe, collision-resistant identification.
   """
   id: order_by
@@ -2311,6 +2371,14 @@ input credit_reservations_max_order_by {
   Timestamp of last modification. Automatically updated by database trigger on any column change.
   """
   updated_at: order_by
+  """
+  Snapshot of user email/name at reservation time. Copied to transaction on settle. Values: email, "Anonymous".
+  """
+  user_display_name: order_by
+  """
+  FK to users table. Who initiated this reservation. NULL for anonymous operations. SET NULL on delete preserves history.
+  """
+  user_id: order_by
 }
 
 """aggregate min on columns"""
@@ -2327,6 +2395,14 @@ type credit_reservations_min_fields {
   When this reservation expires if not settled. Expired reservations are automatically released by cleanup jobs.
   """
   expires_at: timestamptz
+  """
+  FK to forms table. Which form this operation relates to. SET NULL on delete preserves history.
+  """
+  form_id: String
+  """
+  Snapshot of form name at reservation time. Copied to transaction on settle. Example: "Product Feedback Form".
+  """
+  form_name: String
   """
   Primary key using NanoID 12-character format for URL-safe, collision-resistant identification.
   """
@@ -2363,6 +2439,14 @@ type credit_reservations_min_fields {
   Timestamp of last modification. Automatically updated by database trigger on any column change.
   """
   updated_at: timestamptz
+  """
+  Snapshot of user email/name at reservation time. Copied to transaction on settle. Values: email, "Anonymous".
+  """
+  user_display_name: String
+  """
+  FK to users table. Who initiated this reservation. NULL for anonymous operations. SET NULL on delete preserves history.
+  """
+  user_id: String
 }
 
 """
@@ -2381,6 +2465,14 @@ input credit_reservations_min_order_by {
   When this reservation expires if not settled. Expired reservations are automatically released by cleanup jobs.
   """
   expires_at: order_by
+  """
+  FK to forms table. Which form this operation relates to. SET NULL on delete preserves history.
+  """
+  form_id: order_by
+  """
+  Snapshot of form name at reservation time. Copied to transaction on settle. Example: "Product Feedback Form".
+  """
+  form_name: order_by
   """
   Primary key using NanoID 12-character format for URL-safe, collision-resistant identification.
   """
@@ -2417,6 +2509,14 @@ input credit_reservations_min_order_by {
   Timestamp of last modification. Automatically updated by database trigger on any column change.
   """
   updated_at: order_by
+  """
+  Snapshot of user email/name at reservation time. Copied to transaction on settle. Values: email, "Anonymous".
+  """
+  user_display_name: order_by
+  """
+  FK to users table. Who initiated this reservation. NULL for anonymous operations. SET NULL on delete preserves history.
+  """
+  user_id: order_by
 }
 
 """
@@ -2444,6 +2544,8 @@ input credit_reservations_order_by {
   ai_capability_id: order_by
   created_at: order_by
   expires_at: order_by
+  form_id: order_by
+  form_name: order_by
   id: order_by
   idempotency_key: order_by
   organization: organizations_order_by
@@ -2455,6 +2557,8 @@ input credit_reservations_order_by {
   settled_credits: order_by
   status: order_by
   updated_at: order_by
+  user_display_name: order_by
+  user_id: order_by
 }
 
 """primary key columns input for table: credit_reservations"""
@@ -2476,6 +2580,10 @@ enum credit_reservations_select_column {
   """column name"""
   expires_at
   """column name"""
+  form_id
+  """column name"""
+  form_name
+  """column name"""
   id
   """column name"""
   idempotency_key
@@ -2493,6 +2601,10 @@ enum credit_reservations_select_column {
   status
   """column name"""
   updated_at
+  """column name"""
+  user_display_name
+  """column name"""
+  user_id
 }
 
 """
@@ -2511,6 +2623,14 @@ input credit_reservations_set_input {
   When this reservation expires if not settled. Expired reservations are automatically released by cleanup jobs.
   """
   expires_at: timestamptz
+  """
+  FK to forms table. Which form this operation relates to. SET NULL on delete preserves history.
+  """
+  form_id: String
+  """
+  Snapshot of form name at reservation time. Copied to transaction on settle. Example: "Product Feedback Form".
+  """
+  form_name: String
   """
   Primary key using NanoID 12-character format for URL-safe, collision-resistant identification.
   """
@@ -2547,6 +2667,14 @@ input credit_reservations_set_input {
   Timestamp of last modification. Automatically updated by database trigger on any column change.
   """
   updated_at: timestamptz
+  """
+  Snapshot of user email/name at reservation time. Copied to transaction on settle. Values: email, "Anonymous".
+  """
+  user_display_name: String
+  """
+  FK to users table. Who initiated this reservation. NULL for anonymous operations. SET NULL on delete preserves history.
+  """
+  user_id: String
 }
 
 """aggregate stddev on columns"""
@@ -2652,6 +2780,14 @@ input credit_reservations_stream_cursor_value_input {
   """
   expires_at: timestamptz
   """
+  FK to forms table. Which form this operation relates to. SET NULL on delete preserves history.
+  """
+  form_id: String
+  """
+  Snapshot of form name at reservation time. Copied to transaction on settle. Example: "Product Feedback Form".
+  """
+  form_name: String
+  """
   Primary key using NanoID 12-character format for URL-safe, collision-resistant identification.
   """
   id: String
@@ -2687,6 +2823,14 @@ input credit_reservations_stream_cursor_value_input {
   Timestamp of last modification. Automatically updated by database trigger on any column change.
   """
   updated_at: timestamptz
+  """
+  Snapshot of user email/name at reservation time. Copied to transaction on settle. Values: email, "Anonymous".
+  """
+  user_display_name: String
+  """
+  FK to users table. Who initiated this reservation. NULL for anonymous operations. SET NULL on delete preserves history.
+  """
+  user_id: String
 }
 
 """aggregate sum on columns"""
@@ -2726,6 +2870,10 @@ enum credit_reservations_update_column {
   """column name"""
   expires_at
   """column name"""
+  form_id
+  """column name"""
+  form_name
+  """column name"""
   id
   """column name"""
   idempotency_key
@@ -2743,6 +2891,10 @@ enum credit_reservations_update_column {
   status
   """column name"""
   updated_at
+  """column name"""
+  user_display_name
+  """column name"""
+  user_id
 }
 
 input credit_reservations_updates {
@@ -3467,6 +3619,14 @@ type credit_transactions {
   """
   estimation_variance: numeric
   """
+  FK to forms table. Which form this operation relates to. NULL for non-form operations. SET NULL on delete preserves history.
+  """
+  form_id: String
+  """
+  Snapshot of form name at transaction time. Preserved when form renamed/deleted. Example: "Product Feedback Form".
+  """
+  form_name: String
+  """
   Primary key using NanoID 12-character format for URL-safe, collision-resistant identification.
   """
   id: String!
@@ -3501,6 +3661,14 @@ type credit_transactions {
   Type of credit transaction: ai_consumption, plan_allocation, topup_purchase, promo_bonus, admin_adjustment, plan_change_adjustment, expiration.
   """
   transaction_type: String!
+  """
+  Snapshot of user email/name at transaction time. Preserved when user deleted. Values: email, "Anonymous", "System".
+  """
+  user_display_name: String
+  """
+  FK to users table. Who triggered this transaction. NULL for anonymous/system operations. SET NULL on delete preserves history.
+  """
+  user_id: String
 }
 
 """
@@ -3630,6 +3798,8 @@ input credit_transactions_bool_exp {
   description: String_comparison_exp
   estimated_credits: numeric_comparison_exp
   estimation_variance: numeric_comparison_exp
+  form_id: String_comparison_exp
+  form_name: String_comparison_exp
   id: String_comparison_exp
   idempotency_key: String_comparison_exp
   organization: organizations_bool_exp
@@ -3639,6 +3809,8 @@ input credit_transactions_bool_exp {
   quality_level: quality_levels_bool_exp
   quality_level_id: String_comparison_exp
   transaction_type: String_comparison_exp
+  user_display_name: String_comparison_exp
+  user_id: String_comparison_exp
 }
 
 """
@@ -3733,6 +3905,14 @@ input credit_transactions_insert_input {
   """
   estimated_credits: numeric
   """
+  FK to forms table. Which form this operation relates to. NULL for non-form operations. SET NULL on delete preserves history.
+  """
+  form_id: String
+  """
+  Snapshot of form name at transaction time. Preserved when form renamed/deleted. Example: "Product Feedback Form".
+  """
+  form_name: String
+  """
   Primary key using NanoID 12-character format for URL-safe, collision-resistant identification.
   """
   id: String
@@ -3762,6 +3942,14 @@ input credit_transactions_insert_input {
   Type of credit transaction: ai_consumption, plan_allocation, topup_purchase, promo_bonus, admin_adjustment, plan_change_adjustment, expiration.
   """
   transaction_type: String
+  """
+  Snapshot of user email/name at transaction time. Preserved when user deleted. Values: email, "Anonymous", "System".
+  """
+  user_display_name: String
+  """
+  FK to users table. Who triggered this transaction. NULL for anonymous/system operations. SET NULL on delete preserves history.
+  """
+  user_id: String
 }
 
 """aggregate max on columns"""
@@ -3795,6 +3983,14 @@ type credit_transactions_max_fields {
   """
   estimation_variance: numeric
   """
+  FK to forms table. Which form this operation relates to. NULL for non-form operations. SET NULL on delete preserves history.
+  """
+  form_id: String
+  """
+  Snapshot of form name at transaction time. Preserved when form renamed/deleted. Example: "Product Feedback Form".
+  """
+  form_name: String
+  """
   Primary key using NanoID 12-character format for URL-safe, collision-resistant identification.
   """
   id: String
@@ -3818,6 +4014,14 @@ type credit_transactions_max_fields {
   Type of credit transaction: ai_consumption, plan_allocation, topup_purchase, promo_bonus, admin_adjustment, plan_change_adjustment, expiration.
   """
   transaction_type: String
+  """
+  Snapshot of user email/name at transaction time. Preserved when user deleted. Values: email, "Anonymous", "System".
+  """
+  user_display_name: String
+  """
+  FK to users table. Who triggered this transaction. NULL for anonymous/system operations. SET NULL on delete preserves history.
+  """
+  user_id: String
 }
 
 """
@@ -3853,6 +4057,14 @@ input credit_transactions_max_order_by {
   """
   estimation_variance: order_by
   """
+  FK to forms table. Which form this operation relates to. NULL for non-form operations. SET NULL on delete preserves history.
+  """
+  form_id: order_by
+  """
+  Snapshot of form name at transaction time. Preserved when form renamed/deleted. Example: "Product Feedback Form".
+  """
+  form_name: order_by
+  """
   Primary key using NanoID 12-character format for URL-safe, collision-resistant identification.
   """
   id: order_by
@@ -3876,6 +4088,14 @@ input credit_transactions_max_order_by {
   Type of credit transaction: ai_consumption, plan_allocation, topup_purchase, promo_bonus, admin_adjustment, plan_change_adjustment, expiration.
   """
   transaction_type: order_by
+  """
+  Snapshot of user email/name at transaction time. Preserved when user deleted. Values: email, "Anonymous", "System".
+  """
+  user_display_name: order_by
+  """
+  FK to users table. Who triggered this transaction. NULL for anonymous/system operations. SET NULL on delete preserves history.
+  """
+  user_id: order_by
 }
 
 """aggregate min on columns"""
@@ -3909,6 +4129,14 @@ type credit_transactions_min_fields {
   """
   estimation_variance: numeric
   """
+  FK to forms table. Which form this operation relates to. NULL for non-form operations. SET NULL on delete preserves history.
+  """
+  form_id: String
+  """
+  Snapshot of form name at transaction time. Preserved when form renamed/deleted. Example: "Product Feedback Form".
+  """
+  form_name: String
+  """
   Primary key using NanoID 12-character format for URL-safe, collision-resistant identification.
   """
   id: String
@@ -3932,6 +4160,14 @@ type credit_transactions_min_fields {
   Type of credit transaction: ai_consumption, plan_allocation, topup_purchase, promo_bonus, admin_adjustment, plan_change_adjustment, expiration.
   """
   transaction_type: String
+  """
+  Snapshot of user email/name at transaction time. Preserved when user deleted. Values: email, "Anonymous", "System".
+  """
+  user_display_name: String
+  """
+  FK to users table. Who triggered this transaction. NULL for anonymous/system operations. SET NULL on delete preserves history.
+  """
+  user_id: String
 }
 
 """
@@ -3967,6 +4203,14 @@ input credit_transactions_min_order_by {
   """
   estimation_variance: order_by
   """
+  FK to forms table. Which form this operation relates to. NULL for non-form operations. SET NULL on delete preserves history.
+  """
+  form_id: order_by
+  """
+  Snapshot of form name at transaction time. Preserved when form renamed/deleted. Example: "Product Feedback Form".
+  """
+  form_name: order_by
+  """
   Primary key using NanoID 12-character format for URL-safe, collision-resistant identification.
   """
   id: order_by
@@ -3990,6 +4234,14 @@ input credit_transactions_min_order_by {
   Type of credit transaction: ai_consumption, plan_allocation, topup_purchase, promo_bonus, admin_adjustment, plan_change_adjustment, expiration.
   """
   transaction_type: order_by
+  """
+  Snapshot of user email/name at transaction time. Preserved when user deleted. Values: email, "Anonymous", "System".
+  """
+  user_display_name: order_by
+  """
+  FK to users table. Who triggered this transaction. NULL for anonymous/system operations. SET NULL on delete preserves history.
+  """
+  user_id: order_by
 }
 
 """
@@ -4021,6 +4273,8 @@ input credit_transactions_order_by {
   description: order_by
   estimated_credits: order_by
   estimation_variance: order_by
+  form_id: order_by
+  form_name: order_by
   id: order_by
   idempotency_key: order_by
   organization: organizations_order_by
@@ -4030,6 +4284,8 @@ input credit_transactions_order_by {
   quality_level: quality_levels_order_by
   quality_level_id: order_by
   transaction_type: order_by
+  user_display_name: order_by
+  user_id: order_by
 }
 
 """primary key columns input for table: credit_transactions"""
@@ -4067,6 +4323,10 @@ enum credit_transactions_select_column {
   """column name"""
   estimation_variance
   """column name"""
+  form_id
+  """column name"""
+  form_name
+  """column name"""
   id
   """column name"""
   idempotency_key
@@ -4080,6 +4340,10 @@ enum credit_transactions_select_column {
   quality_level_id
   """column name"""
   transaction_type
+  """column name"""
+  user_display_name
+  """column name"""
+  user_id
 }
 
 """
@@ -4111,6 +4375,14 @@ input credit_transactions_set_input {
   """
   estimated_credits: numeric
   """
+  FK to forms table. Which form this operation relates to. NULL for non-form operations. SET NULL on delete preserves history.
+  """
+  form_id: String
+  """
+  Snapshot of form name at transaction time. Preserved when form renamed/deleted. Example: "Product Feedback Form".
+  """
+  form_name: String
+  """
   Primary key using NanoID 12-character format for URL-safe, collision-resistant identification.
   """
   id: String
@@ -4138,6 +4410,14 @@ input credit_transactions_set_input {
   Type of credit transaction: ai_consumption, plan_allocation, topup_purchase, promo_bonus, admin_adjustment, plan_change_adjustment, expiration.
   """
   transaction_type: String
+  """
+  Snapshot of user email/name at transaction time. Preserved when user deleted. Values: email, "Anonymous", "System".
+  """
+  user_display_name: String
+  """
+  FK to users table. Who triggered this transaction. NULL for anonymous/system operations. SET NULL on delete preserves history.
+  """
+  user_id: String
 }
 
 """aggregate stddev on columns"""
@@ -4307,6 +4587,14 @@ input credit_transactions_stream_cursor_value_input {
   """
   estimation_variance: numeric
   """
+  FK to forms table. Which form this operation relates to. NULL for non-form operations. SET NULL on delete preserves history.
+  """
+  form_id: String
+  """
+  Snapshot of form name at transaction time. Preserved when form renamed/deleted. Example: "Product Feedback Form".
+  """
+  form_name: String
+  """
   Primary key using NanoID 12-character format for URL-safe, collision-resistant identification.
   """
   id: String
@@ -4334,6 +4622,14 @@ input credit_transactions_stream_cursor_value_input {
   Type of credit transaction: ai_consumption, plan_allocation, topup_purchase, promo_bonus, admin_adjustment, plan_change_adjustment, expiration.
   """
   transaction_type: String
+  """
+  Snapshot of user email/name at transaction time. Preserved when user deleted. Values: email, "Anonymous", "System".
+  """
+  user_display_name: String
+  """
+  FK to users table. Who triggered this transaction. NULL for anonymous/system operations. SET NULL on delete preserves history.
+  """
+  user_id: String
 }
 
 """aggregate sum on columns"""
@@ -4395,6 +4691,10 @@ enum credit_transactions_update_column {
   """column name"""
   estimated_credits
   """column name"""
+  form_id
+  """column name"""
+  form_name
+  """column name"""
   id
   """column name"""
   idempotency_key
@@ -4408,6 +4708,10 @@ enum credit_transactions_update_column {
   quality_level_id
   """column name"""
   transaction_type
+  """column name"""
+  user_display_name
+  """column name"""
+  user_id
 }
 
 input credit_transactions_updates {
