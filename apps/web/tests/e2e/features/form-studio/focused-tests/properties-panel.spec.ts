@@ -26,8 +26,8 @@ test.describe('Properties Panel - Focused Tests', () => {
     await actions.select.selectStep(welcomeStep.id);
     await actions.props.verifyWelcomePanel();
 
-    // Thank You step - another basic panel in branch flow
-    const thankYouStep = branchedFormViaApi.testimonialFlow.steps.find(s => s.stepType === 'thank_you')!;
+    // Thank You step - in outroFlow (shared ending section per ADR-018/ADR-020)
+    const thankYouStep = branchedFormViaApi.outroFlow.steps.find(s => s.stepType === 'thank_you')!;
     await actions.select.selectStep(thankYouStep.id);
     await actions.props.verifyThankYouPanel();
   });
