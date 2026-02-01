@@ -131,6 +131,12 @@ function generateRequestId(): string {
  * Note: 401 response stops Hasura from retrying (unlike 5xx which triggers retries)
  */
 const webhookAuthMiddleware: MiddlewareHandler = async (c, next) => {
+  // Skip auth for health endpoint (used by load balancers/monitoring)
+  if (c.req.path.endsWith('/health')) {
+    await next();
+    return;
+  }
+
   const webhookSecret = env.HASURA_WEBHOOK_SECRET;
 
   // Check if webhook secret is configured
