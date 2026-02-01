@@ -1,0 +1,86 @@
+table:
+  name: organization_credit_balances
+  schema: public
+object_relationships:
+  - name: organization
+    using:
+      foreign_key_constraint_on: organization_id
+computed_fields:
+  - name: available_credits
+    definition:
+      function:
+        name: ocb_available_credits
+        schema: public
+    comment: Available credits (monthly + bonus - reserved - used)
+  - name: spendable_credits
+    definition:
+      function:
+        name: ocb_spendable_credits
+        schema: public
+    comment: Spendable credits (available + overdraft allowance)
+  - name: used_this_period
+    definition:
+      function:
+        name: ocb_used_this_period
+        schema: public
+    comment: Credits consumed during current billing period
+select_permissions:
+  - role: member
+    permission:
+      columns:
+        - id
+        - organization_id
+        - monthly_credits
+        - bonus_credits
+        - reserved_credits
+        - period_start
+        - period_end
+        - created_at
+        - updated_at
+      computed_fields:
+        - available_credits
+        - spendable_credits
+        - used_this_period
+      filter:
+        organization_id:
+          _eq: X-Hasura-Organization-Id
+  - role: org_admin
+    permission:
+      columns: '*'
+      computed_fields:
+        - available_credits
+        - spendable_credits
+        - used_this_period
+      filter:
+        organization_id:
+          _eq: X-Hasura-Organization-Id
+      allow_aggregations: true
+  - role: owner
+    permission:
+      columns: '*'
+      computed_fields:
+        - available_credits
+        - spendable_credits
+        - used_this_period
+      filter:
+        organization_id:
+          _eq: X-Hasura-Organization-Id
+      allow_aggregations: true
+  - role: viewer
+    permission:
+      columns:
+        - id
+        - organization_id
+        - monthly_credits
+        - bonus_credits
+        - reserved_credits
+        - period_start
+        - period_end
+        - created_at
+      computed_fields:
+        - available_credits
+        - spendable_credits
+        - used_this_period
+      filter:
+        organization_id:
+          _eq: X-Hasura-Organization-Id
