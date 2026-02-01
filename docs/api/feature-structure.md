@@ -587,7 +587,7 @@ Entities represent domain objects and their data access operations.
 api/src/entities/{entityName}/
 ├── graphql/           # GraphQL operations for this entity
 │   └── {operation}.gql
-├── types/             # Type definitions (or models/ for legacy)
+├── models/            # Entity type definitions (database models)
 │   └── index.ts
 ├── functions/         # Pure functions ONLY (no side effects)
 │   ├── {function}.ts
@@ -598,8 +598,8 @@ api/src/entities/{entityName}/
 └── index.ts           # Barrel exports
 ```
 
-> **Note**: Entities may use `models/` instead of `types/` (legacy convention).
-> Both serve the same purpose: holding type definitions. Prefer `types/` for new entities.
+> **Note**: Entities use `models/` (not `types/`) because it aligns with database
+> entity terminology. Features and shared libs use `types/` for general type definitions.
 
 ### Example: `entities/user`
 
@@ -609,8 +609,8 @@ entities/user/
 │   ├── findUserById.gql
 │   ├── findUserByEmail.gql
 │   └── createUser.gql
-├── types/
-│   └── index.ts           # Type definitions
+├── models/
+│   └── index.ts           # Entity type definitions
 ├── functions/
 │   ├── formatUserName.ts  # Pure: string manipulation
 │   └── index.ts
@@ -630,10 +630,10 @@ entities/user/
  */
 
 // =============================================================================
-// Types
+// Models (Entity Types)
 // =============================================================================
 
-export type { User, UserRole } from './types';
+export type { User, UserRole } from './models';
 
 // =============================================================================
 // Operations (Impure - DB queries/mutations)
