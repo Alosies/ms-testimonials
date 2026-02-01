@@ -37,7 +37,7 @@ export {
   ImprovementThankYouSchema,
   StepContentSchema,
   type AIResponseSchema,
-} from './functions';
+} from './schemas';
 
 // =============================================================================
 // Prompts (AI prompt templates)

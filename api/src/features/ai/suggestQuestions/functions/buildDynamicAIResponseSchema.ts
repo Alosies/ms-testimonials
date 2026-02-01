@@ -6,7 +6,7 @@ import {
   FormStructureSchema,
   StepContentSchema,
   type AIResponseSchema,
-} from './schemas';
+} from '../schemas';
 
 /**
  * Builds the dynamic Zod schema for AI response based on allowed question types.

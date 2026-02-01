@@ -27,6 +27,9 @@ api/src/features/{feature}/
 ├── prompts/           # AI prompt templates (AI features only)
 │   ├── {prompt}.ts
 │   └── index.ts
+├── schemas/           # Zod schemas for validation
+│   ├── {schema}.ts
+│   └── index.ts
 ├── functions/         # Pure functions ONLY
 │   ├── {function}.ts
 │   └── index.ts
@@ -100,6 +103,55 @@ export const TESTIMONIAL_ASSEMBLY_SYSTEM_PROMPT = `You are an expert...`;
 ```typescript
 // prompts/index.ts
 export { TESTIMONIAL_ASSEMBLY_SYSTEM_PROMPT } from './systemPrompt';
+```
+
+---
+
+### `schemas/` - Zod Schemas
+
+**Contains**: Zod schema definitions for request/response validation.
+
+**Rules**:
+- One schema file per logical grouping (e.g., `aiResponse.ts`, `request.ts`)
+- Export both schemas and inferred types
+- Use `.describe()` for OpenAPI documentation
+- Schemas are pure (no side effects)
+
+**Example**:
+```typescript
+// schemas/aiResponse.ts
+import { z } from 'zod';
+
+/**
+ * Schema for inferred context from product analysis
+ */
+export const InferredContextSchema = z.object({
+  industry: z.string().describe('The inferred industry/category'),
+  audience: z.string().describe('The target audience'),
+  tone: z.string().describe('Recommended tone'),
+});
+
+/**
+ * Schema for form structure recommendations
+ */
+export const FormStructureSchema = z.object({
+  branching_recommended: z.boolean().describe('Whether branching is recommended'),
+  rating_question_index: z.number().int().describe('Position of the rating question'),
+});
+
+// Export inferred types
+export type InferredContext = z.infer<typeof InferredContextSchema>;
+export type FormStructure = z.infer<typeof FormStructureSchema>;
+```
+
+```typescript
+// schemas/index.ts
+export {
+  InferredContextSchema,
+  FormStructureSchema,
+  type InferredContext,
+  type FormStructure,
+} from './aiResponse';
 ```
 
 ---
@@ -268,6 +320,8 @@ export { assembleTestimonial as default } from './handlers';
 |------|--------|---------|
 | GraphQL query/mutation | `graphql/` | `getFormById.gql` |
 | AI system prompt | `prompts/` | `systemPrompt.ts` |
+| Zod validation schema | `schemas/` | `aiResponse.ts` |
+| Request/response types | `schemas/` | `request.ts` |
 | String manipulation | `functions/` | `buildUserMessage.ts` |
 | Data transformation | `functions/` | `analyzeTestimonial.ts` |
 | Compute derived values | `functions/` | `deriveSuggestions.ts` |
@@ -304,21 +358,22 @@ features/dashboard/
 
 **AI feature** (full structure):
 ```
-features/ai/assembleTestimonial/
+features/ai/suggestQuestions/
 ├── graphql/
 │   └── getFormById.gql
 ├── prompts/
 │   ├── systemPrompt.ts
 │   └── index.ts
+├── schemas/
+│   ├── aiResponse.ts
+│   └── index.ts
 ├── functions/
 │   ├── buildUserMessage.ts
-│   ├── deriveSuggestions.ts
-│   ├── analyzeTestimonial.ts
+│   ├── buildAvailableTypesSection.ts
+│   ├── buildDynamicAIResponseSchema.ts
 │   └── index.ts
 ├── handlers/
-│   ├── assembleTestimonial.ts
-│   ├── getFormById.ts
-│   ├── executeAssembly.ts
+│   ├── suggestQuestions.ts
 │   └── index.ts
 └── index.ts
 ```
@@ -332,6 +387,7 @@ features/ai/assembleTestimonial/
 | Type | Convention | Example |
 |------|------------|---------|
 | GraphQL operation | camelCase.gql | `getFormById.gql` |
+| Zod schema | camelCase.ts | `aiResponse.ts` |
 | Pure function | camelCase.ts | `buildUserMessage.ts` |
 | HTTP handler | camelCase.ts | `assembleTestimonial.ts` |
 | Prompt constant | camelCase.ts | `systemPrompt.ts` |
@@ -359,6 +415,7 @@ features/ai/assembleTestimonial/
 - [ ] Create feature folder under `api/src/features/{domain}/{feature}/`
 - [ ] Add `graphql/` folder if feature needs GraphQL operations
 - [ ] Add `prompts/` folder if feature uses AI (with system prompts)
+- [ ] Add `schemas/` folder for Zod validation schemas
 - [ ] Add `functions/` folder for pure functions (no side effects)
 - [ ] Add `handlers/` folder for HTTP handlers and impure operations
 - [ ] Create `index.ts` with organized barrel exports
