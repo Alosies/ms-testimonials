@@ -1,4 +1,7 @@
-// Error Type Definitions
+// =============================================================================
+// Error Types (re-exported from types/)
+// =============================================================================
+
 export type {
   AIAccessError,
   AICapabilityDeniedError,
@@ -6,9 +9,12 @@ export type {
   DuplicateRequestError,
   RateLimitExceededError,
   AIAccessErrorType,
-} from './aiAccessErrors';
+} from '../types';
 
-// Type Guards
+// =============================================================================
+// Type Guards (pure functions)
+// =============================================================================
+
 export {
   isAIAccessError,
   isCapabilityDeniedError,
@@ -17,7 +23,10 @@ export {
   isRateLimitExceededError,
 } from './aiAccessErrors';
 
-// Error Factory Functions
+// =============================================================================
+// Factory Functions (pure functions)
+// =============================================================================
+
 export {
   createCapabilityDeniedError,
   createInsufficientCreditsError,

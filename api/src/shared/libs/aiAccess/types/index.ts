@@ -20,3 +20,13 @@ export type {
   LLMProvider,
   LLMQualityTier,
 } from './aiCapability';
+
+export type {
+  // Error Types
+  AIAccessError,
+  AICapabilityDeniedError,
+  InsufficientCreditsError,
+  DuplicateRequestError,
+  RateLimitExceededError,
+  AIAccessErrorType,
+} from './aiAccessErrors';
