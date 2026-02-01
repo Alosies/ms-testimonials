@@ -171,29 +171,35 @@ hasura migrate create "migration_name" --database-name default
 
 ### Data Layer Decision Tree (Hasura vs Drizzle)
 
+**Full documentation**: [docs/api/data-access-strategy.md](docs/api/data-access-strategy.md)
+
 Use **Hasura GraphQL** for:
-- Simple CRUD operations (create, read, update, delete single entities)
+- READ operations (type-safe via codegen, RLS for org isolation)
+- Simple CRUD (single entity create/update/delete)
 - Real-time subscriptions
 - Frontend data fetching with Apollo Client
-- Operations that benefit from automatic pagination
+- Declarative joins (relationships in metadata)
 
 Use **Drizzle ORM** for:
+- Multi-table transactions (atomic operations)
+- Conditional updates (optimistic locking, WHERE clauses)
 - Complex aggregations (COUNT, SUM, AVG with GROUP BY)
-- Multi-table JOINs that Hasura can't express efficiently
 - Bulk operations (batch inserts, updates)
 - Raw SQL when needed
-- Analytics queries (e.g., form conversion funnels)
 
-**Decision Flow:**
+**Quick Decision:**
 ```
-Is this a simple entity CRUD? → Hasura
+READ operation?
 ├── Yes: Use Hasura GraphQL
-└── No: Does it need aggregation/joins?
-    ├── Yes: Use Drizzle ORM (api/src/db)
-    └── No: Does it need real-time updates?
-        ├── Yes: Use Hasura subscriptions
-        └── No: Use Drizzle for better SQL control
+└── No (WRITE): Does it need transactions or conditional updates?
+    ├── Yes: Use Drizzle ORM
+    └── No: Use Hasura mutation
 ```
+
+**Example - Credits Feature (Hybrid Approach):**
+- `checkCreditBalance` → GraphQL (read-only, type-safe)
+- `reserveCredits` → Drizzle (transaction: balance + reservation)
+- `settleCredits` → Drizzle (conditional update, deduction split)
 
 ### Core Entities
 

@@ -29,25 +29,64 @@ hasura migrate apply --type down --version {version} --database-name default
 
 ## Migration Naming Convention
 
-**Format:** `{timestamp}_{YYYY_MM_DD_HHMM}__{table_name}__{action}`
+**Format:** `{timestamp}_{YYYY_MM_DD_HHMM}__{subject}__{action}`
 
 ```bash
 # Get timestamp
 echo "$(date +%s)000" && TZ='Asia/Kolkata' date '+%Y_%m_%d_%H%M'
-
-# Examples
-1766994588000_2025_12_29_1319__nanoid__utility-function
-1766994648000_2025_12_29_1320__users__create_table
-1766994700000_2025_12_29_1321__forms__add_theme_column
 ```
 
-**Action Keywords:**
-- `utility-function` - Database functions
-- `create_table` - New tables
+### Two Migration Categories
+
+**1. Table Migrations** - Changes to a specific table
+```
+{timestamp}_{date}__{table_name}__{action}
+```
+
+Examples:
+```
+1766994648000_2025_12_29_1320__users__create_table
+1766994700000_2025_12_29_1321__forms__add_theme_column
+1769900000000_2026_02_01_1000__organization_credit_balances__add_computed_fields
+```
+
+**2. Standalone Utility Functions** - Shared functions used across tables
+```
+{timestamp}_{date}__{function_name}__utility-function
+```
+
+Examples:
+```
+1766994588000_2025_12_29_1319__nanoid__utility-function
+1766994648000_2025_12_29_1320__updated_at__utility-function
+1769863867000_2026_01_31_1821__credit_functions__utility-function
+```
+
+### When to Use Each
+
+| Scenario | Pattern | Example |
+|----------|---------|---------|
+| New table | `{table}__create_table` | `users__create_table` |
+| Add column to table | `{table}__add_column` | `forms__add_theme_column` |
+| Add computed fields to table | `{table}__add_computed_fields` | `organization_credit_balances__add_computed_fields` |
+| Add trigger to table | `{table}__add_trigger` | `testimonials__add_status_trigger` |
+| Shared utility function | `{function}__utility-function` | `nanoid__utility-function` |
+| Group of related utilities | `{group}__utility-function` | `credit_functions__utility-function` |
+
+### Action Keywords
+
+**Table actions:**
+- `create_table` - New table
 - `alter_table` - Modify structure
 - `add_column` - Add fields
 - `add_index` - Performance indexes
 - `add_foreign_key` - Relationships
+- `add_computed_fields` - Hasura computed fields (wrapper functions)
+- `add_trigger` - Table-specific triggers
+- `add_constraint` - Check constraints, unique constraints
+
+**Standalone actions:**
+- `utility-function` - Shared database functions (nanoid, timestamps, calculations)
 
 ## Standard Table Template
 

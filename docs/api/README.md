@@ -12,6 +12,7 @@
 - `adr-021-api-service-data-layer-architecture` - Architecture decisions
 - `api-endpoint-creation` - Step-by-step endpoint creation
 - `api-feature-structure` - Internal feature folder structure standards
+- `api-data-access-strategy` - When to use Hasura GraphQL vs Drizzle ORM
 - `graphql-code-skill` - GraphQL/Hasura patterns (complementary)
 
 ---
