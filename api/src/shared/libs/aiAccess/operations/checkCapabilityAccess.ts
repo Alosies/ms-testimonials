@@ -169,6 +169,12 @@ export async function checkCapabilityAccess(
   // Step 3: Get all models for these quality levels
   const qualityLevelIds = qualityLevelsResult.map((ql) => ql.quality_level_id);
 
+  // Build IN clause dynamically - sql.join() properly escapes each value
+  const qualityLevelIdsSql = sql.join(
+    qualityLevelIds.map((id) => sql`${id}`),
+    sql`, `
+  );
+
   const modelsResult = await db.execute<ModelRow>(sql`
     SELECT
       pacql.quality_level_id,
@@ -182,7 +188,7 @@ export async function checkCapabilityAccess(
       AND op.status IN ('active', 'trial')
       AND pac.ai_capability_id = ${capabilityRow.capability_id}
       AND pac.is_enabled = true
-      AND pacql.quality_level_id = ANY(${qualityLevelIds})
+      AND pacql.quality_level_id IN (${qualityLevelIdsSql})
     ORDER BY pqlm.priority ASC
   `);
 
