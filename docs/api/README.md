@@ -11,10 +11,8 @@
 **Related ReadMes**:
 - `adr-021-api-service-data-layer-architecture` - Architecture decisions
 - `api-endpoint-creation` - Step-by-step endpoint creation
+- `api-feature-structure` - Internal feature folder structure standards
 - `graphql-code-skill` - GraphQL/Hasura patterns (complementary)
-
-**Child ReadMes**:
-- `api-endpoint-creation` - Detailed endpoint creation guide
 
 ---
 
@@ -56,9 +54,13 @@ api/src/
 │   └── middleware/
 │       └── auth.ts      # JWT validation
 │
-└── features/            # Business logic
+└── features/            # Business logic (see feature-structure.md)
     └── {feature}/
-        └── index.ts     # Handler implementation
+        ├── graphql/     # .gql files (codegen)
+        ├── prompts/     # AI prompts (AI features)
+        ├── functions/   # Pure functions only
+        ├── handlers/    # HTTP handlers + impure ops
+        └── index.ts     # Barrel exports
 ```
 
 ---

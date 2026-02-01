@@ -1,0 +1,9 @@
+query GetFormByIdForAssembly($id: String!) {
+  forms_by_pk(id: $id) {
+    id
+    name
+    product_name
+    is_active
+    organization_id
+  }
+}

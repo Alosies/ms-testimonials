@@ -18,12 +18,30 @@ Create REST API endpoints following Testimonials patterns with full type safety.
 api/src/
 ├── shared/schemas/{feature}.ts   # 1. Zod schemas (SOURCE OF TRUTH)
 ├── routes/{feature}.ts           # 2. OpenAPI route
-├── features/{feature}/           # 3. Handler logic
+├── features/{feature}/           # 3. Handler logic (see structure below)
 └── routes/index.ts               # 4. Export route
 
 apps/web/src/entities/{entity}/
 └── api/useApiFor{Entity}.ts      # 5. Frontend composable
 ```
+
+### Feature Folder Structure
+
+See **[feature-structure.md](../../../docs/api/feature-structure.md)** for full details.
+
+```
+features/{feature}/
+├── graphql/           # .gql files (codegen generates types)
+├── prompts/           # AI prompts (AI features only)
+├── functions/         # Pure functions ONLY (no side effects)
+├── handlers/          # HTTP handlers + impure operations
+└── index.ts           # Barrel exports
+```
+
+**Key Rules**:
+- `functions/` = Pure only (no API calls, no DB, no logging)
+- `handlers/` = HTTP handlers + anything impure
+- Function names: Use `derive*`, `build*`, `analyze*` (not `generate*`)
 
 ---
 
@@ -164,6 +182,7 @@ export function useApiFor{Entity}() {
 | Topic | Documentation |
 |-------|---------------|
 | Full walkthrough | [endpoint-creation.md](../../../docs/api/endpoint-creation.md) |
+| Feature folder structure | [feature-structure.md](../../../docs/api/feature-structure.md) |
 | Type safety strategy | [README.md](../../../docs/api/README.md) |
 | Architecture decisions | [ADR-021](../../../docs/adr/021-api-service-data-layer-architecture/adr.md) |
 

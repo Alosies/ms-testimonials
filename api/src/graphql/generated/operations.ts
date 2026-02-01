@@ -98,6 +98,533 @@ export type String_Comparison_Exp = {
   _similar?: InputMaybe<Scalars['String']['input']>;
 };
 
+/** Catalog of AI features available in the platform. Defines each capability with display info and credit cost estimates per quality level. Used for UI display and credit calculation. */
+export type Ai_Capabilities = {
+  __typename?: 'ai_capabilities';
+  /** Category for grouping related capabilities in UI. Examples: forms, testimonials, general. Defaults to general. */
+  category: Scalars['String']['output'];
+  /** Timestamp when this record was first created. Set automatically, never modified. */
+  created_at: Scalars['timestamptz']['output'];
+  /** An array relationship */
+  credit_reservations: Array<Credit_Reservations>;
+  /** An aggregate relationship */
+  credit_reservations_aggregate: Credit_Reservations_Aggregate;
+  /** An array relationship */
+  credit_transactions: Array<Credit_Transactions>;
+  /** An aggregate relationship */
+  credit_transactions_aggregate: Credit_Transactions_Aggregate;
+  /** Detailed description of what this AI capability does. Shown to users to help them understand the feature. */
+  description: Maybe<Scalars['String']['output']>;
+  /** Estimated credits consumed when using enhanced quality level. Enhanced uses standard models with balanced quality/cost. Default: 1.5. */
+  estimated_credits_enhanced: Scalars['numeric']['output'];
+  /** Estimated credits consumed when using fast quality level. Fast uses smaller/cheaper models for quick responses. Default: 1.0. */
+  estimated_credits_fast: Scalars['numeric']['output'];
+  /** Estimated credits consumed when using premium quality level. Premium uses the best models for highest quality output. Default: 3.0. */
+  estimated_credits_premium: Scalars['numeric']['output'];
+  /** Icon identifier for displaying in UI (e.g., Lucide icon name). Examples: sparkles, wand-2, message-square. */
+  icon: Maybe<Scalars['String']['output']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id: Scalars['String']['output'];
+  /** Whether this capability is currently available to users. Set to false to temporarily disable a capability. Default: true. */
+  is_active: Scalars['Boolean']['output'];
+  /** Human-readable display name shown in UI. Examples: Smart Question Generation, Testimonial Assembly. */
+  name: Scalars['String']['output'];
+  /** An array relationship */
+  plan_ai_capabilities: Array<Plan_Ai_Capabilities>;
+  /** An aggregate relationship */
+  plan_ai_capabilities_aggregate: Plan_Ai_Capabilities_Aggregate;
+  /** Machine-readable unique identifier for the capability. Used in code to reference specific capabilities. Examples: question_generation, testimonial_assembly, testimonial_polish. */
+  unique_name: Scalars['String']['output'];
+  /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
+  updated_at: Scalars['timestamptz']['output'];
+};
+
+
+/** Catalog of AI features available in the platform. Defines each capability with display info and credit cost estimates per quality level. Used for UI display and credit calculation. */
+export type Ai_CapabilitiesCredit_ReservationsArgs = {
+  distinct_on?: InputMaybe<Array<Credit_Reservations_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Credit_Reservations_Order_By>>;
+  where?: InputMaybe<Credit_Reservations_Bool_Exp>;
+};
+
+
+/** Catalog of AI features available in the platform. Defines each capability with display info and credit cost estimates per quality level. Used for UI display and credit calculation. */
+export type Ai_CapabilitiesCredit_Reservations_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Credit_Reservations_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Credit_Reservations_Order_By>>;
+  where?: InputMaybe<Credit_Reservations_Bool_Exp>;
+};
+
+
+/** Catalog of AI features available in the platform. Defines each capability with display info and credit cost estimates per quality level. Used for UI display and credit calculation. */
+export type Ai_CapabilitiesCredit_TransactionsArgs = {
+  distinct_on?: InputMaybe<Array<Credit_Transactions_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Credit_Transactions_Order_By>>;
+  where?: InputMaybe<Credit_Transactions_Bool_Exp>;
+};
+
+
+/** Catalog of AI features available in the platform. Defines each capability with display info and credit cost estimates per quality level. Used for UI display and credit calculation. */
+export type Ai_CapabilitiesCredit_Transactions_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Credit_Transactions_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Credit_Transactions_Order_By>>;
+  where?: InputMaybe<Credit_Transactions_Bool_Exp>;
+};
+
+
+/** Catalog of AI features available in the platform. Defines each capability with display info and credit cost estimates per quality level. Used for UI display and credit calculation. */
+export type Ai_CapabilitiesPlan_Ai_CapabilitiesArgs = {
+  distinct_on?: InputMaybe<Array<Plan_Ai_Capabilities_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Plan_Ai_Capabilities_Order_By>>;
+  where?: InputMaybe<Plan_Ai_Capabilities_Bool_Exp>;
+};
+
+
+/** Catalog of AI features available in the platform. Defines each capability with display info and credit cost estimates per quality level. Used for UI display and credit calculation. */
+export type Ai_CapabilitiesPlan_Ai_Capabilities_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Plan_Ai_Capabilities_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Plan_Ai_Capabilities_Order_By>>;
+  where?: InputMaybe<Plan_Ai_Capabilities_Bool_Exp>;
+};
+
+/** aggregated selection of "ai_capabilities" */
+export type Ai_Capabilities_Aggregate = {
+  __typename?: 'ai_capabilities_aggregate';
+  aggregate: Maybe<Ai_Capabilities_Aggregate_Fields>;
+  nodes: Array<Ai_Capabilities>;
+};
+
+/** aggregate fields of "ai_capabilities" */
+export type Ai_Capabilities_Aggregate_Fields = {
+  __typename?: 'ai_capabilities_aggregate_fields';
+  avg: Maybe<Ai_Capabilities_Avg_Fields>;
+  count: Scalars['Int']['output'];
+  max: Maybe<Ai_Capabilities_Max_Fields>;
+  min: Maybe<Ai_Capabilities_Min_Fields>;
+  stddev: Maybe<Ai_Capabilities_Stddev_Fields>;
+  stddev_pop: Maybe<Ai_Capabilities_Stddev_Pop_Fields>;
+  stddev_samp: Maybe<Ai_Capabilities_Stddev_Samp_Fields>;
+  sum: Maybe<Ai_Capabilities_Sum_Fields>;
+  var_pop: Maybe<Ai_Capabilities_Var_Pop_Fields>;
+  var_samp: Maybe<Ai_Capabilities_Var_Samp_Fields>;
+  variance: Maybe<Ai_Capabilities_Variance_Fields>;
+};
+
+
+/** aggregate fields of "ai_capabilities" */
+export type Ai_Capabilities_Aggregate_FieldsCountArgs = {
+  columns?: InputMaybe<Array<Ai_Capabilities_Select_Column>>;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+/** aggregate avg on columns */
+export type Ai_Capabilities_Avg_Fields = {
+  __typename?: 'ai_capabilities_avg_fields';
+  /** Estimated credits consumed when using enhanced quality level. Enhanced uses standard models with balanced quality/cost. Default: 1.5. */
+  estimated_credits_enhanced: Maybe<Scalars['Float']['output']>;
+  /** Estimated credits consumed when using fast quality level. Fast uses smaller/cheaper models for quick responses. Default: 1.0. */
+  estimated_credits_fast: Maybe<Scalars['Float']['output']>;
+  /** Estimated credits consumed when using premium quality level. Premium uses the best models for highest quality output. Default: 3.0. */
+  estimated_credits_premium: Maybe<Scalars['Float']['output']>;
+};
+
+/** Boolean expression to filter rows from the table "ai_capabilities". All fields are combined with a logical 'AND'. */
+export type Ai_Capabilities_Bool_Exp = {
+  _and?: InputMaybe<Array<Ai_Capabilities_Bool_Exp>>;
+  _not?: InputMaybe<Ai_Capabilities_Bool_Exp>;
+  _or?: InputMaybe<Array<Ai_Capabilities_Bool_Exp>>;
+  category?: InputMaybe<String_Comparison_Exp>;
+  created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  credit_reservations?: InputMaybe<Credit_Reservations_Bool_Exp>;
+  credit_reservations_aggregate?: InputMaybe<Credit_Reservations_Aggregate_Bool_Exp>;
+  credit_transactions?: InputMaybe<Credit_Transactions_Bool_Exp>;
+  credit_transactions_aggregate?: InputMaybe<Credit_Transactions_Aggregate_Bool_Exp>;
+  description?: InputMaybe<String_Comparison_Exp>;
+  estimated_credits_enhanced?: InputMaybe<Numeric_Comparison_Exp>;
+  estimated_credits_fast?: InputMaybe<Numeric_Comparison_Exp>;
+  estimated_credits_premium?: InputMaybe<Numeric_Comparison_Exp>;
+  icon?: InputMaybe<String_Comparison_Exp>;
+  id?: InputMaybe<String_Comparison_Exp>;
+  is_active?: InputMaybe<Boolean_Comparison_Exp>;
+  name?: InputMaybe<String_Comparison_Exp>;
+  plan_ai_capabilities?: InputMaybe<Plan_Ai_Capabilities_Bool_Exp>;
+  plan_ai_capabilities_aggregate?: InputMaybe<Plan_Ai_Capabilities_Aggregate_Bool_Exp>;
+  unique_name?: InputMaybe<String_Comparison_Exp>;
+  updated_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+};
+
+/** unique or primary key constraints on table "ai_capabilities" */
+export const Ai_Capabilities_Constraint = {
+  /** unique or primary key constraint on columns "id" */
+  AiCapabilitiesPkey: 'ai_capabilities_pkey',
+  /** unique or primary key constraint on columns "unique_name" */
+  AiCapabilitiesUniqueNameKey: 'ai_capabilities_unique_name_key'
+} as const;
+
+export type Ai_Capabilities_Constraint = typeof Ai_Capabilities_Constraint[keyof typeof Ai_Capabilities_Constraint];
+/** input type for incrementing numeric columns in table "ai_capabilities" */
+export type Ai_Capabilities_Inc_Input = {
+  /** Estimated credits consumed when using enhanced quality level. Enhanced uses standard models with balanced quality/cost. Default: 1.5. */
+  estimated_credits_enhanced?: InputMaybe<Scalars['numeric']['input']>;
+  /** Estimated credits consumed when using fast quality level. Fast uses smaller/cheaper models for quick responses. Default: 1.0. */
+  estimated_credits_fast?: InputMaybe<Scalars['numeric']['input']>;
+  /** Estimated credits consumed when using premium quality level. Premium uses the best models for highest quality output. Default: 3.0. */
+  estimated_credits_premium?: InputMaybe<Scalars['numeric']['input']>;
+};
+
+/** input type for inserting data into table "ai_capabilities" */
+export type Ai_Capabilities_Insert_Input = {
+  /** Category for grouping related capabilities in UI. Examples: forms, testimonials, general. Defaults to general. */
+  category?: InputMaybe<Scalars['String']['input']>;
+  /** Timestamp when this record was first created. Set automatically, never modified. */
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  credit_reservations?: InputMaybe<Credit_Reservations_Arr_Rel_Insert_Input>;
+  credit_transactions?: InputMaybe<Credit_Transactions_Arr_Rel_Insert_Input>;
+  /** Detailed description of what this AI capability does. Shown to users to help them understand the feature. */
+  description?: InputMaybe<Scalars['String']['input']>;
+  /** Estimated credits consumed when using enhanced quality level. Enhanced uses standard models with balanced quality/cost. Default: 1.5. */
+  estimated_credits_enhanced?: InputMaybe<Scalars['numeric']['input']>;
+  /** Estimated credits consumed when using fast quality level. Fast uses smaller/cheaper models for quick responses. Default: 1.0. */
+  estimated_credits_fast?: InputMaybe<Scalars['numeric']['input']>;
+  /** Estimated credits consumed when using premium quality level. Premium uses the best models for highest quality output. Default: 3.0. */
+  estimated_credits_premium?: InputMaybe<Scalars['numeric']['input']>;
+  /** Icon identifier for displaying in UI (e.g., Lucide icon name). Examples: sparkles, wand-2, message-square. */
+  icon?: InputMaybe<Scalars['String']['input']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id?: InputMaybe<Scalars['String']['input']>;
+  /** Whether this capability is currently available to users. Set to false to temporarily disable a capability. Default: true. */
+  is_active?: InputMaybe<Scalars['Boolean']['input']>;
+  /** Human-readable display name shown in UI. Examples: Smart Question Generation, Testimonial Assembly. */
+  name?: InputMaybe<Scalars['String']['input']>;
+  plan_ai_capabilities?: InputMaybe<Plan_Ai_Capabilities_Arr_Rel_Insert_Input>;
+  /** Machine-readable unique identifier for the capability. Used in code to reference specific capabilities. Examples: question_generation, testimonial_assembly, testimonial_polish. */
+  unique_name?: InputMaybe<Scalars['String']['input']>;
+  /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+};
+
+/** aggregate max on columns */
+export type Ai_Capabilities_Max_Fields = {
+  __typename?: 'ai_capabilities_max_fields';
+  /** Category for grouping related capabilities in UI. Examples: forms, testimonials, general. Defaults to general. */
+  category: Maybe<Scalars['String']['output']>;
+  /** Timestamp when this record was first created. Set automatically, never modified. */
+  created_at: Maybe<Scalars['timestamptz']['output']>;
+  /** Detailed description of what this AI capability does. Shown to users to help them understand the feature. */
+  description: Maybe<Scalars['String']['output']>;
+  /** Estimated credits consumed when using enhanced quality level. Enhanced uses standard models with balanced quality/cost. Default: 1.5. */
+  estimated_credits_enhanced: Maybe<Scalars['numeric']['output']>;
+  /** Estimated credits consumed when using fast quality level. Fast uses smaller/cheaper models for quick responses. Default: 1.0. */
+  estimated_credits_fast: Maybe<Scalars['numeric']['output']>;
+  /** Estimated credits consumed when using premium quality level. Premium uses the best models for highest quality output. Default: 3.0. */
+  estimated_credits_premium: Maybe<Scalars['numeric']['output']>;
+  /** Icon identifier for displaying in UI (e.g., Lucide icon name). Examples: sparkles, wand-2, message-square. */
+  icon: Maybe<Scalars['String']['output']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id: Maybe<Scalars['String']['output']>;
+  /** Human-readable display name shown in UI. Examples: Smart Question Generation, Testimonial Assembly. */
+  name: Maybe<Scalars['String']['output']>;
+  /** Machine-readable unique identifier for the capability. Used in code to reference specific capabilities. Examples: question_generation, testimonial_assembly, testimonial_polish. */
+  unique_name: Maybe<Scalars['String']['output']>;
+  /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
+  updated_at: Maybe<Scalars['timestamptz']['output']>;
+};
+
+/** aggregate min on columns */
+export type Ai_Capabilities_Min_Fields = {
+  __typename?: 'ai_capabilities_min_fields';
+  /** Category for grouping related capabilities in UI. Examples: forms, testimonials, general. Defaults to general. */
+  category: Maybe<Scalars['String']['output']>;
+  /** Timestamp when this record was first created. Set automatically, never modified. */
+  created_at: Maybe<Scalars['timestamptz']['output']>;
+  /** Detailed description of what this AI capability does. Shown to users to help them understand the feature. */
+  description: Maybe<Scalars['String']['output']>;
+  /** Estimated credits consumed when using enhanced quality level. Enhanced uses standard models with balanced quality/cost. Default: 1.5. */
+  estimated_credits_enhanced: Maybe<Scalars['numeric']['output']>;
+  /** Estimated credits consumed when using fast quality level. Fast uses smaller/cheaper models for quick responses. Default: 1.0. */
+  estimated_credits_fast: Maybe<Scalars['numeric']['output']>;
+  /** Estimated credits consumed when using premium quality level. Premium uses the best models for highest quality output. Default: 3.0. */
+  estimated_credits_premium: Maybe<Scalars['numeric']['output']>;
+  /** Icon identifier for displaying in UI (e.g., Lucide icon name). Examples: sparkles, wand-2, message-square. */
+  icon: Maybe<Scalars['String']['output']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id: Maybe<Scalars['String']['output']>;
+  /** Human-readable display name shown in UI. Examples: Smart Question Generation, Testimonial Assembly. */
+  name: Maybe<Scalars['String']['output']>;
+  /** Machine-readable unique identifier for the capability. Used in code to reference specific capabilities. Examples: question_generation, testimonial_assembly, testimonial_polish. */
+  unique_name: Maybe<Scalars['String']['output']>;
+  /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
+  updated_at: Maybe<Scalars['timestamptz']['output']>;
+};
+
+/** response of any mutation on the table "ai_capabilities" */
+export type Ai_Capabilities_Mutation_Response = {
+  __typename?: 'ai_capabilities_mutation_response';
+  /** number of rows affected by the mutation */
+  affected_rows: Scalars['Int']['output'];
+  /** data from the rows affected by the mutation */
+  returning: Array<Ai_Capabilities>;
+};
+
+/** input type for inserting object relation for remote table "ai_capabilities" */
+export type Ai_Capabilities_Obj_Rel_Insert_Input = {
+  data: Ai_Capabilities_Insert_Input;
+  /** upsert condition */
+  on_conflict?: InputMaybe<Ai_Capabilities_On_Conflict>;
+};
+
+/** on_conflict condition type for table "ai_capabilities" */
+export type Ai_Capabilities_On_Conflict = {
+  constraint: Ai_Capabilities_Constraint;
+  update_columns?: Array<Ai_Capabilities_Update_Column>;
+  where?: InputMaybe<Ai_Capabilities_Bool_Exp>;
+};
+
+/** Ordering options when selecting data from "ai_capabilities". */
+export type Ai_Capabilities_Order_By = {
+  category?: InputMaybe<Order_By>;
+  created_at?: InputMaybe<Order_By>;
+  credit_reservations_aggregate?: InputMaybe<Credit_Reservations_Aggregate_Order_By>;
+  credit_transactions_aggregate?: InputMaybe<Credit_Transactions_Aggregate_Order_By>;
+  description?: InputMaybe<Order_By>;
+  estimated_credits_enhanced?: InputMaybe<Order_By>;
+  estimated_credits_fast?: InputMaybe<Order_By>;
+  estimated_credits_premium?: InputMaybe<Order_By>;
+  icon?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
+  is_active?: InputMaybe<Order_By>;
+  name?: InputMaybe<Order_By>;
+  plan_ai_capabilities_aggregate?: InputMaybe<Plan_Ai_Capabilities_Aggregate_Order_By>;
+  unique_name?: InputMaybe<Order_By>;
+  updated_at?: InputMaybe<Order_By>;
+};
+
+/** primary key columns input for table: ai_capabilities */
+export type Ai_Capabilities_Pk_Columns_Input = {
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id: Scalars['String']['input'];
+};
+
+/** select columns of table "ai_capabilities" */
+export const Ai_Capabilities_Select_Column = {
+  /** column name */
+  Category: 'category',
+  /** column name */
+  CreatedAt: 'created_at',
+  /** column name */
+  Description: 'description',
+  /** column name */
+  EstimatedCreditsEnhanced: 'estimated_credits_enhanced',
+  /** column name */
+  EstimatedCreditsFast: 'estimated_credits_fast',
+  /** column name */
+  EstimatedCreditsPremium: 'estimated_credits_premium',
+  /** column name */
+  Icon: 'icon',
+  /** column name */
+  Id: 'id',
+  /** column name */
+  IsActive: 'is_active',
+  /** column name */
+  Name: 'name',
+  /** column name */
+  UniqueName: 'unique_name',
+  /** column name */
+  UpdatedAt: 'updated_at'
+} as const;
+
+export type Ai_Capabilities_Select_Column = typeof Ai_Capabilities_Select_Column[keyof typeof Ai_Capabilities_Select_Column];
+/** input type for updating data in table "ai_capabilities" */
+export type Ai_Capabilities_Set_Input = {
+  /** Category for grouping related capabilities in UI. Examples: forms, testimonials, general. Defaults to general. */
+  category?: InputMaybe<Scalars['String']['input']>;
+  /** Timestamp when this record was first created. Set automatically, never modified. */
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Detailed description of what this AI capability does. Shown to users to help them understand the feature. */
+  description?: InputMaybe<Scalars['String']['input']>;
+  /** Estimated credits consumed when using enhanced quality level. Enhanced uses standard models with balanced quality/cost. Default: 1.5. */
+  estimated_credits_enhanced?: InputMaybe<Scalars['numeric']['input']>;
+  /** Estimated credits consumed when using fast quality level. Fast uses smaller/cheaper models for quick responses. Default: 1.0. */
+  estimated_credits_fast?: InputMaybe<Scalars['numeric']['input']>;
+  /** Estimated credits consumed when using premium quality level. Premium uses the best models for highest quality output. Default: 3.0. */
+  estimated_credits_premium?: InputMaybe<Scalars['numeric']['input']>;
+  /** Icon identifier for displaying in UI (e.g., Lucide icon name). Examples: sparkles, wand-2, message-square. */
+  icon?: InputMaybe<Scalars['String']['input']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id?: InputMaybe<Scalars['String']['input']>;
+  /** Whether this capability is currently available to users. Set to false to temporarily disable a capability. Default: true. */
+  is_active?: InputMaybe<Scalars['Boolean']['input']>;
+  /** Human-readable display name shown in UI. Examples: Smart Question Generation, Testimonial Assembly. */
+  name?: InputMaybe<Scalars['String']['input']>;
+  /** Machine-readable unique identifier for the capability. Used in code to reference specific capabilities. Examples: question_generation, testimonial_assembly, testimonial_polish. */
+  unique_name?: InputMaybe<Scalars['String']['input']>;
+  /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+};
+
+/** aggregate stddev on columns */
+export type Ai_Capabilities_Stddev_Fields = {
+  __typename?: 'ai_capabilities_stddev_fields';
+  /** Estimated credits consumed when using enhanced quality level. Enhanced uses standard models with balanced quality/cost. Default: 1.5. */
+  estimated_credits_enhanced: Maybe<Scalars['Float']['output']>;
+  /** Estimated credits consumed when using fast quality level. Fast uses smaller/cheaper models for quick responses. Default: 1.0. */
+  estimated_credits_fast: Maybe<Scalars['Float']['output']>;
+  /** Estimated credits consumed when using premium quality level. Premium uses the best models for highest quality output. Default: 3.0. */
+  estimated_credits_premium: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate stddev_pop on columns */
+export type Ai_Capabilities_Stddev_Pop_Fields = {
+  __typename?: 'ai_capabilities_stddev_pop_fields';
+  /** Estimated credits consumed when using enhanced quality level. Enhanced uses standard models with balanced quality/cost. Default: 1.5. */
+  estimated_credits_enhanced: Maybe<Scalars['Float']['output']>;
+  /** Estimated credits consumed when using fast quality level. Fast uses smaller/cheaper models for quick responses. Default: 1.0. */
+  estimated_credits_fast: Maybe<Scalars['Float']['output']>;
+  /** Estimated credits consumed when using premium quality level. Premium uses the best models for highest quality output. Default: 3.0. */
+  estimated_credits_premium: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate stddev_samp on columns */
+export type Ai_Capabilities_Stddev_Samp_Fields = {
+  __typename?: 'ai_capabilities_stddev_samp_fields';
+  /** Estimated credits consumed when using enhanced quality level. Enhanced uses standard models with balanced quality/cost. Default: 1.5. */
+  estimated_credits_enhanced: Maybe<Scalars['Float']['output']>;
+  /** Estimated credits consumed when using fast quality level. Fast uses smaller/cheaper models for quick responses. Default: 1.0. */
+  estimated_credits_fast: Maybe<Scalars['Float']['output']>;
+  /** Estimated credits consumed when using premium quality level. Premium uses the best models for highest quality output. Default: 3.0. */
+  estimated_credits_premium: Maybe<Scalars['Float']['output']>;
+};
+
+/** Streaming cursor of the table "ai_capabilities" */
+export type Ai_Capabilities_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Ai_Capabilities_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type Ai_Capabilities_Stream_Cursor_Value_Input = {
+  /** Category for grouping related capabilities in UI. Examples: forms, testimonials, general. Defaults to general. */
+  category?: InputMaybe<Scalars['String']['input']>;
+  /** Timestamp when this record was first created. Set automatically, never modified. */
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Detailed description of what this AI capability does. Shown to users to help them understand the feature. */
+  description?: InputMaybe<Scalars['String']['input']>;
+  /** Estimated credits consumed when using enhanced quality level. Enhanced uses standard models with balanced quality/cost. Default: 1.5. */
+  estimated_credits_enhanced?: InputMaybe<Scalars['numeric']['input']>;
+  /** Estimated credits consumed when using fast quality level. Fast uses smaller/cheaper models for quick responses. Default: 1.0. */
+  estimated_credits_fast?: InputMaybe<Scalars['numeric']['input']>;
+  /** Estimated credits consumed when using premium quality level. Premium uses the best models for highest quality output. Default: 3.0. */
+  estimated_credits_premium?: InputMaybe<Scalars['numeric']['input']>;
+  /** Icon identifier for displaying in UI (e.g., Lucide icon name). Examples: sparkles, wand-2, message-square. */
+  icon?: InputMaybe<Scalars['String']['input']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id?: InputMaybe<Scalars['String']['input']>;
+  /** Whether this capability is currently available to users. Set to false to temporarily disable a capability. Default: true. */
+  is_active?: InputMaybe<Scalars['Boolean']['input']>;
+  /** Human-readable display name shown in UI. Examples: Smart Question Generation, Testimonial Assembly. */
+  name?: InputMaybe<Scalars['String']['input']>;
+  /** Machine-readable unique identifier for the capability. Used in code to reference specific capabilities. Examples: question_generation, testimonial_assembly, testimonial_polish. */
+  unique_name?: InputMaybe<Scalars['String']['input']>;
+  /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+};
+
+/** aggregate sum on columns */
+export type Ai_Capabilities_Sum_Fields = {
+  __typename?: 'ai_capabilities_sum_fields';
+  /** Estimated credits consumed when using enhanced quality level. Enhanced uses standard models with balanced quality/cost. Default: 1.5. */
+  estimated_credits_enhanced: Maybe<Scalars['numeric']['output']>;
+  /** Estimated credits consumed when using fast quality level. Fast uses smaller/cheaper models for quick responses. Default: 1.0. */
+  estimated_credits_fast: Maybe<Scalars['numeric']['output']>;
+  /** Estimated credits consumed when using premium quality level. Premium uses the best models for highest quality output. Default: 3.0. */
+  estimated_credits_premium: Maybe<Scalars['numeric']['output']>;
+};
+
+/** update columns of table "ai_capabilities" */
+export const Ai_Capabilities_Update_Column = {
+  /** column name */
+  Category: 'category',
+  /** column name */
+  CreatedAt: 'created_at',
+  /** column name */
+  Description: 'description',
+  /** column name */
+  EstimatedCreditsEnhanced: 'estimated_credits_enhanced',
+  /** column name */
+  EstimatedCreditsFast: 'estimated_credits_fast',
+  /** column name */
+  EstimatedCreditsPremium: 'estimated_credits_premium',
+  /** column name */
+  Icon: 'icon',
+  /** column name */
+  Id: 'id',
+  /** column name */
+  IsActive: 'is_active',
+  /** column name */
+  Name: 'name',
+  /** column name */
+  UniqueName: 'unique_name',
+  /** column name */
+  UpdatedAt: 'updated_at'
+} as const;
+
+export type Ai_Capabilities_Update_Column = typeof Ai_Capabilities_Update_Column[keyof typeof Ai_Capabilities_Update_Column];
+export type Ai_Capabilities_Updates = {
+  /** increments the numeric columns with given value of the filtered values */
+  _inc?: InputMaybe<Ai_Capabilities_Inc_Input>;
+  /** sets the columns of the filtered rows to the given values */
+  _set?: InputMaybe<Ai_Capabilities_Set_Input>;
+  /** filter the rows which have to be updated */
+  where: Ai_Capabilities_Bool_Exp;
+};
+
+/** aggregate var_pop on columns */
+export type Ai_Capabilities_Var_Pop_Fields = {
+  __typename?: 'ai_capabilities_var_pop_fields';
+  /** Estimated credits consumed when using enhanced quality level. Enhanced uses standard models with balanced quality/cost. Default: 1.5. */
+  estimated_credits_enhanced: Maybe<Scalars['Float']['output']>;
+  /** Estimated credits consumed when using fast quality level. Fast uses smaller/cheaper models for quick responses. Default: 1.0. */
+  estimated_credits_fast: Maybe<Scalars['Float']['output']>;
+  /** Estimated credits consumed when using premium quality level. Premium uses the best models for highest quality output. Default: 3.0. */
+  estimated_credits_premium: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate var_samp on columns */
+export type Ai_Capabilities_Var_Samp_Fields = {
+  __typename?: 'ai_capabilities_var_samp_fields';
+  /** Estimated credits consumed when using enhanced quality level. Enhanced uses standard models with balanced quality/cost. Default: 1.5. */
+  estimated_credits_enhanced: Maybe<Scalars['Float']['output']>;
+  /** Estimated credits consumed when using fast quality level. Fast uses smaller/cheaper models for quick responses. Default: 1.0. */
+  estimated_credits_fast: Maybe<Scalars['Float']['output']>;
+  /** Estimated credits consumed when using premium quality level. Premium uses the best models for highest quality output. Default: 3.0. */
+  estimated_credits_premium: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate variance on columns */
+export type Ai_Capabilities_Variance_Fields = {
+  __typename?: 'ai_capabilities_variance_fields';
+  /** Estimated credits consumed when using enhanced quality level. Enhanced uses standard models with balanced quality/cost. Default: 1.5. */
+  estimated_credits_enhanced: Maybe<Scalars['Float']['output']>;
+  /** Estimated credits consumed when using fast quality level. Fast uses smaller/cheaper models for quick responses. Default: 1.0. */
+  estimated_credits_fast: Maybe<Scalars['Float']['output']>;
+  /** Estimated credits consumed when using premium quality level. Premium uses the best models for highest quality output. Default: 3.0. */
+  estimated_credits_premium: Maybe<Scalars['Float']['output']>;
+};
+
 /** Boolean expression to compare columns of type "bigint". All fields are combined with logical 'AND'. */
 export type Bigint_Comparison_Exp = {
   _eq?: InputMaybe<Scalars['bigint']['input']>;
@@ -849,6 +1376,1738 @@ export type Contacts_Variance_Fields = {
 export type Contacts_Variance_Order_By = {
   /** Running count of testimonials submitted by this contact. Incremented on each new submission. Identifies power users and repeat customers. */
   submission_count?: InputMaybe<Order_By>;
+};
+
+/** Tracks credit reservations for in-flight AI operations. Reservations hold credits during operation execution. */
+export type Credit_Reservations = {
+  __typename?: 'credit_reservations';
+  /** An object relationship */
+  ai_capability: Ai_Capabilities;
+  /** FK to ai_capabilities table. Identifies the AI capability being used. Cascade deletes when capability is removed. */
+  ai_capability_id: Scalars['String']['output'];
+  /** Timestamp when this reservation was first created. Set automatically, never modified. */
+  created_at: Scalars['timestamptz']['output'];
+  /** When this reservation expires if not settled. Expired reservations are automatically released by cleanup jobs. */
+  expires_at: Scalars['timestamptz']['output'];
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id: Scalars['String']['output'];
+  /** Unique key to prevent duplicate reservations for the same request. Usually the client request ID. */
+  idempotency_key: Scalars['String']['output'];
+  /** An object relationship */
+  organization: Organizations;
+  /** FK to organizations table. Links reservation to an organization. Cascade deletes when organization is removed. */
+  organization_id: Scalars['String']['output'];
+  /** An object relationship */
+  quality_level: Quality_Levels;
+  /** FK to quality_levels table. Identifies the quality level for the operation. Cascade deletes when quality level is removed. */
+  quality_level_id: Scalars['String']['output'];
+  /** Reason for releasing the reservation without settling. Examples: user_cancelled, operation_failed, timeout. */
+  release_reason: Maybe<Scalars['String']['output']>;
+  /** Number of credits reserved for this operation. Based on the capability cost at the selected quality level. */
+  reserved_credits: Scalars['numeric']['output'];
+  /** Actual credits used after operation completes (set on settle). May differ from reserved_credits if actual usage varies. */
+  settled_credits: Maybe<Scalars['numeric']['output']>;
+  /** Reservation status: pending (in-flight), settled (completed successfully), released (cancelled/failed), expired (timed out) */
+  status: Scalars['String']['output'];
+  /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
+  updated_at: Scalars['timestamptz']['output'];
+};
+
+/** aggregated selection of "credit_reservations" */
+export type Credit_Reservations_Aggregate = {
+  __typename?: 'credit_reservations_aggregate';
+  aggregate: Maybe<Credit_Reservations_Aggregate_Fields>;
+  nodes: Array<Credit_Reservations>;
+};
+
+export type Credit_Reservations_Aggregate_Bool_Exp = {
+  count?: InputMaybe<Credit_Reservations_Aggregate_Bool_Exp_Count>;
+};
+
+export type Credit_Reservations_Aggregate_Bool_Exp_Count = {
+  arguments?: InputMaybe<Array<Credit_Reservations_Select_Column>>;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+  filter?: InputMaybe<Credit_Reservations_Bool_Exp>;
+  predicate: Int_Comparison_Exp;
+};
+
+/** aggregate fields of "credit_reservations" */
+export type Credit_Reservations_Aggregate_Fields = {
+  __typename?: 'credit_reservations_aggregate_fields';
+  avg: Maybe<Credit_Reservations_Avg_Fields>;
+  count: Scalars['Int']['output'];
+  max: Maybe<Credit_Reservations_Max_Fields>;
+  min: Maybe<Credit_Reservations_Min_Fields>;
+  stddev: Maybe<Credit_Reservations_Stddev_Fields>;
+  stddev_pop: Maybe<Credit_Reservations_Stddev_Pop_Fields>;
+  stddev_samp: Maybe<Credit_Reservations_Stddev_Samp_Fields>;
+  sum: Maybe<Credit_Reservations_Sum_Fields>;
+  var_pop: Maybe<Credit_Reservations_Var_Pop_Fields>;
+  var_samp: Maybe<Credit_Reservations_Var_Samp_Fields>;
+  variance: Maybe<Credit_Reservations_Variance_Fields>;
+};
+
+
+/** aggregate fields of "credit_reservations" */
+export type Credit_Reservations_Aggregate_FieldsCountArgs = {
+  columns?: InputMaybe<Array<Credit_Reservations_Select_Column>>;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+/** order by aggregate values of table "credit_reservations" */
+export type Credit_Reservations_Aggregate_Order_By = {
+  avg?: InputMaybe<Credit_Reservations_Avg_Order_By>;
+  count?: InputMaybe<Order_By>;
+  max?: InputMaybe<Credit_Reservations_Max_Order_By>;
+  min?: InputMaybe<Credit_Reservations_Min_Order_By>;
+  stddev?: InputMaybe<Credit_Reservations_Stddev_Order_By>;
+  stddev_pop?: InputMaybe<Credit_Reservations_Stddev_Pop_Order_By>;
+  stddev_samp?: InputMaybe<Credit_Reservations_Stddev_Samp_Order_By>;
+  sum?: InputMaybe<Credit_Reservations_Sum_Order_By>;
+  var_pop?: InputMaybe<Credit_Reservations_Var_Pop_Order_By>;
+  var_samp?: InputMaybe<Credit_Reservations_Var_Samp_Order_By>;
+  variance?: InputMaybe<Credit_Reservations_Variance_Order_By>;
+};
+
+/** input type for inserting array relation for remote table "credit_reservations" */
+export type Credit_Reservations_Arr_Rel_Insert_Input = {
+  data: Array<Credit_Reservations_Insert_Input>;
+  /** upsert condition */
+  on_conflict?: InputMaybe<Credit_Reservations_On_Conflict>;
+};
+
+/** aggregate avg on columns */
+export type Credit_Reservations_Avg_Fields = {
+  __typename?: 'credit_reservations_avg_fields';
+  /** Number of credits reserved for this operation. Based on the capability cost at the selected quality level. */
+  reserved_credits: Maybe<Scalars['Float']['output']>;
+  /** Actual credits used after operation completes (set on settle). May differ from reserved_credits if actual usage varies. */
+  settled_credits: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by avg() on columns of table "credit_reservations" */
+export type Credit_Reservations_Avg_Order_By = {
+  /** Number of credits reserved for this operation. Based on the capability cost at the selected quality level. */
+  reserved_credits?: InputMaybe<Order_By>;
+  /** Actual credits used after operation completes (set on settle). May differ from reserved_credits if actual usage varies. */
+  settled_credits?: InputMaybe<Order_By>;
+};
+
+/** Boolean expression to filter rows from the table "credit_reservations". All fields are combined with a logical 'AND'. */
+export type Credit_Reservations_Bool_Exp = {
+  _and?: InputMaybe<Array<Credit_Reservations_Bool_Exp>>;
+  _not?: InputMaybe<Credit_Reservations_Bool_Exp>;
+  _or?: InputMaybe<Array<Credit_Reservations_Bool_Exp>>;
+  ai_capability?: InputMaybe<Ai_Capabilities_Bool_Exp>;
+  ai_capability_id?: InputMaybe<String_Comparison_Exp>;
+  created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  expires_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  id?: InputMaybe<String_Comparison_Exp>;
+  idempotency_key?: InputMaybe<String_Comparison_Exp>;
+  organization?: InputMaybe<Organizations_Bool_Exp>;
+  organization_id?: InputMaybe<String_Comparison_Exp>;
+  quality_level?: InputMaybe<Quality_Levels_Bool_Exp>;
+  quality_level_id?: InputMaybe<String_Comparison_Exp>;
+  release_reason?: InputMaybe<String_Comparison_Exp>;
+  reserved_credits?: InputMaybe<Numeric_Comparison_Exp>;
+  settled_credits?: InputMaybe<Numeric_Comparison_Exp>;
+  status?: InputMaybe<String_Comparison_Exp>;
+  updated_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+};
+
+/** unique or primary key constraints on table "credit_reservations" */
+export const Credit_Reservations_Constraint = {
+  /** unique or primary key constraint on columns "idempotency_key" */
+  CreditReservationsIdempotencyKeyKey: 'credit_reservations_idempotency_key_key',
+  /** unique or primary key constraint on columns "id" */
+  CreditReservationsPkey: 'credit_reservations_pkey'
+} as const;
+
+export type Credit_Reservations_Constraint = typeof Credit_Reservations_Constraint[keyof typeof Credit_Reservations_Constraint];
+/** input type for incrementing numeric columns in table "credit_reservations" */
+export type Credit_Reservations_Inc_Input = {
+  /** Number of credits reserved for this operation. Based on the capability cost at the selected quality level. */
+  reserved_credits?: InputMaybe<Scalars['numeric']['input']>;
+  /** Actual credits used after operation completes (set on settle). May differ from reserved_credits if actual usage varies. */
+  settled_credits?: InputMaybe<Scalars['numeric']['input']>;
+};
+
+/** input type for inserting data into table "credit_reservations" */
+export type Credit_Reservations_Insert_Input = {
+  ai_capability?: InputMaybe<Ai_Capabilities_Obj_Rel_Insert_Input>;
+  /** FK to ai_capabilities table. Identifies the AI capability being used. Cascade deletes when capability is removed. */
+  ai_capability_id?: InputMaybe<Scalars['String']['input']>;
+  /** Timestamp when this reservation was first created. Set automatically, never modified. */
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** When this reservation expires if not settled. Expired reservations are automatically released by cleanup jobs. */
+  expires_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id?: InputMaybe<Scalars['String']['input']>;
+  /** Unique key to prevent duplicate reservations for the same request. Usually the client request ID. */
+  idempotency_key?: InputMaybe<Scalars['String']['input']>;
+  organization?: InputMaybe<Organizations_Obj_Rel_Insert_Input>;
+  /** FK to organizations table. Links reservation to an organization. Cascade deletes when organization is removed. */
+  organization_id?: InputMaybe<Scalars['String']['input']>;
+  quality_level?: InputMaybe<Quality_Levels_Obj_Rel_Insert_Input>;
+  /** FK to quality_levels table. Identifies the quality level for the operation. Cascade deletes when quality level is removed. */
+  quality_level_id?: InputMaybe<Scalars['String']['input']>;
+  /** Reason for releasing the reservation without settling. Examples: user_cancelled, operation_failed, timeout. */
+  release_reason?: InputMaybe<Scalars['String']['input']>;
+  /** Number of credits reserved for this operation. Based on the capability cost at the selected quality level. */
+  reserved_credits?: InputMaybe<Scalars['numeric']['input']>;
+  /** Actual credits used after operation completes (set on settle). May differ from reserved_credits if actual usage varies. */
+  settled_credits?: InputMaybe<Scalars['numeric']['input']>;
+  /** Reservation status: pending (in-flight), settled (completed successfully), released (cancelled/failed), expired (timed out) */
+  status?: InputMaybe<Scalars['String']['input']>;
+  /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+};
+
+/** aggregate max on columns */
+export type Credit_Reservations_Max_Fields = {
+  __typename?: 'credit_reservations_max_fields';
+  /** FK to ai_capabilities table. Identifies the AI capability being used. Cascade deletes when capability is removed. */
+  ai_capability_id: Maybe<Scalars['String']['output']>;
+  /** Timestamp when this reservation was first created. Set automatically, never modified. */
+  created_at: Maybe<Scalars['timestamptz']['output']>;
+  /** When this reservation expires if not settled. Expired reservations are automatically released by cleanup jobs. */
+  expires_at: Maybe<Scalars['timestamptz']['output']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id: Maybe<Scalars['String']['output']>;
+  /** Unique key to prevent duplicate reservations for the same request. Usually the client request ID. */
+  idempotency_key: Maybe<Scalars['String']['output']>;
+  /** FK to organizations table. Links reservation to an organization. Cascade deletes when organization is removed. */
+  organization_id: Maybe<Scalars['String']['output']>;
+  /** FK to quality_levels table. Identifies the quality level for the operation. Cascade deletes when quality level is removed. */
+  quality_level_id: Maybe<Scalars['String']['output']>;
+  /** Reason for releasing the reservation without settling. Examples: user_cancelled, operation_failed, timeout. */
+  release_reason: Maybe<Scalars['String']['output']>;
+  /** Number of credits reserved for this operation. Based on the capability cost at the selected quality level. */
+  reserved_credits: Maybe<Scalars['numeric']['output']>;
+  /** Actual credits used after operation completes (set on settle). May differ from reserved_credits if actual usage varies. */
+  settled_credits: Maybe<Scalars['numeric']['output']>;
+  /** Reservation status: pending (in-flight), settled (completed successfully), released (cancelled/failed), expired (timed out) */
+  status: Maybe<Scalars['String']['output']>;
+  /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
+  updated_at: Maybe<Scalars['timestamptz']['output']>;
+};
+
+/** order by max() on columns of table "credit_reservations" */
+export type Credit_Reservations_Max_Order_By = {
+  /** FK to ai_capabilities table. Identifies the AI capability being used. Cascade deletes when capability is removed. */
+  ai_capability_id?: InputMaybe<Order_By>;
+  /** Timestamp when this reservation was first created. Set automatically, never modified. */
+  created_at?: InputMaybe<Order_By>;
+  /** When this reservation expires if not settled. Expired reservations are automatically released by cleanup jobs. */
+  expires_at?: InputMaybe<Order_By>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id?: InputMaybe<Order_By>;
+  /** Unique key to prevent duplicate reservations for the same request. Usually the client request ID. */
+  idempotency_key?: InputMaybe<Order_By>;
+  /** FK to organizations table. Links reservation to an organization. Cascade deletes when organization is removed. */
+  organization_id?: InputMaybe<Order_By>;
+  /** FK to quality_levels table. Identifies the quality level for the operation. Cascade deletes when quality level is removed. */
+  quality_level_id?: InputMaybe<Order_By>;
+  /** Reason for releasing the reservation without settling. Examples: user_cancelled, operation_failed, timeout. */
+  release_reason?: InputMaybe<Order_By>;
+  /** Number of credits reserved for this operation. Based on the capability cost at the selected quality level. */
+  reserved_credits?: InputMaybe<Order_By>;
+  /** Actual credits used after operation completes (set on settle). May differ from reserved_credits if actual usage varies. */
+  settled_credits?: InputMaybe<Order_By>;
+  /** Reservation status: pending (in-flight), settled (completed successfully), released (cancelled/failed), expired (timed out) */
+  status?: InputMaybe<Order_By>;
+  /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
+  updated_at?: InputMaybe<Order_By>;
+};
+
+/** aggregate min on columns */
+export type Credit_Reservations_Min_Fields = {
+  __typename?: 'credit_reservations_min_fields';
+  /** FK to ai_capabilities table. Identifies the AI capability being used. Cascade deletes when capability is removed. */
+  ai_capability_id: Maybe<Scalars['String']['output']>;
+  /** Timestamp when this reservation was first created. Set automatically, never modified. */
+  created_at: Maybe<Scalars['timestamptz']['output']>;
+  /** When this reservation expires if not settled. Expired reservations are automatically released by cleanup jobs. */
+  expires_at: Maybe<Scalars['timestamptz']['output']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id: Maybe<Scalars['String']['output']>;
+  /** Unique key to prevent duplicate reservations for the same request. Usually the client request ID. */
+  idempotency_key: Maybe<Scalars['String']['output']>;
+  /** FK to organizations table. Links reservation to an organization. Cascade deletes when organization is removed. */
+  organization_id: Maybe<Scalars['String']['output']>;
+  /** FK to quality_levels table. Identifies the quality level for the operation. Cascade deletes when quality level is removed. */
+  quality_level_id: Maybe<Scalars['String']['output']>;
+  /** Reason for releasing the reservation without settling. Examples: user_cancelled, operation_failed, timeout. */
+  release_reason: Maybe<Scalars['String']['output']>;
+  /** Number of credits reserved for this operation. Based on the capability cost at the selected quality level. */
+  reserved_credits: Maybe<Scalars['numeric']['output']>;
+  /** Actual credits used after operation completes (set on settle). May differ from reserved_credits if actual usage varies. */
+  settled_credits: Maybe<Scalars['numeric']['output']>;
+  /** Reservation status: pending (in-flight), settled (completed successfully), released (cancelled/failed), expired (timed out) */
+  status: Maybe<Scalars['String']['output']>;
+  /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
+  updated_at: Maybe<Scalars['timestamptz']['output']>;
+};
+
+/** order by min() on columns of table "credit_reservations" */
+export type Credit_Reservations_Min_Order_By = {
+  /** FK to ai_capabilities table. Identifies the AI capability being used. Cascade deletes when capability is removed. */
+  ai_capability_id?: InputMaybe<Order_By>;
+  /** Timestamp when this reservation was first created. Set automatically, never modified. */
+  created_at?: InputMaybe<Order_By>;
+  /** When this reservation expires if not settled. Expired reservations are automatically released by cleanup jobs. */
+  expires_at?: InputMaybe<Order_By>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id?: InputMaybe<Order_By>;
+  /** Unique key to prevent duplicate reservations for the same request. Usually the client request ID. */
+  idempotency_key?: InputMaybe<Order_By>;
+  /** FK to organizations table. Links reservation to an organization. Cascade deletes when organization is removed. */
+  organization_id?: InputMaybe<Order_By>;
+  /** FK to quality_levels table. Identifies the quality level for the operation. Cascade deletes when quality level is removed. */
+  quality_level_id?: InputMaybe<Order_By>;
+  /** Reason for releasing the reservation without settling. Examples: user_cancelled, operation_failed, timeout. */
+  release_reason?: InputMaybe<Order_By>;
+  /** Number of credits reserved for this operation. Based on the capability cost at the selected quality level. */
+  reserved_credits?: InputMaybe<Order_By>;
+  /** Actual credits used after operation completes (set on settle). May differ from reserved_credits if actual usage varies. */
+  settled_credits?: InputMaybe<Order_By>;
+  /** Reservation status: pending (in-flight), settled (completed successfully), released (cancelled/failed), expired (timed out) */
+  status?: InputMaybe<Order_By>;
+  /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
+  updated_at?: InputMaybe<Order_By>;
+};
+
+/** response of any mutation on the table "credit_reservations" */
+export type Credit_Reservations_Mutation_Response = {
+  __typename?: 'credit_reservations_mutation_response';
+  /** number of rows affected by the mutation */
+  affected_rows: Scalars['Int']['output'];
+  /** data from the rows affected by the mutation */
+  returning: Array<Credit_Reservations>;
+};
+
+/** on_conflict condition type for table "credit_reservations" */
+export type Credit_Reservations_On_Conflict = {
+  constraint: Credit_Reservations_Constraint;
+  update_columns?: Array<Credit_Reservations_Update_Column>;
+  where?: InputMaybe<Credit_Reservations_Bool_Exp>;
+};
+
+/** Ordering options when selecting data from "credit_reservations". */
+export type Credit_Reservations_Order_By = {
+  ai_capability?: InputMaybe<Ai_Capabilities_Order_By>;
+  ai_capability_id?: InputMaybe<Order_By>;
+  created_at?: InputMaybe<Order_By>;
+  expires_at?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
+  idempotency_key?: InputMaybe<Order_By>;
+  organization?: InputMaybe<Organizations_Order_By>;
+  organization_id?: InputMaybe<Order_By>;
+  quality_level?: InputMaybe<Quality_Levels_Order_By>;
+  quality_level_id?: InputMaybe<Order_By>;
+  release_reason?: InputMaybe<Order_By>;
+  reserved_credits?: InputMaybe<Order_By>;
+  settled_credits?: InputMaybe<Order_By>;
+  status?: InputMaybe<Order_By>;
+  updated_at?: InputMaybe<Order_By>;
+};
+
+/** primary key columns input for table: credit_reservations */
+export type Credit_Reservations_Pk_Columns_Input = {
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id: Scalars['String']['input'];
+};
+
+/** select columns of table "credit_reservations" */
+export const Credit_Reservations_Select_Column = {
+  /** column name */
+  AiCapabilityId: 'ai_capability_id',
+  /** column name */
+  CreatedAt: 'created_at',
+  /** column name */
+  ExpiresAt: 'expires_at',
+  /** column name */
+  Id: 'id',
+  /** column name */
+  IdempotencyKey: 'idempotency_key',
+  /** column name */
+  OrganizationId: 'organization_id',
+  /** column name */
+  QualityLevelId: 'quality_level_id',
+  /** column name */
+  ReleaseReason: 'release_reason',
+  /** column name */
+  ReservedCredits: 'reserved_credits',
+  /** column name */
+  SettledCredits: 'settled_credits',
+  /** column name */
+  Status: 'status',
+  /** column name */
+  UpdatedAt: 'updated_at'
+} as const;
+
+export type Credit_Reservations_Select_Column = typeof Credit_Reservations_Select_Column[keyof typeof Credit_Reservations_Select_Column];
+/** input type for updating data in table "credit_reservations" */
+export type Credit_Reservations_Set_Input = {
+  /** FK to ai_capabilities table. Identifies the AI capability being used. Cascade deletes when capability is removed. */
+  ai_capability_id?: InputMaybe<Scalars['String']['input']>;
+  /** Timestamp when this reservation was first created. Set automatically, never modified. */
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** When this reservation expires if not settled. Expired reservations are automatically released by cleanup jobs. */
+  expires_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id?: InputMaybe<Scalars['String']['input']>;
+  /** Unique key to prevent duplicate reservations for the same request. Usually the client request ID. */
+  idempotency_key?: InputMaybe<Scalars['String']['input']>;
+  /** FK to organizations table. Links reservation to an organization. Cascade deletes when organization is removed. */
+  organization_id?: InputMaybe<Scalars['String']['input']>;
+  /** FK to quality_levels table. Identifies the quality level for the operation. Cascade deletes when quality level is removed. */
+  quality_level_id?: InputMaybe<Scalars['String']['input']>;
+  /** Reason for releasing the reservation without settling. Examples: user_cancelled, operation_failed, timeout. */
+  release_reason?: InputMaybe<Scalars['String']['input']>;
+  /** Number of credits reserved for this operation. Based on the capability cost at the selected quality level. */
+  reserved_credits?: InputMaybe<Scalars['numeric']['input']>;
+  /** Actual credits used after operation completes (set on settle). May differ from reserved_credits if actual usage varies. */
+  settled_credits?: InputMaybe<Scalars['numeric']['input']>;
+  /** Reservation status: pending (in-flight), settled (completed successfully), released (cancelled/failed), expired (timed out) */
+  status?: InputMaybe<Scalars['String']['input']>;
+  /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+};
+
+/** aggregate stddev on columns */
+export type Credit_Reservations_Stddev_Fields = {
+  __typename?: 'credit_reservations_stddev_fields';
+  /** Number of credits reserved for this operation. Based on the capability cost at the selected quality level. */
+  reserved_credits: Maybe<Scalars['Float']['output']>;
+  /** Actual credits used after operation completes (set on settle). May differ from reserved_credits if actual usage varies. */
+  settled_credits: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by stddev() on columns of table "credit_reservations" */
+export type Credit_Reservations_Stddev_Order_By = {
+  /** Number of credits reserved for this operation. Based on the capability cost at the selected quality level. */
+  reserved_credits?: InputMaybe<Order_By>;
+  /** Actual credits used after operation completes (set on settle). May differ from reserved_credits if actual usage varies. */
+  settled_credits?: InputMaybe<Order_By>;
+};
+
+/** aggregate stddev_pop on columns */
+export type Credit_Reservations_Stddev_Pop_Fields = {
+  __typename?: 'credit_reservations_stddev_pop_fields';
+  /** Number of credits reserved for this operation. Based on the capability cost at the selected quality level. */
+  reserved_credits: Maybe<Scalars['Float']['output']>;
+  /** Actual credits used after operation completes (set on settle). May differ from reserved_credits if actual usage varies. */
+  settled_credits: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by stddev_pop() on columns of table "credit_reservations" */
+export type Credit_Reservations_Stddev_Pop_Order_By = {
+  /** Number of credits reserved for this operation. Based on the capability cost at the selected quality level. */
+  reserved_credits?: InputMaybe<Order_By>;
+  /** Actual credits used after operation completes (set on settle). May differ from reserved_credits if actual usage varies. */
+  settled_credits?: InputMaybe<Order_By>;
+};
+
+/** aggregate stddev_samp on columns */
+export type Credit_Reservations_Stddev_Samp_Fields = {
+  __typename?: 'credit_reservations_stddev_samp_fields';
+  /** Number of credits reserved for this operation. Based on the capability cost at the selected quality level. */
+  reserved_credits: Maybe<Scalars['Float']['output']>;
+  /** Actual credits used after operation completes (set on settle). May differ from reserved_credits if actual usage varies. */
+  settled_credits: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by stddev_samp() on columns of table "credit_reservations" */
+export type Credit_Reservations_Stddev_Samp_Order_By = {
+  /** Number of credits reserved for this operation. Based on the capability cost at the selected quality level. */
+  reserved_credits?: InputMaybe<Order_By>;
+  /** Actual credits used after operation completes (set on settle). May differ from reserved_credits if actual usage varies. */
+  settled_credits?: InputMaybe<Order_By>;
+};
+
+/** Streaming cursor of the table "credit_reservations" */
+export type Credit_Reservations_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Credit_Reservations_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type Credit_Reservations_Stream_Cursor_Value_Input = {
+  /** FK to ai_capabilities table. Identifies the AI capability being used. Cascade deletes when capability is removed. */
+  ai_capability_id?: InputMaybe<Scalars['String']['input']>;
+  /** Timestamp when this reservation was first created. Set automatically, never modified. */
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** When this reservation expires if not settled. Expired reservations are automatically released by cleanup jobs. */
+  expires_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id?: InputMaybe<Scalars['String']['input']>;
+  /** Unique key to prevent duplicate reservations for the same request. Usually the client request ID. */
+  idempotency_key?: InputMaybe<Scalars['String']['input']>;
+  /** FK to organizations table. Links reservation to an organization. Cascade deletes when organization is removed. */
+  organization_id?: InputMaybe<Scalars['String']['input']>;
+  /** FK to quality_levels table. Identifies the quality level for the operation. Cascade deletes when quality level is removed. */
+  quality_level_id?: InputMaybe<Scalars['String']['input']>;
+  /** Reason for releasing the reservation without settling. Examples: user_cancelled, operation_failed, timeout. */
+  release_reason?: InputMaybe<Scalars['String']['input']>;
+  /** Number of credits reserved for this operation. Based on the capability cost at the selected quality level. */
+  reserved_credits?: InputMaybe<Scalars['numeric']['input']>;
+  /** Actual credits used after operation completes (set on settle). May differ from reserved_credits if actual usage varies. */
+  settled_credits?: InputMaybe<Scalars['numeric']['input']>;
+  /** Reservation status: pending (in-flight), settled (completed successfully), released (cancelled/failed), expired (timed out) */
+  status?: InputMaybe<Scalars['String']['input']>;
+  /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+};
+
+/** aggregate sum on columns */
+export type Credit_Reservations_Sum_Fields = {
+  __typename?: 'credit_reservations_sum_fields';
+  /** Number of credits reserved for this operation. Based on the capability cost at the selected quality level. */
+  reserved_credits: Maybe<Scalars['numeric']['output']>;
+  /** Actual credits used after operation completes (set on settle). May differ from reserved_credits if actual usage varies. */
+  settled_credits: Maybe<Scalars['numeric']['output']>;
+};
+
+/** order by sum() on columns of table "credit_reservations" */
+export type Credit_Reservations_Sum_Order_By = {
+  /** Number of credits reserved for this operation. Based on the capability cost at the selected quality level. */
+  reserved_credits?: InputMaybe<Order_By>;
+  /** Actual credits used after operation completes (set on settle). May differ from reserved_credits if actual usage varies. */
+  settled_credits?: InputMaybe<Order_By>;
+};
+
+/** update columns of table "credit_reservations" */
+export const Credit_Reservations_Update_Column = {
+  /** column name */
+  AiCapabilityId: 'ai_capability_id',
+  /** column name */
+  CreatedAt: 'created_at',
+  /** column name */
+  ExpiresAt: 'expires_at',
+  /** column name */
+  Id: 'id',
+  /** column name */
+  IdempotencyKey: 'idempotency_key',
+  /** column name */
+  OrganizationId: 'organization_id',
+  /** column name */
+  QualityLevelId: 'quality_level_id',
+  /** column name */
+  ReleaseReason: 'release_reason',
+  /** column name */
+  ReservedCredits: 'reserved_credits',
+  /** column name */
+  SettledCredits: 'settled_credits',
+  /** column name */
+  Status: 'status',
+  /** column name */
+  UpdatedAt: 'updated_at'
+} as const;
+
+export type Credit_Reservations_Update_Column = typeof Credit_Reservations_Update_Column[keyof typeof Credit_Reservations_Update_Column];
+export type Credit_Reservations_Updates = {
+  /** increments the numeric columns with given value of the filtered values */
+  _inc?: InputMaybe<Credit_Reservations_Inc_Input>;
+  /** sets the columns of the filtered rows to the given values */
+  _set?: InputMaybe<Credit_Reservations_Set_Input>;
+  /** filter the rows which have to be updated */
+  where: Credit_Reservations_Bool_Exp;
+};
+
+/** aggregate var_pop on columns */
+export type Credit_Reservations_Var_Pop_Fields = {
+  __typename?: 'credit_reservations_var_pop_fields';
+  /** Number of credits reserved for this operation. Based on the capability cost at the selected quality level. */
+  reserved_credits: Maybe<Scalars['Float']['output']>;
+  /** Actual credits used after operation completes (set on settle). May differ from reserved_credits if actual usage varies. */
+  settled_credits: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by var_pop() on columns of table "credit_reservations" */
+export type Credit_Reservations_Var_Pop_Order_By = {
+  /** Number of credits reserved for this operation. Based on the capability cost at the selected quality level. */
+  reserved_credits?: InputMaybe<Order_By>;
+  /** Actual credits used after operation completes (set on settle). May differ from reserved_credits if actual usage varies. */
+  settled_credits?: InputMaybe<Order_By>;
+};
+
+/** aggregate var_samp on columns */
+export type Credit_Reservations_Var_Samp_Fields = {
+  __typename?: 'credit_reservations_var_samp_fields';
+  /** Number of credits reserved for this operation. Based on the capability cost at the selected quality level. */
+  reserved_credits: Maybe<Scalars['Float']['output']>;
+  /** Actual credits used after operation completes (set on settle). May differ from reserved_credits if actual usage varies. */
+  settled_credits: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by var_samp() on columns of table "credit_reservations" */
+export type Credit_Reservations_Var_Samp_Order_By = {
+  /** Number of credits reserved for this operation. Based on the capability cost at the selected quality level. */
+  reserved_credits?: InputMaybe<Order_By>;
+  /** Actual credits used after operation completes (set on settle). May differ from reserved_credits if actual usage varies. */
+  settled_credits?: InputMaybe<Order_By>;
+};
+
+/** aggregate variance on columns */
+export type Credit_Reservations_Variance_Fields = {
+  __typename?: 'credit_reservations_variance_fields';
+  /** Number of credits reserved for this operation. Based on the capability cost at the selected quality level. */
+  reserved_credits: Maybe<Scalars['Float']['output']>;
+  /** Actual credits used after operation completes (set on settle). May differ from reserved_credits if actual usage varies. */
+  settled_credits: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by variance() on columns of table "credit_reservations" */
+export type Credit_Reservations_Variance_Order_By = {
+  /** Number of credits reserved for this operation. Based on the capability cost at the selected quality level. */
+  reserved_credits?: InputMaybe<Order_By>;
+  /** Actual credits used after operation completes (set on settle). May differ from reserved_credits if actual usage varies. */
+  settled_credits?: InputMaybe<Order_By>;
+};
+
+/** Purchasable credit bundles. Credits are added to bonus_credits on purchase. */
+export type Credit_Topup_Packages = {
+  __typename?: 'credit_topup_packages';
+  /** Timestamp when this package was first created. Set automatically, never modified. */
+  created_at: Scalars['timestamptz']['output'];
+  /** Number of credits included in this package. Added to bonus_credits on purchase. */
+  credits: Scalars['Int']['output'];
+  /** Optional description explaining the package benefits shown on the purchase page. */
+  description: Maybe<Scalars['String']['output']>;
+  /** Order in which packages appear in the UI (lower = first). Used for sorting on purchase page. */
+  display_order: Scalars['Int']['output'];
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id: Scalars['String']['output'];
+  /** Whether this package is currently available for purchase. Inactive packages are hidden but preserved. */
+  is_active: Scalars['Boolean']['output'];
+  /** Human-readable display name shown to users in the UI. Examples: Starter Pack, Popular Pack. */
+  name: Scalars['String']['output'];
+  /** Auto-calculated price per credit for comparison. Formula: (price_usd_cents / 100) / credits. */
+  price_per_credit: Maybe<Scalars['numeric']['output']>;
+  /** Price in USD cents (e.g., 999 = $9.99). Using cents avoids floating-point precision issues. */
+  price_usd_cents: Scalars['Int']['output'];
+  /** Unique identifier for the package, used internally and for API references. Examples: starter, popular, power. */
+  unique_name: Scalars['String']['output'];
+};
+
+/** aggregated selection of "credit_topup_packages" */
+export type Credit_Topup_Packages_Aggregate = {
+  __typename?: 'credit_topup_packages_aggregate';
+  aggregate: Maybe<Credit_Topup_Packages_Aggregate_Fields>;
+  nodes: Array<Credit_Topup_Packages>;
+};
+
+/** aggregate fields of "credit_topup_packages" */
+export type Credit_Topup_Packages_Aggregate_Fields = {
+  __typename?: 'credit_topup_packages_aggregate_fields';
+  avg: Maybe<Credit_Topup_Packages_Avg_Fields>;
+  count: Scalars['Int']['output'];
+  max: Maybe<Credit_Topup_Packages_Max_Fields>;
+  min: Maybe<Credit_Topup_Packages_Min_Fields>;
+  stddev: Maybe<Credit_Topup_Packages_Stddev_Fields>;
+  stddev_pop: Maybe<Credit_Topup_Packages_Stddev_Pop_Fields>;
+  stddev_samp: Maybe<Credit_Topup_Packages_Stddev_Samp_Fields>;
+  sum: Maybe<Credit_Topup_Packages_Sum_Fields>;
+  var_pop: Maybe<Credit_Topup_Packages_Var_Pop_Fields>;
+  var_samp: Maybe<Credit_Topup_Packages_Var_Samp_Fields>;
+  variance: Maybe<Credit_Topup_Packages_Variance_Fields>;
+};
+
+
+/** aggregate fields of "credit_topup_packages" */
+export type Credit_Topup_Packages_Aggregate_FieldsCountArgs = {
+  columns?: InputMaybe<Array<Credit_Topup_Packages_Select_Column>>;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+/** aggregate avg on columns */
+export type Credit_Topup_Packages_Avg_Fields = {
+  __typename?: 'credit_topup_packages_avg_fields';
+  /** Number of credits included in this package. Added to bonus_credits on purchase. */
+  credits: Maybe<Scalars['Float']['output']>;
+  /** Order in which packages appear in the UI (lower = first). Used for sorting on purchase page. */
+  display_order: Maybe<Scalars['Float']['output']>;
+  /** Auto-calculated price per credit for comparison. Formula: (price_usd_cents / 100) / credits. */
+  price_per_credit: Maybe<Scalars['Float']['output']>;
+  /** Price in USD cents (e.g., 999 = $9.99). Using cents avoids floating-point precision issues. */
+  price_usd_cents: Maybe<Scalars['Float']['output']>;
+};
+
+/** Boolean expression to filter rows from the table "credit_topup_packages". All fields are combined with a logical 'AND'. */
+export type Credit_Topup_Packages_Bool_Exp = {
+  _and?: InputMaybe<Array<Credit_Topup_Packages_Bool_Exp>>;
+  _not?: InputMaybe<Credit_Topup_Packages_Bool_Exp>;
+  _or?: InputMaybe<Array<Credit_Topup_Packages_Bool_Exp>>;
+  created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  credits?: InputMaybe<Int_Comparison_Exp>;
+  description?: InputMaybe<String_Comparison_Exp>;
+  display_order?: InputMaybe<Int_Comparison_Exp>;
+  id?: InputMaybe<String_Comparison_Exp>;
+  is_active?: InputMaybe<Boolean_Comparison_Exp>;
+  name?: InputMaybe<String_Comparison_Exp>;
+  price_per_credit?: InputMaybe<Numeric_Comparison_Exp>;
+  price_usd_cents?: InputMaybe<Int_Comparison_Exp>;
+  unique_name?: InputMaybe<String_Comparison_Exp>;
+};
+
+/** unique or primary key constraints on table "credit_topup_packages" */
+export const Credit_Topup_Packages_Constraint = {
+  /** unique or primary key constraint on columns "id" */
+  CreditTopupPackagesPkey: 'credit_topup_packages_pkey',
+  /** unique or primary key constraint on columns "unique_name" */
+  CreditTopupPackagesUniqueNameKey: 'credit_topup_packages_unique_name_key'
+} as const;
+
+export type Credit_Topup_Packages_Constraint = typeof Credit_Topup_Packages_Constraint[keyof typeof Credit_Topup_Packages_Constraint];
+/** input type for incrementing numeric columns in table "credit_topup_packages" */
+export type Credit_Topup_Packages_Inc_Input = {
+  /** Number of credits included in this package. Added to bonus_credits on purchase. */
+  credits?: InputMaybe<Scalars['Int']['input']>;
+  /** Order in which packages appear in the UI (lower = first). Used for sorting on purchase page. */
+  display_order?: InputMaybe<Scalars['Int']['input']>;
+  /** Price in USD cents (e.g., 999 = $9.99). Using cents avoids floating-point precision issues. */
+  price_usd_cents?: InputMaybe<Scalars['Int']['input']>;
+};
+
+/** input type for inserting data into table "credit_topup_packages" */
+export type Credit_Topup_Packages_Insert_Input = {
+  /** Timestamp when this package was first created. Set automatically, never modified. */
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Number of credits included in this package. Added to bonus_credits on purchase. */
+  credits?: InputMaybe<Scalars['Int']['input']>;
+  /** Optional description explaining the package benefits shown on the purchase page. */
+  description?: InputMaybe<Scalars['String']['input']>;
+  /** Order in which packages appear in the UI (lower = first). Used for sorting on purchase page. */
+  display_order?: InputMaybe<Scalars['Int']['input']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id?: InputMaybe<Scalars['String']['input']>;
+  /** Whether this package is currently available for purchase. Inactive packages are hidden but preserved. */
+  is_active?: InputMaybe<Scalars['Boolean']['input']>;
+  /** Human-readable display name shown to users in the UI. Examples: Starter Pack, Popular Pack. */
+  name?: InputMaybe<Scalars['String']['input']>;
+  /** Price in USD cents (e.g., 999 = $9.99). Using cents avoids floating-point precision issues. */
+  price_usd_cents?: InputMaybe<Scalars['Int']['input']>;
+  /** Unique identifier for the package, used internally and for API references. Examples: starter, popular, power. */
+  unique_name?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** aggregate max on columns */
+export type Credit_Topup_Packages_Max_Fields = {
+  __typename?: 'credit_topup_packages_max_fields';
+  /** Timestamp when this package was first created. Set automatically, never modified. */
+  created_at: Maybe<Scalars['timestamptz']['output']>;
+  /** Number of credits included in this package. Added to bonus_credits on purchase. */
+  credits: Maybe<Scalars['Int']['output']>;
+  /** Optional description explaining the package benefits shown on the purchase page. */
+  description: Maybe<Scalars['String']['output']>;
+  /** Order in which packages appear in the UI (lower = first). Used for sorting on purchase page. */
+  display_order: Maybe<Scalars['Int']['output']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id: Maybe<Scalars['String']['output']>;
+  /** Human-readable display name shown to users in the UI. Examples: Starter Pack, Popular Pack. */
+  name: Maybe<Scalars['String']['output']>;
+  /** Auto-calculated price per credit for comparison. Formula: (price_usd_cents / 100) / credits. */
+  price_per_credit: Maybe<Scalars['numeric']['output']>;
+  /** Price in USD cents (e.g., 999 = $9.99). Using cents avoids floating-point precision issues. */
+  price_usd_cents: Maybe<Scalars['Int']['output']>;
+  /** Unique identifier for the package, used internally and for API references. Examples: starter, popular, power. */
+  unique_name: Maybe<Scalars['String']['output']>;
+};
+
+/** aggregate min on columns */
+export type Credit_Topup_Packages_Min_Fields = {
+  __typename?: 'credit_topup_packages_min_fields';
+  /** Timestamp when this package was first created. Set automatically, never modified. */
+  created_at: Maybe<Scalars['timestamptz']['output']>;
+  /** Number of credits included in this package. Added to bonus_credits on purchase. */
+  credits: Maybe<Scalars['Int']['output']>;
+  /** Optional description explaining the package benefits shown on the purchase page. */
+  description: Maybe<Scalars['String']['output']>;
+  /** Order in which packages appear in the UI (lower = first). Used for sorting on purchase page. */
+  display_order: Maybe<Scalars['Int']['output']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id: Maybe<Scalars['String']['output']>;
+  /** Human-readable display name shown to users in the UI. Examples: Starter Pack, Popular Pack. */
+  name: Maybe<Scalars['String']['output']>;
+  /** Auto-calculated price per credit for comparison. Formula: (price_usd_cents / 100) / credits. */
+  price_per_credit: Maybe<Scalars['numeric']['output']>;
+  /** Price in USD cents (e.g., 999 = $9.99). Using cents avoids floating-point precision issues. */
+  price_usd_cents: Maybe<Scalars['Int']['output']>;
+  /** Unique identifier for the package, used internally and for API references. Examples: starter, popular, power. */
+  unique_name: Maybe<Scalars['String']['output']>;
+};
+
+/** response of any mutation on the table "credit_topup_packages" */
+export type Credit_Topup_Packages_Mutation_Response = {
+  __typename?: 'credit_topup_packages_mutation_response';
+  /** number of rows affected by the mutation */
+  affected_rows: Scalars['Int']['output'];
+  /** data from the rows affected by the mutation */
+  returning: Array<Credit_Topup_Packages>;
+};
+
+/** on_conflict condition type for table "credit_topup_packages" */
+export type Credit_Topup_Packages_On_Conflict = {
+  constraint: Credit_Topup_Packages_Constraint;
+  update_columns?: Array<Credit_Topup_Packages_Update_Column>;
+  where?: InputMaybe<Credit_Topup_Packages_Bool_Exp>;
+};
+
+/** Ordering options when selecting data from "credit_topup_packages". */
+export type Credit_Topup_Packages_Order_By = {
+  created_at?: InputMaybe<Order_By>;
+  credits?: InputMaybe<Order_By>;
+  description?: InputMaybe<Order_By>;
+  display_order?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
+  is_active?: InputMaybe<Order_By>;
+  name?: InputMaybe<Order_By>;
+  price_per_credit?: InputMaybe<Order_By>;
+  price_usd_cents?: InputMaybe<Order_By>;
+  unique_name?: InputMaybe<Order_By>;
+};
+
+/** primary key columns input for table: credit_topup_packages */
+export type Credit_Topup_Packages_Pk_Columns_Input = {
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id: Scalars['String']['input'];
+};
+
+/** select columns of table "credit_topup_packages" */
+export const Credit_Topup_Packages_Select_Column = {
+  /** column name */
+  CreatedAt: 'created_at',
+  /** column name */
+  Credits: 'credits',
+  /** column name */
+  Description: 'description',
+  /** column name */
+  DisplayOrder: 'display_order',
+  /** column name */
+  Id: 'id',
+  /** column name */
+  IsActive: 'is_active',
+  /** column name */
+  Name: 'name',
+  /** column name */
+  PricePerCredit: 'price_per_credit',
+  /** column name */
+  PriceUsdCents: 'price_usd_cents',
+  /** column name */
+  UniqueName: 'unique_name'
+} as const;
+
+export type Credit_Topup_Packages_Select_Column = typeof Credit_Topup_Packages_Select_Column[keyof typeof Credit_Topup_Packages_Select_Column];
+/** input type for updating data in table "credit_topup_packages" */
+export type Credit_Topup_Packages_Set_Input = {
+  /** Timestamp when this package was first created. Set automatically, never modified. */
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Number of credits included in this package. Added to bonus_credits on purchase. */
+  credits?: InputMaybe<Scalars['Int']['input']>;
+  /** Optional description explaining the package benefits shown on the purchase page. */
+  description?: InputMaybe<Scalars['String']['input']>;
+  /** Order in which packages appear in the UI (lower = first). Used for sorting on purchase page. */
+  display_order?: InputMaybe<Scalars['Int']['input']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id?: InputMaybe<Scalars['String']['input']>;
+  /** Whether this package is currently available for purchase. Inactive packages are hidden but preserved. */
+  is_active?: InputMaybe<Scalars['Boolean']['input']>;
+  /** Human-readable display name shown to users in the UI. Examples: Starter Pack, Popular Pack. */
+  name?: InputMaybe<Scalars['String']['input']>;
+  /** Price in USD cents (e.g., 999 = $9.99). Using cents avoids floating-point precision issues. */
+  price_usd_cents?: InputMaybe<Scalars['Int']['input']>;
+  /** Unique identifier for the package, used internally and for API references. Examples: starter, popular, power. */
+  unique_name?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** aggregate stddev on columns */
+export type Credit_Topup_Packages_Stddev_Fields = {
+  __typename?: 'credit_topup_packages_stddev_fields';
+  /** Number of credits included in this package. Added to bonus_credits on purchase. */
+  credits: Maybe<Scalars['Float']['output']>;
+  /** Order in which packages appear in the UI (lower = first). Used for sorting on purchase page. */
+  display_order: Maybe<Scalars['Float']['output']>;
+  /** Auto-calculated price per credit for comparison. Formula: (price_usd_cents / 100) / credits. */
+  price_per_credit: Maybe<Scalars['Float']['output']>;
+  /** Price in USD cents (e.g., 999 = $9.99). Using cents avoids floating-point precision issues. */
+  price_usd_cents: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate stddev_pop on columns */
+export type Credit_Topup_Packages_Stddev_Pop_Fields = {
+  __typename?: 'credit_topup_packages_stddev_pop_fields';
+  /** Number of credits included in this package. Added to bonus_credits on purchase. */
+  credits: Maybe<Scalars['Float']['output']>;
+  /** Order in which packages appear in the UI (lower = first). Used for sorting on purchase page. */
+  display_order: Maybe<Scalars['Float']['output']>;
+  /** Auto-calculated price per credit for comparison. Formula: (price_usd_cents / 100) / credits. */
+  price_per_credit: Maybe<Scalars['Float']['output']>;
+  /** Price in USD cents (e.g., 999 = $9.99). Using cents avoids floating-point precision issues. */
+  price_usd_cents: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate stddev_samp on columns */
+export type Credit_Topup_Packages_Stddev_Samp_Fields = {
+  __typename?: 'credit_topup_packages_stddev_samp_fields';
+  /** Number of credits included in this package. Added to bonus_credits on purchase. */
+  credits: Maybe<Scalars['Float']['output']>;
+  /** Order in which packages appear in the UI (lower = first). Used for sorting on purchase page. */
+  display_order: Maybe<Scalars['Float']['output']>;
+  /** Auto-calculated price per credit for comparison. Formula: (price_usd_cents / 100) / credits. */
+  price_per_credit: Maybe<Scalars['Float']['output']>;
+  /** Price in USD cents (e.g., 999 = $9.99). Using cents avoids floating-point precision issues. */
+  price_usd_cents: Maybe<Scalars['Float']['output']>;
+};
+
+/** Streaming cursor of the table "credit_topup_packages" */
+export type Credit_Topup_Packages_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Credit_Topup_Packages_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type Credit_Topup_Packages_Stream_Cursor_Value_Input = {
+  /** Timestamp when this package was first created. Set automatically, never modified. */
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Number of credits included in this package. Added to bonus_credits on purchase. */
+  credits?: InputMaybe<Scalars['Int']['input']>;
+  /** Optional description explaining the package benefits shown on the purchase page. */
+  description?: InputMaybe<Scalars['String']['input']>;
+  /** Order in which packages appear in the UI (lower = first). Used for sorting on purchase page. */
+  display_order?: InputMaybe<Scalars['Int']['input']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id?: InputMaybe<Scalars['String']['input']>;
+  /** Whether this package is currently available for purchase. Inactive packages are hidden but preserved. */
+  is_active?: InputMaybe<Scalars['Boolean']['input']>;
+  /** Human-readable display name shown to users in the UI. Examples: Starter Pack, Popular Pack. */
+  name?: InputMaybe<Scalars['String']['input']>;
+  /** Auto-calculated price per credit for comparison. Formula: (price_usd_cents / 100) / credits. */
+  price_per_credit?: InputMaybe<Scalars['numeric']['input']>;
+  /** Price in USD cents (e.g., 999 = $9.99). Using cents avoids floating-point precision issues. */
+  price_usd_cents?: InputMaybe<Scalars['Int']['input']>;
+  /** Unique identifier for the package, used internally and for API references. Examples: starter, popular, power. */
+  unique_name?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** aggregate sum on columns */
+export type Credit_Topup_Packages_Sum_Fields = {
+  __typename?: 'credit_topup_packages_sum_fields';
+  /** Number of credits included in this package. Added to bonus_credits on purchase. */
+  credits: Maybe<Scalars['Int']['output']>;
+  /** Order in which packages appear in the UI (lower = first). Used for sorting on purchase page. */
+  display_order: Maybe<Scalars['Int']['output']>;
+  /** Auto-calculated price per credit for comparison. Formula: (price_usd_cents / 100) / credits. */
+  price_per_credit: Maybe<Scalars['numeric']['output']>;
+  /** Price in USD cents (e.g., 999 = $9.99). Using cents avoids floating-point precision issues. */
+  price_usd_cents: Maybe<Scalars['Int']['output']>;
+};
+
+/** update columns of table "credit_topup_packages" */
+export const Credit_Topup_Packages_Update_Column = {
+  /** column name */
+  CreatedAt: 'created_at',
+  /** column name */
+  Credits: 'credits',
+  /** column name */
+  Description: 'description',
+  /** column name */
+  DisplayOrder: 'display_order',
+  /** column name */
+  Id: 'id',
+  /** column name */
+  IsActive: 'is_active',
+  /** column name */
+  Name: 'name',
+  /** column name */
+  PriceUsdCents: 'price_usd_cents',
+  /** column name */
+  UniqueName: 'unique_name'
+} as const;
+
+export type Credit_Topup_Packages_Update_Column = typeof Credit_Topup_Packages_Update_Column[keyof typeof Credit_Topup_Packages_Update_Column];
+export type Credit_Topup_Packages_Updates = {
+  /** increments the numeric columns with given value of the filtered values */
+  _inc?: InputMaybe<Credit_Topup_Packages_Inc_Input>;
+  /** sets the columns of the filtered rows to the given values */
+  _set?: InputMaybe<Credit_Topup_Packages_Set_Input>;
+  /** filter the rows which have to be updated */
+  where: Credit_Topup_Packages_Bool_Exp;
+};
+
+/** aggregate var_pop on columns */
+export type Credit_Topup_Packages_Var_Pop_Fields = {
+  __typename?: 'credit_topup_packages_var_pop_fields';
+  /** Number of credits included in this package. Added to bonus_credits on purchase. */
+  credits: Maybe<Scalars['Float']['output']>;
+  /** Order in which packages appear in the UI (lower = first). Used for sorting on purchase page. */
+  display_order: Maybe<Scalars['Float']['output']>;
+  /** Auto-calculated price per credit for comparison. Formula: (price_usd_cents / 100) / credits. */
+  price_per_credit: Maybe<Scalars['Float']['output']>;
+  /** Price in USD cents (e.g., 999 = $9.99). Using cents avoids floating-point precision issues. */
+  price_usd_cents: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate var_samp on columns */
+export type Credit_Topup_Packages_Var_Samp_Fields = {
+  __typename?: 'credit_topup_packages_var_samp_fields';
+  /** Number of credits included in this package. Added to bonus_credits on purchase. */
+  credits: Maybe<Scalars['Float']['output']>;
+  /** Order in which packages appear in the UI (lower = first). Used for sorting on purchase page. */
+  display_order: Maybe<Scalars['Float']['output']>;
+  /** Auto-calculated price per credit for comparison. Formula: (price_usd_cents / 100) / credits. */
+  price_per_credit: Maybe<Scalars['Float']['output']>;
+  /** Price in USD cents (e.g., 999 = $9.99). Using cents avoids floating-point precision issues. */
+  price_usd_cents: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate variance on columns */
+export type Credit_Topup_Packages_Variance_Fields = {
+  __typename?: 'credit_topup_packages_variance_fields';
+  /** Number of credits included in this package. Added to bonus_credits on purchase. */
+  credits: Maybe<Scalars['Float']['output']>;
+  /** Order in which packages appear in the UI (lower = first). Used for sorting on purchase page. */
+  display_order: Maybe<Scalars['Float']['output']>;
+  /** Auto-calculated price per credit for comparison. Formula: (price_usd_cents / 100) / credits. */
+  price_per_credit: Maybe<Scalars['Float']['output']>;
+  /** Price in USD cents (e.g., 999 = $9.99). Using cents avoids floating-point precision issues. */
+  price_usd_cents: Maybe<Scalars['Float']['output']>;
+};
+
+/** Immutable audit log of all credit changes for organizations. Records consumption, allocations, purchases, adjustments, and expirations. Used for billing reconciliation, usage analytics, and audit compliance. Part of ADR-023 AI Capabilities Plan Integration. */
+export type Credit_Transactions = {
+  __typename?: 'credit_transactions';
+  /** An object relationship */
+  ai_capability: Maybe<Ai_Capabilities>;
+  /** FK to ai_capabilities table. Which AI capability was used. NULL for non-AI transactions (topups, allocations, adjustments). */
+  ai_capability_id: Maybe<Scalars['String']['output']>;
+  /** Running balance snapshot after this transaction. Provides point-in-time balance for reporting. */
+  balance_after: Scalars['numeric']['output'];
+  /** Timestamp when this transaction was created. Set automatically, never modified (immutable audit log). */
+  created_at: Scalars['timestamptz']['output'];
+  /** Actual credits amount. Positive for additions (allocations, purchases). Negative for consumption/expiration. admin_adjustment can be either. */
+  credits_amount: Scalars['numeric']['output'];
+  /** Human-readable description. Examples: AI question generation, Monthly credit allocation, Credit pack purchase. */
+  description: Maybe<Scalars['String']['output']>;
+  /** Estimated credits before AI execution. Used to track estimation accuracy. NULL for non-AI transactions. */
+  estimated_credits: Maybe<Scalars['numeric']['output']>;
+  /** Computed: credits_amount - estimated_credits. Positive = used more than estimated. NULL when estimated_credits is NULL. */
+  estimation_variance: Maybe<Scalars['numeric']['output']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id: Scalars['String']['output'];
+  /** Unique key for deduplication. Prevents duplicate charges from retries or network issues. NULL if not needed. */
+  idempotency_key: Maybe<Scalars['String']['output']>;
+  /** An object relationship */
+  organization: Organizations;
+  /** FK to organizations table. The organization this transaction belongs to. CASCADE DELETE removes history when org is deleted. */
+  organization_id: Scalars['String']['output'];
+  /** JSONB: Provider-specific data (model name, token counts, latency, cost breakdown). Appropriate use: truly dynamic provider data. */
+  provider_metadata: Maybe<Scalars['jsonb']['output']>;
+  /** External API request ID from AI provider. For debugging and reconciliation with provider invoices. */
+  provider_request_id: Maybe<Scalars['String']['output']>;
+  /** An object relationship */
+  quality_level: Maybe<Quality_Levels>;
+  /** FK to quality_levels table. Which quality level was used. NULL for non-AI transactions. */
+  quality_level_id: Maybe<Scalars['String']['output']>;
+  /** Type of credit transaction: ai_consumption, plan_allocation, topup_purchase, promo_bonus, admin_adjustment, plan_change_adjustment, expiration. */
+  transaction_type: Scalars['String']['output'];
+};
+
+
+/** Immutable audit log of all credit changes for organizations. Records consumption, allocations, purchases, adjustments, and expirations. Used for billing reconciliation, usage analytics, and audit compliance. Part of ADR-023 AI Capabilities Plan Integration. */
+export type Credit_TransactionsProvider_MetadataArgs = {
+  path?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** aggregated selection of "credit_transactions" */
+export type Credit_Transactions_Aggregate = {
+  __typename?: 'credit_transactions_aggregate';
+  aggregate: Maybe<Credit_Transactions_Aggregate_Fields>;
+  nodes: Array<Credit_Transactions>;
+};
+
+export type Credit_Transactions_Aggregate_Bool_Exp = {
+  count?: InputMaybe<Credit_Transactions_Aggregate_Bool_Exp_Count>;
+};
+
+export type Credit_Transactions_Aggregate_Bool_Exp_Count = {
+  arguments?: InputMaybe<Array<Credit_Transactions_Select_Column>>;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+  filter?: InputMaybe<Credit_Transactions_Bool_Exp>;
+  predicate: Int_Comparison_Exp;
+};
+
+/** aggregate fields of "credit_transactions" */
+export type Credit_Transactions_Aggregate_Fields = {
+  __typename?: 'credit_transactions_aggregate_fields';
+  avg: Maybe<Credit_Transactions_Avg_Fields>;
+  count: Scalars['Int']['output'];
+  max: Maybe<Credit_Transactions_Max_Fields>;
+  min: Maybe<Credit_Transactions_Min_Fields>;
+  stddev: Maybe<Credit_Transactions_Stddev_Fields>;
+  stddev_pop: Maybe<Credit_Transactions_Stddev_Pop_Fields>;
+  stddev_samp: Maybe<Credit_Transactions_Stddev_Samp_Fields>;
+  sum: Maybe<Credit_Transactions_Sum_Fields>;
+  var_pop: Maybe<Credit_Transactions_Var_Pop_Fields>;
+  var_samp: Maybe<Credit_Transactions_Var_Samp_Fields>;
+  variance: Maybe<Credit_Transactions_Variance_Fields>;
+};
+
+
+/** aggregate fields of "credit_transactions" */
+export type Credit_Transactions_Aggregate_FieldsCountArgs = {
+  columns?: InputMaybe<Array<Credit_Transactions_Select_Column>>;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+/** order by aggregate values of table "credit_transactions" */
+export type Credit_Transactions_Aggregate_Order_By = {
+  avg?: InputMaybe<Credit_Transactions_Avg_Order_By>;
+  count?: InputMaybe<Order_By>;
+  max?: InputMaybe<Credit_Transactions_Max_Order_By>;
+  min?: InputMaybe<Credit_Transactions_Min_Order_By>;
+  stddev?: InputMaybe<Credit_Transactions_Stddev_Order_By>;
+  stddev_pop?: InputMaybe<Credit_Transactions_Stddev_Pop_Order_By>;
+  stddev_samp?: InputMaybe<Credit_Transactions_Stddev_Samp_Order_By>;
+  sum?: InputMaybe<Credit_Transactions_Sum_Order_By>;
+  var_pop?: InputMaybe<Credit_Transactions_Var_Pop_Order_By>;
+  var_samp?: InputMaybe<Credit_Transactions_Var_Samp_Order_By>;
+  variance?: InputMaybe<Credit_Transactions_Variance_Order_By>;
+};
+
+/** append existing jsonb value of filtered columns with new jsonb value */
+export type Credit_Transactions_Append_Input = {
+  /** JSONB: Provider-specific data (model name, token counts, latency, cost breakdown). Appropriate use: truly dynamic provider data. */
+  provider_metadata?: InputMaybe<Scalars['jsonb']['input']>;
+};
+
+/** input type for inserting array relation for remote table "credit_transactions" */
+export type Credit_Transactions_Arr_Rel_Insert_Input = {
+  data: Array<Credit_Transactions_Insert_Input>;
+  /** upsert condition */
+  on_conflict?: InputMaybe<Credit_Transactions_On_Conflict>;
+};
+
+/** aggregate avg on columns */
+export type Credit_Transactions_Avg_Fields = {
+  __typename?: 'credit_transactions_avg_fields';
+  /** Running balance snapshot after this transaction. Provides point-in-time balance for reporting. */
+  balance_after: Maybe<Scalars['Float']['output']>;
+  /** Actual credits amount. Positive for additions (allocations, purchases). Negative for consumption/expiration. admin_adjustment can be either. */
+  credits_amount: Maybe<Scalars['Float']['output']>;
+  /** Estimated credits before AI execution. Used to track estimation accuracy. NULL for non-AI transactions. */
+  estimated_credits: Maybe<Scalars['Float']['output']>;
+  /** Computed: credits_amount - estimated_credits. Positive = used more than estimated. NULL when estimated_credits is NULL. */
+  estimation_variance: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by avg() on columns of table "credit_transactions" */
+export type Credit_Transactions_Avg_Order_By = {
+  /** Running balance snapshot after this transaction. Provides point-in-time balance for reporting. */
+  balance_after?: InputMaybe<Order_By>;
+  /** Actual credits amount. Positive for additions (allocations, purchases). Negative for consumption/expiration. admin_adjustment can be either. */
+  credits_amount?: InputMaybe<Order_By>;
+  /** Estimated credits before AI execution. Used to track estimation accuracy. NULL for non-AI transactions. */
+  estimated_credits?: InputMaybe<Order_By>;
+  /** Computed: credits_amount - estimated_credits. Positive = used more than estimated. NULL when estimated_credits is NULL. */
+  estimation_variance?: InputMaybe<Order_By>;
+};
+
+/** Boolean expression to filter rows from the table "credit_transactions". All fields are combined with a logical 'AND'. */
+export type Credit_Transactions_Bool_Exp = {
+  _and?: InputMaybe<Array<Credit_Transactions_Bool_Exp>>;
+  _not?: InputMaybe<Credit_Transactions_Bool_Exp>;
+  _or?: InputMaybe<Array<Credit_Transactions_Bool_Exp>>;
+  ai_capability?: InputMaybe<Ai_Capabilities_Bool_Exp>;
+  ai_capability_id?: InputMaybe<String_Comparison_Exp>;
+  balance_after?: InputMaybe<Numeric_Comparison_Exp>;
+  created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  credits_amount?: InputMaybe<Numeric_Comparison_Exp>;
+  description?: InputMaybe<String_Comparison_Exp>;
+  estimated_credits?: InputMaybe<Numeric_Comparison_Exp>;
+  estimation_variance?: InputMaybe<Numeric_Comparison_Exp>;
+  id?: InputMaybe<String_Comparison_Exp>;
+  idempotency_key?: InputMaybe<String_Comparison_Exp>;
+  organization?: InputMaybe<Organizations_Bool_Exp>;
+  organization_id?: InputMaybe<String_Comparison_Exp>;
+  provider_metadata?: InputMaybe<Jsonb_Comparison_Exp>;
+  provider_request_id?: InputMaybe<String_Comparison_Exp>;
+  quality_level?: InputMaybe<Quality_Levels_Bool_Exp>;
+  quality_level_id?: InputMaybe<String_Comparison_Exp>;
+  transaction_type?: InputMaybe<String_Comparison_Exp>;
+};
+
+/** unique or primary key constraints on table "credit_transactions" */
+export const Credit_Transactions_Constraint = {
+  /** unique or primary key constraint on columns "id" */
+  CreditTransactionsPkey: 'credit_transactions_pkey',
+  /** unique or primary key constraint on columns "idempotency_key" */
+  IdxCreditTransactionsIdempotency: 'idx_credit_transactions_idempotency'
+} as const;
+
+export type Credit_Transactions_Constraint = typeof Credit_Transactions_Constraint[keyof typeof Credit_Transactions_Constraint];
+/** delete the field or element with specified path (for JSON arrays, negative integers count from the end) */
+export type Credit_Transactions_Delete_At_Path_Input = {
+  /** JSONB: Provider-specific data (model name, token counts, latency, cost breakdown). Appropriate use: truly dynamic provider data. */
+  provider_metadata?: InputMaybe<Array<Scalars['String']['input']>>;
+};
+
+/** delete the array element with specified index (negative integers count from the end). throws an error if top level container is not an array */
+export type Credit_Transactions_Delete_Elem_Input = {
+  /** JSONB: Provider-specific data (model name, token counts, latency, cost breakdown). Appropriate use: truly dynamic provider data. */
+  provider_metadata?: InputMaybe<Scalars['Int']['input']>;
+};
+
+/** delete key/value pair or string element. key/value pairs are matched based on their key value */
+export type Credit_Transactions_Delete_Key_Input = {
+  /** JSONB: Provider-specific data (model name, token counts, latency, cost breakdown). Appropriate use: truly dynamic provider data. */
+  provider_metadata?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** input type for incrementing numeric columns in table "credit_transactions" */
+export type Credit_Transactions_Inc_Input = {
+  /** Running balance snapshot after this transaction. Provides point-in-time balance for reporting. */
+  balance_after?: InputMaybe<Scalars['numeric']['input']>;
+  /** Actual credits amount. Positive for additions (allocations, purchases). Negative for consumption/expiration. admin_adjustment can be either. */
+  credits_amount?: InputMaybe<Scalars['numeric']['input']>;
+  /** Estimated credits before AI execution. Used to track estimation accuracy. NULL for non-AI transactions. */
+  estimated_credits?: InputMaybe<Scalars['numeric']['input']>;
+};
+
+/** input type for inserting data into table "credit_transactions" */
+export type Credit_Transactions_Insert_Input = {
+  ai_capability?: InputMaybe<Ai_Capabilities_Obj_Rel_Insert_Input>;
+  /** FK to ai_capabilities table. Which AI capability was used. NULL for non-AI transactions (topups, allocations, adjustments). */
+  ai_capability_id?: InputMaybe<Scalars['String']['input']>;
+  /** Running balance snapshot after this transaction. Provides point-in-time balance for reporting. */
+  balance_after?: InputMaybe<Scalars['numeric']['input']>;
+  /** Timestamp when this transaction was created. Set automatically, never modified (immutable audit log). */
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Actual credits amount. Positive for additions (allocations, purchases). Negative for consumption/expiration. admin_adjustment can be either. */
+  credits_amount?: InputMaybe<Scalars['numeric']['input']>;
+  /** Human-readable description. Examples: AI question generation, Monthly credit allocation, Credit pack purchase. */
+  description?: InputMaybe<Scalars['String']['input']>;
+  /** Estimated credits before AI execution. Used to track estimation accuracy. NULL for non-AI transactions. */
+  estimated_credits?: InputMaybe<Scalars['numeric']['input']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id?: InputMaybe<Scalars['String']['input']>;
+  /** Unique key for deduplication. Prevents duplicate charges from retries or network issues. NULL if not needed. */
+  idempotency_key?: InputMaybe<Scalars['String']['input']>;
+  organization?: InputMaybe<Organizations_Obj_Rel_Insert_Input>;
+  /** FK to organizations table. The organization this transaction belongs to. CASCADE DELETE removes history when org is deleted. */
+  organization_id?: InputMaybe<Scalars['String']['input']>;
+  /** JSONB: Provider-specific data (model name, token counts, latency, cost breakdown). Appropriate use: truly dynamic provider data. */
+  provider_metadata?: InputMaybe<Scalars['jsonb']['input']>;
+  /** External API request ID from AI provider. For debugging and reconciliation with provider invoices. */
+  provider_request_id?: InputMaybe<Scalars['String']['input']>;
+  quality_level?: InputMaybe<Quality_Levels_Obj_Rel_Insert_Input>;
+  /** FK to quality_levels table. Which quality level was used. NULL for non-AI transactions. */
+  quality_level_id?: InputMaybe<Scalars['String']['input']>;
+  /** Type of credit transaction: ai_consumption, plan_allocation, topup_purchase, promo_bonus, admin_adjustment, plan_change_adjustment, expiration. */
+  transaction_type?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** aggregate max on columns */
+export type Credit_Transactions_Max_Fields = {
+  __typename?: 'credit_transactions_max_fields';
+  /** FK to ai_capabilities table. Which AI capability was used. NULL for non-AI transactions (topups, allocations, adjustments). */
+  ai_capability_id: Maybe<Scalars['String']['output']>;
+  /** Running balance snapshot after this transaction. Provides point-in-time balance for reporting. */
+  balance_after: Maybe<Scalars['numeric']['output']>;
+  /** Timestamp when this transaction was created. Set automatically, never modified (immutable audit log). */
+  created_at: Maybe<Scalars['timestamptz']['output']>;
+  /** Actual credits amount. Positive for additions (allocations, purchases). Negative for consumption/expiration. admin_adjustment can be either. */
+  credits_amount: Maybe<Scalars['numeric']['output']>;
+  /** Human-readable description. Examples: AI question generation, Monthly credit allocation, Credit pack purchase. */
+  description: Maybe<Scalars['String']['output']>;
+  /** Estimated credits before AI execution. Used to track estimation accuracy. NULL for non-AI transactions. */
+  estimated_credits: Maybe<Scalars['numeric']['output']>;
+  /** Computed: credits_amount - estimated_credits. Positive = used more than estimated. NULL when estimated_credits is NULL. */
+  estimation_variance: Maybe<Scalars['numeric']['output']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id: Maybe<Scalars['String']['output']>;
+  /** Unique key for deduplication. Prevents duplicate charges from retries or network issues. NULL if not needed. */
+  idempotency_key: Maybe<Scalars['String']['output']>;
+  /** FK to organizations table. The organization this transaction belongs to. CASCADE DELETE removes history when org is deleted. */
+  organization_id: Maybe<Scalars['String']['output']>;
+  /** External API request ID from AI provider. For debugging and reconciliation with provider invoices. */
+  provider_request_id: Maybe<Scalars['String']['output']>;
+  /** FK to quality_levels table. Which quality level was used. NULL for non-AI transactions. */
+  quality_level_id: Maybe<Scalars['String']['output']>;
+  /** Type of credit transaction: ai_consumption, plan_allocation, topup_purchase, promo_bonus, admin_adjustment, plan_change_adjustment, expiration. */
+  transaction_type: Maybe<Scalars['String']['output']>;
+};
+
+/** order by max() on columns of table "credit_transactions" */
+export type Credit_Transactions_Max_Order_By = {
+  /** FK to ai_capabilities table. Which AI capability was used. NULL for non-AI transactions (topups, allocations, adjustments). */
+  ai_capability_id?: InputMaybe<Order_By>;
+  /** Running balance snapshot after this transaction. Provides point-in-time balance for reporting. */
+  balance_after?: InputMaybe<Order_By>;
+  /** Timestamp when this transaction was created. Set automatically, never modified (immutable audit log). */
+  created_at?: InputMaybe<Order_By>;
+  /** Actual credits amount. Positive for additions (allocations, purchases). Negative for consumption/expiration. admin_adjustment can be either. */
+  credits_amount?: InputMaybe<Order_By>;
+  /** Human-readable description. Examples: AI question generation, Monthly credit allocation, Credit pack purchase. */
+  description?: InputMaybe<Order_By>;
+  /** Estimated credits before AI execution. Used to track estimation accuracy. NULL for non-AI transactions. */
+  estimated_credits?: InputMaybe<Order_By>;
+  /** Computed: credits_amount - estimated_credits. Positive = used more than estimated. NULL when estimated_credits is NULL. */
+  estimation_variance?: InputMaybe<Order_By>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id?: InputMaybe<Order_By>;
+  /** Unique key for deduplication. Prevents duplicate charges from retries or network issues. NULL if not needed. */
+  idempotency_key?: InputMaybe<Order_By>;
+  /** FK to organizations table. The organization this transaction belongs to. CASCADE DELETE removes history when org is deleted. */
+  organization_id?: InputMaybe<Order_By>;
+  /** External API request ID from AI provider. For debugging and reconciliation with provider invoices. */
+  provider_request_id?: InputMaybe<Order_By>;
+  /** FK to quality_levels table. Which quality level was used. NULL for non-AI transactions. */
+  quality_level_id?: InputMaybe<Order_By>;
+  /** Type of credit transaction: ai_consumption, plan_allocation, topup_purchase, promo_bonus, admin_adjustment, plan_change_adjustment, expiration. */
+  transaction_type?: InputMaybe<Order_By>;
+};
+
+/** aggregate min on columns */
+export type Credit_Transactions_Min_Fields = {
+  __typename?: 'credit_transactions_min_fields';
+  /** FK to ai_capabilities table. Which AI capability was used. NULL for non-AI transactions (topups, allocations, adjustments). */
+  ai_capability_id: Maybe<Scalars['String']['output']>;
+  /** Running balance snapshot after this transaction. Provides point-in-time balance for reporting. */
+  balance_after: Maybe<Scalars['numeric']['output']>;
+  /** Timestamp when this transaction was created. Set automatically, never modified (immutable audit log). */
+  created_at: Maybe<Scalars['timestamptz']['output']>;
+  /** Actual credits amount. Positive for additions (allocations, purchases). Negative for consumption/expiration. admin_adjustment can be either. */
+  credits_amount: Maybe<Scalars['numeric']['output']>;
+  /** Human-readable description. Examples: AI question generation, Monthly credit allocation, Credit pack purchase. */
+  description: Maybe<Scalars['String']['output']>;
+  /** Estimated credits before AI execution. Used to track estimation accuracy. NULL for non-AI transactions. */
+  estimated_credits: Maybe<Scalars['numeric']['output']>;
+  /** Computed: credits_amount - estimated_credits. Positive = used more than estimated. NULL when estimated_credits is NULL. */
+  estimation_variance: Maybe<Scalars['numeric']['output']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id: Maybe<Scalars['String']['output']>;
+  /** Unique key for deduplication. Prevents duplicate charges from retries or network issues. NULL if not needed. */
+  idempotency_key: Maybe<Scalars['String']['output']>;
+  /** FK to organizations table. The organization this transaction belongs to. CASCADE DELETE removes history when org is deleted. */
+  organization_id: Maybe<Scalars['String']['output']>;
+  /** External API request ID from AI provider. For debugging and reconciliation with provider invoices. */
+  provider_request_id: Maybe<Scalars['String']['output']>;
+  /** FK to quality_levels table. Which quality level was used. NULL for non-AI transactions. */
+  quality_level_id: Maybe<Scalars['String']['output']>;
+  /** Type of credit transaction: ai_consumption, plan_allocation, topup_purchase, promo_bonus, admin_adjustment, plan_change_adjustment, expiration. */
+  transaction_type: Maybe<Scalars['String']['output']>;
+};
+
+/** order by min() on columns of table "credit_transactions" */
+export type Credit_Transactions_Min_Order_By = {
+  /** FK to ai_capabilities table. Which AI capability was used. NULL for non-AI transactions (topups, allocations, adjustments). */
+  ai_capability_id?: InputMaybe<Order_By>;
+  /** Running balance snapshot after this transaction. Provides point-in-time balance for reporting. */
+  balance_after?: InputMaybe<Order_By>;
+  /** Timestamp when this transaction was created. Set automatically, never modified (immutable audit log). */
+  created_at?: InputMaybe<Order_By>;
+  /** Actual credits amount. Positive for additions (allocations, purchases). Negative for consumption/expiration. admin_adjustment can be either. */
+  credits_amount?: InputMaybe<Order_By>;
+  /** Human-readable description. Examples: AI question generation, Monthly credit allocation, Credit pack purchase. */
+  description?: InputMaybe<Order_By>;
+  /** Estimated credits before AI execution. Used to track estimation accuracy. NULL for non-AI transactions. */
+  estimated_credits?: InputMaybe<Order_By>;
+  /** Computed: credits_amount - estimated_credits. Positive = used more than estimated. NULL when estimated_credits is NULL. */
+  estimation_variance?: InputMaybe<Order_By>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id?: InputMaybe<Order_By>;
+  /** Unique key for deduplication. Prevents duplicate charges from retries or network issues. NULL if not needed. */
+  idempotency_key?: InputMaybe<Order_By>;
+  /** FK to organizations table. The organization this transaction belongs to. CASCADE DELETE removes history when org is deleted. */
+  organization_id?: InputMaybe<Order_By>;
+  /** External API request ID from AI provider. For debugging and reconciliation with provider invoices. */
+  provider_request_id?: InputMaybe<Order_By>;
+  /** FK to quality_levels table. Which quality level was used. NULL for non-AI transactions. */
+  quality_level_id?: InputMaybe<Order_By>;
+  /** Type of credit transaction: ai_consumption, plan_allocation, topup_purchase, promo_bonus, admin_adjustment, plan_change_adjustment, expiration. */
+  transaction_type?: InputMaybe<Order_By>;
+};
+
+/** response of any mutation on the table "credit_transactions" */
+export type Credit_Transactions_Mutation_Response = {
+  __typename?: 'credit_transactions_mutation_response';
+  /** number of rows affected by the mutation */
+  affected_rows: Scalars['Int']['output'];
+  /** data from the rows affected by the mutation */
+  returning: Array<Credit_Transactions>;
+};
+
+/** on_conflict condition type for table "credit_transactions" */
+export type Credit_Transactions_On_Conflict = {
+  constraint: Credit_Transactions_Constraint;
+  update_columns?: Array<Credit_Transactions_Update_Column>;
+  where?: InputMaybe<Credit_Transactions_Bool_Exp>;
+};
+
+/** Ordering options when selecting data from "credit_transactions". */
+export type Credit_Transactions_Order_By = {
+  ai_capability?: InputMaybe<Ai_Capabilities_Order_By>;
+  ai_capability_id?: InputMaybe<Order_By>;
+  balance_after?: InputMaybe<Order_By>;
+  created_at?: InputMaybe<Order_By>;
+  credits_amount?: InputMaybe<Order_By>;
+  description?: InputMaybe<Order_By>;
+  estimated_credits?: InputMaybe<Order_By>;
+  estimation_variance?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
+  idempotency_key?: InputMaybe<Order_By>;
+  organization?: InputMaybe<Organizations_Order_By>;
+  organization_id?: InputMaybe<Order_By>;
+  provider_metadata?: InputMaybe<Order_By>;
+  provider_request_id?: InputMaybe<Order_By>;
+  quality_level?: InputMaybe<Quality_Levels_Order_By>;
+  quality_level_id?: InputMaybe<Order_By>;
+  transaction_type?: InputMaybe<Order_By>;
+};
+
+/** primary key columns input for table: credit_transactions */
+export type Credit_Transactions_Pk_Columns_Input = {
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id: Scalars['String']['input'];
+};
+
+/** prepend existing jsonb value of filtered columns with new jsonb value */
+export type Credit_Transactions_Prepend_Input = {
+  /** JSONB: Provider-specific data (model name, token counts, latency, cost breakdown). Appropriate use: truly dynamic provider data. */
+  provider_metadata?: InputMaybe<Scalars['jsonb']['input']>;
+};
+
+/** select columns of table "credit_transactions" */
+export const Credit_Transactions_Select_Column = {
+  /** column name */
+  AiCapabilityId: 'ai_capability_id',
+  /** column name */
+  BalanceAfter: 'balance_after',
+  /** column name */
+  CreatedAt: 'created_at',
+  /** column name */
+  CreditsAmount: 'credits_amount',
+  /** column name */
+  Description: 'description',
+  /** column name */
+  EstimatedCredits: 'estimated_credits',
+  /** column name */
+  EstimationVariance: 'estimation_variance',
+  /** column name */
+  Id: 'id',
+  /** column name */
+  IdempotencyKey: 'idempotency_key',
+  /** column name */
+  OrganizationId: 'organization_id',
+  /** column name */
+  ProviderMetadata: 'provider_metadata',
+  /** column name */
+  ProviderRequestId: 'provider_request_id',
+  /** column name */
+  QualityLevelId: 'quality_level_id',
+  /** column name */
+  TransactionType: 'transaction_type'
+} as const;
+
+export type Credit_Transactions_Select_Column = typeof Credit_Transactions_Select_Column[keyof typeof Credit_Transactions_Select_Column];
+/** input type for updating data in table "credit_transactions" */
+export type Credit_Transactions_Set_Input = {
+  /** FK to ai_capabilities table. Which AI capability was used. NULL for non-AI transactions (topups, allocations, adjustments). */
+  ai_capability_id?: InputMaybe<Scalars['String']['input']>;
+  /** Running balance snapshot after this transaction. Provides point-in-time balance for reporting. */
+  balance_after?: InputMaybe<Scalars['numeric']['input']>;
+  /** Timestamp when this transaction was created. Set automatically, never modified (immutable audit log). */
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Actual credits amount. Positive for additions (allocations, purchases). Negative for consumption/expiration. admin_adjustment can be either. */
+  credits_amount?: InputMaybe<Scalars['numeric']['input']>;
+  /** Human-readable description. Examples: AI question generation, Monthly credit allocation, Credit pack purchase. */
+  description?: InputMaybe<Scalars['String']['input']>;
+  /** Estimated credits before AI execution. Used to track estimation accuracy. NULL for non-AI transactions. */
+  estimated_credits?: InputMaybe<Scalars['numeric']['input']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id?: InputMaybe<Scalars['String']['input']>;
+  /** Unique key for deduplication. Prevents duplicate charges from retries or network issues. NULL if not needed. */
+  idempotency_key?: InputMaybe<Scalars['String']['input']>;
+  /** FK to organizations table. The organization this transaction belongs to. CASCADE DELETE removes history when org is deleted. */
+  organization_id?: InputMaybe<Scalars['String']['input']>;
+  /** JSONB: Provider-specific data (model name, token counts, latency, cost breakdown). Appropriate use: truly dynamic provider data. */
+  provider_metadata?: InputMaybe<Scalars['jsonb']['input']>;
+  /** External API request ID from AI provider. For debugging and reconciliation with provider invoices. */
+  provider_request_id?: InputMaybe<Scalars['String']['input']>;
+  /** FK to quality_levels table. Which quality level was used. NULL for non-AI transactions. */
+  quality_level_id?: InputMaybe<Scalars['String']['input']>;
+  /** Type of credit transaction: ai_consumption, plan_allocation, topup_purchase, promo_bonus, admin_adjustment, plan_change_adjustment, expiration. */
+  transaction_type?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** aggregate stddev on columns */
+export type Credit_Transactions_Stddev_Fields = {
+  __typename?: 'credit_transactions_stddev_fields';
+  /** Running balance snapshot after this transaction. Provides point-in-time balance for reporting. */
+  balance_after: Maybe<Scalars['Float']['output']>;
+  /** Actual credits amount. Positive for additions (allocations, purchases). Negative for consumption/expiration. admin_adjustment can be either. */
+  credits_amount: Maybe<Scalars['Float']['output']>;
+  /** Estimated credits before AI execution. Used to track estimation accuracy. NULL for non-AI transactions. */
+  estimated_credits: Maybe<Scalars['Float']['output']>;
+  /** Computed: credits_amount - estimated_credits. Positive = used more than estimated. NULL when estimated_credits is NULL. */
+  estimation_variance: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by stddev() on columns of table "credit_transactions" */
+export type Credit_Transactions_Stddev_Order_By = {
+  /** Running balance snapshot after this transaction. Provides point-in-time balance for reporting. */
+  balance_after?: InputMaybe<Order_By>;
+  /** Actual credits amount. Positive for additions (allocations, purchases). Negative for consumption/expiration. admin_adjustment can be either. */
+  credits_amount?: InputMaybe<Order_By>;
+  /** Estimated credits before AI execution. Used to track estimation accuracy. NULL for non-AI transactions. */
+  estimated_credits?: InputMaybe<Order_By>;
+  /** Computed: credits_amount - estimated_credits. Positive = used more than estimated. NULL when estimated_credits is NULL. */
+  estimation_variance?: InputMaybe<Order_By>;
+};
+
+/** aggregate stddev_pop on columns */
+export type Credit_Transactions_Stddev_Pop_Fields = {
+  __typename?: 'credit_transactions_stddev_pop_fields';
+  /** Running balance snapshot after this transaction. Provides point-in-time balance for reporting. */
+  balance_after: Maybe<Scalars['Float']['output']>;
+  /** Actual credits amount. Positive for additions (allocations, purchases). Negative for consumption/expiration. admin_adjustment can be either. */
+  credits_amount: Maybe<Scalars['Float']['output']>;
+  /** Estimated credits before AI execution. Used to track estimation accuracy. NULL for non-AI transactions. */
+  estimated_credits: Maybe<Scalars['Float']['output']>;
+  /** Computed: credits_amount - estimated_credits. Positive = used more than estimated. NULL when estimated_credits is NULL. */
+  estimation_variance: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by stddev_pop() on columns of table "credit_transactions" */
+export type Credit_Transactions_Stddev_Pop_Order_By = {
+  /** Running balance snapshot after this transaction. Provides point-in-time balance for reporting. */
+  balance_after?: InputMaybe<Order_By>;
+  /** Actual credits amount. Positive for additions (allocations, purchases). Negative for consumption/expiration. admin_adjustment can be either. */
+  credits_amount?: InputMaybe<Order_By>;
+  /** Estimated credits before AI execution. Used to track estimation accuracy. NULL for non-AI transactions. */
+  estimated_credits?: InputMaybe<Order_By>;
+  /** Computed: credits_amount - estimated_credits. Positive = used more than estimated. NULL when estimated_credits is NULL. */
+  estimation_variance?: InputMaybe<Order_By>;
+};
+
+/** aggregate stddev_samp on columns */
+export type Credit_Transactions_Stddev_Samp_Fields = {
+  __typename?: 'credit_transactions_stddev_samp_fields';
+  /** Running balance snapshot after this transaction. Provides point-in-time balance for reporting. */
+  balance_after: Maybe<Scalars['Float']['output']>;
+  /** Actual credits amount. Positive for additions (allocations, purchases). Negative for consumption/expiration. admin_adjustment can be either. */
+  credits_amount: Maybe<Scalars['Float']['output']>;
+  /** Estimated credits before AI execution. Used to track estimation accuracy. NULL for non-AI transactions. */
+  estimated_credits: Maybe<Scalars['Float']['output']>;
+  /** Computed: credits_amount - estimated_credits. Positive = used more than estimated. NULL when estimated_credits is NULL. */
+  estimation_variance: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by stddev_samp() on columns of table "credit_transactions" */
+export type Credit_Transactions_Stddev_Samp_Order_By = {
+  /** Running balance snapshot after this transaction. Provides point-in-time balance for reporting. */
+  balance_after?: InputMaybe<Order_By>;
+  /** Actual credits amount. Positive for additions (allocations, purchases). Negative for consumption/expiration. admin_adjustment can be either. */
+  credits_amount?: InputMaybe<Order_By>;
+  /** Estimated credits before AI execution. Used to track estimation accuracy. NULL for non-AI transactions. */
+  estimated_credits?: InputMaybe<Order_By>;
+  /** Computed: credits_amount - estimated_credits. Positive = used more than estimated. NULL when estimated_credits is NULL. */
+  estimation_variance?: InputMaybe<Order_By>;
+};
+
+/** Streaming cursor of the table "credit_transactions" */
+export type Credit_Transactions_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Credit_Transactions_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type Credit_Transactions_Stream_Cursor_Value_Input = {
+  /** FK to ai_capabilities table. Which AI capability was used. NULL for non-AI transactions (topups, allocations, adjustments). */
+  ai_capability_id?: InputMaybe<Scalars['String']['input']>;
+  /** Running balance snapshot after this transaction. Provides point-in-time balance for reporting. */
+  balance_after?: InputMaybe<Scalars['numeric']['input']>;
+  /** Timestamp when this transaction was created. Set automatically, never modified (immutable audit log). */
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Actual credits amount. Positive for additions (allocations, purchases). Negative for consumption/expiration. admin_adjustment can be either. */
+  credits_amount?: InputMaybe<Scalars['numeric']['input']>;
+  /** Human-readable description. Examples: AI question generation, Monthly credit allocation, Credit pack purchase. */
+  description?: InputMaybe<Scalars['String']['input']>;
+  /** Estimated credits before AI execution. Used to track estimation accuracy. NULL for non-AI transactions. */
+  estimated_credits?: InputMaybe<Scalars['numeric']['input']>;
+  /** Computed: credits_amount - estimated_credits. Positive = used more than estimated. NULL when estimated_credits is NULL. */
+  estimation_variance?: InputMaybe<Scalars['numeric']['input']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id?: InputMaybe<Scalars['String']['input']>;
+  /** Unique key for deduplication. Prevents duplicate charges from retries or network issues. NULL if not needed. */
+  idempotency_key?: InputMaybe<Scalars['String']['input']>;
+  /** FK to organizations table. The organization this transaction belongs to. CASCADE DELETE removes history when org is deleted. */
+  organization_id?: InputMaybe<Scalars['String']['input']>;
+  /** JSONB: Provider-specific data (model name, token counts, latency, cost breakdown). Appropriate use: truly dynamic provider data. */
+  provider_metadata?: InputMaybe<Scalars['jsonb']['input']>;
+  /** External API request ID from AI provider. For debugging and reconciliation with provider invoices. */
+  provider_request_id?: InputMaybe<Scalars['String']['input']>;
+  /** FK to quality_levels table. Which quality level was used. NULL for non-AI transactions. */
+  quality_level_id?: InputMaybe<Scalars['String']['input']>;
+  /** Type of credit transaction: ai_consumption, plan_allocation, topup_purchase, promo_bonus, admin_adjustment, plan_change_adjustment, expiration. */
+  transaction_type?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** aggregate sum on columns */
+export type Credit_Transactions_Sum_Fields = {
+  __typename?: 'credit_transactions_sum_fields';
+  /** Running balance snapshot after this transaction. Provides point-in-time balance for reporting. */
+  balance_after: Maybe<Scalars['numeric']['output']>;
+  /** Actual credits amount. Positive for additions (allocations, purchases). Negative for consumption/expiration. admin_adjustment can be either. */
+  credits_amount: Maybe<Scalars['numeric']['output']>;
+  /** Estimated credits before AI execution. Used to track estimation accuracy. NULL for non-AI transactions. */
+  estimated_credits: Maybe<Scalars['numeric']['output']>;
+  /** Computed: credits_amount - estimated_credits. Positive = used more than estimated. NULL when estimated_credits is NULL. */
+  estimation_variance: Maybe<Scalars['numeric']['output']>;
+};
+
+/** order by sum() on columns of table "credit_transactions" */
+export type Credit_Transactions_Sum_Order_By = {
+  /** Running balance snapshot after this transaction. Provides point-in-time balance for reporting. */
+  balance_after?: InputMaybe<Order_By>;
+  /** Actual credits amount. Positive for additions (allocations, purchases). Negative for consumption/expiration. admin_adjustment can be either. */
+  credits_amount?: InputMaybe<Order_By>;
+  /** Estimated credits before AI execution. Used to track estimation accuracy. NULL for non-AI transactions. */
+  estimated_credits?: InputMaybe<Order_By>;
+  /** Computed: credits_amount - estimated_credits. Positive = used more than estimated. NULL when estimated_credits is NULL. */
+  estimation_variance?: InputMaybe<Order_By>;
+};
+
+/** update columns of table "credit_transactions" */
+export const Credit_Transactions_Update_Column = {
+  /** column name */
+  AiCapabilityId: 'ai_capability_id',
+  /** column name */
+  BalanceAfter: 'balance_after',
+  /** column name */
+  CreatedAt: 'created_at',
+  /** column name */
+  CreditsAmount: 'credits_amount',
+  /** column name */
+  Description: 'description',
+  /** column name */
+  EstimatedCredits: 'estimated_credits',
+  /** column name */
+  Id: 'id',
+  /** column name */
+  IdempotencyKey: 'idempotency_key',
+  /** column name */
+  OrganizationId: 'organization_id',
+  /** column name */
+  ProviderMetadata: 'provider_metadata',
+  /** column name */
+  ProviderRequestId: 'provider_request_id',
+  /** column name */
+  QualityLevelId: 'quality_level_id',
+  /** column name */
+  TransactionType: 'transaction_type'
+} as const;
+
+export type Credit_Transactions_Update_Column = typeof Credit_Transactions_Update_Column[keyof typeof Credit_Transactions_Update_Column];
+export type Credit_Transactions_Updates = {
+  /** append existing jsonb value of filtered columns with new jsonb value */
+  _append?: InputMaybe<Credit_Transactions_Append_Input>;
+  /** delete the field or element with specified path (for JSON arrays, negative integers count from the end) */
+  _delete_at_path?: InputMaybe<Credit_Transactions_Delete_At_Path_Input>;
+  /** delete the array element with specified index (negative integers count from the end). throws an error if top level container is not an array */
+  _delete_elem?: InputMaybe<Credit_Transactions_Delete_Elem_Input>;
+  /** delete key/value pair or string element. key/value pairs are matched based on their key value */
+  _delete_key?: InputMaybe<Credit_Transactions_Delete_Key_Input>;
+  /** increments the numeric columns with given value of the filtered values */
+  _inc?: InputMaybe<Credit_Transactions_Inc_Input>;
+  /** prepend existing jsonb value of filtered columns with new jsonb value */
+  _prepend?: InputMaybe<Credit_Transactions_Prepend_Input>;
+  /** sets the columns of the filtered rows to the given values */
+  _set?: InputMaybe<Credit_Transactions_Set_Input>;
+  /** filter the rows which have to be updated */
+  where: Credit_Transactions_Bool_Exp;
+};
+
+/** aggregate var_pop on columns */
+export type Credit_Transactions_Var_Pop_Fields = {
+  __typename?: 'credit_transactions_var_pop_fields';
+  /** Running balance snapshot after this transaction. Provides point-in-time balance for reporting. */
+  balance_after: Maybe<Scalars['Float']['output']>;
+  /** Actual credits amount. Positive for additions (allocations, purchases). Negative for consumption/expiration. admin_adjustment can be either. */
+  credits_amount: Maybe<Scalars['Float']['output']>;
+  /** Estimated credits before AI execution. Used to track estimation accuracy. NULL for non-AI transactions. */
+  estimated_credits: Maybe<Scalars['Float']['output']>;
+  /** Computed: credits_amount - estimated_credits. Positive = used more than estimated. NULL when estimated_credits is NULL. */
+  estimation_variance: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by var_pop() on columns of table "credit_transactions" */
+export type Credit_Transactions_Var_Pop_Order_By = {
+  /** Running balance snapshot after this transaction. Provides point-in-time balance for reporting. */
+  balance_after?: InputMaybe<Order_By>;
+  /** Actual credits amount. Positive for additions (allocations, purchases). Negative for consumption/expiration. admin_adjustment can be either. */
+  credits_amount?: InputMaybe<Order_By>;
+  /** Estimated credits before AI execution. Used to track estimation accuracy. NULL for non-AI transactions. */
+  estimated_credits?: InputMaybe<Order_By>;
+  /** Computed: credits_amount - estimated_credits. Positive = used more than estimated. NULL when estimated_credits is NULL. */
+  estimation_variance?: InputMaybe<Order_By>;
+};
+
+/** aggregate var_samp on columns */
+export type Credit_Transactions_Var_Samp_Fields = {
+  __typename?: 'credit_transactions_var_samp_fields';
+  /** Running balance snapshot after this transaction. Provides point-in-time balance for reporting. */
+  balance_after: Maybe<Scalars['Float']['output']>;
+  /** Actual credits amount. Positive for additions (allocations, purchases). Negative for consumption/expiration. admin_adjustment can be either. */
+  credits_amount: Maybe<Scalars['Float']['output']>;
+  /** Estimated credits before AI execution. Used to track estimation accuracy. NULL for non-AI transactions. */
+  estimated_credits: Maybe<Scalars['Float']['output']>;
+  /** Computed: credits_amount - estimated_credits. Positive = used more than estimated. NULL when estimated_credits is NULL. */
+  estimation_variance: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by var_samp() on columns of table "credit_transactions" */
+export type Credit_Transactions_Var_Samp_Order_By = {
+  /** Running balance snapshot after this transaction. Provides point-in-time balance for reporting. */
+  balance_after?: InputMaybe<Order_By>;
+  /** Actual credits amount. Positive for additions (allocations, purchases). Negative for consumption/expiration. admin_adjustment can be either. */
+  credits_amount?: InputMaybe<Order_By>;
+  /** Estimated credits before AI execution. Used to track estimation accuracy. NULL for non-AI transactions. */
+  estimated_credits?: InputMaybe<Order_By>;
+  /** Computed: credits_amount - estimated_credits. Positive = used more than estimated. NULL when estimated_credits is NULL. */
+  estimation_variance?: InputMaybe<Order_By>;
+};
+
+/** aggregate variance on columns */
+export type Credit_Transactions_Variance_Fields = {
+  __typename?: 'credit_transactions_variance_fields';
+  /** Running balance snapshot after this transaction. Provides point-in-time balance for reporting. */
+  balance_after: Maybe<Scalars['Float']['output']>;
+  /** Actual credits amount. Positive for additions (allocations, purchases). Negative for consumption/expiration. admin_adjustment can be either. */
+  credits_amount: Maybe<Scalars['Float']['output']>;
+  /** Estimated credits before AI execution. Used to track estimation accuracy. NULL for non-AI transactions. */
+  estimated_credits: Maybe<Scalars['Float']['output']>;
+  /** Computed: credits_amount - estimated_credits. Positive = used more than estimated. NULL when estimated_credits is NULL. */
+  estimation_variance: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by variance() on columns of table "credit_transactions" */
+export type Credit_Transactions_Variance_Order_By = {
+  /** Running balance snapshot after this transaction. Provides point-in-time balance for reporting. */
+  balance_after?: InputMaybe<Order_By>;
+  /** Actual credits amount. Positive for additions (allocations, purchases). Negative for consumption/expiration. admin_adjustment can be either. */
+  credits_amount?: InputMaybe<Order_By>;
+  /** Estimated credits before AI execution. Used to track estimation accuracy. NULL for non-AI transactions. */
+  estimated_credits?: InputMaybe<Order_By>;
+  /** Computed: credits_amount - estimated_credits. Positive = used more than estimated. NULL when estimated_credits is NULL. */
+  estimation_variance?: InputMaybe<Order_By>;
 };
 
 /** ordering argument of a cursor */
@@ -3929,7 +6188,7 @@ export type Form_Questions_Variance_Order_By = {
   min_value?: InputMaybe<Order_By>;
 };
 
-/** Form steps belong to flows. Question deletion handled by FK cascade on form_questions.step_id. */
+/** Stores step configuration per form for the timeline editor. Each step represents a screen in the testimonial collection flow (welcome, questions, consent, contact info, reward, testimonial writing, thank you). */
 export type Form_Steps = {
   __typename?: 'form_steps';
   /** JSONB payload with type-specific configuration. Structure varies by step_type. Empty for question/rating types which use form_questions table instead. */
@@ -3960,7 +6219,7 @@ export type Form_Steps = {
   questions_aggregate: Form_Questions_Aggregate;
   /** Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form. */
   step_order: Scalars['smallint']['output'];
-  /** Enumerated type determining step behavior: welcome (intro screen), question (text input), rating (star/scale), consent (public/private choice), contact_info (submitter details), reward (incentive), thank_you (completion). */
+  /** Enumerated type determining step behavior: welcome (intro screen), question (text input), rating (star/scale), consent (public/private choice), contact_info (submitter details), reward (incentive), thank_you (completion), testimonial_write (manual or AI-assisted testimonial composition). */
   step_type: Scalars['String']['output'];
   /** Array of helper text strings shown to customers during question/rating steps. Provides guidance for better quality responses. */
   tips: Maybe<Array<Scalars['String']['output']>>;
@@ -3973,13 +6232,13 @@ export type Form_Steps = {
 };
 
 
-/** Form steps belong to flows. Question deletion handled by FK cascade on form_questions.step_id. */
+/** Stores step configuration per form for the timeline editor. Each step represents a screen in the testimonial collection flow (welcome, questions, consent, contact info, reward, testimonial writing, thank you). */
 export type Form_StepsContentArgs = {
   path?: InputMaybe<Scalars['String']['input']>;
 };
 
 
-/** Form steps belong to flows. Question deletion handled by FK cascade on form_questions.step_id. */
+/** Stores step configuration per form for the timeline editor. Each step represents a screen in the testimonial collection flow (welcome, questions, consent, contact info, reward, testimonial writing, thank you). */
 export type Form_StepsQuestionsArgs = {
   distinct_on?: InputMaybe<Array<Form_Questions_Select_Column>>;
   limit?: InputMaybe<Scalars['Int']['input']>;
@@ -3989,7 +6248,7 @@ export type Form_StepsQuestionsArgs = {
 };
 
 
-/** Form steps belong to flows. Question deletion handled by FK cascade on form_questions.step_id. */
+/** Stores step configuration per form for the timeline editor. Each step represents a screen in the testimonial collection flow (welcome, questions, consent, contact info, reward, testimonial writing, thank you). */
 export type Form_StepsQuestions_AggregateArgs = {
   distinct_on?: InputMaybe<Array<Form_Questions_Select_Column>>;
   limit?: InputMaybe<Scalars['Int']['input']>;
@@ -4179,7 +6438,7 @@ export type Form_Steps_Insert_Input = {
   questions?: InputMaybe<Form_Questions_Arr_Rel_Insert_Input>;
   /** Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form. */
   step_order?: InputMaybe<Scalars['smallint']['input']>;
-  /** Enumerated type determining step behavior: welcome (intro screen), question (text input), rating (star/scale), consent (public/private choice), contact_info (submitter details), reward (incentive), thank_you (completion). */
+  /** Enumerated type determining step behavior: welcome (intro screen), question (text input), rating (star/scale), consent (public/private choice), contact_info (submitter details), reward (incentive), thank_you (completion), testimonial_write (manual or AI-assisted testimonial composition). */
   step_type?: InputMaybe<Scalars['String']['input']>;
   /** Array of helper text strings shown to customers during question/rating steps. Provides guidance for better quality responses. */
   tips?: InputMaybe<Array<Scalars['String']['input']>>;
@@ -4207,7 +6466,7 @@ export type Form_Steps_Max_Fields = {
   organization_id: Maybe<Scalars['String']['output']>;
   /** Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form. */
   step_order: Maybe<Scalars['smallint']['output']>;
-  /** Enumerated type determining step behavior: welcome (intro screen), question (text input), rating (star/scale), consent (public/private choice), contact_info (submitter details), reward (incentive), thank_you (completion). */
+  /** Enumerated type determining step behavior: welcome (intro screen), question (text input), rating (star/scale), consent (public/private choice), contact_info (submitter details), reward (incentive), thank_you (completion), testimonial_write (manual or AI-assisted testimonial composition). */
   step_type: Maybe<Scalars['String']['output']>;
   /** Array of helper text strings shown to customers during question/rating steps. Provides guidance for better quality responses. */
   tips: Maybe<Array<Scalars['String']['output']>>;
@@ -4233,7 +6492,7 @@ export type Form_Steps_Max_Order_By = {
   organization_id?: InputMaybe<Order_By>;
   /** Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form. */
   step_order?: InputMaybe<Order_By>;
-  /** Enumerated type determining step behavior: welcome (intro screen), question (text input), rating (star/scale), consent (public/private choice), contact_info (submitter details), reward (incentive), thank_you (completion). */
+  /** Enumerated type determining step behavior: welcome (intro screen), question (text input), rating (star/scale), consent (public/private choice), contact_info (submitter details), reward (incentive), thank_you (completion), testimonial_write (manual or AI-assisted testimonial composition). */
   step_type?: InputMaybe<Order_By>;
   /** Array of helper text strings shown to customers during question/rating steps. Provides guidance for better quality responses. */
   tips?: InputMaybe<Order_By>;
@@ -4260,7 +6519,7 @@ export type Form_Steps_Min_Fields = {
   organization_id: Maybe<Scalars['String']['output']>;
   /** Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form. */
   step_order: Maybe<Scalars['smallint']['output']>;
-  /** Enumerated type determining step behavior: welcome (intro screen), question (text input), rating (star/scale), consent (public/private choice), contact_info (submitter details), reward (incentive), thank_you (completion). */
+  /** Enumerated type determining step behavior: welcome (intro screen), question (text input), rating (star/scale), consent (public/private choice), contact_info (submitter details), reward (incentive), thank_you (completion), testimonial_write (manual or AI-assisted testimonial composition). */
   step_type: Maybe<Scalars['String']['output']>;
   /** Array of helper text strings shown to customers during question/rating steps. Provides guidance for better quality responses. */
   tips: Maybe<Array<Scalars['String']['output']>>;
@@ -4286,7 +6545,7 @@ export type Form_Steps_Min_Order_By = {
   organization_id?: InputMaybe<Order_By>;
   /** Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form. */
   step_order?: InputMaybe<Order_By>;
-  /** Enumerated type determining step behavior: welcome (intro screen), question (text input), rating (star/scale), consent (public/private choice), contact_info (submitter details), reward (incentive), thank_you (completion). */
+  /** Enumerated type determining step behavior: welcome (intro screen), question (text input), rating (star/scale), consent (public/private choice), contact_info (submitter details), reward (incentive), thank_you (completion), testimonial_write (manual or AI-assisted testimonial composition). */
   step_type?: InputMaybe<Order_By>;
   /** Array of helper text strings shown to customers during question/rating steps. Provides guidance for better quality responses. */
   tips?: InputMaybe<Order_By>;
@@ -4418,7 +6677,7 @@ export type Form_Steps_Set_Input = {
   organization_id?: InputMaybe<Scalars['String']['input']>;
   /** Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form. */
   step_order?: InputMaybe<Scalars['smallint']['input']>;
-  /** Enumerated type determining step behavior: welcome (intro screen), question (text input), rating (star/scale), consent (public/private choice), contact_info (submitter details), reward (incentive), thank_you (completion). */
+  /** Enumerated type determining step behavior: welcome (intro screen), question (text input), rating (star/scale), consent (public/private choice), contact_info (submitter details), reward (incentive), thank_you (completion), testimonial_write (manual or AI-assisted testimonial composition). */
   step_type?: InputMaybe<Scalars['String']['input']>;
   /** Array of helper text strings shown to customers during question/rating steps. Provides guidance for better quality responses. */
   tips?: InputMaybe<Array<Scalars['String']['input']>>;
@@ -4495,7 +6754,7 @@ export type Form_Steps_Stream_Cursor_Value_Input = {
   organization_id?: InputMaybe<Scalars['String']['input']>;
   /** Zero-indexed position in the form step sequence. Used for display ordering in timeline editor and submission flow. Unique per form. */
   step_order?: InputMaybe<Scalars['smallint']['input']>;
-  /** Enumerated type determining step behavior: welcome (intro screen), question (text input), rating (star/scale), consent (public/private choice), contact_info (submitter details), reward (incentive), thank_you (completion). */
+  /** Enumerated type determining step behavior: welcome (intro screen), question (text input), rating (star/scale), consent (public/private choice), contact_info (submitter details), reward (incentive), thank_you (completion), testimonial_write (manual or AI-assisted testimonial composition). */
   step_type?: InputMaybe<Scalars['String']['input']>;
   /** Array of helper text strings shown to customers during question/rating steps. Provides guidance for better quality responses. */
   tips?: InputMaybe<Array<Scalars['String']['input']>>;
@@ -5646,6 +7905,536 @@ export type Jsonb_Comparison_Exp = {
   _lte?: InputMaybe<Scalars['jsonb']['input']>;
   _neq?: InputMaybe<Scalars['jsonb']['input']>;
   _nin?: InputMaybe<Array<Scalars['jsonb']['input']>>;
+};
+
+/** Catalog of AI models with provider metadata and pricing. Normalizes model configuration from providers.ts for database-driven model selection. Referenced by plan_quality_level_models junction to define which models are available for each plan/quality tier combination. */
+export type Llm_Models = {
+  __typename?: 'llm_models';
+  /** Maximum context window in tokens. NULL if not specified. Used for input validation. */
+  context_window: Maybe<Scalars['Int']['output']>;
+  /** Timestamp when this record was first created. Set automatically, never modified. */
+  created_at: Scalars['timestamptz']['output'];
+  /** Timestamp when model was deprecated by provider. NULL means model is current. */
+  deprecated_at: Maybe<Scalars['timestamptz']['output']>;
+  /** Human-readable display name for UI (e.g., "GPT-4o Mini", "Gemini 2.0 Flash"). */
+  display_name: Scalars['String']['output'];
+  /** Display order for UI sorting within same quality tier. Lower numbers appear first. */
+  display_order: Scalars['Int']['output'];
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id: Scalars['String']['output'];
+  /** Cost in USD per 1 million input tokens. NULL if pricing not available. Used for credit cost calculations. */
+  input_cost_per_million: Maybe<Scalars['numeric']['output']>;
+  /** Whether model is currently active and available. Set false to soft-disable without removing data. */
+  is_active: Scalars['Boolean']['output'];
+  /** Actual API model ID used when calling the provider (e.g., "gpt-4o-mini", "gemini-2.0-flash"). */
+  model_id: Scalars['String']['output'];
+  /** Cost in USD per 1 million output tokens. NULL if pricing not available. Used for credit cost calculations. */
+  output_cost_per_million: Maybe<Scalars['numeric']['output']>;
+  /** An array relationship */
+  plan_quality_level_models: Array<Plan_Quality_Level_Models>;
+  /** An aggregate relationship */
+  plan_quality_level_models_aggregate: Plan_Quality_Level_Models_Aggregate;
+  /** Provider identifier. Valid values: openai, google, anthropic. Matches AIProvider type in providers.ts. */
+  provider: Scalars['String']['output'];
+  /** Quality tier classification: fast, balanced, or powerful. Represents PRIMARY tier for this model. Some models may serve multiple tiers. */
+  quality_tier: Scalars['String']['output'];
+  /** An object relationship */
+  replacement_model: Maybe<Llm_Models>;
+  /** FK to recommended replacement model when deprecated. NULL if not deprecated or no replacement. */
+  replacement_model_id: Maybe<Scalars['String']['output']>;
+  /** Composite unique identifier in format "provider/model_id" (e.g., "openai/gpt-4o-mini"). Used as stable reference across the system. */
+  unique_name: Scalars['String']['output'];
+};
+
+
+/** Catalog of AI models with provider metadata and pricing. Normalizes model configuration from providers.ts for database-driven model selection. Referenced by plan_quality_level_models junction to define which models are available for each plan/quality tier combination. */
+export type Llm_ModelsPlan_Quality_Level_ModelsArgs = {
+  distinct_on?: InputMaybe<Array<Plan_Quality_Level_Models_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Plan_Quality_Level_Models_Order_By>>;
+  where?: InputMaybe<Plan_Quality_Level_Models_Bool_Exp>;
+};
+
+
+/** Catalog of AI models with provider metadata and pricing. Normalizes model configuration from providers.ts for database-driven model selection. Referenced by plan_quality_level_models junction to define which models are available for each plan/quality tier combination. */
+export type Llm_ModelsPlan_Quality_Level_Models_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Plan_Quality_Level_Models_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Plan_Quality_Level_Models_Order_By>>;
+  where?: InputMaybe<Plan_Quality_Level_Models_Bool_Exp>;
+};
+
+/** aggregated selection of "llm_models" */
+export type Llm_Models_Aggregate = {
+  __typename?: 'llm_models_aggregate';
+  aggregate: Maybe<Llm_Models_Aggregate_Fields>;
+  nodes: Array<Llm_Models>;
+};
+
+/** aggregate fields of "llm_models" */
+export type Llm_Models_Aggregate_Fields = {
+  __typename?: 'llm_models_aggregate_fields';
+  avg: Maybe<Llm_Models_Avg_Fields>;
+  count: Scalars['Int']['output'];
+  max: Maybe<Llm_Models_Max_Fields>;
+  min: Maybe<Llm_Models_Min_Fields>;
+  stddev: Maybe<Llm_Models_Stddev_Fields>;
+  stddev_pop: Maybe<Llm_Models_Stddev_Pop_Fields>;
+  stddev_samp: Maybe<Llm_Models_Stddev_Samp_Fields>;
+  sum: Maybe<Llm_Models_Sum_Fields>;
+  var_pop: Maybe<Llm_Models_Var_Pop_Fields>;
+  var_samp: Maybe<Llm_Models_Var_Samp_Fields>;
+  variance: Maybe<Llm_Models_Variance_Fields>;
+};
+
+
+/** aggregate fields of "llm_models" */
+export type Llm_Models_Aggregate_FieldsCountArgs = {
+  columns?: InputMaybe<Array<Llm_Models_Select_Column>>;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+/** aggregate avg on columns */
+export type Llm_Models_Avg_Fields = {
+  __typename?: 'llm_models_avg_fields';
+  /** Maximum context window in tokens. NULL if not specified. Used for input validation. */
+  context_window: Maybe<Scalars['Float']['output']>;
+  /** Display order for UI sorting within same quality tier. Lower numbers appear first. */
+  display_order: Maybe<Scalars['Float']['output']>;
+  /** Cost in USD per 1 million input tokens. NULL if pricing not available. Used for credit cost calculations. */
+  input_cost_per_million: Maybe<Scalars['Float']['output']>;
+  /** Cost in USD per 1 million output tokens. NULL if pricing not available. Used for credit cost calculations. */
+  output_cost_per_million: Maybe<Scalars['Float']['output']>;
+};
+
+/** Boolean expression to filter rows from the table "llm_models". All fields are combined with a logical 'AND'. */
+export type Llm_Models_Bool_Exp = {
+  _and?: InputMaybe<Array<Llm_Models_Bool_Exp>>;
+  _not?: InputMaybe<Llm_Models_Bool_Exp>;
+  _or?: InputMaybe<Array<Llm_Models_Bool_Exp>>;
+  context_window?: InputMaybe<Int_Comparison_Exp>;
+  created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  deprecated_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  display_name?: InputMaybe<String_Comparison_Exp>;
+  display_order?: InputMaybe<Int_Comparison_Exp>;
+  id?: InputMaybe<String_Comparison_Exp>;
+  input_cost_per_million?: InputMaybe<Numeric_Comparison_Exp>;
+  is_active?: InputMaybe<Boolean_Comparison_Exp>;
+  model_id?: InputMaybe<String_Comparison_Exp>;
+  output_cost_per_million?: InputMaybe<Numeric_Comparison_Exp>;
+  plan_quality_level_models?: InputMaybe<Plan_Quality_Level_Models_Bool_Exp>;
+  plan_quality_level_models_aggregate?: InputMaybe<Plan_Quality_Level_Models_Aggregate_Bool_Exp>;
+  provider?: InputMaybe<String_Comparison_Exp>;
+  quality_tier?: InputMaybe<String_Comparison_Exp>;
+  replacement_model?: InputMaybe<Llm_Models_Bool_Exp>;
+  replacement_model_id?: InputMaybe<String_Comparison_Exp>;
+  unique_name?: InputMaybe<String_Comparison_Exp>;
+};
+
+/** unique or primary key constraints on table "llm_models" */
+export const Llm_Models_Constraint = {
+  /** unique or primary key constraint on columns "id" */
+  LlmModelsPkey: 'llm_models_pkey',
+  /** unique or primary key constraint on columns "unique_name" */
+  LlmModelsUniqueNameKey: 'llm_models_unique_name_key'
+} as const;
+
+export type Llm_Models_Constraint = typeof Llm_Models_Constraint[keyof typeof Llm_Models_Constraint];
+/** input type for incrementing numeric columns in table "llm_models" */
+export type Llm_Models_Inc_Input = {
+  /** Maximum context window in tokens. NULL if not specified. Used for input validation. */
+  context_window?: InputMaybe<Scalars['Int']['input']>;
+  /** Display order for UI sorting within same quality tier. Lower numbers appear first. */
+  display_order?: InputMaybe<Scalars['Int']['input']>;
+  /** Cost in USD per 1 million input tokens. NULL if pricing not available. Used for credit cost calculations. */
+  input_cost_per_million?: InputMaybe<Scalars['numeric']['input']>;
+  /** Cost in USD per 1 million output tokens. NULL if pricing not available. Used for credit cost calculations. */
+  output_cost_per_million?: InputMaybe<Scalars['numeric']['input']>;
+};
+
+/** input type for inserting data into table "llm_models" */
+export type Llm_Models_Insert_Input = {
+  /** Maximum context window in tokens. NULL if not specified. Used for input validation. */
+  context_window?: InputMaybe<Scalars['Int']['input']>;
+  /** Timestamp when this record was first created. Set automatically, never modified. */
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Timestamp when model was deprecated by provider. NULL means model is current. */
+  deprecated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Human-readable display name for UI (e.g., "GPT-4o Mini", "Gemini 2.0 Flash"). */
+  display_name?: InputMaybe<Scalars['String']['input']>;
+  /** Display order for UI sorting within same quality tier. Lower numbers appear first. */
+  display_order?: InputMaybe<Scalars['Int']['input']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id?: InputMaybe<Scalars['String']['input']>;
+  /** Cost in USD per 1 million input tokens. NULL if pricing not available. Used for credit cost calculations. */
+  input_cost_per_million?: InputMaybe<Scalars['numeric']['input']>;
+  /** Whether model is currently active and available. Set false to soft-disable without removing data. */
+  is_active?: InputMaybe<Scalars['Boolean']['input']>;
+  /** Actual API model ID used when calling the provider (e.g., "gpt-4o-mini", "gemini-2.0-flash"). */
+  model_id?: InputMaybe<Scalars['String']['input']>;
+  /** Cost in USD per 1 million output tokens. NULL if pricing not available. Used for credit cost calculations. */
+  output_cost_per_million?: InputMaybe<Scalars['numeric']['input']>;
+  plan_quality_level_models?: InputMaybe<Plan_Quality_Level_Models_Arr_Rel_Insert_Input>;
+  /** Provider identifier. Valid values: openai, google, anthropic. Matches AIProvider type in providers.ts. */
+  provider?: InputMaybe<Scalars['String']['input']>;
+  /** Quality tier classification: fast, balanced, or powerful. Represents PRIMARY tier for this model. Some models may serve multiple tiers. */
+  quality_tier?: InputMaybe<Scalars['String']['input']>;
+  replacement_model?: InputMaybe<Llm_Models_Obj_Rel_Insert_Input>;
+  /** FK to recommended replacement model when deprecated. NULL if not deprecated or no replacement. */
+  replacement_model_id?: InputMaybe<Scalars['String']['input']>;
+  /** Composite unique identifier in format "provider/model_id" (e.g., "openai/gpt-4o-mini"). Used as stable reference across the system. */
+  unique_name?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** aggregate max on columns */
+export type Llm_Models_Max_Fields = {
+  __typename?: 'llm_models_max_fields';
+  /** Maximum context window in tokens. NULL if not specified. Used for input validation. */
+  context_window: Maybe<Scalars['Int']['output']>;
+  /** Timestamp when this record was first created. Set automatically, never modified. */
+  created_at: Maybe<Scalars['timestamptz']['output']>;
+  /** Timestamp when model was deprecated by provider. NULL means model is current. */
+  deprecated_at: Maybe<Scalars['timestamptz']['output']>;
+  /** Human-readable display name for UI (e.g., "GPT-4o Mini", "Gemini 2.0 Flash"). */
+  display_name: Maybe<Scalars['String']['output']>;
+  /** Display order for UI sorting within same quality tier. Lower numbers appear first. */
+  display_order: Maybe<Scalars['Int']['output']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id: Maybe<Scalars['String']['output']>;
+  /** Cost in USD per 1 million input tokens. NULL if pricing not available. Used for credit cost calculations. */
+  input_cost_per_million: Maybe<Scalars['numeric']['output']>;
+  /** Actual API model ID used when calling the provider (e.g., "gpt-4o-mini", "gemini-2.0-flash"). */
+  model_id: Maybe<Scalars['String']['output']>;
+  /** Cost in USD per 1 million output tokens. NULL if pricing not available. Used for credit cost calculations. */
+  output_cost_per_million: Maybe<Scalars['numeric']['output']>;
+  /** Provider identifier. Valid values: openai, google, anthropic. Matches AIProvider type in providers.ts. */
+  provider: Maybe<Scalars['String']['output']>;
+  /** Quality tier classification: fast, balanced, or powerful. Represents PRIMARY tier for this model. Some models may serve multiple tiers. */
+  quality_tier: Maybe<Scalars['String']['output']>;
+  /** FK to recommended replacement model when deprecated. NULL if not deprecated or no replacement. */
+  replacement_model_id: Maybe<Scalars['String']['output']>;
+  /** Composite unique identifier in format "provider/model_id" (e.g., "openai/gpt-4o-mini"). Used as stable reference across the system. */
+  unique_name: Maybe<Scalars['String']['output']>;
+};
+
+/** aggregate min on columns */
+export type Llm_Models_Min_Fields = {
+  __typename?: 'llm_models_min_fields';
+  /** Maximum context window in tokens. NULL if not specified. Used for input validation. */
+  context_window: Maybe<Scalars['Int']['output']>;
+  /** Timestamp when this record was first created. Set automatically, never modified. */
+  created_at: Maybe<Scalars['timestamptz']['output']>;
+  /** Timestamp when model was deprecated by provider. NULL means model is current. */
+  deprecated_at: Maybe<Scalars['timestamptz']['output']>;
+  /** Human-readable display name for UI (e.g., "GPT-4o Mini", "Gemini 2.0 Flash"). */
+  display_name: Maybe<Scalars['String']['output']>;
+  /** Display order for UI sorting within same quality tier. Lower numbers appear first. */
+  display_order: Maybe<Scalars['Int']['output']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id: Maybe<Scalars['String']['output']>;
+  /** Cost in USD per 1 million input tokens. NULL if pricing not available. Used for credit cost calculations. */
+  input_cost_per_million: Maybe<Scalars['numeric']['output']>;
+  /** Actual API model ID used when calling the provider (e.g., "gpt-4o-mini", "gemini-2.0-flash"). */
+  model_id: Maybe<Scalars['String']['output']>;
+  /** Cost in USD per 1 million output tokens. NULL if pricing not available. Used for credit cost calculations. */
+  output_cost_per_million: Maybe<Scalars['numeric']['output']>;
+  /** Provider identifier. Valid values: openai, google, anthropic. Matches AIProvider type in providers.ts. */
+  provider: Maybe<Scalars['String']['output']>;
+  /** Quality tier classification: fast, balanced, or powerful. Represents PRIMARY tier for this model. Some models may serve multiple tiers. */
+  quality_tier: Maybe<Scalars['String']['output']>;
+  /** FK to recommended replacement model when deprecated. NULL if not deprecated or no replacement. */
+  replacement_model_id: Maybe<Scalars['String']['output']>;
+  /** Composite unique identifier in format "provider/model_id" (e.g., "openai/gpt-4o-mini"). Used as stable reference across the system. */
+  unique_name: Maybe<Scalars['String']['output']>;
+};
+
+/** response of any mutation on the table "llm_models" */
+export type Llm_Models_Mutation_Response = {
+  __typename?: 'llm_models_mutation_response';
+  /** number of rows affected by the mutation */
+  affected_rows: Scalars['Int']['output'];
+  /** data from the rows affected by the mutation */
+  returning: Array<Llm_Models>;
+};
+
+/** input type for inserting object relation for remote table "llm_models" */
+export type Llm_Models_Obj_Rel_Insert_Input = {
+  data: Llm_Models_Insert_Input;
+  /** upsert condition */
+  on_conflict?: InputMaybe<Llm_Models_On_Conflict>;
+};
+
+/** on_conflict condition type for table "llm_models" */
+export type Llm_Models_On_Conflict = {
+  constraint: Llm_Models_Constraint;
+  update_columns?: Array<Llm_Models_Update_Column>;
+  where?: InputMaybe<Llm_Models_Bool_Exp>;
+};
+
+/** Ordering options when selecting data from "llm_models". */
+export type Llm_Models_Order_By = {
+  context_window?: InputMaybe<Order_By>;
+  created_at?: InputMaybe<Order_By>;
+  deprecated_at?: InputMaybe<Order_By>;
+  display_name?: InputMaybe<Order_By>;
+  display_order?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
+  input_cost_per_million?: InputMaybe<Order_By>;
+  is_active?: InputMaybe<Order_By>;
+  model_id?: InputMaybe<Order_By>;
+  output_cost_per_million?: InputMaybe<Order_By>;
+  plan_quality_level_models_aggregate?: InputMaybe<Plan_Quality_Level_Models_Aggregate_Order_By>;
+  provider?: InputMaybe<Order_By>;
+  quality_tier?: InputMaybe<Order_By>;
+  replacement_model?: InputMaybe<Llm_Models_Order_By>;
+  replacement_model_id?: InputMaybe<Order_By>;
+  unique_name?: InputMaybe<Order_By>;
+};
+
+/** primary key columns input for table: llm_models */
+export type Llm_Models_Pk_Columns_Input = {
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id: Scalars['String']['input'];
+};
+
+/** select columns of table "llm_models" */
+export const Llm_Models_Select_Column = {
+  /** column name */
+  ContextWindow: 'context_window',
+  /** column name */
+  CreatedAt: 'created_at',
+  /** column name */
+  DeprecatedAt: 'deprecated_at',
+  /** column name */
+  DisplayName: 'display_name',
+  /** column name */
+  DisplayOrder: 'display_order',
+  /** column name */
+  Id: 'id',
+  /** column name */
+  InputCostPerMillion: 'input_cost_per_million',
+  /** column name */
+  IsActive: 'is_active',
+  /** column name */
+  ModelId: 'model_id',
+  /** column name */
+  OutputCostPerMillion: 'output_cost_per_million',
+  /** column name */
+  Provider: 'provider',
+  /** column name */
+  QualityTier: 'quality_tier',
+  /** column name */
+  ReplacementModelId: 'replacement_model_id',
+  /** column name */
+  UniqueName: 'unique_name'
+} as const;
+
+export type Llm_Models_Select_Column = typeof Llm_Models_Select_Column[keyof typeof Llm_Models_Select_Column];
+/** input type for updating data in table "llm_models" */
+export type Llm_Models_Set_Input = {
+  /** Maximum context window in tokens. NULL if not specified. Used for input validation. */
+  context_window?: InputMaybe<Scalars['Int']['input']>;
+  /** Timestamp when this record was first created. Set automatically, never modified. */
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Timestamp when model was deprecated by provider. NULL means model is current. */
+  deprecated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Human-readable display name for UI (e.g., "GPT-4o Mini", "Gemini 2.0 Flash"). */
+  display_name?: InputMaybe<Scalars['String']['input']>;
+  /** Display order for UI sorting within same quality tier. Lower numbers appear first. */
+  display_order?: InputMaybe<Scalars['Int']['input']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id?: InputMaybe<Scalars['String']['input']>;
+  /** Cost in USD per 1 million input tokens. NULL if pricing not available. Used for credit cost calculations. */
+  input_cost_per_million?: InputMaybe<Scalars['numeric']['input']>;
+  /** Whether model is currently active and available. Set false to soft-disable without removing data. */
+  is_active?: InputMaybe<Scalars['Boolean']['input']>;
+  /** Actual API model ID used when calling the provider (e.g., "gpt-4o-mini", "gemini-2.0-flash"). */
+  model_id?: InputMaybe<Scalars['String']['input']>;
+  /** Cost in USD per 1 million output tokens. NULL if pricing not available. Used for credit cost calculations. */
+  output_cost_per_million?: InputMaybe<Scalars['numeric']['input']>;
+  /** Provider identifier. Valid values: openai, google, anthropic. Matches AIProvider type in providers.ts. */
+  provider?: InputMaybe<Scalars['String']['input']>;
+  /** Quality tier classification: fast, balanced, or powerful. Represents PRIMARY tier for this model. Some models may serve multiple tiers. */
+  quality_tier?: InputMaybe<Scalars['String']['input']>;
+  /** FK to recommended replacement model when deprecated. NULL if not deprecated or no replacement. */
+  replacement_model_id?: InputMaybe<Scalars['String']['input']>;
+  /** Composite unique identifier in format "provider/model_id" (e.g., "openai/gpt-4o-mini"). Used as stable reference across the system. */
+  unique_name?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** aggregate stddev on columns */
+export type Llm_Models_Stddev_Fields = {
+  __typename?: 'llm_models_stddev_fields';
+  /** Maximum context window in tokens. NULL if not specified. Used for input validation. */
+  context_window: Maybe<Scalars['Float']['output']>;
+  /** Display order for UI sorting within same quality tier. Lower numbers appear first. */
+  display_order: Maybe<Scalars['Float']['output']>;
+  /** Cost in USD per 1 million input tokens. NULL if pricing not available. Used for credit cost calculations. */
+  input_cost_per_million: Maybe<Scalars['Float']['output']>;
+  /** Cost in USD per 1 million output tokens. NULL if pricing not available. Used for credit cost calculations. */
+  output_cost_per_million: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate stddev_pop on columns */
+export type Llm_Models_Stddev_Pop_Fields = {
+  __typename?: 'llm_models_stddev_pop_fields';
+  /** Maximum context window in tokens. NULL if not specified. Used for input validation. */
+  context_window: Maybe<Scalars['Float']['output']>;
+  /** Display order for UI sorting within same quality tier. Lower numbers appear first. */
+  display_order: Maybe<Scalars['Float']['output']>;
+  /** Cost in USD per 1 million input tokens. NULL if pricing not available. Used for credit cost calculations. */
+  input_cost_per_million: Maybe<Scalars['Float']['output']>;
+  /** Cost in USD per 1 million output tokens. NULL if pricing not available. Used for credit cost calculations. */
+  output_cost_per_million: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate stddev_samp on columns */
+export type Llm_Models_Stddev_Samp_Fields = {
+  __typename?: 'llm_models_stddev_samp_fields';
+  /** Maximum context window in tokens. NULL if not specified. Used for input validation. */
+  context_window: Maybe<Scalars['Float']['output']>;
+  /** Display order for UI sorting within same quality tier. Lower numbers appear first. */
+  display_order: Maybe<Scalars['Float']['output']>;
+  /** Cost in USD per 1 million input tokens. NULL if pricing not available. Used for credit cost calculations. */
+  input_cost_per_million: Maybe<Scalars['Float']['output']>;
+  /** Cost in USD per 1 million output tokens. NULL if pricing not available. Used for credit cost calculations. */
+  output_cost_per_million: Maybe<Scalars['Float']['output']>;
+};
+
+/** Streaming cursor of the table "llm_models" */
+export type Llm_Models_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Llm_Models_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type Llm_Models_Stream_Cursor_Value_Input = {
+  /** Maximum context window in tokens. NULL if not specified. Used for input validation. */
+  context_window?: InputMaybe<Scalars['Int']['input']>;
+  /** Timestamp when this record was first created. Set automatically, never modified. */
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Timestamp when model was deprecated by provider. NULL means model is current. */
+  deprecated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Human-readable display name for UI (e.g., "GPT-4o Mini", "Gemini 2.0 Flash"). */
+  display_name?: InputMaybe<Scalars['String']['input']>;
+  /** Display order for UI sorting within same quality tier. Lower numbers appear first. */
+  display_order?: InputMaybe<Scalars['Int']['input']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id?: InputMaybe<Scalars['String']['input']>;
+  /** Cost in USD per 1 million input tokens. NULL if pricing not available. Used for credit cost calculations. */
+  input_cost_per_million?: InputMaybe<Scalars['numeric']['input']>;
+  /** Whether model is currently active and available. Set false to soft-disable without removing data. */
+  is_active?: InputMaybe<Scalars['Boolean']['input']>;
+  /** Actual API model ID used when calling the provider (e.g., "gpt-4o-mini", "gemini-2.0-flash"). */
+  model_id?: InputMaybe<Scalars['String']['input']>;
+  /** Cost in USD per 1 million output tokens. NULL if pricing not available. Used for credit cost calculations. */
+  output_cost_per_million?: InputMaybe<Scalars['numeric']['input']>;
+  /** Provider identifier. Valid values: openai, google, anthropic. Matches AIProvider type in providers.ts. */
+  provider?: InputMaybe<Scalars['String']['input']>;
+  /** Quality tier classification: fast, balanced, or powerful. Represents PRIMARY tier for this model. Some models may serve multiple tiers. */
+  quality_tier?: InputMaybe<Scalars['String']['input']>;
+  /** FK to recommended replacement model when deprecated. NULL if not deprecated or no replacement. */
+  replacement_model_id?: InputMaybe<Scalars['String']['input']>;
+  /** Composite unique identifier in format "provider/model_id" (e.g., "openai/gpt-4o-mini"). Used as stable reference across the system. */
+  unique_name?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** aggregate sum on columns */
+export type Llm_Models_Sum_Fields = {
+  __typename?: 'llm_models_sum_fields';
+  /** Maximum context window in tokens. NULL if not specified. Used for input validation. */
+  context_window: Maybe<Scalars['Int']['output']>;
+  /** Display order for UI sorting within same quality tier. Lower numbers appear first. */
+  display_order: Maybe<Scalars['Int']['output']>;
+  /** Cost in USD per 1 million input tokens. NULL if pricing not available. Used for credit cost calculations. */
+  input_cost_per_million: Maybe<Scalars['numeric']['output']>;
+  /** Cost in USD per 1 million output tokens. NULL if pricing not available. Used for credit cost calculations. */
+  output_cost_per_million: Maybe<Scalars['numeric']['output']>;
+};
+
+/** update columns of table "llm_models" */
+export const Llm_Models_Update_Column = {
+  /** column name */
+  ContextWindow: 'context_window',
+  /** column name */
+  CreatedAt: 'created_at',
+  /** column name */
+  DeprecatedAt: 'deprecated_at',
+  /** column name */
+  DisplayName: 'display_name',
+  /** column name */
+  DisplayOrder: 'display_order',
+  /** column name */
+  Id: 'id',
+  /** column name */
+  InputCostPerMillion: 'input_cost_per_million',
+  /** column name */
+  IsActive: 'is_active',
+  /** column name */
+  ModelId: 'model_id',
+  /** column name */
+  OutputCostPerMillion: 'output_cost_per_million',
+  /** column name */
+  Provider: 'provider',
+  /** column name */
+  QualityTier: 'quality_tier',
+  /** column name */
+  ReplacementModelId: 'replacement_model_id',
+  /** column name */
+  UniqueName: 'unique_name'
+} as const;
+
+export type Llm_Models_Update_Column = typeof Llm_Models_Update_Column[keyof typeof Llm_Models_Update_Column];
+export type Llm_Models_Updates = {
+  /** increments the numeric columns with given value of the filtered values */
+  _inc?: InputMaybe<Llm_Models_Inc_Input>;
+  /** sets the columns of the filtered rows to the given values */
+  _set?: InputMaybe<Llm_Models_Set_Input>;
+  /** filter the rows which have to be updated */
+  where: Llm_Models_Bool_Exp;
+};
+
+/** aggregate var_pop on columns */
+export type Llm_Models_Var_Pop_Fields = {
+  __typename?: 'llm_models_var_pop_fields';
+  /** Maximum context window in tokens. NULL if not specified. Used for input validation. */
+  context_window: Maybe<Scalars['Float']['output']>;
+  /** Display order for UI sorting within same quality tier. Lower numbers appear first. */
+  display_order: Maybe<Scalars['Float']['output']>;
+  /** Cost in USD per 1 million input tokens. NULL if pricing not available. Used for credit cost calculations. */
+  input_cost_per_million: Maybe<Scalars['Float']['output']>;
+  /** Cost in USD per 1 million output tokens. NULL if pricing not available. Used for credit cost calculations. */
+  output_cost_per_million: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate var_samp on columns */
+export type Llm_Models_Var_Samp_Fields = {
+  __typename?: 'llm_models_var_samp_fields';
+  /** Maximum context window in tokens. NULL if not specified. Used for input validation. */
+  context_window: Maybe<Scalars['Float']['output']>;
+  /** Display order for UI sorting within same quality tier. Lower numbers appear first. */
+  display_order: Maybe<Scalars['Float']['output']>;
+  /** Cost in USD per 1 million input tokens. NULL if pricing not available. Used for credit cost calculations. */
+  input_cost_per_million: Maybe<Scalars['Float']['output']>;
+  /** Cost in USD per 1 million output tokens. NULL if pricing not available. Used for credit cost calculations. */
+  output_cost_per_million: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate variance on columns */
+export type Llm_Models_Variance_Fields = {
+  __typename?: 'llm_models_variance_fields';
+  /** Maximum context window in tokens. NULL if not specified. Used for input validation. */
+  context_window: Maybe<Scalars['Float']['output']>;
+  /** Display order for UI sorting within same quality tier. Lower numbers appear first. */
+  display_order: Maybe<Scalars['Float']['output']>;
+  /** Cost in USD per 1 million input tokens. NULL if pricing not available. Used for credit cost calculations. */
+  input_cost_per_million: Maybe<Scalars['Float']['output']>;
+  /** Cost in USD per 1 million output tokens. NULL if pricing not available. Used for credit cost calculations. */
+  output_cost_per_million: Maybe<Scalars['Float']['output']>;
 };
 
 /**
@@ -8123,10 +10912,26 @@ export type Media_Variance_Order_By = {
 /** mutation root */
 export type Mutation_Root = {
   __typename?: 'mutation_root';
+  /** delete data from the table: "ai_capabilities" */
+  delete_ai_capabilities: Maybe<Ai_Capabilities_Mutation_Response>;
+  /** delete single row from the table: "ai_capabilities" */
+  delete_ai_capabilities_by_pk: Maybe<Ai_Capabilities>;
   /** delete data from the table: "contacts" */
   delete_contacts: Maybe<Contacts_Mutation_Response>;
   /** delete single row from the table: "contacts" */
   delete_contacts_by_pk: Maybe<Contacts>;
+  /** delete data from the table: "credit_reservations" */
+  delete_credit_reservations: Maybe<Credit_Reservations_Mutation_Response>;
+  /** delete single row from the table: "credit_reservations" */
+  delete_credit_reservations_by_pk: Maybe<Credit_Reservations>;
+  /** delete data from the table: "credit_topup_packages" */
+  delete_credit_topup_packages: Maybe<Credit_Topup_Packages_Mutation_Response>;
+  /** delete single row from the table: "credit_topup_packages" */
+  delete_credit_topup_packages_by_pk: Maybe<Credit_Topup_Packages>;
+  /** delete data from the table: "credit_transactions" */
+  delete_credit_transactions: Maybe<Credit_Transactions_Mutation_Response>;
+  /** delete single row from the table: "credit_transactions" */
+  delete_credit_transactions_by_pk: Maybe<Credit_Transactions>;
   /** delete data from the table: "flows" */
   delete_flows: Maybe<Flows_Mutation_Response>;
   /** delete single row from the table: "flows" */
@@ -8155,6 +10960,10 @@ export type Mutation_Root = {
   delete_forms: Maybe<Forms_Mutation_Response>;
   /** delete single row from the table: "forms" */
   delete_forms_by_pk: Maybe<Forms>;
+  /** delete data from the table: "llm_models" */
+  delete_llm_models: Maybe<Llm_Models_Mutation_Response>;
+  /** delete single row from the table: "llm_models" */
+  delete_llm_models_by_pk: Maybe<Llm_Models>;
   /** delete data from the table: "media" */
   delete_media: Maybe<Media_Mutation_Response>;
   /** delete single row from the table: "media" */
@@ -8163,6 +10972,10 @@ export type Mutation_Root = {
   delete_media_entity_types: Maybe<Media_Entity_Types_Mutation_Response>;
   /** delete single row from the table: "media_entity_types" */
   delete_media_entity_types_by_pk: Maybe<Media_Entity_Types>;
+  /** delete data from the table: "organization_credit_balances" */
+  delete_organization_credit_balances: Maybe<Organization_Credit_Balances_Mutation_Response>;
+  /** delete single row from the table: "organization_credit_balances" */
+  delete_organization_credit_balances_by_pk: Maybe<Organization_Credit_Balances>;
   /** delete data from the table: "organization_plans" */
   delete_organization_plans: Maybe<Organization_Plans_Mutation_Response>;
   /** delete single row from the table: "organization_plans" */
@@ -8175,10 +10988,22 @@ export type Mutation_Root = {
   delete_organizations: Maybe<Organizations_Mutation_Response>;
   /** delete single row from the table: "organizations" */
   delete_organizations_by_pk: Maybe<Organizations>;
+  /** delete data from the table: "plan_ai_capabilities" */
+  delete_plan_ai_capabilities: Maybe<Plan_Ai_Capabilities_Mutation_Response>;
+  /** delete single row from the table: "plan_ai_capabilities" */
+  delete_plan_ai_capabilities_by_pk: Maybe<Plan_Ai_Capabilities>;
+  /** delete data from the table: "plan_ai_capability_quality_levels" */
+  delete_plan_ai_capability_quality_levels: Maybe<Plan_Ai_Capability_Quality_Levels_Mutation_Response>;
+  /** delete single row from the table: "plan_ai_capability_quality_levels" */
+  delete_plan_ai_capability_quality_levels_by_pk: Maybe<Plan_Ai_Capability_Quality_Levels>;
   /** delete data from the table: "plan_prices" */
   delete_plan_prices: Maybe<Plan_Prices_Mutation_Response>;
   /** delete single row from the table: "plan_prices" */
   delete_plan_prices_by_pk: Maybe<Plan_Prices>;
+  /** delete data from the table: "plan_quality_level_models" */
+  delete_plan_quality_level_models: Maybe<Plan_Quality_Level_Models_Mutation_Response>;
+  /** delete single row from the table: "plan_quality_level_models" */
+  delete_plan_quality_level_models_by_pk: Maybe<Plan_Quality_Level_Models>;
   /** delete data from the table: "plan_question_types" */
   delete_plan_question_types: Maybe<Plan_Question_Types_Mutation_Response>;
   /** delete single row from the table: "plan_question_types" */
@@ -8187,6 +11012,10 @@ export type Mutation_Root = {
   delete_plans: Maybe<Plans_Mutation_Response>;
   /** delete single row from the table: "plans" */
   delete_plans_by_pk: Maybe<Plans>;
+  /** delete data from the table: "quality_levels" */
+  delete_quality_levels: Maybe<Quality_Levels_Mutation_Response>;
+  /** delete single row from the table: "quality_levels" */
+  delete_quality_levels_by_pk: Maybe<Quality_Levels>;
   /** delete data from the table: "question_options" */
   delete_question_options: Maybe<Question_Options_Mutation_Response>;
   /** delete single row from the table: "question_options" */
@@ -8219,10 +11048,26 @@ export type Mutation_Root = {
   delete_widgets: Maybe<Widgets_Mutation_Response>;
   /** delete single row from the table: "widgets" */
   delete_widgets_by_pk: Maybe<Widgets>;
+  /** insert data into the table: "ai_capabilities" */
+  insert_ai_capabilities: Maybe<Ai_Capabilities_Mutation_Response>;
+  /** insert a single row into the table: "ai_capabilities" */
+  insert_ai_capabilities_one: Maybe<Ai_Capabilities>;
   /** insert data into the table: "contacts" */
   insert_contacts: Maybe<Contacts_Mutation_Response>;
   /** insert a single row into the table: "contacts" */
   insert_contacts_one: Maybe<Contacts>;
+  /** insert data into the table: "credit_reservations" */
+  insert_credit_reservations: Maybe<Credit_Reservations_Mutation_Response>;
+  /** insert a single row into the table: "credit_reservations" */
+  insert_credit_reservations_one: Maybe<Credit_Reservations>;
+  /** insert data into the table: "credit_topup_packages" */
+  insert_credit_topup_packages: Maybe<Credit_Topup_Packages_Mutation_Response>;
+  /** insert a single row into the table: "credit_topup_packages" */
+  insert_credit_topup_packages_one: Maybe<Credit_Topup_Packages>;
+  /** insert data into the table: "credit_transactions" */
+  insert_credit_transactions: Maybe<Credit_Transactions_Mutation_Response>;
+  /** insert a single row into the table: "credit_transactions" */
+  insert_credit_transactions_one: Maybe<Credit_Transactions>;
   /** insert data into the table: "flows" */
   insert_flows: Maybe<Flows_Mutation_Response>;
   /** insert a single row into the table: "flows" */
@@ -8251,6 +11096,10 @@ export type Mutation_Root = {
   insert_forms: Maybe<Forms_Mutation_Response>;
   /** insert a single row into the table: "forms" */
   insert_forms_one: Maybe<Forms>;
+  /** insert data into the table: "llm_models" */
+  insert_llm_models: Maybe<Llm_Models_Mutation_Response>;
+  /** insert a single row into the table: "llm_models" */
+  insert_llm_models_one: Maybe<Llm_Models>;
   /** insert data into the table: "media" */
   insert_media: Maybe<Media_Mutation_Response>;
   /** insert data into the table: "media_entity_types" */
@@ -8259,6 +11108,10 @@ export type Mutation_Root = {
   insert_media_entity_types_one: Maybe<Media_Entity_Types>;
   /** insert a single row into the table: "media" */
   insert_media_one: Maybe<Media>;
+  /** insert data into the table: "organization_credit_balances" */
+  insert_organization_credit_balances: Maybe<Organization_Credit_Balances_Mutation_Response>;
+  /** insert a single row into the table: "organization_credit_balances" */
+  insert_organization_credit_balances_one: Maybe<Organization_Credit_Balances>;
   /** insert data into the table: "organization_plans" */
   insert_organization_plans: Maybe<Organization_Plans_Mutation_Response>;
   /** insert a single row into the table: "organization_plans" */
@@ -8271,10 +11124,22 @@ export type Mutation_Root = {
   insert_organizations: Maybe<Organizations_Mutation_Response>;
   /** insert a single row into the table: "organizations" */
   insert_organizations_one: Maybe<Organizations>;
+  /** insert data into the table: "plan_ai_capabilities" */
+  insert_plan_ai_capabilities: Maybe<Plan_Ai_Capabilities_Mutation_Response>;
+  /** insert a single row into the table: "plan_ai_capabilities" */
+  insert_plan_ai_capabilities_one: Maybe<Plan_Ai_Capabilities>;
+  /** insert data into the table: "plan_ai_capability_quality_levels" */
+  insert_plan_ai_capability_quality_levels: Maybe<Plan_Ai_Capability_Quality_Levels_Mutation_Response>;
+  /** insert a single row into the table: "plan_ai_capability_quality_levels" */
+  insert_plan_ai_capability_quality_levels_one: Maybe<Plan_Ai_Capability_Quality_Levels>;
   /** insert data into the table: "plan_prices" */
   insert_plan_prices: Maybe<Plan_Prices_Mutation_Response>;
   /** insert a single row into the table: "plan_prices" */
   insert_plan_prices_one: Maybe<Plan_Prices>;
+  /** insert data into the table: "plan_quality_level_models" */
+  insert_plan_quality_level_models: Maybe<Plan_Quality_Level_Models_Mutation_Response>;
+  /** insert a single row into the table: "plan_quality_level_models" */
+  insert_plan_quality_level_models_one: Maybe<Plan_Quality_Level_Models>;
   /** insert data into the table: "plan_question_types" */
   insert_plan_question_types: Maybe<Plan_Question_Types_Mutation_Response>;
   /** insert a single row into the table: "plan_question_types" */
@@ -8283,6 +11148,10 @@ export type Mutation_Root = {
   insert_plans: Maybe<Plans_Mutation_Response>;
   /** insert a single row into the table: "plans" */
   insert_plans_one: Maybe<Plans>;
+  /** insert data into the table: "quality_levels" */
+  insert_quality_levels: Maybe<Quality_Levels_Mutation_Response>;
+  /** insert a single row into the table: "quality_levels" */
+  insert_quality_levels_one: Maybe<Quality_Levels>;
   /** insert data into the table: "question_options" */
   insert_question_options: Maybe<Question_Options_Mutation_Response>;
   /** insert a single row into the table: "question_options" */
@@ -8315,12 +11184,36 @@ export type Mutation_Root = {
   insert_widgets: Maybe<Widgets_Mutation_Response>;
   /** insert a single row into the table: "widgets" */
   insert_widgets_one: Maybe<Widgets>;
+  /** update data of the table: "ai_capabilities" */
+  update_ai_capabilities: Maybe<Ai_Capabilities_Mutation_Response>;
+  /** update single row of the table: "ai_capabilities" */
+  update_ai_capabilities_by_pk: Maybe<Ai_Capabilities>;
+  /** update multiples rows of table: "ai_capabilities" */
+  update_ai_capabilities_many: Maybe<Array<Maybe<Ai_Capabilities_Mutation_Response>>>;
   /** update data of the table: "contacts" */
   update_contacts: Maybe<Contacts_Mutation_Response>;
   /** update single row of the table: "contacts" */
   update_contacts_by_pk: Maybe<Contacts>;
   /** update multiples rows of table: "contacts" */
   update_contacts_many: Maybe<Array<Maybe<Contacts_Mutation_Response>>>;
+  /** update data of the table: "credit_reservations" */
+  update_credit_reservations: Maybe<Credit_Reservations_Mutation_Response>;
+  /** update single row of the table: "credit_reservations" */
+  update_credit_reservations_by_pk: Maybe<Credit_Reservations>;
+  /** update multiples rows of table: "credit_reservations" */
+  update_credit_reservations_many: Maybe<Array<Maybe<Credit_Reservations_Mutation_Response>>>;
+  /** update data of the table: "credit_topup_packages" */
+  update_credit_topup_packages: Maybe<Credit_Topup_Packages_Mutation_Response>;
+  /** update single row of the table: "credit_topup_packages" */
+  update_credit_topup_packages_by_pk: Maybe<Credit_Topup_Packages>;
+  /** update multiples rows of table: "credit_topup_packages" */
+  update_credit_topup_packages_many: Maybe<Array<Maybe<Credit_Topup_Packages_Mutation_Response>>>;
+  /** update data of the table: "credit_transactions" */
+  update_credit_transactions: Maybe<Credit_Transactions_Mutation_Response>;
+  /** update single row of the table: "credit_transactions" */
+  update_credit_transactions_by_pk: Maybe<Credit_Transactions>;
+  /** update multiples rows of table: "credit_transactions" */
+  update_credit_transactions_many: Maybe<Array<Maybe<Credit_Transactions_Mutation_Response>>>;
   /** update data of the table: "flows" */
   update_flows: Maybe<Flows_Mutation_Response>;
   /** update single row of the table: "flows" */
@@ -8363,6 +11256,12 @@ export type Mutation_Root = {
   update_forms_by_pk: Maybe<Forms>;
   /** update multiples rows of table: "forms" */
   update_forms_many: Maybe<Array<Maybe<Forms_Mutation_Response>>>;
+  /** update data of the table: "llm_models" */
+  update_llm_models: Maybe<Llm_Models_Mutation_Response>;
+  /** update single row of the table: "llm_models" */
+  update_llm_models_by_pk: Maybe<Llm_Models>;
+  /** update multiples rows of table: "llm_models" */
+  update_llm_models_many: Maybe<Array<Maybe<Llm_Models_Mutation_Response>>>;
   /** update data of the table: "media" */
   update_media: Maybe<Media_Mutation_Response>;
   /** update single row of the table: "media" */
@@ -8375,6 +11274,12 @@ export type Mutation_Root = {
   update_media_entity_types_many: Maybe<Array<Maybe<Media_Entity_Types_Mutation_Response>>>;
   /** update multiples rows of table: "media" */
   update_media_many: Maybe<Array<Maybe<Media_Mutation_Response>>>;
+  /** update data of the table: "organization_credit_balances" */
+  update_organization_credit_balances: Maybe<Organization_Credit_Balances_Mutation_Response>;
+  /** update single row of the table: "organization_credit_balances" */
+  update_organization_credit_balances_by_pk: Maybe<Organization_Credit_Balances>;
+  /** update multiples rows of table: "organization_credit_balances" */
+  update_organization_credit_balances_many: Maybe<Array<Maybe<Organization_Credit_Balances_Mutation_Response>>>;
   /** update data of the table: "organization_plans" */
   update_organization_plans: Maybe<Organization_Plans_Mutation_Response>;
   /** update single row of the table: "organization_plans" */
@@ -8393,12 +11298,30 @@ export type Mutation_Root = {
   update_organizations_by_pk: Maybe<Organizations>;
   /** update multiples rows of table: "organizations" */
   update_organizations_many: Maybe<Array<Maybe<Organizations_Mutation_Response>>>;
+  /** update data of the table: "plan_ai_capabilities" */
+  update_plan_ai_capabilities: Maybe<Plan_Ai_Capabilities_Mutation_Response>;
+  /** update single row of the table: "plan_ai_capabilities" */
+  update_plan_ai_capabilities_by_pk: Maybe<Plan_Ai_Capabilities>;
+  /** update multiples rows of table: "plan_ai_capabilities" */
+  update_plan_ai_capabilities_many: Maybe<Array<Maybe<Plan_Ai_Capabilities_Mutation_Response>>>;
+  /** update data of the table: "plan_ai_capability_quality_levels" */
+  update_plan_ai_capability_quality_levels: Maybe<Plan_Ai_Capability_Quality_Levels_Mutation_Response>;
+  /** update single row of the table: "plan_ai_capability_quality_levels" */
+  update_plan_ai_capability_quality_levels_by_pk: Maybe<Plan_Ai_Capability_Quality_Levels>;
+  /** update multiples rows of table: "plan_ai_capability_quality_levels" */
+  update_plan_ai_capability_quality_levels_many: Maybe<Array<Maybe<Plan_Ai_Capability_Quality_Levels_Mutation_Response>>>;
   /** update data of the table: "plan_prices" */
   update_plan_prices: Maybe<Plan_Prices_Mutation_Response>;
   /** update single row of the table: "plan_prices" */
   update_plan_prices_by_pk: Maybe<Plan_Prices>;
   /** update multiples rows of table: "plan_prices" */
   update_plan_prices_many: Maybe<Array<Maybe<Plan_Prices_Mutation_Response>>>;
+  /** update data of the table: "plan_quality_level_models" */
+  update_plan_quality_level_models: Maybe<Plan_Quality_Level_Models_Mutation_Response>;
+  /** update single row of the table: "plan_quality_level_models" */
+  update_plan_quality_level_models_by_pk: Maybe<Plan_Quality_Level_Models>;
+  /** update multiples rows of table: "plan_quality_level_models" */
+  update_plan_quality_level_models_many: Maybe<Array<Maybe<Plan_Quality_Level_Models_Mutation_Response>>>;
   /** update data of the table: "plan_question_types" */
   update_plan_question_types: Maybe<Plan_Question_Types_Mutation_Response>;
   /** update single row of the table: "plan_question_types" */
@@ -8411,6 +11334,12 @@ export type Mutation_Root = {
   update_plans_by_pk: Maybe<Plans>;
   /** update multiples rows of table: "plans" */
   update_plans_many: Maybe<Array<Maybe<Plans_Mutation_Response>>>;
+  /** update data of the table: "quality_levels" */
+  update_quality_levels: Maybe<Quality_Levels_Mutation_Response>;
+  /** update single row of the table: "quality_levels" */
+  update_quality_levels_by_pk: Maybe<Quality_Levels>;
+  /** update multiples rows of table: "quality_levels" */
+  update_quality_levels_many: Maybe<Array<Maybe<Quality_Levels_Mutation_Response>>>;
   /** update data of the table: "question_options" */
   update_question_options: Maybe<Question_Options_Mutation_Response>;
   /** update single row of the table: "question_options" */
@@ -8463,6 +11392,18 @@ export type Mutation_Root = {
 
 
 /** mutation root */
+export type Mutation_RootDelete_Ai_CapabilitiesArgs = {
+  where: Ai_Capabilities_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootDelete_Ai_Capabilities_By_PkArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+/** mutation root */
 export type Mutation_RootDelete_ContactsArgs = {
   where: Contacts_Bool_Exp;
 };
@@ -8470,6 +11411,42 @@ export type Mutation_RootDelete_ContactsArgs = {
 
 /** mutation root */
 export type Mutation_RootDelete_Contacts_By_PkArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+/** mutation root */
+export type Mutation_RootDelete_Credit_ReservationsArgs = {
+  where: Credit_Reservations_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootDelete_Credit_Reservations_By_PkArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+/** mutation root */
+export type Mutation_RootDelete_Credit_Topup_PackagesArgs = {
+  where: Credit_Topup_Packages_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootDelete_Credit_Topup_Packages_By_PkArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+/** mutation root */
+export type Mutation_RootDelete_Credit_TransactionsArgs = {
+  where: Credit_Transactions_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootDelete_Credit_Transactions_By_PkArgs = {
   id: Scalars['String']['input'];
 };
 
@@ -8559,6 +11536,18 @@ export type Mutation_RootDelete_Forms_By_PkArgs = {
 
 
 /** mutation root */
+export type Mutation_RootDelete_Llm_ModelsArgs = {
+  where: Llm_Models_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootDelete_Llm_Models_By_PkArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+/** mutation root */
 export type Mutation_RootDelete_MediaArgs = {
   where: Media_Bool_Exp;
 };
@@ -8578,6 +11567,18 @@ export type Mutation_RootDelete_Media_Entity_TypesArgs = {
 
 /** mutation root */
 export type Mutation_RootDelete_Media_Entity_Types_By_PkArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+/** mutation root */
+export type Mutation_RootDelete_Organization_Credit_BalancesArgs = {
+  where: Organization_Credit_Balances_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootDelete_Organization_Credit_Balances_By_PkArgs = {
   id: Scalars['String']['input'];
 };
 
@@ -8619,6 +11620,30 @@ export type Mutation_RootDelete_Organizations_By_PkArgs = {
 
 
 /** mutation root */
+export type Mutation_RootDelete_Plan_Ai_CapabilitiesArgs = {
+  where: Plan_Ai_Capabilities_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootDelete_Plan_Ai_Capabilities_By_PkArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+/** mutation root */
+export type Mutation_RootDelete_Plan_Ai_Capability_Quality_LevelsArgs = {
+  where: Plan_Ai_Capability_Quality_Levels_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootDelete_Plan_Ai_Capability_Quality_Levels_By_PkArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+/** mutation root */
 export type Mutation_RootDelete_Plan_PricesArgs = {
   where: Plan_Prices_Bool_Exp;
 };
@@ -8626,6 +11651,18 @@ export type Mutation_RootDelete_Plan_PricesArgs = {
 
 /** mutation root */
 export type Mutation_RootDelete_Plan_Prices_By_PkArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+/** mutation root */
+export type Mutation_RootDelete_Plan_Quality_Level_ModelsArgs = {
+  where: Plan_Quality_Level_Models_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootDelete_Plan_Quality_Level_Models_By_PkArgs = {
   id: Scalars['String']['input'];
 };
 
@@ -8650,6 +11687,18 @@ export type Mutation_RootDelete_PlansArgs = {
 
 /** mutation root */
 export type Mutation_RootDelete_Plans_By_PkArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+/** mutation root */
+export type Mutation_RootDelete_Quality_LevelsArgs = {
+  where: Quality_Levels_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootDelete_Quality_Levels_By_PkArgs = {
   id: Scalars['String']['input'];
 };
 
@@ -8751,6 +11800,20 @@ export type Mutation_RootDelete_Widgets_By_PkArgs = {
 
 
 /** mutation root */
+export type Mutation_RootInsert_Ai_CapabilitiesArgs = {
+  objects: Array<Ai_Capabilities_Insert_Input>;
+  on_conflict?: InputMaybe<Ai_Capabilities_On_Conflict>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_Ai_Capabilities_OneArgs = {
+  object: Ai_Capabilities_Insert_Input;
+  on_conflict?: InputMaybe<Ai_Capabilities_On_Conflict>;
+};
+
+
+/** mutation root */
 export type Mutation_RootInsert_ContactsArgs = {
   objects: Array<Contacts_Insert_Input>;
   on_conflict?: InputMaybe<Contacts_On_Conflict>;
@@ -8761,6 +11824,48 @@ export type Mutation_RootInsert_ContactsArgs = {
 export type Mutation_RootInsert_Contacts_OneArgs = {
   object: Contacts_Insert_Input;
   on_conflict?: InputMaybe<Contacts_On_Conflict>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_Credit_ReservationsArgs = {
+  objects: Array<Credit_Reservations_Insert_Input>;
+  on_conflict?: InputMaybe<Credit_Reservations_On_Conflict>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_Credit_Reservations_OneArgs = {
+  object: Credit_Reservations_Insert_Input;
+  on_conflict?: InputMaybe<Credit_Reservations_On_Conflict>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_Credit_Topup_PackagesArgs = {
+  objects: Array<Credit_Topup_Packages_Insert_Input>;
+  on_conflict?: InputMaybe<Credit_Topup_Packages_On_Conflict>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_Credit_Topup_Packages_OneArgs = {
+  object: Credit_Topup_Packages_Insert_Input;
+  on_conflict?: InputMaybe<Credit_Topup_Packages_On_Conflict>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_Credit_TransactionsArgs = {
+  objects: Array<Credit_Transactions_Insert_Input>;
+  on_conflict?: InputMaybe<Credit_Transactions_On_Conflict>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_Credit_Transactions_OneArgs = {
+  object: Credit_Transactions_Insert_Input;
+  on_conflict?: InputMaybe<Credit_Transactions_On_Conflict>;
 };
 
 
@@ -8863,6 +11968,20 @@ export type Mutation_RootInsert_Forms_OneArgs = {
 
 
 /** mutation root */
+export type Mutation_RootInsert_Llm_ModelsArgs = {
+  objects: Array<Llm_Models_Insert_Input>;
+  on_conflict?: InputMaybe<Llm_Models_On_Conflict>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_Llm_Models_OneArgs = {
+  object: Llm_Models_Insert_Input;
+  on_conflict?: InputMaybe<Llm_Models_On_Conflict>;
+};
+
+
+/** mutation root */
 export type Mutation_RootInsert_MediaArgs = {
   objects: Array<Media_Insert_Input>;
   on_conflict?: InputMaybe<Media_On_Conflict>;
@@ -8887,6 +12006,20 @@ export type Mutation_RootInsert_Media_Entity_Types_OneArgs = {
 export type Mutation_RootInsert_Media_OneArgs = {
   object: Media_Insert_Input;
   on_conflict?: InputMaybe<Media_On_Conflict>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_Organization_Credit_BalancesArgs = {
+  objects: Array<Organization_Credit_Balances_Insert_Input>;
+  on_conflict?: InputMaybe<Organization_Credit_Balances_On_Conflict>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_Organization_Credit_Balances_OneArgs = {
+  object: Organization_Credit_Balances_Insert_Input;
+  on_conflict?: InputMaybe<Organization_Credit_Balances_On_Conflict>;
 };
 
 
@@ -8933,6 +12066,34 @@ export type Mutation_RootInsert_Organizations_OneArgs = {
 
 
 /** mutation root */
+export type Mutation_RootInsert_Plan_Ai_CapabilitiesArgs = {
+  objects: Array<Plan_Ai_Capabilities_Insert_Input>;
+  on_conflict?: InputMaybe<Plan_Ai_Capabilities_On_Conflict>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_Plan_Ai_Capabilities_OneArgs = {
+  object: Plan_Ai_Capabilities_Insert_Input;
+  on_conflict?: InputMaybe<Plan_Ai_Capabilities_On_Conflict>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_Plan_Ai_Capability_Quality_LevelsArgs = {
+  objects: Array<Plan_Ai_Capability_Quality_Levels_Insert_Input>;
+  on_conflict?: InputMaybe<Plan_Ai_Capability_Quality_Levels_On_Conflict>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_Plan_Ai_Capability_Quality_Levels_OneArgs = {
+  object: Plan_Ai_Capability_Quality_Levels_Insert_Input;
+  on_conflict?: InputMaybe<Plan_Ai_Capability_Quality_Levels_On_Conflict>;
+};
+
+
+/** mutation root */
 export type Mutation_RootInsert_Plan_PricesArgs = {
   objects: Array<Plan_Prices_Insert_Input>;
   on_conflict?: InputMaybe<Plan_Prices_On_Conflict>;
@@ -8943,6 +12104,20 @@ export type Mutation_RootInsert_Plan_PricesArgs = {
 export type Mutation_RootInsert_Plan_Prices_OneArgs = {
   object: Plan_Prices_Insert_Input;
   on_conflict?: InputMaybe<Plan_Prices_On_Conflict>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_Plan_Quality_Level_ModelsArgs = {
+  objects: Array<Plan_Quality_Level_Models_Insert_Input>;
+  on_conflict?: InputMaybe<Plan_Quality_Level_Models_On_Conflict>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_Plan_Quality_Level_Models_OneArgs = {
+  object: Plan_Quality_Level_Models_Insert_Input;
+  on_conflict?: InputMaybe<Plan_Quality_Level_Models_On_Conflict>;
 };
 
 
@@ -8971,6 +12146,20 @@ export type Mutation_RootInsert_PlansArgs = {
 export type Mutation_RootInsert_Plans_OneArgs = {
   object: Plans_Insert_Input;
   on_conflict?: InputMaybe<Plans_On_Conflict>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_Quality_LevelsArgs = {
+  objects: Array<Quality_Levels_Insert_Input>;
+  on_conflict?: InputMaybe<Quality_Levels_On_Conflict>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_Quality_Levels_OneArgs = {
+  object: Quality_Levels_Insert_Input;
+  on_conflict?: InputMaybe<Quality_Levels_On_Conflict>;
 };
 
 
@@ -9087,6 +12276,28 @@ export type Mutation_RootInsert_Widgets_OneArgs = {
 
 
 /** mutation root */
+export type Mutation_RootUpdate_Ai_CapabilitiesArgs = {
+  _inc?: InputMaybe<Ai_Capabilities_Inc_Input>;
+  _set?: InputMaybe<Ai_Capabilities_Set_Input>;
+  where: Ai_Capabilities_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Ai_Capabilities_By_PkArgs = {
+  _inc?: InputMaybe<Ai_Capabilities_Inc_Input>;
+  _set?: InputMaybe<Ai_Capabilities_Set_Input>;
+  pk_columns: Ai_Capabilities_Pk_Columns_Input;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Ai_Capabilities_ManyArgs = {
+  updates: Array<Ai_Capabilities_Updates>;
+};
+
+
+/** mutation root */
 export type Mutation_RootUpdate_ContactsArgs = {
   _inc?: InputMaybe<Contacts_Inc_Input>;
   _set?: InputMaybe<Contacts_Set_Input>;
@@ -9105,6 +12316,82 @@ export type Mutation_RootUpdate_Contacts_By_PkArgs = {
 /** mutation root */
 export type Mutation_RootUpdate_Contacts_ManyArgs = {
   updates: Array<Contacts_Updates>;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Credit_ReservationsArgs = {
+  _inc?: InputMaybe<Credit_Reservations_Inc_Input>;
+  _set?: InputMaybe<Credit_Reservations_Set_Input>;
+  where: Credit_Reservations_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Credit_Reservations_By_PkArgs = {
+  _inc?: InputMaybe<Credit_Reservations_Inc_Input>;
+  _set?: InputMaybe<Credit_Reservations_Set_Input>;
+  pk_columns: Credit_Reservations_Pk_Columns_Input;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Credit_Reservations_ManyArgs = {
+  updates: Array<Credit_Reservations_Updates>;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Credit_Topup_PackagesArgs = {
+  _inc?: InputMaybe<Credit_Topup_Packages_Inc_Input>;
+  _set?: InputMaybe<Credit_Topup_Packages_Set_Input>;
+  where: Credit_Topup_Packages_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Credit_Topup_Packages_By_PkArgs = {
+  _inc?: InputMaybe<Credit_Topup_Packages_Inc_Input>;
+  _set?: InputMaybe<Credit_Topup_Packages_Set_Input>;
+  pk_columns: Credit_Topup_Packages_Pk_Columns_Input;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Credit_Topup_Packages_ManyArgs = {
+  updates: Array<Credit_Topup_Packages_Updates>;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Credit_TransactionsArgs = {
+  _append?: InputMaybe<Credit_Transactions_Append_Input>;
+  _delete_at_path?: InputMaybe<Credit_Transactions_Delete_At_Path_Input>;
+  _delete_elem?: InputMaybe<Credit_Transactions_Delete_Elem_Input>;
+  _delete_key?: InputMaybe<Credit_Transactions_Delete_Key_Input>;
+  _inc?: InputMaybe<Credit_Transactions_Inc_Input>;
+  _prepend?: InputMaybe<Credit_Transactions_Prepend_Input>;
+  _set?: InputMaybe<Credit_Transactions_Set_Input>;
+  where: Credit_Transactions_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Credit_Transactions_By_PkArgs = {
+  _append?: InputMaybe<Credit_Transactions_Append_Input>;
+  _delete_at_path?: InputMaybe<Credit_Transactions_Delete_At_Path_Input>;
+  _delete_elem?: InputMaybe<Credit_Transactions_Delete_Elem_Input>;
+  _delete_key?: InputMaybe<Credit_Transactions_Delete_Key_Input>;
+  _inc?: InputMaybe<Credit_Transactions_Inc_Input>;
+  _prepend?: InputMaybe<Credit_Transactions_Prepend_Input>;
+  _set?: InputMaybe<Credit_Transactions_Set_Input>;
+  pk_columns: Credit_Transactions_Pk_Columns_Input;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Credit_Transactions_ManyArgs = {
+  updates: Array<Credit_Transactions_Updates>;
 };
 
 
@@ -9309,6 +12596,28 @@ export type Mutation_RootUpdate_Forms_ManyArgs = {
 
 
 /** mutation root */
+export type Mutation_RootUpdate_Llm_ModelsArgs = {
+  _inc?: InputMaybe<Llm_Models_Inc_Input>;
+  _set?: InputMaybe<Llm_Models_Set_Input>;
+  where: Llm_Models_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Llm_Models_By_PkArgs = {
+  _inc?: InputMaybe<Llm_Models_Inc_Input>;
+  _set?: InputMaybe<Llm_Models_Set_Input>;
+  pk_columns: Llm_Models_Pk_Columns_Input;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Llm_Models_ManyArgs = {
+  updates: Array<Llm_Models_Updates>;
+};
+
+
+/** mutation root */
 export type Mutation_RootUpdate_MediaArgs = {
   _append?: InputMaybe<Media_Append_Input>;
   _delete_at_path?: InputMaybe<Media_Delete_At_Path_Input>;
@@ -9359,6 +12668,28 @@ export type Mutation_RootUpdate_Media_Entity_Types_ManyArgs = {
 /** mutation root */
 export type Mutation_RootUpdate_Media_ManyArgs = {
   updates: Array<Media_Updates>;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Organization_Credit_BalancesArgs = {
+  _inc?: InputMaybe<Organization_Credit_Balances_Inc_Input>;
+  _set?: InputMaybe<Organization_Credit_Balances_Set_Input>;
+  where: Organization_Credit_Balances_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Organization_Credit_Balances_By_PkArgs = {
+  _inc?: InputMaybe<Organization_Credit_Balances_Inc_Input>;
+  _set?: InputMaybe<Organization_Credit_Balances_Set_Input>;
+  pk_columns: Organization_Credit_Balances_Pk_Columns_Input;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Organization_Credit_Balances_ManyArgs = {
+  updates: Array<Organization_Credit_Balances_Updates>;
 };
 
 
@@ -9435,6 +12766,48 @@ export type Mutation_RootUpdate_Organizations_ManyArgs = {
 
 
 /** mutation root */
+export type Mutation_RootUpdate_Plan_Ai_CapabilitiesArgs = {
+  _inc?: InputMaybe<Plan_Ai_Capabilities_Inc_Input>;
+  _set?: InputMaybe<Plan_Ai_Capabilities_Set_Input>;
+  where: Plan_Ai_Capabilities_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Plan_Ai_Capabilities_By_PkArgs = {
+  _inc?: InputMaybe<Plan_Ai_Capabilities_Inc_Input>;
+  _set?: InputMaybe<Plan_Ai_Capabilities_Set_Input>;
+  pk_columns: Plan_Ai_Capabilities_Pk_Columns_Input;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Plan_Ai_Capabilities_ManyArgs = {
+  updates: Array<Plan_Ai_Capabilities_Updates>;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Plan_Ai_Capability_Quality_LevelsArgs = {
+  _set?: InputMaybe<Plan_Ai_Capability_Quality_Levels_Set_Input>;
+  where: Plan_Ai_Capability_Quality_Levels_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Plan_Ai_Capability_Quality_Levels_By_PkArgs = {
+  _set?: InputMaybe<Plan_Ai_Capability_Quality_Levels_Set_Input>;
+  pk_columns: Plan_Ai_Capability_Quality_Levels_Pk_Columns_Input;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Plan_Ai_Capability_Quality_Levels_ManyArgs = {
+  updates: Array<Plan_Ai_Capability_Quality_Levels_Updates>;
+};
+
+
+/** mutation root */
 export type Mutation_RootUpdate_Plan_PricesArgs = {
   _inc?: InputMaybe<Plan_Prices_Inc_Input>;
   _set?: InputMaybe<Plan_Prices_Set_Input>;
@@ -9453,6 +12826,28 @@ export type Mutation_RootUpdate_Plan_Prices_By_PkArgs = {
 /** mutation root */
 export type Mutation_RootUpdate_Plan_Prices_ManyArgs = {
   updates: Array<Plan_Prices_Updates>;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Plan_Quality_Level_ModelsArgs = {
+  _inc?: InputMaybe<Plan_Quality_Level_Models_Inc_Input>;
+  _set?: InputMaybe<Plan_Quality_Level_Models_Set_Input>;
+  where: Plan_Quality_Level_Models_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Plan_Quality_Level_Models_By_PkArgs = {
+  _inc?: InputMaybe<Plan_Quality_Level_Models_Inc_Input>;
+  _set?: InputMaybe<Plan_Quality_Level_Models_Set_Input>;
+  pk_columns: Plan_Quality_Level_Models_Pk_Columns_Input;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Plan_Quality_Level_Models_ManyArgs = {
+  updates: Array<Plan_Quality_Level_Models_Updates>;
 };
 
 
@@ -9495,6 +12890,28 @@ export type Mutation_RootUpdate_Plans_By_PkArgs = {
 /** mutation root */
 export type Mutation_RootUpdate_Plans_ManyArgs = {
   updates: Array<Plans_Updates>;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Quality_LevelsArgs = {
+  _inc?: InputMaybe<Quality_Levels_Inc_Input>;
+  _set?: InputMaybe<Quality_Levels_Set_Input>;
+  where: Quality_Levels_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Quality_Levels_By_PkArgs = {
+  _inc?: InputMaybe<Quality_Levels_Inc_Input>;
+  _set?: InputMaybe<Quality_Levels_Set_Input>;
+  pk_columns: Quality_Levels_Pk_Columns_Input;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Quality_Levels_ManyArgs = {
+  updates: Array<Quality_Levels_Updates>;
 };
 
 
@@ -9727,6 +13144,433 @@ export const Order_By = {
 } as const;
 
 export type Order_By = typeof Order_By[keyof typeof Order_By];
+/** Tracks credit balance state for each organization. One row per org. used_this_period is computed from credit_transactions. */
+export type Organization_Credit_Balances = {
+  __typename?: 'organization_credit_balances';
+  /** Additional credits from purchases or promotions. Does not reset monthly. */
+  bonus_credits: Scalars['numeric']['output'];
+  /** Timestamp when this record was first created. Set automatically, never modified. */
+  created_at: Scalars['timestamptz']['output'];
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id: Scalars['String']['output'];
+  /** Credits allocated for the current billing period from the plan. Reset monthly. */
+  monthly_credits: Scalars['numeric']['output'];
+  /** An object relationship */
+  organization: Organizations;
+  /** FK to organizations table. UNIQUE constraint ensures one balance record per organization. */
+  organization_id: Scalars['String']['output'];
+  /** How far negative the available balance can go. Provides grace for operations that slightly exceed limits. */
+  overdraft_limit: Scalars['numeric']['output'];
+  /** End of the current billing period. When reached, monthly_credits are reset and period advances. */
+  period_end: Scalars['timestamptz']['output'];
+  /** Start of the current billing period. Used for calculating usage within the period. */
+  period_start: Scalars['timestamptz']['output'];
+  /** Credits currently reserved for in-flight AI operations. Released on completion or timeout. */
+  reserved_credits: Scalars['numeric']['output'];
+  /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
+  updated_at: Scalars['timestamptz']['output'];
+};
+
+/** aggregated selection of "organization_credit_balances" */
+export type Organization_Credit_Balances_Aggregate = {
+  __typename?: 'organization_credit_balances_aggregate';
+  aggregate: Maybe<Organization_Credit_Balances_Aggregate_Fields>;
+  nodes: Array<Organization_Credit_Balances>;
+};
+
+/** aggregate fields of "organization_credit_balances" */
+export type Organization_Credit_Balances_Aggregate_Fields = {
+  __typename?: 'organization_credit_balances_aggregate_fields';
+  avg: Maybe<Organization_Credit_Balances_Avg_Fields>;
+  count: Scalars['Int']['output'];
+  max: Maybe<Organization_Credit_Balances_Max_Fields>;
+  min: Maybe<Organization_Credit_Balances_Min_Fields>;
+  stddev: Maybe<Organization_Credit_Balances_Stddev_Fields>;
+  stddev_pop: Maybe<Organization_Credit_Balances_Stddev_Pop_Fields>;
+  stddev_samp: Maybe<Organization_Credit_Balances_Stddev_Samp_Fields>;
+  sum: Maybe<Organization_Credit_Balances_Sum_Fields>;
+  var_pop: Maybe<Organization_Credit_Balances_Var_Pop_Fields>;
+  var_samp: Maybe<Organization_Credit_Balances_Var_Samp_Fields>;
+  variance: Maybe<Organization_Credit_Balances_Variance_Fields>;
+};
+
+
+/** aggregate fields of "organization_credit_balances" */
+export type Organization_Credit_Balances_Aggregate_FieldsCountArgs = {
+  columns?: InputMaybe<Array<Organization_Credit_Balances_Select_Column>>;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+/** aggregate avg on columns */
+export type Organization_Credit_Balances_Avg_Fields = {
+  __typename?: 'organization_credit_balances_avg_fields';
+  /** Additional credits from purchases or promotions. Does not reset monthly. */
+  bonus_credits: Maybe<Scalars['Float']['output']>;
+  /** Credits allocated for the current billing period from the plan. Reset monthly. */
+  monthly_credits: Maybe<Scalars['Float']['output']>;
+  /** How far negative the available balance can go. Provides grace for operations that slightly exceed limits. */
+  overdraft_limit: Maybe<Scalars['Float']['output']>;
+  /** Credits currently reserved for in-flight AI operations. Released on completion or timeout. */
+  reserved_credits: Maybe<Scalars['Float']['output']>;
+};
+
+/** Boolean expression to filter rows from the table "organization_credit_balances". All fields are combined with a logical 'AND'. */
+export type Organization_Credit_Balances_Bool_Exp = {
+  _and?: InputMaybe<Array<Organization_Credit_Balances_Bool_Exp>>;
+  _not?: InputMaybe<Organization_Credit_Balances_Bool_Exp>;
+  _or?: InputMaybe<Array<Organization_Credit_Balances_Bool_Exp>>;
+  bonus_credits?: InputMaybe<Numeric_Comparison_Exp>;
+  created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  id?: InputMaybe<String_Comparison_Exp>;
+  monthly_credits?: InputMaybe<Numeric_Comparison_Exp>;
+  organization?: InputMaybe<Organizations_Bool_Exp>;
+  organization_id?: InputMaybe<String_Comparison_Exp>;
+  overdraft_limit?: InputMaybe<Numeric_Comparison_Exp>;
+  period_end?: InputMaybe<Timestamptz_Comparison_Exp>;
+  period_start?: InputMaybe<Timestamptz_Comparison_Exp>;
+  reserved_credits?: InputMaybe<Numeric_Comparison_Exp>;
+  updated_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+};
+
+/** unique or primary key constraints on table "organization_credit_balances" */
+export const Organization_Credit_Balances_Constraint = {
+  /** unique or primary key constraint on columns "organization_id" */
+  OrganizationCreditBalancesOrganizationIdKey: 'organization_credit_balances_organization_id_key',
+  /** unique or primary key constraint on columns "id" */
+  OrganizationCreditBalancesPkey: 'organization_credit_balances_pkey'
+} as const;
+
+export type Organization_Credit_Balances_Constraint = typeof Organization_Credit_Balances_Constraint[keyof typeof Organization_Credit_Balances_Constraint];
+/** input type for incrementing numeric columns in table "organization_credit_balances" */
+export type Organization_Credit_Balances_Inc_Input = {
+  /** Additional credits from purchases or promotions. Does not reset monthly. */
+  bonus_credits?: InputMaybe<Scalars['numeric']['input']>;
+  /** Credits allocated for the current billing period from the plan. Reset monthly. */
+  monthly_credits?: InputMaybe<Scalars['numeric']['input']>;
+  /** How far negative the available balance can go. Provides grace for operations that slightly exceed limits. */
+  overdraft_limit?: InputMaybe<Scalars['numeric']['input']>;
+  /** Credits currently reserved for in-flight AI operations. Released on completion or timeout. */
+  reserved_credits?: InputMaybe<Scalars['numeric']['input']>;
+};
+
+/** input type for inserting data into table "organization_credit_balances" */
+export type Organization_Credit_Balances_Insert_Input = {
+  /** Additional credits from purchases or promotions. Does not reset monthly. */
+  bonus_credits?: InputMaybe<Scalars['numeric']['input']>;
+  /** Timestamp when this record was first created. Set automatically, never modified. */
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id?: InputMaybe<Scalars['String']['input']>;
+  /** Credits allocated for the current billing period from the plan. Reset monthly. */
+  monthly_credits?: InputMaybe<Scalars['numeric']['input']>;
+  organization?: InputMaybe<Organizations_Obj_Rel_Insert_Input>;
+  /** FK to organizations table. UNIQUE constraint ensures one balance record per organization. */
+  organization_id?: InputMaybe<Scalars['String']['input']>;
+  /** How far negative the available balance can go. Provides grace for operations that slightly exceed limits. */
+  overdraft_limit?: InputMaybe<Scalars['numeric']['input']>;
+  /** End of the current billing period. When reached, monthly_credits are reset and period advances. */
+  period_end?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Start of the current billing period. Used for calculating usage within the period. */
+  period_start?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Credits currently reserved for in-flight AI operations. Released on completion or timeout. */
+  reserved_credits?: InputMaybe<Scalars['numeric']['input']>;
+  /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+};
+
+/** aggregate max on columns */
+export type Organization_Credit_Balances_Max_Fields = {
+  __typename?: 'organization_credit_balances_max_fields';
+  /** Additional credits from purchases or promotions. Does not reset monthly. */
+  bonus_credits: Maybe<Scalars['numeric']['output']>;
+  /** Timestamp when this record was first created. Set automatically, never modified. */
+  created_at: Maybe<Scalars['timestamptz']['output']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id: Maybe<Scalars['String']['output']>;
+  /** Credits allocated for the current billing period from the plan. Reset monthly. */
+  monthly_credits: Maybe<Scalars['numeric']['output']>;
+  /** FK to organizations table. UNIQUE constraint ensures one balance record per organization. */
+  organization_id: Maybe<Scalars['String']['output']>;
+  /** How far negative the available balance can go. Provides grace for operations that slightly exceed limits. */
+  overdraft_limit: Maybe<Scalars['numeric']['output']>;
+  /** End of the current billing period. When reached, monthly_credits are reset and period advances. */
+  period_end: Maybe<Scalars['timestamptz']['output']>;
+  /** Start of the current billing period. Used for calculating usage within the period. */
+  period_start: Maybe<Scalars['timestamptz']['output']>;
+  /** Credits currently reserved for in-flight AI operations. Released on completion or timeout. */
+  reserved_credits: Maybe<Scalars['numeric']['output']>;
+  /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
+  updated_at: Maybe<Scalars['timestamptz']['output']>;
+};
+
+/** aggregate min on columns */
+export type Organization_Credit_Balances_Min_Fields = {
+  __typename?: 'organization_credit_balances_min_fields';
+  /** Additional credits from purchases or promotions. Does not reset monthly. */
+  bonus_credits: Maybe<Scalars['numeric']['output']>;
+  /** Timestamp when this record was first created. Set automatically, never modified. */
+  created_at: Maybe<Scalars['timestamptz']['output']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id: Maybe<Scalars['String']['output']>;
+  /** Credits allocated for the current billing period from the plan. Reset monthly. */
+  monthly_credits: Maybe<Scalars['numeric']['output']>;
+  /** FK to organizations table. UNIQUE constraint ensures one balance record per organization. */
+  organization_id: Maybe<Scalars['String']['output']>;
+  /** How far negative the available balance can go. Provides grace for operations that slightly exceed limits. */
+  overdraft_limit: Maybe<Scalars['numeric']['output']>;
+  /** End of the current billing period. When reached, monthly_credits are reset and period advances. */
+  period_end: Maybe<Scalars['timestamptz']['output']>;
+  /** Start of the current billing period. Used for calculating usage within the period. */
+  period_start: Maybe<Scalars['timestamptz']['output']>;
+  /** Credits currently reserved for in-flight AI operations. Released on completion or timeout. */
+  reserved_credits: Maybe<Scalars['numeric']['output']>;
+  /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
+  updated_at: Maybe<Scalars['timestamptz']['output']>;
+};
+
+/** response of any mutation on the table "organization_credit_balances" */
+export type Organization_Credit_Balances_Mutation_Response = {
+  __typename?: 'organization_credit_balances_mutation_response';
+  /** number of rows affected by the mutation */
+  affected_rows: Scalars['Int']['output'];
+  /** data from the rows affected by the mutation */
+  returning: Array<Organization_Credit_Balances>;
+};
+
+/** on_conflict condition type for table "organization_credit_balances" */
+export type Organization_Credit_Balances_On_Conflict = {
+  constraint: Organization_Credit_Balances_Constraint;
+  update_columns?: Array<Organization_Credit_Balances_Update_Column>;
+  where?: InputMaybe<Organization_Credit_Balances_Bool_Exp>;
+};
+
+/** Ordering options when selecting data from "organization_credit_balances". */
+export type Organization_Credit_Balances_Order_By = {
+  bonus_credits?: InputMaybe<Order_By>;
+  created_at?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
+  monthly_credits?: InputMaybe<Order_By>;
+  organization?: InputMaybe<Organizations_Order_By>;
+  organization_id?: InputMaybe<Order_By>;
+  overdraft_limit?: InputMaybe<Order_By>;
+  period_end?: InputMaybe<Order_By>;
+  period_start?: InputMaybe<Order_By>;
+  reserved_credits?: InputMaybe<Order_By>;
+  updated_at?: InputMaybe<Order_By>;
+};
+
+/** primary key columns input for table: organization_credit_balances */
+export type Organization_Credit_Balances_Pk_Columns_Input = {
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id: Scalars['String']['input'];
+};
+
+/** select columns of table "organization_credit_balances" */
+export const Organization_Credit_Balances_Select_Column = {
+  /** column name */
+  BonusCredits: 'bonus_credits',
+  /** column name */
+  CreatedAt: 'created_at',
+  /** column name */
+  Id: 'id',
+  /** column name */
+  MonthlyCredits: 'monthly_credits',
+  /** column name */
+  OrganizationId: 'organization_id',
+  /** column name */
+  OverdraftLimit: 'overdraft_limit',
+  /** column name */
+  PeriodEnd: 'period_end',
+  /** column name */
+  PeriodStart: 'period_start',
+  /** column name */
+  ReservedCredits: 'reserved_credits',
+  /** column name */
+  UpdatedAt: 'updated_at'
+} as const;
+
+export type Organization_Credit_Balances_Select_Column = typeof Organization_Credit_Balances_Select_Column[keyof typeof Organization_Credit_Balances_Select_Column];
+/** input type for updating data in table "organization_credit_balances" */
+export type Organization_Credit_Balances_Set_Input = {
+  /** Additional credits from purchases or promotions. Does not reset monthly. */
+  bonus_credits?: InputMaybe<Scalars['numeric']['input']>;
+  /** Timestamp when this record was first created. Set automatically, never modified. */
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id?: InputMaybe<Scalars['String']['input']>;
+  /** Credits allocated for the current billing period from the plan. Reset monthly. */
+  monthly_credits?: InputMaybe<Scalars['numeric']['input']>;
+  /** FK to organizations table. UNIQUE constraint ensures one balance record per organization. */
+  organization_id?: InputMaybe<Scalars['String']['input']>;
+  /** How far negative the available balance can go. Provides grace for operations that slightly exceed limits. */
+  overdraft_limit?: InputMaybe<Scalars['numeric']['input']>;
+  /** End of the current billing period. When reached, monthly_credits are reset and period advances. */
+  period_end?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Start of the current billing period. Used for calculating usage within the period. */
+  period_start?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Credits currently reserved for in-flight AI operations. Released on completion or timeout. */
+  reserved_credits?: InputMaybe<Scalars['numeric']['input']>;
+  /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+};
+
+/** aggregate stddev on columns */
+export type Organization_Credit_Balances_Stddev_Fields = {
+  __typename?: 'organization_credit_balances_stddev_fields';
+  /** Additional credits from purchases or promotions. Does not reset monthly. */
+  bonus_credits: Maybe<Scalars['Float']['output']>;
+  /** Credits allocated for the current billing period from the plan. Reset monthly. */
+  monthly_credits: Maybe<Scalars['Float']['output']>;
+  /** How far negative the available balance can go. Provides grace for operations that slightly exceed limits. */
+  overdraft_limit: Maybe<Scalars['Float']['output']>;
+  /** Credits currently reserved for in-flight AI operations. Released on completion or timeout. */
+  reserved_credits: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate stddev_pop on columns */
+export type Organization_Credit_Balances_Stddev_Pop_Fields = {
+  __typename?: 'organization_credit_balances_stddev_pop_fields';
+  /** Additional credits from purchases or promotions. Does not reset monthly. */
+  bonus_credits: Maybe<Scalars['Float']['output']>;
+  /** Credits allocated for the current billing period from the plan. Reset monthly. */
+  monthly_credits: Maybe<Scalars['Float']['output']>;
+  /** How far negative the available balance can go. Provides grace for operations that slightly exceed limits. */
+  overdraft_limit: Maybe<Scalars['Float']['output']>;
+  /** Credits currently reserved for in-flight AI operations. Released on completion or timeout. */
+  reserved_credits: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate stddev_samp on columns */
+export type Organization_Credit_Balances_Stddev_Samp_Fields = {
+  __typename?: 'organization_credit_balances_stddev_samp_fields';
+  /** Additional credits from purchases or promotions. Does not reset monthly. */
+  bonus_credits: Maybe<Scalars['Float']['output']>;
+  /** Credits allocated for the current billing period from the plan. Reset monthly. */
+  monthly_credits: Maybe<Scalars['Float']['output']>;
+  /** How far negative the available balance can go. Provides grace for operations that slightly exceed limits. */
+  overdraft_limit: Maybe<Scalars['Float']['output']>;
+  /** Credits currently reserved for in-flight AI operations. Released on completion or timeout. */
+  reserved_credits: Maybe<Scalars['Float']['output']>;
+};
+
+/** Streaming cursor of the table "organization_credit_balances" */
+export type Organization_Credit_Balances_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Organization_Credit_Balances_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type Organization_Credit_Balances_Stream_Cursor_Value_Input = {
+  /** Additional credits from purchases or promotions. Does not reset monthly. */
+  bonus_credits?: InputMaybe<Scalars['numeric']['input']>;
+  /** Timestamp when this record was first created. Set automatically, never modified. */
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id?: InputMaybe<Scalars['String']['input']>;
+  /** Credits allocated for the current billing period from the plan. Reset monthly. */
+  monthly_credits?: InputMaybe<Scalars['numeric']['input']>;
+  /** FK to organizations table. UNIQUE constraint ensures one balance record per organization. */
+  organization_id?: InputMaybe<Scalars['String']['input']>;
+  /** How far negative the available balance can go. Provides grace for operations that slightly exceed limits. */
+  overdraft_limit?: InputMaybe<Scalars['numeric']['input']>;
+  /** End of the current billing period. When reached, monthly_credits are reset and period advances. */
+  period_end?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Start of the current billing period. Used for calculating usage within the period. */
+  period_start?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Credits currently reserved for in-flight AI operations. Released on completion or timeout. */
+  reserved_credits?: InputMaybe<Scalars['numeric']['input']>;
+  /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+};
+
+/** aggregate sum on columns */
+export type Organization_Credit_Balances_Sum_Fields = {
+  __typename?: 'organization_credit_balances_sum_fields';
+  /** Additional credits from purchases or promotions. Does not reset monthly. */
+  bonus_credits: Maybe<Scalars['numeric']['output']>;
+  /** Credits allocated for the current billing period from the plan. Reset monthly. */
+  monthly_credits: Maybe<Scalars['numeric']['output']>;
+  /** How far negative the available balance can go. Provides grace for operations that slightly exceed limits. */
+  overdraft_limit: Maybe<Scalars['numeric']['output']>;
+  /** Credits currently reserved for in-flight AI operations. Released on completion or timeout. */
+  reserved_credits: Maybe<Scalars['numeric']['output']>;
+};
+
+/** update columns of table "organization_credit_balances" */
+export const Organization_Credit_Balances_Update_Column = {
+  /** column name */
+  BonusCredits: 'bonus_credits',
+  /** column name */
+  CreatedAt: 'created_at',
+  /** column name */
+  Id: 'id',
+  /** column name */
+  MonthlyCredits: 'monthly_credits',
+  /** column name */
+  OrganizationId: 'organization_id',
+  /** column name */
+  OverdraftLimit: 'overdraft_limit',
+  /** column name */
+  PeriodEnd: 'period_end',
+  /** column name */
+  PeriodStart: 'period_start',
+  /** column name */
+  ReservedCredits: 'reserved_credits',
+  /** column name */
+  UpdatedAt: 'updated_at'
+} as const;
+
+export type Organization_Credit_Balances_Update_Column = typeof Organization_Credit_Balances_Update_Column[keyof typeof Organization_Credit_Balances_Update_Column];
+export type Organization_Credit_Balances_Updates = {
+  /** increments the numeric columns with given value of the filtered values */
+  _inc?: InputMaybe<Organization_Credit_Balances_Inc_Input>;
+  /** sets the columns of the filtered rows to the given values */
+  _set?: InputMaybe<Organization_Credit_Balances_Set_Input>;
+  /** filter the rows which have to be updated */
+  where: Organization_Credit_Balances_Bool_Exp;
+};
+
+/** aggregate var_pop on columns */
+export type Organization_Credit_Balances_Var_Pop_Fields = {
+  __typename?: 'organization_credit_balances_var_pop_fields';
+  /** Additional credits from purchases or promotions. Does not reset monthly. */
+  bonus_credits: Maybe<Scalars['Float']['output']>;
+  /** Credits allocated for the current billing period from the plan. Reset monthly. */
+  monthly_credits: Maybe<Scalars['Float']['output']>;
+  /** How far negative the available balance can go. Provides grace for operations that slightly exceed limits. */
+  overdraft_limit: Maybe<Scalars['Float']['output']>;
+  /** Credits currently reserved for in-flight AI operations. Released on completion or timeout. */
+  reserved_credits: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate var_samp on columns */
+export type Organization_Credit_Balances_Var_Samp_Fields = {
+  __typename?: 'organization_credit_balances_var_samp_fields';
+  /** Additional credits from purchases or promotions. Does not reset monthly. */
+  bonus_credits: Maybe<Scalars['Float']['output']>;
+  /** Credits allocated for the current billing period from the plan. Reset monthly. */
+  monthly_credits: Maybe<Scalars['Float']['output']>;
+  /** How far negative the available balance can go. Provides grace for operations that slightly exceed limits. */
+  overdraft_limit: Maybe<Scalars['Float']['output']>;
+  /** Credits currently reserved for in-flight AI operations. Released on completion or timeout. */
+  reserved_credits: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate variance on columns */
+export type Organization_Credit_Balances_Variance_Fields = {
+  __typename?: 'organization_credit_balances_variance_fields';
+  /** Additional credits from purchases or promotions. Does not reset monthly. */
+  bonus_credits: Maybe<Scalars['Float']['output']>;
+  /** Credits allocated for the current billing period from the plan. Reset monthly. */
+  monthly_credits: Maybe<Scalars['Float']['output']>;
+  /** How far negative the available balance can go. Provides grace for operations that slightly exceed limits. */
+  overdraft_limit: Maybe<Scalars['Float']['output']>;
+  /** Credits currently reserved for in-flight AI operations. Released on completion or timeout. */
+  reserved_credits: Maybe<Scalars['Float']['output']>;
+};
+
 /** Subscription records - plan values copied at subscription time */
 export type Organization_Plans = {
   __typename?: 'organization_plans';
@@ -9752,6 +13596,8 @@ export type Organization_Plans = {
   max_testimonials: Scalars['Int']['output'];
   /** Widget limit copied from plan (may be overridden) */
   max_widgets: Scalars['Int']['output'];
+  /** Cached copy of monthly AI credits from the plan. Updated on plan change. Used to track the org-specific allocation which may differ from plan default for enterprise deals. */
+  monthly_ai_credits: Scalars['Int']['output'];
   /** An object relationship */
   organization: Organizations;
   /** Organization this subscription belongs to */
@@ -9764,6 +13610,10 @@ export type Organization_Plans = {
   override_reason: Maybe<Scalars['String']['output']>;
   /** An object relationship */
   override_user: Maybe<Users>;
+  /** Timestamp when the pending plan change should be applied. Used by scheduled job to process changes at period end. */
+  pending_change_at: Maybe<Scalars['timestamptz']['output']>;
+  /** FK to plans table. Set when a downgrade is scheduled to take effect at period end. NULL means no pending change. */
+  pending_plan_id: Maybe<Scalars['String']['output']>;
   /** An object relationship */
   plan: Plans;
   /** Reference to original plan template for analytics/reporting */
@@ -9872,6 +13722,8 @@ export type Organization_Plans_Avg_Fields = {
   max_testimonials: Maybe<Scalars['Float']['output']>;
   /** Widget limit copied from plan (may be overridden) */
   max_widgets: Maybe<Scalars['Float']['output']>;
+  /** Cached copy of monthly AI credits from the plan. Updated on plan change. Used to track the org-specific allocation which may differ from plan default for enterprise deals. */
+  monthly_ai_credits: Maybe<Scalars['Float']['output']>;
   /** Actual price paid in smallest currency unit (cents/paise) */
   price_in_base_unit: Maybe<Scalars['Float']['output']>;
 };
@@ -9886,6 +13738,8 @@ export type Organization_Plans_Avg_Order_By = {
   max_testimonials?: InputMaybe<Order_By>;
   /** Widget limit copied from plan (may be overridden) */
   max_widgets?: InputMaybe<Order_By>;
+  /** Cached copy of monthly AI credits from the plan. Updated on plan change. Used to track the org-specific allocation which may differ from plan default for enterprise deals. */
+  monthly_ai_credits?: InputMaybe<Order_By>;
   /** Actual price paid in smallest currency unit (cents/paise) */
   price_in_base_unit?: InputMaybe<Order_By>;
 };
@@ -9906,12 +13760,15 @@ export type Organization_Plans_Bool_Exp = {
   max_members?: InputMaybe<Int_Comparison_Exp>;
   max_testimonials?: InputMaybe<Int_Comparison_Exp>;
   max_widgets?: InputMaybe<Int_Comparison_Exp>;
+  monthly_ai_credits?: InputMaybe<Int_Comparison_Exp>;
   organization?: InputMaybe<Organizations_Bool_Exp>;
   organization_id?: InputMaybe<String_Comparison_Exp>;
   overridden_at?: InputMaybe<Timestamptz_Comparison_Exp>;
   overridden_by?: InputMaybe<String_Comparison_Exp>;
   override_reason?: InputMaybe<String_Comparison_Exp>;
   override_user?: InputMaybe<Users_Bool_Exp>;
+  pending_change_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  pending_plan_id?: InputMaybe<String_Comparison_Exp>;
   plan?: InputMaybe<Plans_Bool_Exp>;
   plan_id?: InputMaybe<String_Comparison_Exp>;
   price_in_base_unit?: InputMaybe<Int_Comparison_Exp>;
@@ -9941,6 +13798,8 @@ export type Organization_Plans_Inc_Input = {
   max_testimonials?: InputMaybe<Scalars['Int']['input']>;
   /** Widget limit copied from plan (may be overridden) */
   max_widgets?: InputMaybe<Scalars['Int']['input']>;
+  /** Cached copy of monthly AI credits from the plan. Updated on plan change. Used to track the org-specific allocation which may differ from plan default for enterprise deals. */
+  monthly_ai_credits?: InputMaybe<Scalars['Int']['input']>;
   /** Actual price paid in smallest currency unit (cents/paise) */
   price_in_base_unit?: InputMaybe<Scalars['Int']['input']>;
 };
@@ -9969,6 +13828,8 @@ export type Organization_Plans_Insert_Input = {
   max_testimonials?: InputMaybe<Scalars['Int']['input']>;
   /** Widget limit copied from plan (may be overridden) */
   max_widgets?: InputMaybe<Scalars['Int']['input']>;
+  /** Cached copy of monthly AI credits from the plan. Updated on plan change. Used to track the org-specific allocation which may differ from plan default for enterprise deals. */
+  monthly_ai_credits?: InputMaybe<Scalars['Int']['input']>;
   organization?: InputMaybe<Organizations_Obj_Rel_Insert_Input>;
   /** Organization this subscription belongs to */
   organization_id?: InputMaybe<Scalars['String']['input']>;
@@ -9979,6 +13840,10 @@ export type Organization_Plans_Insert_Input = {
   /** Audit trail: explanation for why overrides were applied */
   override_reason?: InputMaybe<Scalars['String']['input']>;
   override_user?: InputMaybe<Users_Obj_Rel_Insert_Input>;
+  /** Timestamp when the pending plan change should be applied. Used by scheduled job to process changes at period end. */
+  pending_change_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** FK to plans table. Set when a downgrade is scheduled to take effect at period end. NULL means no pending change. */
+  pending_plan_id?: InputMaybe<Scalars['String']['input']>;
   plan?: InputMaybe<Plans_Obj_Rel_Insert_Input>;
   /** Reference to original plan template for analytics/reporting */
   plan_id?: InputMaybe<Scalars['String']['input']>;
@@ -10019,6 +13884,8 @@ export type Organization_Plans_Max_Fields = {
   max_testimonials: Maybe<Scalars['Int']['output']>;
   /** Widget limit copied from plan (may be overridden) */
   max_widgets: Maybe<Scalars['Int']['output']>;
+  /** Cached copy of monthly AI credits from the plan. Updated on plan change. Used to track the org-specific allocation which may differ from plan default for enterprise deals. */
+  monthly_ai_credits: Maybe<Scalars['Int']['output']>;
   /** Organization this subscription belongs to */
   organization_id: Maybe<Scalars['String']['output']>;
   /** When overrides were applied */
@@ -10027,6 +13894,10 @@ export type Organization_Plans_Max_Fields = {
   overridden_by: Maybe<Scalars['String']['output']>;
   /** Audit trail: explanation for why overrides were applied */
   override_reason: Maybe<Scalars['String']['output']>;
+  /** Timestamp when the pending plan change should be applied. Used by scheduled job to process changes at period end. */
+  pending_change_at: Maybe<Scalars['timestamptz']['output']>;
+  /** FK to plans table. Set when a downgrade is scheduled to take effect at period end. NULL means no pending change. */
+  pending_plan_id: Maybe<Scalars['String']['output']>;
   /** Reference to original plan template for analytics/reporting */
   plan_id: Maybe<Scalars['String']['output']>;
   /** Actual price paid in smallest currency unit (cents/paise) */
@@ -10063,6 +13934,8 @@ export type Organization_Plans_Max_Order_By = {
   max_testimonials?: InputMaybe<Order_By>;
   /** Widget limit copied from plan (may be overridden) */
   max_widgets?: InputMaybe<Order_By>;
+  /** Cached copy of monthly AI credits from the plan. Updated on plan change. Used to track the org-specific allocation which may differ from plan default for enterprise deals. */
+  monthly_ai_credits?: InputMaybe<Order_By>;
   /** Organization this subscription belongs to */
   organization_id?: InputMaybe<Order_By>;
   /** When overrides were applied */
@@ -10071,6 +13944,10 @@ export type Organization_Plans_Max_Order_By = {
   overridden_by?: InputMaybe<Order_By>;
   /** Audit trail: explanation for why overrides were applied */
   override_reason?: InputMaybe<Order_By>;
+  /** Timestamp when the pending plan change should be applied. Used by scheduled job to process changes at period end. */
+  pending_change_at?: InputMaybe<Order_By>;
+  /** FK to plans table. Set when a downgrade is scheduled to take effect at period end. NULL means no pending change. */
+  pending_plan_id?: InputMaybe<Order_By>;
   /** Reference to original plan template for analytics/reporting */
   plan_id?: InputMaybe<Order_By>;
   /** Actual price paid in smallest currency unit (cents/paise) */
@@ -10108,6 +13985,8 @@ export type Organization_Plans_Min_Fields = {
   max_testimonials: Maybe<Scalars['Int']['output']>;
   /** Widget limit copied from plan (may be overridden) */
   max_widgets: Maybe<Scalars['Int']['output']>;
+  /** Cached copy of monthly AI credits from the plan. Updated on plan change. Used to track the org-specific allocation which may differ from plan default for enterprise deals. */
+  monthly_ai_credits: Maybe<Scalars['Int']['output']>;
   /** Organization this subscription belongs to */
   organization_id: Maybe<Scalars['String']['output']>;
   /** When overrides were applied */
@@ -10116,6 +13995,10 @@ export type Organization_Plans_Min_Fields = {
   overridden_by: Maybe<Scalars['String']['output']>;
   /** Audit trail: explanation for why overrides were applied */
   override_reason: Maybe<Scalars['String']['output']>;
+  /** Timestamp when the pending plan change should be applied. Used by scheduled job to process changes at period end. */
+  pending_change_at: Maybe<Scalars['timestamptz']['output']>;
+  /** FK to plans table. Set when a downgrade is scheduled to take effect at period end. NULL means no pending change. */
+  pending_plan_id: Maybe<Scalars['String']['output']>;
   /** Reference to original plan template for analytics/reporting */
   plan_id: Maybe<Scalars['String']['output']>;
   /** Actual price paid in smallest currency unit (cents/paise) */
@@ -10152,6 +14035,8 @@ export type Organization_Plans_Min_Order_By = {
   max_testimonials?: InputMaybe<Order_By>;
   /** Widget limit copied from plan (may be overridden) */
   max_widgets?: InputMaybe<Order_By>;
+  /** Cached copy of monthly AI credits from the plan. Updated on plan change. Used to track the org-specific allocation which may differ from plan default for enterprise deals. */
+  monthly_ai_credits?: InputMaybe<Order_By>;
   /** Organization this subscription belongs to */
   organization_id?: InputMaybe<Order_By>;
   /** When overrides were applied */
@@ -10160,6 +14045,10 @@ export type Organization_Plans_Min_Order_By = {
   overridden_by?: InputMaybe<Order_By>;
   /** Audit trail: explanation for why overrides were applied */
   override_reason?: InputMaybe<Order_By>;
+  /** Timestamp when the pending plan change should be applied. Used by scheduled job to process changes at period end. */
+  pending_change_at?: InputMaybe<Order_By>;
+  /** FK to plans table. Set when a downgrade is scheduled to take effect at period end. NULL means no pending change. */
+  pending_plan_id?: InputMaybe<Order_By>;
   /** Reference to original plan template for analytics/reporting */
   plan_id?: InputMaybe<Order_By>;
   /** Actual price paid in smallest currency unit (cents/paise) */
@@ -10203,12 +14092,15 @@ export type Organization_Plans_Order_By = {
   max_members?: InputMaybe<Order_By>;
   max_testimonials?: InputMaybe<Order_By>;
   max_widgets?: InputMaybe<Order_By>;
+  monthly_ai_credits?: InputMaybe<Order_By>;
   organization?: InputMaybe<Organizations_Order_By>;
   organization_id?: InputMaybe<Order_By>;
   overridden_at?: InputMaybe<Order_By>;
   overridden_by?: InputMaybe<Order_By>;
   override_reason?: InputMaybe<Order_By>;
   override_user?: InputMaybe<Users_Order_By>;
+  pending_change_at?: InputMaybe<Order_By>;
+  pending_plan_id?: InputMaybe<Order_By>;
   plan?: InputMaybe<Plans_Order_By>;
   plan_id?: InputMaybe<Order_By>;
   price_in_base_unit?: InputMaybe<Order_By>;
@@ -10250,6 +14142,8 @@ export const Organization_Plans_Select_Column = {
   /** column name */
   MaxWidgets: 'max_widgets',
   /** column name */
+  MonthlyAiCredits: 'monthly_ai_credits',
+  /** column name */
   OrganizationId: 'organization_id',
   /** column name */
   OverriddenAt: 'overridden_at',
@@ -10257,6 +14151,10 @@ export const Organization_Plans_Select_Column = {
   OverriddenBy: 'overridden_by',
   /** column name */
   OverrideReason: 'override_reason',
+  /** column name */
+  PendingChangeAt: 'pending_change_at',
+  /** column name */
+  PendingPlanId: 'pending_plan_id',
   /** column name */
   PlanId: 'plan_id',
   /** column name */
@@ -10316,6 +14214,8 @@ export type Organization_Plans_Set_Input = {
   max_testimonials?: InputMaybe<Scalars['Int']['input']>;
   /** Widget limit copied from plan (may be overridden) */
   max_widgets?: InputMaybe<Scalars['Int']['input']>;
+  /** Cached copy of monthly AI credits from the plan. Updated on plan change. Used to track the org-specific allocation which may differ from plan default for enterprise deals. */
+  monthly_ai_credits?: InputMaybe<Scalars['Int']['input']>;
   /** Organization this subscription belongs to */
   organization_id?: InputMaybe<Scalars['String']['input']>;
   /** When overrides were applied */
@@ -10324,6 +14224,10 @@ export type Organization_Plans_Set_Input = {
   overridden_by?: InputMaybe<Scalars['String']['input']>;
   /** Audit trail: explanation for why overrides were applied */
   override_reason?: InputMaybe<Scalars['String']['input']>;
+  /** Timestamp when the pending plan change should be applied. Used by scheduled job to process changes at period end. */
+  pending_change_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** FK to plans table. Set when a downgrade is scheduled to take effect at period end. NULL means no pending change. */
+  pending_plan_id?: InputMaybe<Scalars['String']['input']>;
   /** Reference to original plan template for analytics/reporting */
   plan_id?: InputMaybe<Scalars['String']['input']>;
   /** Actual price paid in smallest currency unit (cents/paise) */
@@ -10351,6 +14255,8 @@ export type Organization_Plans_Stddev_Fields = {
   max_testimonials: Maybe<Scalars['Float']['output']>;
   /** Widget limit copied from plan (may be overridden) */
   max_widgets: Maybe<Scalars['Float']['output']>;
+  /** Cached copy of monthly AI credits from the plan. Updated on plan change. Used to track the org-specific allocation which may differ from plan default for enterprise deals. */
+  monthly_ai_credits: Maybe<Scalars['Float']['output']>;
   /** Actual price paid in smallest currency unit (cents/paise) */
   price_in_base_unit: Maybe<Scalars['Float']['output']>;
 };
@@ -10365,6 +14271,8 @@ export type Organization_Plans_Stddev_Order_By = {
   max_testimonials?: InputMaybe<Order_By>;
   /** Widget limit copied from plan (may be overridden) */
   max_widgets?: InputMaybe<Order_By>;
+  /** Cached copy of monthly AI credits from the plan. Updated on plan change. Used to track the org-specific allocation which may differ from plan default for enterprise deals. */
+  monthly_ai_credits?: InputMaybe<Order_By>;
   /** Actual price paid in smallest currency unit (cents/paise) */
   price_in_base_unit?: InputMaybe<Order_By>;
 };
@@ -10380,6 +14288,8 @@ export type Organization_Plans_Stddev_Pop_Fields = {
   max_testimonials: Maybe<Scalars['Float']['output']>;
   /** Widget limit copied from plan (may be overridden) */
   max_widgets: Maybe<Scalars['Float']['output']>;
+  /** Cached copy of monthly AI credits from the plan. Updated on plan change. Used to track the org-specific allocation which may differ from plan default for enterprise deals. */
+  monthly_ai_credits: Maybe<Scalars['Float']['output']>;
   /** Actual price paid in smallest currency unit (cents/paise) */
   price_in_base_unit: Maybe<Scalars['Float']['output']>;
 };
@@ -10394,6 +14304,8 @@ export type Organization_Plans_Stddev_Pop_Order_By = {
   max_testimonials?: InputMaybe<Order_By>;
   /** Widget limit copied from plan (may be overridden) */
   max_widgets?: InputMaybe<Order_By>;
+  /** Cached copy of monthly AI credits from the plan. Updated on plan change. Used to track the org-specific allocation which may differ from plan default for enterprise deals. */
+  monthly_ai_credits?: InputMaybe<Order_By>;
   /** Actual price paid in smallest currency unit (cents/paise) */
   price_in_base_unit?: InputMaybe<Order_By>;
 };
@@ -10409,6 +14321,8 @@ export type Organization_Plans_Stddev_Samp_Fields = {
   max_testimonials: Maybe<Scalars['Float']['output']>;
   /** Widget limit copied from plan (may be overridden) */
   max_widgets: Maybe<Scalars['Float']['output']>;
+  /** Cached copy of monthly AI credits from the plan. Updated on plan change. Used to track the org-specific allocation which may differ from plan default for enterprise deals. */
+  monthly_ai_credits: Maybe<Scalars['Float']['output']>;
   /** Actual price paid in smallest currency unit (cents/paise) */
   price_in_base_unit: Maybe<Scalars['Float']['output']>;
 };
@@ -10423,6 +14337,8 @@ export type Organization_Plans_Stddev_Samp_Order_By = {
   max_testimonials?: InputMaybe<Order_By>;
   /** Widget limit copied from plan (may be overridden) */
   max_widgets?: InputMaybe<Order_By>;
+  /** Cached copy of monthly AI credits from the plan. Updated on plan change. Used to track the org-specific allocation which may differ from plan default for enterprise deals. */
+  monthly_ai_credits?: InputMaybe<Order_By>;
   /** Actual price paid in smallest currency unit (cents/paise) */
   price_in_base_unit?: InputMaybe<Order_By>;
 };
@@ -10459,6 +14375,8 @@ export type Organization_Plans_Stream_Cursor_Value_Input = {
   max_testimonials?: InputMaybe<Scalars['Int']['input']>;
   /** Widget limit copied from plan (may be overridden) */
   max_widgets?: InputMaybe<Scalars['Int']['input']>;
+  /** Cached copy of monthly AI credits from the plan. Updated on plan change. Used to track the org-specific allocation which may differ from plan default for enterprise deals. */
+  monthly_ai_credits?: InputMaybe<Scalars['Int']['input']>;
   /** Organization this subscription belongs to */
   organization_id?: InputMaybe<Scalars['String']['input']>;
   /** When overrides were applied */
@@ -10467,6 +14385,10 @@ export type Organization_Plans_Stream_Cursor_Value_Input = {
   overridden_by?: InputMaybe<Scalars['String']['input']>;
   /** Audit trail: explanation for why overrides were applied */
   override_reason?: InputMaybe<Scalars['String']['input']>;
+  /** Timestamp when the pending plan change should be applied. Used by scheduled job to process changes at period end. */
+  pending_change_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** FK to plans table. Set when a downgrade is scheduled to take effect at period end. NULL means no pending change. */
+  pending_plan_id?: InputMaybe<Scalars['String']['input']>;
   /** Reference to original plan template for analytics/reporting */
   plan_id?: InputMaybe<Scalars['String']['input']>;
   /** Actual price paid in smallest currency unit (cents/paise) */
@@ -10494,6 +14416,8 @@ export type Organization_Plans_Sum_Fields = {
   max_testimonials: Maybe<Scalars['Int']['output']>;
   /** Widget limit copied from plan (may be overridden) */
   max_widgets: Maybe<Scalars['Int']['output']>;
+  /** Cached copy of monthly AI credits from the plan. Updated on plan change. Used to track the org-specific allocation which may differ from plan default for enterprise deals. */
+  monthly_ai_credits: Maybe<Scalars['Int']['output']>;
   /** Actual price paid in smallest currency unit (cents/paise) */
   price_in_base_unit: Maybe<Scalars['Int']['output']>;
 };
@@ -10508,6 +14432,8 @@ export type Organization_Plans_Sum_Order_By = {
   max_testimonials?: InputMaybe<Order_By>;
   /** Widget limit copied from plan (may be overridden) */
   max_widgets?: InputMaybe<Order_By>;
+  /** Cached copy of monthly AI credits from the plan. Updated on plan change. Used to track the org-specific allocation which may differ from plan default for enterprise deals. */
+  monthly_ai_credits?: InputMaybe<Order_By>;
   /** Actual price paid in smallest currency unit (cents/paise) */
   price_in_base_unit?: InputMaybe<Order_By>;
 };
@@ -10537,6 +14463,8 @@ export const Organization_Plans_Update_Column = {
   /** column name */
   MaxWidgets: 'max_widgets',
   /** column name */
+  MonthlyAiCredits: 'monthly_ai_credits',
+  /** column name */
   OrganizationId: 'organization_id',
   /** column name */
   OverriddenAt: 'overridden_at',
@@ -10544,6 +14472,10 @@ export const Organization_Plans_Update_Column = {
   OverriddenBy: 'overridden_by',
   /** column name */
   OverrideReason: 'override_reason',
+  /** column name */
+  PendingChangeAt: 'pending_change_at',
+  /** column name */
+  PendingPlanId: 'pending_plan_id',
   /** column name */
   PlanId: 'plan_id',
   /** column name */
@@ -10581,6 +14513,8 @@ export type Organization_Plans_Var_Pop_Fields = {
   max_testimonials: Maybe<Scalars['Float']['output']>;
   /** Widget limit copied from plan (may be overridden) */
   max_widgets: Maybe<Scalars['Float']['output']>;
+  /** Cached copy of monthly AI credits from the plan. Updated on plan change. Used to track the org-specific allocation which may differ from plan default for enterprise deals. */
+  monthly_ai_credits: Maybe<Scalars['Float']['output']>;
   /** Actual price paid in smallest currency unit (cents/paise) */
   price_in_base_unit: Maybe<Scalars['Float']['output']>;
 };
@@ -10595,6 +14529,8 @@ export type Organization_Plans_Var_Pop_Order_By = {
   max_testimonials?: InputMaybe<Order_By>;
   /** Widget limit copied from plan (may be overridden) */
   max_widgets?: InputMaybe<Order_By>;
+  /** Cached copy of monthly AI credits from the plan. Updated on plan change. Used to track the org-specific allocation which may differ from plan default for enterprise deals. */
+  monthly_ai_credits?: InputMaybe<Order_By>;
   /** Actual price paid in smallest currency unit (cents/paise) */
   price_in_base_unit?: InputMaybe<Order_By>;
 };
@@ -10610,6 +14546,8 @@ export type Organization_Plans_Var_Samp_Fields = {
   max_testimonials: Maybe<Scalars['Float']['output']>;
   /** Widget limit copied from plan (may be overridden) */
   max_widgets: Maybe<Scalars['Float']['output']>;
+  /** Cached copy of monthly AI credits from the plan. Updated on plan change. Used to track the org-specific allocation which may differ from plan default for enterprise deals. */
+  monthly_ai_credits: Maybe<Scalars['Float']['output']>;
   /** Actual price paid in smallest currency unit (cents/paise) */
   price_in_base_unit: Maybe<Scalars['Float']['output']>;
 };
@@ -10624,6 +14562,8 @@ export type Organization_Plans_Var_Samp_Order_By = {
   max_testimonials?: InputMaybe<Order_By>;
   /** Widget limit copied from plan (may be overridden) */
   max_widgets?: InputMaybe<Order_By>;
+  /** Cached copy of monthly AI credits from the plan. Updated on plan change. Used to track the org-specific allocation which may differ from plan default for enterprise deals. */
+  monthly_ai_credits?: InputMaybe<Order_By>;
   /** Actual price paid in smallest currency unit (cents/paise) */
   price_in_base_unit?: InputMaybe<Order_By>;
 };
@@ -10639,6 +14579,8 @@ export type Organization_Plans_Variance_Fields = {
   max_testimonials: Maybe<Scalars['Float']['output']>;
   /** Widget limit copied from plan (may be overridden) */
   max_widgets: Maybe<Scalars['Float']['output']>;
+  /** Cached copy of monthly AI credits from the plan. Updated on plan change. Used to track the org-specific allocation which may differ from plan default for enterprise deals. */
+  monthly_ai_credits: Maybe<Scalars['Float']['output']>;
   /** Actual price paid in smallest currency unit (cents/paise) */
   price_in_base_unit: Maybe<Scalars['Float']['output']>;
 };
@@ -10653,6 +14595,8 @@ export type Organization_Plans_Variance_Order_By = {
   max_testimonials?: InputMaybe<Order_By>;
   /** Widget limit copied from plan (may be overridden) */
   max_widgets?: InputMaybe<Order_By>;
+  /** Cached copy of monthly AI credits from the plan. Updated on plan change. Used to track the org-specific allocation which may differ from plan default for enterprise deals. */
+  monthly_ai_credits?: InputMaybe<Order_By>;
   /** Actual price paid in smallest currency unit (cents/paise) */
   price_in_base_unit?: InputMaybe<Order_By>;
 };
@@ -11111,6 +15055,10 @@ export type Organizations = {
   /** An object relationship */
   creator: Maybe<Users>;
   /** An array relationship */
+  credit_reservations: Array<Credit_Reservations>;
+  /** An aggregate relationship */
+  credit_reservations_aggregate: Credit_Reservations_Aggregate;
+  /** An array relationship */
   forms: Array<Forms>;
   /** An aggregate relationship */
   forms_aggregate: Forms_Aggregate;
@@ -11154,6 +15102,26 @@ export type Organizations = {
   widgets: Array<Widgets>;
   /** An aggregate relationship */
   widgets_aggregate: Widgets_Aggregate;
+};
+
+
+/** Tenant boundary - plan subscription via organization_plans */
+export type OrganizationsCredit_ReservationsArgs = {
+  distinct_on?: InputMaybe<Array<Credit_Reservations_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Credit_Reservations_Order_By>>;
+  where?: InputMaybe<Credit_Reservations_Bool_Exp>;
+};
+
+
+/** Tenant boundary - plan subscription via organization_plans */
+export type OrganizationsCredit_Reservations_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Credit_Reservations_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Credit_Reservations_Order_By>>;
+  where?: InputMaybe<Credit_Reservations_Bool_Exp>;
 };
 
 
@@ -11339,6 +15307,8 @@ export type Organizations_Bool_Exp = {
   created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
   created_by?: InputMaybe<String_Comparison_Exp>;
   creator?: InputMaybe<Users_Bool_Exp>;
+  credit_reservations?: InputMaybe<Credit_Reservations_Bool_Exp>;
+  credit_reservations_aggregate?: InputMaybe<Credit_Reservations_Aggregate_Bool_Exp>;
   forms?: InputMaybe<Forms_Bool_Exp>;
   forms_aggregate?: InputMaybe<Forms_Aggregate_Bool_Exp>;
   id?: InputMaybe<String_Comparison_Exp>;
@@ -11396,6 +15366,7 @@ export type Organizations_Insert_Input = {
   /** User who created this organization */
   created_by?: InputMaybe<Scalars['String']['input']>;
   creator?: InputMaybe<Users_Obj_Rel_Insert_Input>;
+  credit_reservations?: InputMaybe<Credit_Reservations_Arr_Rel_Insert_Input>;
   forms?: InputMaybe<Forms_Arr_Rel_Insert_Input>;
   /** Primary key (NanoID 12-char) */
   id?: InputMaybe<Scalars['String']['input']>;
@@ -11560,6 +15531,7 @@ export type Organizations_Order_By = {
   created_at?: InputMaybe<Order_By>;
   created_by?: InputMaybe<Order_By>;
   creator?: InputMaybe<Users_Order_By>;
+  credit_reservations_aggregate?: InputMaybe<Credit_Reservations_Aggregate_Order_By>;
   forms_aggregate?: InputMaybe<Forms_Aggregate_Order_By>;
   id?: InputMaybe<Order_By>;
   is_active?: InputMaybe<Order_By>;
@@ -11735,6 +15707,864 @@ export type Organizations_Updates = {
   _set?: InputMaybe<Organizations_Set_Input>;
   /** filter the rows which have to be updated */
   where: Organizations_Bool_Exp;
+};
+
+/** Junction table linking subscription plans to AI capabilities they can access. Enables fine-grained control over which AI features each plan tier can use, with optional rate limiting. */
+export type Plan_Ai_Capabilities = {
+  __typename?: 'plan_ai_capabilities';
+  /** An object relationship */
+  ai_capability: Ai_Capabilities;
+  /** FK to ai_capabilities table. Identifies which AI capability is being linked. Cascade deletes when capability is removed. */
+  ai_capability_id: Scalars['String']['output'];
+  /** Timestamp when this record was first created. Set automatically, never modified. */
+  created_at: Scalars['timestamptz']['output'];
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id: Scalars['String']['output'];
+  /** Whether this capability is enabled for this plan. Allows disabling without removing the row (soft disable). */
+  is_enabled: Scalars['Boolean']['output'];
+  /** An object relationship */
+  plan: Plans;
+  /** FK to plans table. Identifies which subscription plan this capability belongs to. Cascade deletes when plan is removed. */
+  plan_id: Scalars['String']['output'];
+  /** An array relationship */
+  quality_levels: Array<Plan_Ai_Capability_Quality_Levels>;
+  /** An aggregate relationship */
+  quality_levels_aggregate: Plan_Ai_Capability_Quality_Levels_Aggregate;
+  /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
+  rate_limit_rpd: Maybe<Scalars['Int']['output']>;
+  /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
+  rate_limit_rpm: Maybe<Scalars['Int']['output']>;
+  /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
+  updated_at: Scalars['timestamptz']['output'];
+};
+
+
+/** Junction table linking subscription plans to AI capabilities they can access. Enables fine-grained control over which AI features each plan tier can use, with optional rate limiting. */
+export type Plan_Ai_CapabilitiesQuality_LevelsArgs = {
+  distinct_on?: InputMaybe<Array<Plan_Ai_Capability_Quality_Levels_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Plan_Ai_Capability_Quality_Levels_Order_By>>;
+  where?: InputMaybe<Plan_Ai_Capability_Quality_Levels_Bool_Exp>;
+};
+
+
+/** Junction table linking subscription plans to AI capabilities they can access. Enables fine-grained control over which AI features each plan tier can use, with optional rate limiting. */
+export type Plan_Ai_CapabilitiesQuality_Levels_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Plan_Ai_Capability_Quality_Levels_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Plan_Ai_Capability_Quality_Levels_Order_By>>;
+  where?: InputMaybe<Plan_Ai_Capability_Quality_Levels_Bool_Exp>;
+};
+
+/** aggregated selection of "plan_ai_capabilities" */
+export type Plan_Ai_Capabilities_Aggregate = {
+  __typename?: 'plan_ai_capabilities_aggregate';
+  aggregate: Maybe<Plan_Ai_Capabilities_Aggregate_Fields>;
+  nodes: Array<Plan_Ai_Capabilities>;
+};
+
+export type Plan_Ai_Capabilities_Aggregate_Bool_Exp = {
+  bool_and?: InputMaybe<Plan_Ai_Capabilities_Aggregate_Bool_Exp_Bool_And>;
+  bool_or?: InputMaybe<Plan_Ai_Capabilities_Aggregate_Bool_Exp_Bool_Or>;
+  count?: InputMaybe<Plan_Ai_Capabilities_Aggregate_Bool_Exp_Count>;
+};
+
+export type Plan_Ai_Capabilities_Aggregate_Bool_Exp_Bool_And = {
+  arguments: Plan_Ai_Capabilities_Select_Column_Plan_Ai_Capabilities_Aggregate_Bool_Exp_Bool_And_Arguments_Columns;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+  filter?: InputMaybe<Plan_Ai_Capabilities_Bool_Exp>;
+  predicate: Boolean_Comparison_Exp;
+};
+
+export type Plan_Ai_Capabilities_Aggregate_Bool_Exp_Bool_Or = {
+  arguments: Plan_Ai_Capabilities_Select_Column_Plan_Ai_Capabilities_Aggregate_Bool_Exp_Bool_Or_Arguments_Columns;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+  filter?: InputMaybe<Plan_Ai_Capabilities_Bool_Exp>;
+  predicate: Boolean_Comparison_Exp;
+};
+
+export type Plan_Ai_Capabilities_Aggregate_Bool_Exp_Count = {
+  arguments?: InputMaybe<Array<Plan_Ai_Capabilities_Select_Column>>;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+  filter?: InputMaybe<Plan_Ai_Capabilities_Bool_Exp>;
+  predicate: Int_Comparison_Exp;
+};
+
+/** aggregate fields of "plan_ai_capabilities" */
+export type Plan_Ai_Capabilities_Aggregate_Fields = {
+  __typename?: 'plan_ai_capabilities_aggregate_fields';
+  avg: Maybe<Plan_Ai_Capabilities_Avg_Fields>;
+  count: Scalars['Int']['output'];
+  max: Maybe<Plan_Ai_Capabilities_Max_Fields>;
+  min: Maybe<Plan_Ai_Capabilities_Min_Fields>;
+  stddev: Maybe<Plan_Ai_Capabilities_Stddev_Fields>;
+  stddev_pop: Maybe<Plan_Ai_Capabilities_Stddev_Pop_Fields>;
+  stddev_samp: Maybe<Plan_Ai_Capabilities_Stddev_Samp_Fields>;
+  sum: Maybe<Plan_Ai_Capabilities_Sum_Fields>;
+  var_pop: Maybe<Plan_Ai_Capabilities_Var_Pop_Fields>;
+  var_samp: Maybe<Plan_Ai_Capabilities_Var_Samp_Fields>;
+  variance: Maybe<Plan_Ai_Capabilities_Variance_Fields>;
+};
+
+
+/** aggregate fields of "plan_ai_capabilities" */
+export type Plan_Ai_Capabilities_Aggregate_FieldsCountArgs = {
+  columns?: InputMaybe<Array<Plan_Ai_Capabilities_Select_Column>>;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+/** order by aggregate values of table "plan_ai_capabilities" */
+export type Plan_Ai_Capabilities_Aggregate_Order_By = {
+  avg?: InputMaybe<Plan_Ai_Capabilities_Avg_Order_By>;
+  count?: InputMaybe<Order_By>;
+  max?: InputMaybe<Plan_Ai_Capabilities_Max_Order_By>;
+  min?: InputMaybe<Plan_Ai_Capabilities_Min_Order_By>;
+  stddev?: InputMaybe<Plan_Ai_Capabilities_Stddev_Order_By>;
+  stddev_pop?: InputMaybe<Plan_Ai_Capabilities_Stddev_Pop_Order_By>;
+  stddev_samp?: InputMaybe<Plan_Ai_Capabilities_Stddev_Samp_Order_By>;
+  sum?: InputMaybe<Plan_Ai_Capabilities_Sum_Order_By>;
+  var_pop?: InputMaybe<Plan_Ai_Capabilities_Var_Pop_Order_By>;
+  var_samp?: InputMaybe<Plan_Ai_Capabilities_Var_Samp_Order_By>;
+  variance?: InputMaybe<Plan_Ai_Capabilities_Variance_Order_By>;
+};
+
+/** input type for inserting array relation for remote table "plan_ai_capabilities" */
+export type Plan_Ai_Capabilities_Arr_Rel_Insert_Input = {
+  data: Array<Plan_Ai_Capabilities_Insert_Input>;
+  /** upsert condition */
+  on_conflict?: InputMaybe<Plan_Ai_Capabilities_On_Conflict>;
+};
+
+/** aggregate avg on columns */
+export type Plan_Ai_Capabilities_Avg_Fields = {
+  __typename?: 'plan_ai_capabilities_avg_fields';
+  /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
+  rate_limit_rpd: Maybe<Scalars['Float']['output']>;
+  /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
+  rate_limit_rpm: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by avg() on columns of table "plan_ai_capabilities" */
+export type Plan_Ai_Capabilities_Avg_Order_By = {
+  /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
+  rate_limit_rpd?: InputMaybe<Order_By>;
+  /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
+  rate_limit_rpm?: InputMaybe<Order_By>;
+};
+
+/** Boolean expression to filter rows from the table "plan_ai_capabilities". All fields are combined with a logical 'AND'. */
+export type Plan_Ai_Capabilities_Bool_Exp = {
+  _and?: InputMaybe<Array<Plan_Ai_Capabilities_Bool_Exp>>;
+  _not?: InputMaybe<Plan_Ai_Capabilities_Bool_Exp>;
+  _or?: InputMaybe<Array<Plan_Ai_Capabilities_Bool_Exp>>;
+  ai_capability?: InputMaybe<Ai_Capabilities_Bool_Exp>;
+  ai_capability_id?: InputMaybe<String_Comparison_Exp>;
+  created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  id?: InputMaybe<String_Comparison_Exp>;
+  is_enabled?: InputMaybe<Boolean_Comparison_Exp>;
+  plan?: InputMaybe<Plans_Bool_Exp>;
+  plan_id?: InputMaybe<String_Comparison_Exp>;
+  quality_levels?: InputMaybe<Plan_Ai_Capability_Quality_Levels_Bool_Exp>;
+  quality_levels_aggregate?: InputMaybe<Plan_Ai_Capability_Quality_Levels_Aggregate_Bool_Exp>;
+  rate_limit_rpd?: InputMaybe<Int_Comparison_Exp>;
+  rate_limit_rpm?: InputMaybe<Int_Comparison_Exp>;
+  updated_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+};
+
+/** unique or primary key constraints on table "plan_ai_capabilities" */
+export const Plan_Ai_Capabilities_Constraint = {
+  /** unique or primary key constraint on columns "id" */
+  PlanAiCapabilitiesPkey: 'plan_ai_capabilities_pkey',
+  /** unique or primary key constraint on columns "plan_id", "ai_capability_id" */
+  PlanAiCapabilitiesPlanIdAiCapabilityIdKey: 'plan_ai_capabilities_plan_id_ai_capability_id_key'
+} as const;
+
+export type Plan_Ai_Capabilities_Constraint = typeof Plan_Ai_Capabilities_Constraint[keyof typeof Plan_Ai_Capabilities_Constraint];
+/** input type for incrementing numeric columns in table "plan_ai_capabilities" */
+export type Plan_Ai_Capabilities_Inc_Input = {
+  /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
+  rate_limit_rpd?: InputMaybe<Scalars['Int']['input']>;
+  /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
+  rate_limit_rpm?: InputMaybe<Scalars['Int']['input']>;
+};
+
+/** input type for inserting data into table "plan_ai_capabilities" */
+export type Plan_Ai_Capabilities_Insert_Input = {
+  ai_capability?: InputMaybe<Ai_Capabilities_Obj_Rel_Insert_Input>;
+  /** FK to ai_capabilities table. Identifies which AI capability is being linked. Cascade deletes when capability is removed. */
+  ai_capability_id?: InputMaybe<Scalars['String']['input']>;
+  /** Timestamp when this record was first created. Set automatically, never modified. */
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id?: InputMaybe<Scalars['String']['input']>;
+  /** Whether this capability is enabled for this plan. Allows disabling without removing the row (soft disable). */
+  is_enabled?: InputMaybe<Scalars['Boolean']['input']>;
+  plan?: InputMaybe<Plans_Obj_Rel_Insert_Input>;
+  /** FK to plans table. Identifies which subscription plan this capability belongs to. Cascade deletes when plan is removed. */
+  plan_id?: InputMaybe<Scalars['String']['input']>;
+  quality_levels?: InputMaybe<Plan_Ai_Capability_Quality_Levels_Arr_Rel_Insert_Input>;
+  /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
+  rate_limit_rpd?: InputMaybe<Scalars['Int']['input']>;
+  /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
+  rate_limit_rpm?: InputMaybe<Scalars['Int']['input']>;
+  /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+};
+
+/** aggregate max on columns */
+export type Plan_Ai_Capabilities_Max_Fields = {
+  __typename?: 'plan_ai_capabilities_max_fields';
+  /** FK to ai_capabilities table. Identifies which AI capability is being linked. Cascade deletes when capability is removed. */
+  ai_capability_id: Maybe<Scalars['String']['output']>;
+  /** Timestamp when this record was first created. Set automatically, never modified. */
+  created_at: Maybe<Scalars['timestamptz']['output']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id: Maybe<Scalars['String']['output']>;
+  /** FK to plans table. Identifies which subscription plan this capability belongs to. Cascade deletes when plan is removed. */
+  plan_id: Maybe<Scalars['String']['output']>;
+  /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
+  rate_limit_rpd: Maybe<Scalars['Int']['output']>;
+  /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
+  rate_limit_rpm: Maybe<Scalars['Int']['output']>;
+  /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
+  updated_at: Maybe<Scalars['timestamptz']['output']>;
+};
+
+/** order by max() on columns of table "plan_ai_capabilities" */
+export type Plan_Ai_Capabilities_Max_Order_By = {
+  /** FK to ai_capabilities table. Identifies which AI capability is being linked. Cascade deletes when capability is removed. */
+  ai_capability_id?: InputMaybe<Order_By>;
+  /** Timestamp when this record was first created. Set automatically, never modified. */
+  created_at?: InputMaybe<Order_By>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id?: InputMaybe<Order_By>;
+  /** FK to plans table. Identifies which subscription plan this capability belongs to. Cascade deletes when plan is removed. */
+  plan_id?: InputMaybe<Order_By>;
+  /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
+  rate_limit_rpd?: InputMaybe<Order_By>;
+  /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
+  rate_limit_rpm?: InputMaybe<Order_By>;
+  /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
+  updated_at?: InputMaybe<Order_By>;
+};
+
+/** aggregate min on columns */
+export type Plan_Ai_Capabilities_Min_Fields = {
+  __typename?: 'plan_ai_capabilities_min_fields';
+  /** FK to ai_capabilities table. Identifies which AI capability is being linked. Cascade deletes when capability is removed. */
+  ai_capability_id: Maybe<Scalars['String']['output']>;
+  /** Timestamp when this record was first created. Set automatically, never modified. */
+  created_at: Maybe<Scalars['timestamptz']['output']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id: Maybe<Scalars['String']['output']>;
+  /** FK to plans table. Identifies which subscription plan this capability belongs to. Cascade deletes when plan is removed. */
+  plan_id: Maybe<Scalars['String']['output']>;
+  /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
+  rate_limit_rpd: Maybe<Scalars['Int']['output']>;
+  /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
+  rate_limit_rpm: Maybe<Scalars['Int']['output']>;
+  /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
+  updated_at: Maybe<Scalars['timestamptz']['output']>;
+};
+
+/** order by min() on columns of table "plan_ai_capabilities" */
+export type Plan_Ai_Capabilities_Min_Order_By = {
+  /** FK to ai_capabilities table. Identifies which AI capability is being linked. Cascade deletes when capability is removed. */
+  ai_capability_id?: InputMaybe<Order_By>;
+  /** Timestamp when this record was first created. Set automatically, never modified. */
+  created_at?: InputMaybe<Order_By>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id?: InputMaybe<Order_By>;
+  /** FK to plans table. Identifies which subscription plan this capability belongs to. Cascade deletes when plan is removed. */
+  plan_id?: InputMaybe<Order_By>;
+  /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
+  rate_limit_rpd?: InputMaybe<Order_By>;
+  /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
+  rate_limit_rpm?: InputMaybe<Order_By>;
+  /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
+  updated_at?: InputMaybe<Order_By>;
+};
+
+/** response of any mutation on the table "plan_ai_capabilities" */
+export type Plan_Ai_Capabilities_Mutation_Response = {
+  __typename?: 'plan_ai_capabilities_mutation_response';
+  /** number of rows affected by the mutation */
+  affected_rows: Scalars['Int']['output'];
+  /** data from the rows affected by the mutation */
+  returning: Array<Plan_Ai_Capabilities>;
+};
+
+/** input type for inserting object relation for remote table "plan_ai_capabilities" */
+export type Plan_Ai_Capabilities_Obj_Rel_Insert_Input = {
+  data: Plan_Ai_Capabilities_Insert_Input;
+  /** upsert condition */
+  on_conflict?: InputMaybe<Plan_Ai_Capabilities_On_Conflict>;
+};
+
+/** on_conflict condition type for table "plan_ai_capabilities" */
+export type Plan_Ai_Capabilities_On_Conflict = {
+  constraint: Plan_Ai_Capabilities_Constraint;
+  update_columns?: Array<Plan_Ai_Capabilities_Update_Column>;
+  where?: InputMaybe<Plan_Ai_Capabilities_Bool_Exp>;
+};
+
+/** Ordering options when selecting data from "plan_ai_capabilities". */
+export type Plan_Ai_Capabilities_Order_By = {
+  ai_capability?: InputMaybe<Ai_Capabilities_Order_By>;
+  ai_capability_id?: InputMaybe<Order_By>;
+  created_at?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
+  is_enabled?: InputMaybe<Order_By>;
+  plan?: InputMaybe<Plans_Order_By>;
+  plan_id?: InputMaybe<Order_By>;
+  quality_levels_aggregate?: InputMaybe<Plan_Ai_Capability_Quality_Levels_Aggregate_Order_By>;
+  rate_limit_rpd?: InputMaybe<Order_By>;
+  rate_limit_rpm?: InputMaybe<Order_By>;
+  updated_at?: InputMaybe<Order_By>;
+};
+
+/** primary key columns input for table: plan_ai_capabilities */
+export type Plan_Ai_Capabilities_Pk_Columns_Input = {
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id: Scalars['String']['input'];
+};
+
+/** select columns of table "plan_ai_capabilities" */
+export const Plan_Ai_Capabilities_Select_Column = {
+  /** column name */
+  AiCapabilityId: 'ai_capability_id',
+  /** column name */
+  CreatedAt: 'created_at',
+  /** column name */
+  Id: 'id',
+  /** column name */
+  IsEnabled: 'is_enabled',
+  /** column name */
+  PlanId: 'plan_id',
+  /** column name */
+  RateLimitRpd: 'rate_limit_rpd',
+  /** column name */
+  RateLimitRpm: 'rate_limit_rpm',
+  /** column name */
+  UpdatedAt: 'updated_at'
+} as const;
+
+export type Plan_Ai_Capabilities_Select_Column = typeof Plan_Ai_Capabilities_Select_Column[keyof typeof Plan_Ai_Capabilities_Select_Column];
+/** select "plan_ai_capabilities_aggregate_bool_exp_bool_and_arguments_columns" columns of table "plan_ai_capabilities" */
+export const Plan_Ai_Capabilities_Select_Column_Plan_Ai_Capabilities_Aggregate_Bool_Exp_Bool_And_Arguments_Columns = {
+  /** column name */
+  IsEnabled: 'is_enabled'
+} as const;
+
+export type Plan_Ai_Capabilities_Select_Column_Plan_Ai_Capabilities_Aggregate_Bool_Exp_Bool_And_Arguments_Columns = typeof Plan_Ai_Capabilities_Select_Column_Plan_Ai_Capabilities_Aggregate_Bool_Exp_Bool_And_Arguments_Columns[keyof typeof Plan_Ai_Capabilities_Select_Column_Plan_Ai_Capabilities_Aggregate_Bool_Exp_Bool_And_Arguments_Columns];
+/** select "plan_ai_capabilities_aggregate_bool_exp_bool_or_arguments_columns" columns of table "plan_ai_capabilities" */
+export const Plan_Ai_Capabilities_Select_Column_Plan_Ai_Capabilities_Aggregate_Bool_Exp_Bool_Or_Arguments_Columns = {
+  /** column name */
+  IsEnabled: 'is_enabled'
+} as const;
+
+export type Plan_Ai_Capabilities_Select_Column_Plan_Ai_Capabilities_Aggregate_Bool_Exp_Bool_Or_Arguments_Columns = typeof Plan_Ai_Capabilities_Select_Column_Plan_Ai_Capabilities_Aggregate_Bool_Exp_Bool_Or_Arguments_Columns[keyof typeof Plan_Ai_Capabilities_Select_Column_Plan_Ai_Capabilities_Aggregate_Bool_Exp_Bool_Or_Arguments_Columns];
+/** input type for updating data in table "plan_ai_capabilities" */
+export type Plan_Ai_Capabilities_Set_Input = {
+  /** FK to ai_capabilities table. Identifies which AI capability is being linked. Cascade deletes when capability is removed. */
+  ai_capability_id?: InputMaybe<Scalars['String']['input']>;
+  /** Timestamp when this record was first created. Set automatically, never modified. */
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id?: InputMaybe<Scalars['String']['input']>;
+  /** Whether this capability is enabled for this plan. Allows disabling without removing the row (soft disable). */
+  is_enabled?: InputMaybe<Scalars['Boolean']['input']>;
+  /** FK to plans table. Identifies which subscription plan this capability belongs to. Cascade deletes when plan is removed. */
+  plan_id?: InputMaybe<Scalars['String']['input']>;
+  /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
+  rate_limit_rpd?: InputMaybe<Scalars['Int']['input']>;
+  /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
+  rate_limit_rpm?: InputMaybe<Scalars['Int']['input']>;
+  /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+};
+
+/** aggregate stddev on columns */
+export type Plan_Ai_Capabilities_Stddev_Fields = {
+  __typename?: 'plan_ai_capabilities_stddev_fields';
+  /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
+  rate_limit_rpd: Maybe<Scalars['Float']['output']>;
+  /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
+  rate_limit_rpm: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by stddev() on columns of table "plan_ai_capabilities" */
+export type Plan_Ai_Capabilities_Stddev_Order_By = {
+  /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
+  rate_limit_rpd?: InputMaybe<Order_By>;
+  /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
+  rate_limit_rpm?: InputMaybe<Order_By>;
+};
+
+/** aggregate stddev_pop on columns */
+export type Plan_Ai_Capabilities_Stddev_Pop_Fields = {
+  __typename?: 'plan_ai_capabilities_stddev_pop_fields';
+  /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
+  rate_limit_rpd: Maybe<Scalars['Float']['output']>;
+  /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
+  rate_limit_rpm: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by stddev_pop() on columns of table "plan_ai_capabilities" */
+export type Plan_Ai_Capabilities_Stddev_Pop_Order_By = {
+  /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
+  rate_limit_rpd?: InputMaybe<Order_By>;
+  /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
+  rate_limit_rpm?: InputMaybe<Order_By>;
+};
+
+/** aggregate stddev_samp on columns */
+export type Plan_Ai_Capabilities_Stddev_Samp_Fields = {
+  __typename?: 'plan_ai_capabilities_stddev_samp_fields';
+  /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
+  rate_limit_rpd: Maybe<Scalars['Float']['output']>;
+  /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
+  rate_limit_rpm: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by stddev_samp() on columns of table "plan_ai_capabilities" */
+export type Plan_Ai_Capabilities_Stddev_Samp_Order_By = {
+  /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
+  rate_limit_rpd?: InputMaybe<Order_By>;
+  /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
+  rate_limit_rpm?: InputMaybe<Order_By>;
+};
+
+/** Streaming cursor of the table "plan_ai_capabilities" */
+export type Plan_Ai_Capabilities_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Plan_Ai_Capabilities_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type Plan_Ai_Capabilities_Stream_Cursor_Value_Input = {
+  /** FK to ai_capabilities table. Identifies which AI capability is being linked. Cascade deletes when capability is removed. */
+  ai_capability_id?: InputMaybe<Scalars['String']['input']>;
+  /** Timestamp when this record was first created. Set automatically, never modified. */
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id?: InputMaybe<Scalars['String']['input']>;
+  /** Whether this capability is enabled for this plan. Allows disabling without removing the row (soft disable). */
+  is_enabled?: InputMaybe<Scalars['Boolean']['input']>;
+  /** FK to plans table. Identifies which subscription plan this capability belongs to. Cascade deletes when plan is removed. */
+  plan_id?: InputMaybe<Scalars['String']['input']>;
+  /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
+  rate_limit_rpd?: InputMaybe<Scalars['Int']['input']>;
+  /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
+  rate_limit_rpm?: InputMaybe<Scalars['Int']['input']>;
+  /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+};
+
+/** aggregate sum on columns */
+export type Plan_Ai_Capabilities_Sum_Fields = {
+  __typename?: 'plan_ai_capabilities_sum_fields';
+  /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
+  rate_limit_rpd: Maybe<Scalars['Int']['output']>;
+  /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
+  rate_limit_rpm: Maybe<Scalars['Int']['output']>;
+};
+
+/** order by sum() on columns of table "plan_ai_capabilities" */
+export type Plan_Ai_Capabilities_Sum_Order_By = {
+  /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
+  rate_limit_rpd?: InputMaybe<Order_By>;
+  /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
+  rate_limit_rpm?: InputMaybe<Order_By>;
+};
+
+/** update columns of table "plan_ai_capabilities" */
+export const Plan_Ai_Capabilities_Update_Column = {
+  /** column name */
+  AiCapabilityId: 'ai_capability_id',
+  /** column name */
+  CreatedAt: 'created_at',
+  /** column name */
+  Id: 'id',
+  /** column name */
+  IsEnabled: 'is_enabled',
+  /** column name */
+  PlanId: 'plan_id',
+  /** column name */
+  RateLimitRpd: 'rate_limit_rpd',
+  /** column name */
+  RateLimitRpm: 'rate_limit_rpm',
+  /** column name */
+  UpdatedAt: 'updated_at'
+} as const;
+
+export type Plan_Ai_Capabilities_Update_Column = typeof Plan_Ai_Capabilities_Update_Column[keyof typeof Plan_Ai_Capabilities_Update_Column];
+export type Plan_Ai_Capabilities_Updates = {
+  /** increments the numeric columns with given value of the filtered values */
+  _inc?: InputMaybe<Plan_Ai_Capabilities_Inc_Input>;
+  /** sets the columns of the filtered rows to the given values */
+  _set?: InputMaybe<Plan_Ai_Capabilities_Set_Input>;
+  /** filter the rows which have to be updated */
+  where: Plan_Ai_Capabilities_Bool_Exp;
+};
+
+/** aggregate var_pop on columns */
+export type Plan_Ai_Capabilities_Var_Pop_Fields = {
+  __typename?: 'plan_ai_capabilities_var_pop_fields';
+  /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
+  rate_limit_rpd: Maybe<Scalars['Float']['output']>;
+  /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
+  rate_limit_rpm: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by var_pop() on columns of table "plan_ai_capabilities" */
+export type Plan_Ai_Capabilities_Var_Pop_Order_By = {
+  /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
+  rate_limit_rpd?: InputMaybe<Order_By>;
+  /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
+  rate_limit_rpm?: InputMaybe<Order_By>;
+};
+
+/** aggregate var_samp on columns */
+export type Plan_Ai_Capabilities_Var_Samp_Fields = {
+  __typename?: 'plan_ai_capabilities_var_samp_fields';
+  /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
+  rate_limit_rpd: Maybe<Scalars['Float']['output']>;
+  /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
+  rate_limit_rpm: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by var_samp() on columns of table "plan_ai_capabilities" */
+export type Plan_Ai_Capabilities_Var_Samp_Order_By = {
+  /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
+  rate_limit_rpd?: InputMaybe<Order_By>;
+  /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
+  rate_limit_rpm?: InputMaybe<Order_By>;
+};
+
+/** aggregate variance on columns */
+export type Plan_Ai_Capabilities_Variance_Fields = {
+  __typename?: 'plan_ai_capabilities_variance_fields';
+  /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
+  rate_limit_rpd: Maybe<Scalars['Float']['output']>;
+  /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
+  rate_limit_rpm: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by variance() on columns of table "plan_ai_capabilities" */
+export type Plan_Ai_Capabilities_Variance_Order_By = {
+  /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
+  rate_limit_rpd?: InputMaybe<Order_By>;
+  /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
+  rate_limit_rpm?: InputMaybe<Order_By>;
+};
+
+/** Junction table defining which quality levels are available for each plan-capability combination, and which models are allowed at each quality level. */
+export type Plan_Ai_Capability_Quality_Levels = {
+  __typename?: 'plan_ai_capability_quality_levels';
+  /** An array relationship */
+  allowed_model_mappings: Array<Plan_Quality_Level_Models>;
+  /** An aggregate relationship */
+  allowed_model_mappings_aggregate: Plan_Quality_Level_Models_Aggregate;
+  /** Array of model identifiers allowed at this quality level for this plan-capability. E.g., {"gpt-4o-mini", "gpt-4o"} */
+  allowed_models: Array<Scalars['String']['output']>;
+  /** Timestamp when this record was first created. Set automatically, never modified. */
+  created_at: Scalars['timestamptz']['output'];
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id: Scalars['String']['output'];
+  /** An object relationship */
+  plan_ai_capability: Plan_Ai_Capabilities;
+  /** FK to plan_ai_capabilities table. Links to a specific plan-capability combination. Cascade deletes when the plan-capability is removed. */
+  plan_ai_capability_id: Scalars['String']['output'];
+  /** An object relationship */
+  quality_level: Quality_Levels;
+  /** FK to quality_levels table. Links to a specific quality tier. Cascade deletes when the quality level is removed. */
+  quality_level_id: Scalars['String']['output'];
+};
+
+
+/** Junction table defining which quality levels are available for each plan-capability combination, and which models are allowed at each quality level. */
+export type Plan_Ai_Capability_Quality_LevelsAllowed_Model_MappingsArgs = {
+  distinct_on?: InputMaybe<Array<Plan_Quality_Level_Models_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Plan_Quality_Level_Models_Order_By>>;
+  where?: InputMaybe<Plan_Quality_Level_Models_Bool_Exp>;
+};
+
+
+/** Junction table defining which quality levels are available for each plan-capability combination, and which models are allowed at each quality level. */
+export type Plan_Ai_Capability_Quality_LevelsAllowed_Model_Mappings_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Plan_Quality_Level_Models_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Plan_Quality_Level_Models_Order_By>>;
+  where?: InputMaybe<Plan_Quality_Level_Models_Bool_Exp>;
+};
+
+/** aggregated selection of "plan_ai_capability_quality_levels" */
+export type Plan_Ai_Capability_Quality_Levels_Aggregate = {
+  __typename?: 'plan_ai_capability_quality_levels_aggregate';
+  aggregate: Maybe<Plan_Ai_Capability_Quality_Levels_Aggregate_Fields>;
+  nodes: Array<Plan_Ai_Capability_Quality_Levels>;
+};
+
+export type Plan_Ai_Capability_Quality_Levels_Aggregate_Bool_Exp = {
+  count?: InputMaybe<Plan_Ai_Capability_Quality_Levels_Aggregate_Bool_Exp_Count>;
+};
+
+export type Plan_Ai_Capability_Quality_Levels_Aggregate_Bool_Exp_Count = {
+  arguments?: InputMaybe<Array<Plan_Ai_Capability_Quality_Levels_Select_Column>>;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+  filter?: InputMaybe<Plan_Ai_Capability_Quality_Levels_Bool_Exp>;
+  predicate: Int_Comparison_Exp;
+};
+
+/** aggregate fields of "plan_ai_capability_quality_levels" */
+export type Plan_Ai_Capability_Quality_Levels_Aggregate_Fields = {
+  __typename?: 'plan_ai_capability_quality_levels_aggregate_fields';
+  count: Scalars['Int']['output'];
+  max: Maybe<Plan_Ai_Capability_Quality_Levels_Max_Fields>;
+  min: Maybe<Plan_Ai_Capability_Quality_Levels_Min_Fields>;
+};
+
+
+/** aggregate fields of "plan_ai_capability_quality_levels" */
+export type Plan_Ai_Capability_Quality_Levels_Aggregate_FieldsCountArgs = {
+  columns?: InputMaybe<Array<Plan_Ai_Capability_Quality_Levels_Select_Column>>;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+/** order by aggregate values of table "plan_ai_capability_quality_levels" */
+export type Plan_Ai_Capability_Quality_Levels_Aggregate_Order_By = {
+  count?: InputMaybe<Order_By>;
+  max?: InputMaybe<Plan_Ai_Capability_Quality_Levels_Max_Order_By>;
+  min?: InputMaybe<Plan_Ai_Capability_Quality_Levels_Min_Order_By>;
+};
+
+/** input type for inserting array relation for remote table "plan_ai_capability_quality_levels" */
+export type Plan_Ai_Capability_Quality_Levels_Arr_Rel_Insert_Input = {
+  data: Array<Plan_Ai_Capability_Quality_Levels_Insert_Input>;
+  /** upsert condition */
+  on_conflict?: InputMaybe<Plan_Ai_Capability_Quality_Levels_On_Conflict>;
+};
+
+/** Boolean expression to filter rows from the table "plan_ai_capability_quality_levels". All fields are combined with a logical 'AND'. */
+export type Plan_Ai_Capability_Quality_Levels_Bool_Exp = {
+  _and?: InputMaybe<Array<Plan_Ai_Capability_Quality_Levels_Bool_Exp>>;
+  _not?: InputMaybe<Plan_Ai_Capability_Quality_Levels_Bool_Exp>;
+  _or?: InputMaybe<Array<Plan_Ai_Capability_Quality_Levels_Bool_Exp>>;
+  allowed_model_mappings?: InputMaybe<Plan_Quality_Level_Models_Bool_Exp>;
+  allowed_model_mappings_aggregate?: InputMaybe<Plan_Quality_Level_Models_Aggregate_Bool_Exp>;
+  allowed_models?: InputMaybe<String_Array_Comparison_Exp>;
+  created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  id?: InputMaybe<String_Comparison_Exp>;
+  plan_ai_capability?: InputMaybe<Plan_Ai_Capabilities_Bool_Exp>;
+  plan_ai_capability_id?: InputMaybe<String_Comparison_Exp>;
+  quality_level?: InputMaybe<Quality_Levels_Bool_Exp>;
+  quality_level_id?: InputMaybe<String_Comparison_Exp>;
+};
+
+/** unique or primary key constraints on table "plan_ai_capability_quality_levels" */
+export const Plan_Ai_Capability_Quality_Levels_Constraint = {
+  /** unique or primary key constraint on columns "id" */
+  PlanAiCapabilityQualityLevelsPkey: 'plan_ai_capability_quality_levels_pkey',
+  /** unique or primary key constraint on columns "plan_ai_capability_id", "quality_level_id" */
+  UqPacqlPlanAiCapabilityQuality: 'uq_pacql_plan_ai_capability_quality'
+} as const;
+
+export type Plan_Ai_Capability_Quality_Levels_Constraint = typeof Plan_Ai_Capability_Quality_Levels_Constraint[keyof typeof Plan_Ai_Capability_Quality_Levels_Constraint];
+/** input type for inserting data into table "plan_ai_capability_quality_levels" */
+export type Plan_Ai_Capability_Quality_Levels_Insert_Input = {
+  allowed_model_mappings?: InputMaybe<Plan_Quality_Level_Models_Arr_Rel_Insert_Input>;
+  /** Array of model identifiers allowed at this quality level for this plan-capability. E.g., {"gpt-4o-mini", "gpt-4o"} */
+  allowed_models?: InputMaybe<Array<Scalars['String']['input']>>;
+  /** Timestamp when this record was first created. Set automatically, never modified. */
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id?: InputMaybe<Scalars['String']['input']>;
+  plan_ai_capability?: InputMaybe<Plan_Ai_Capabilities_Obj_Rel_Insert_Input>;
+  /** FK to plan_ai_capabilities table. Links to a specific plan-capability combination. Cascade deletes when the plan-capability is removed. */
+  plan_ai_capability_id?: InputMaybe<Scalars['String']['input']>;
+  quality_level?: InputMaybe<Quality_Levels_Obj_Rel_Insert_Input>;
+  /** FK to quality_levels table. Links to a specific quality tier. Cascade deletes when the quality level is removed. */
+  quality_level_id?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** aggregate max on columns */
+export type Plan_Ai_Capability_Quality_Levels_Max_Fields = {
+  __typename?: 'plan_ai_capability_quality_levels_max_fields';
+  /** Array of model identifiers allowed at this quality level for this plan-capability. E.g., {"gpt-4o-mini", "gpt-4o"} */
+  allowed_models: Maybe<Array<Scalars['String']['output']>>;
+  /** Timestamp when this record was first created. Set automatically, never modified. */
+  created_at: Maybe<Scalars['timestamptz']['output']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id: Maybe<Scalars['String']['output']>;
+  /** FK to plan_ai_capabilities table. Links to a specific plan-capability combination. Cascade deletes when the plan-capability is removed. */
+  plan_ai_capability_id: Maybe<Scalars['String']['output']>;
+  /** FK to quality_levels table. Links to a specific quality tier. Cascade deletes when the quality level is removed. */
+  quality_level_id: Maybe<Scalars['String']['output']>;
+};
+
+/** order by max() on columns of table "plan_ai_capability_quality_levels" */
+export type Plan_Ai_Capability_Quality_Levels_Max_Order_By = {
+  /** Array of model identifiers allowed at this quality level for this plan-capability. E.g., {"gpt-4o-mini", "gpt-4o"} */
+  allowed_models?: InputMaybe<Order_By>;
+  /** Timestamp when this record was first created. Set automatically, never modified. */
+  created_at?: InputMaybe<Order_By>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id?: InputMaybe<Order_By>;
+  /** FK to plan_ai_capabilities table. Links to a specific plan-capability combination. Cascade deletes when the plan-capability is removed. */
+  plan_ai_capability_id?: InputMaybe<Order_By>;
+  /** FK to quality_levels table. Links to a specific quality tier. Cascade deletes when the quality level is removed. */
+  quality_level_id?: InputMaybe<Order_By>;
+};
+
+/** aggregate min on columns */
+export type Plan_Ai_Capability_Quality_Levels_Min_Fields = {
+  __typename?: 'plan_ai_capability_quality_levels_min_fields';
+  /** Array of model identifiers allowed at this quality level for this plan-capability. E.g., {"gpt-4o-mini", "gpt-4o"} */
+  allowed_models: Maybe<Array<Scalars['String']['output']>>;
+  /** Timestamp when this record was first created. Set automatically, never modified. */
+  created_at: Maybe<Scalars['timestamptz']['output']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id: Maybe<Scalars['String']['output']>;
+  /** FK to plan_ai_capabilities table. Links to a specific plan-capability combination. Cascade deletes when the plan-capability is removed. */
+  plan_ai_capability_id: Maybe<Scalars['String']['output']>;
+  /** FK to quality_levels table. Links to a specific quality tier. Cascade deletes when the quality level is removed. */
+  quality_level_id: Maybe<Scalars['String']['output']>;
+};
+
+/** order by min() on columns of table "plan_ai_capability_quality_levels" */
+export type Plan_Ai_Capability_Quality_Levels_Min_Order_By = {
+  /** Array of model identifiers allowed at this quality level for this plan-capability. E.g., {"gpt-4o-mini", "gpt-4o"} */
+  allowed_models?: InputMaybe<Order_By>;
+  /** Timestamp when this record was first created. Set automatically, never modified. */
+  created_at?: InputMaybe<Order_By>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id?: InputMaybe<Order_By>;
+  /** FK to plan_ai_capabilities table. Links to a specific plan-capability combination. Cascade deletes when the plan-capability is removed. */
+  plan_ai_capability_id?: InputMaybe<Order_By>;
+  /** FK to quality_levels table. Links to a specific quality tier. Cascade deletes when the quality level is removed. */
+  quality_level_id?: InputMaybe<Order_By>;
+};
+
+/** response of any mutation on the table "plan_ai_capability_quality_levels" */
+export type Plan_Ai_Capability_Quality_Levels_Mutation_Response = {
+  __typename?: 'plan_ai_capability_quality_levels_mutation_response';
+  /** number of rows affected by the mutation */
+  affected_rows: Scalars['Int']['output'];
+  /** data from the rows affected by the mutation */
+  returning: Array<Plan_Ai_Capability_Quality_Levels>;
+};
+
+/** input type for inserting object relation for remote table "plan_ai_capability_quality_levels" */
+export type Plan_Ai_Capability_Quality_Levels_Obj_Rel_Insert_Input = {
+  data: Plan_Ai_Capability_Quality_Levels_Insert_Input;
+  /** upsert condition */
+  on_conflict?: InputMaybe<Plan_Ai_Capability_Quality_Levels_On_Conflict>;
+};
+
+/** on_conflict condition type for table "plan_ai_capability_quality_levels" */
+export type Plan_Ai_Capability_Quality_Levels_On_Conflict = {
+  constraint: Plan_Ai_Capability_Quality_Levels_Constraint;
+  update_columns?: Array<Plan_Ai_Capability_Quality_Levels_Update_Column>;
+  where?: InputMaybe<Plan_Ai_Capability_Quality_Levels_Bool_Exp>;
+};
+
+/** Ordering options when selecting data from "plan_ai_capability_quality_levels". */
+export type Plan_Ai_Capability_Quality_Levels_Order_By = {
+  allowed_model_mappings_aggregate?: InputMaybe<Plan_Quality_Level_Models_Aggregate_Order_By>;
+  allowed_models?: InputMaybe<Order_By>;
+  created_at?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
+  plan_ai_capability?: InputMaybe<Plan_Ai_Capabilities_Order_By>;
+  plan_ai_capability_id?: InputMaybe<Order_By>;
+  quality_level?: InputMaybe<Quality_Levels_Order_By>;
+  quality_level_id?: InputMaybe<Order_By>;
+};
+
+/** primary key columns input for table: plan_ai_capability_quality_levels */
+export type Plan_Ai_Capability_Quality_Levels_Pk_Columns_Input = {
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id: Scalars['String']['input'];
+};
+
+/** select columns of table "plan_ai_capability_quality_levels" */
+export const Plan_Ai_Capability_Quality_Levels_Select_Column = {
+  /** column name */
+  AllowedModels: 'allowed_models',
+  /** column name */
+  CreatedAt: 'created_at',
+  /** column name */
+  Id: 'id',
+  /** column name */
+  PlanAiCapabilityId: 'plan_ai_capability_id',
+  /** column name */
+  QualityLevelId: 'quality_level_id'
+} as const;
+
+export type Plan_Ai_Capability_Quality_Levels_Select_Column = typeof Plan_Ai_Capability_Quality_Levels_Select_Column[keyof typeof Plan_Ai_Capability_Quality_Levels_Select_Column];
+/** input type for updating data in table "plan_ai_capability_quality_levels" */
+export type Plan_Ai_Capability_Quality_Levels_Set_Input = {
+  /** Array of model identifiers allowed at this quality level for this plan-capability. E.g., {"gpt-4o-mini", "gpt-4o"} */
+  allowed_models?: InputMaybe<Array<Scalars['String']['input']>>;
+  /** Timestamp when this record was first created. Set automatically, never modified. */
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id?: InputMaybe<Scalars['String']['input']>;
+  /** FK to plan_ai_capabilities table. Links to a specific plan-capability combination. Cascade deletes when the plan-capability is removed. */
+  plan_ai_capability_id?: InputMaybe<Scalars['String']['input']>;
+  /** FK to quality_levels table. Links to a specific quality tier. Cascade deletes when the quality level is removed. */
+  quality_level_id?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** Streaming cursor of the table "plan_ai_capability_quality_levels" */
+export type Plan_Ai_Capability_Quality_Levels_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Plan_Ai_Capability_Quality_Levels_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type Plan_Ai_Capability_Quality_Levels_Stream_Cursor_Value_Input = {
+  /** Array of model identifiers allowed at this quality level for this plan-capability. E.g., {"gpt-4o-mini", "gpt-4o"} */
+  allowed_models?: InputMaybe<Array<Scalars['String']['input']>>;
+  /** Timestamp when this record was first created. Set automatically, never modified. */
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id?: InputMaybe<Scalars['String']['input']>;
+  /** FK to plan_ai_capabilities table. Links to a specific plan-capability combination. Cascade deletes when the plan-capability is removed. */
+  plan_ai_capability_id?: InputMaybe<Scalars['String']['input']>;
+  /** FK to quality_levels table. Links to a specific quality tier. Cascade deletes when the quality level is removed. */
+  quality_level_id?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** update columns of table "plan_ai_capability_quality_levels" */
+export const Plan_Ai_Capability_Quality_Levels_Update_Column = {
+  /** column name */
+  AllowedModels: 'allowed_models',
+  /** column name */
+  CreatedAt: 'created_at',
+  /** column name */
+  Id: 'id',
+  /** column name */
+  PlanAiCapabilityId: 'plan_ai_capability_id',
+  /** column name */
+  QualityLevelId: 'quality_level_id'
+} as const;
+
+export type Plan_Ai_Capability_Quality_Levels_Update_Column = typeof Plan_Ai_Capability_Quality_Levels_Update_Column[keyof typeof Plan_Ai_Capability_Quality_Levels_Update_Column];
+export type Plan_Ai_Capability_Quality_Levels_Updates = {
+  /** sets the columns of the filtered rows to the given values */
+  _set?: InputMaybe<Plan_Ai_Capability_Quality_Levels_Set_Input>;
+  /** filter the rows which have to be updated */
+  where: Plan_Ai_Capability_Quality_Levels_Bool_Exp;
 };
 
 /** Multi-currency pricing - prices in smallest currency unit */
@@ -12307,6 +17137,447 @@ export type Plan_Prices_Variance_Order_By = {
   price_yearly_in_base_unit?: InputMaybe<Order_By>;
 };
 
+/** Junction table linking plan-capability-quality combinations to allowed LLM models. Replaces the TEXT[] allowed_models column with proper normalization. Enables default model selection and fallback ordering. */
+export type Plan_Quality_Level_Models = {
+  __typename?: 'plan_quality_level_models';
+  /** Timestamp when this record was first created. Set automatically, never modified. */
+  created_at: Scalars['timestamptz']['output'];
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id: Scalars['String']['output'];
+  /** Whether this model is the default choice for this quality level. Only one model per quality level should be marked as default. Used for automatic model selection. */
+  is_default: Scalars['Boolean']['output'];
+  /** An object relationship */
+  llm_model: Llm_Models;
+  /** FK to llm_models table. Links to a specific AI model. Cascade deletes when the model is removed. */
+  llm_model_id: Scalars['String']['output'];
+  /** An object relationship */
+  plan_ai_capability_quality_level: Plan_Ai_Capability_Quality_Levels;
+  /** FK to plan_ai_capability_quality_levels table. Links to a specific plan-capability-quality combination. Cascade deletes when the parent record is removed. */
+  plan_ai_capability_quality_level_id: Scalars['String']['output'];
+  /** Priority order for fallback selection. Lower numbers = higher priority (0 = primary). Used when primary model is unavailable or rate-limited. */
+  priority: Scalars['Int']['output'];
+};
+
+/** aggregated selection of "plan_quality_level_models" */
+export type Plan_Quality_Level_Models_Aggregate = {
+  __typename?: 'plan_quality_level_models_aggregate';
+  aggregate: Maybe<Plan_Quality_Level_Models_Aggregate_Fields>;
+  nodes: Array<Plan_Quality_Level_Models>;
+};
+
+export type Plan_Quality_Level_Models_Aggregate_Bool_Exp = {
+  bool_and?: InputMaybe<Plan_Quality_Level_Models_Aggregate_Bool_Exp_Bool_And>;
+  bool_or?: InputMaybe<Plan_Quality_Level_Models_Aggregate_Bool_Exp_Bool_Or>;
+  count?: InputMaybe<Plan_Quality_Level_Models_Aggregate_Bool_Exp_Count>;
+};
+
+export type Plan_Quality_Level_Models_Aggregate_Bool_Exp_Bool_And = {
+  arguments: Plan_Quality_Level_Models_Select_Column_Plan_Quality_Level_Models_Aggregate_Bool_Exp_Bool_And_Arguments_Columns;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+  filter?: InputMaybe<Plan_Quality_Level_Models_Bool_Exp>;
+  predicate: Boolean_Comparison_Exp;
+};
+
+export type Plan_Quality_Level_Models_Aggregate_Bool_Exp_Bool_Or = {
+  arguments: Plan_Quality_Level_Models_Select_Column_Plan_Quality_Level_Models_Aggregate_Bool_Exp_Bool_Or_Arguments_Columns;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+  filter?: InputMaybe<Plan_Quality_Level_Models_Bool_Exp>;
+  predicate: Boolean_Comparison_Exp;
+};
+
+export type Plan_Quality_Level_Models_Aggregate_Bool_Exp_Count = {
+  arguments?: InputMaybe<Array<Plan_Quality_Level_Models_Select_Column>>;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+  filter?: InputMaybe<Plan_Quality_Level_Models_Bool_Exp>;
+  predicate: Int_Comparison_Exp;
+};
+
+/** aggregate fields of "plan_quality_level_models" */
+export type Plan_Quality_Level_Models_Aggregate_Fields = {
+  __typename?: 'plan_quality_level_models_aggregate_fields';
+  avg: Maybe<Plan_Quality_Level_Models_Avg_Fields>;
+  count: Scalars['Int']['output'];
+  max: Maybe<Plan_Quality_Level_Models_Max_Fields>;
+  min: Maybe<Plan_Quality_Level_Models_Min_Fields>;
+  stddev: Maybe<Plan_Quality_Level_Models_Stddev_Fields>;
+  stddev_pop: Maybe<Plan_Quality_Level_Models_Stddev_Pop_Fields>;
+  stddev_samp: Maybe<Plan_Quality_Level_Models_Stddev_Samp_Fields>;
+  sum: Maybe<Plan_Quality_Level_Models_Sum_Fields>;
+  var_pop: Maybe<Plan_Quality_Level_Models_Var_Pop_Fields>;
+  var_samp: Maybe<Plan_Quality_Level_Models_Var_Samp_Fields>;
+  variance: Maybe<Plan_Quality_Level_Models_Variance_Fields>;
+};
+
+
+/** aggregate fields of "plan_quality_level_models" */
+export type Plan_Quality_Level_Models_Aggregate_FieldsCountArgs = {
+  columns?: InputMaybe<Array<Plan_Quality_Level_Models_Select_Column>>;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+/** order by aggregate values of table "plan_quality_level_models" */
+export type Plan_Quality_Level_Models_Aggregate_Order_By = {
+  avg?: InputMaybe<Plan_Quality_Level_Models_Avg_Order_By>;
+  count?: InputMaybe<Order_By>;
+  max?: InputMaybe<Plan_Quality_Level_Models_Max_Order_By>;
+  min?: InputMaybe<Plan_Quality_Level_Models_Min_Order_By>;
+  stddev?: InputMaybe<Plan_Quality_Level_Models_Stddev_Order_By>;
+  stddev_pop?: InputMaybe<Plan_Quality_Level_Models_Stddev_Pop_Order_By>;
+  stddev_samp?: InputMaybe<Plan_Quality_Level_Models_Stddev_Samp_Order_By>;
+  sum?: InputMaybe<Plan_Quality_Level_Models_Sum_Order_By>;
+  var_pop?: InputMaybe<Plan_Quality_Level_Models_Var_Pop_Order_By>;
+  var_samp?: InputMaybe<Plan_Quality_Level_Models_Var_Samp_Order_By>;
+  variance?: InputMaybe<Plan_Quality_Level_Models_Variance_Order_By>;
+};
+
+/** input type for inserting array relation for remote table "plan_quality_level_models" */
+export type Plan_Quality_Level_Models_Arr_Rel_Insert_Input = {
+  data: Array<Plan_Quality_Level_Models_Insert_Input>;
+  /** upsert condition */
+  on_conflict?: InputMaybe<Plan_Quality_Level_Models_On_Conflict>;
+};
+
+/** aggregate avg on columns */
+export type Plan_Quality_Level_Models_Avg_Fields = {
+  __typename?: 'plan_quality_level_models_avg_fields';
+  /** Priority order for fallback selection. Lower numbers = higher priority (0 = primary). Used when primary model is unavailable or rate-limited. */
+  priority: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by avg() on columns of table "plan_quality_level_models" */
+export type Plan_Quality_Level_Models_Avg_Order_By = {
+  /** Priority order for fallback selection. Lower numbers = higher priority (0 = primary). Used when primary model is unavailable or rate-limited. */
+  priority?: InputMaybe<Order_By>;
+};
+
+/** Boolean expression to filter rows from the table "plan_quality_level_models". All fields are combined with a logical 'AND'. */
+export type Plan_Quality_Level_Models_Bool_Exp = {
+  _and?: InputMaybe<Array<Plan_Quality_Level_Models_Bool_Exp>>;
+  _not?: InputMaybe<Plan_Quality_Level_Models_Bool_Exp>;
+  _or?: InputMaybe<Array<Plan_Quality_Level_Models_Bool_Exp>>;
+  created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  id?: InputMaybe<String_Comparison_Exp>;
+  is_default?: InputMaybe<Boolean_Comparison_Exp>;
+  llm_model?: InputMaybe<Llm_Models_Bool_Exp>;
+  llm_model_id?: InputMaybe<String_Comparison_Exp>;
+  plan_ai_capability_quality_level?: InputMaybe<Plan_Ai_Capability_Quality_Levels_Bool_Exp>;
+  plan_ai_capability_quality_level_id?: InputMaybe<String_Comparison_Exp>;
+  priority?: InputMaybe<Int_Comparison_Exp>;
+};
+
+/** unique or primary key constraints on table "plan_quality_level_models" */
+export const Plan_Quality_Level_Models_Constraint = {
+  /** unique or primary key constraint on columns "id" */
+  PlanQualityLevelModelsPkey: 'plan_quality_level_models_pkey',
+  /** unique or primary key constraint on columns "llm_model_id", "plan_ai_capability_quality_level_id" */
+  UqPqlmQualityLevelModel: 'uq_pqlm_quality_level_model'
+} as const;
+
+export type Plan_Quality_Level_Models_Constraint = typeof Plan_Quality_Level_Models_Constraint[keyof typeof Plan_Quality_Level_Models_Constraint];
+/** input type for incrementing numeric columns in table "plan_quality_level_models" */
+export type Plan_Quality_Level_Models_Inc_Input = {
+  /** Priority order for fallback selection. Lower numbers = higher priority (0 = primary). Used when primary model is unavailable or rate-limited. */
+  priority?: InputMaybe<Scalars['Int']['input']>;
+};
+
+/** input type for inserting data into table "plan_quality_level_models" */
+export type Plan_Quality_Level_Models_Insert_Input = {
+  /** Timestamp when this record was first created. Set automatically, never modified. */
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id?: InputMaybe<Scalars['String']['input']>;
+  /** Whether this model is the default choice for this quality level. Only one model per quality level should be marked as default. Used for automatic model selection. */
+  is_default?: InputMaybe<Scalars['Boolean']['input']>;
+  llm_model?: InputMaybe<Llm_Models_Obj_Rel_Insert_Input>;
+  /** FK to llm_models table. Links to a specific AI model. Cascade deletes when the model is removed. */
+  llm_model_id?: InputMaybe<Scalars['String']['input']>;
+  plan_ai_capability_quality_level?: InputMaybe<Plan_Ai_Capability_Quality_Levels_Obj_Rel_Insert_Input>;
+  /** FK to plan_ai_capability_quality_levels table. Links to a specific plan-capability-quality combination. Cascade deletes when the parent record is removed. */
+  plan_ai_capability_quality_level_id?: InputMaybe<Scalars['String']['input']>;
+  /** Priority order for fallback selection. Lower numbers = higher priority (0 = primary). Used when primary model is unavailable or rate-limited. */
+  priority?: InputMaybe<Scalars['Int']['input']>;
+};
+
+/** aggregate max on columns */
+export type Plan_Quality_Level_Models_Max_Fields = {
+  __typename?: 'plan_quality_level_models_max_fields';
+  /** Timestamp when this record was first created. Set automatically, never modified. */
+  created_at: Maybe<Scalars['timestamptz']['output']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id: Maybe<Scalars['String']['output']>;
+  /** FK to llm_models table. Links to a specific AI model. Cascade deletes when the model is removed. */
+  llm_model_id: Maybe<Scalars['String']['output']>;
+  /** FK to plan_ai_capability_quality_levels table. Links to a specific plan-capability-quality combination. Cascade deletes when the parent record is removed. */
+  plan_ai_capability_quality_level_id: Maybe<Scalars['String']['output']>;
+  /** Priority order for fallback selection. Lower numbers = higher priority (0 = primary). Used when primary model is unavailable or rate-limited. */
+  priority: Maybe<Scalars['Int']['output']>;
+};
+
+/** order by max() on columns of table "plan_quality_level_models" */
+export type Plan_Quality_Level_Models_Max_Order_By = {
+  /** Timestamp when this record was first created. Set automatically, never modified. */
+  created_at?: InputMaybe<Order_By>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id?: InputMaybe<Order_By>;
+  /** FK to llm_models table. Links to a specific AI model. Cascade deletes when the model is removed. */
+  llm_model_id?: InputMaybe<Order_By>;
+  /** FK to plan_ai_capability_quality_levels table. Links to a specific plan-capability-quality combination. Cascade deletes when the parent record is removed. */
+  plan_ai_capability_quality_level_id?: InputMaybe<Order_By>;
+  /** Priority order for fallback selection. Lower numbers = higher priority (0 = primary). Used when primary model is unavailable or rate-limited. */
+  priority?: InputMaybe<Order_By>;
+};
+
+/** aggregate min on columns */
+export type Plan_Quality_Level_Models_Min_Fields = {
+  __typename?: 'plan_quality_level_models_min_fields';
+  /** Timestamp when this record was first created. Set automatically, never modified. */
+  created_at: Maybe<Scalars['timestamptz']['output']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id: Maybe<Scalars['String']['output']>;
+  /** FK to llm_models table. Links to a specific AI model. Cascade deletes when the model is removed. */
+  llm_model_id: Maybe<Scalars['String']['output']>;
+  /** FK to plan_ai_capability_quality_levels table. Links to a specific plan-capability-quality combination. Cascade deletes when the parent record is removed. */
+  plan_ai_capability_quality_level_id: Maybe<Scalars['String']['output']>;
+  /** Priority order for fallback selection. Lower numbers = higher priority (0 = primary). Used when primary model is unavailable or rate-limited. */
+  priority: Maybe<Scalars['Int']['output']>;
+};
+
+/** order by min() on columns of table "plan_quality_level_models" */
+export type Plan_Quality_Level_Models_Min_Order_By = {
+  /** Timestamp when this record was first created. Set automatically, never modified. */
+  created_at?: InputMaybe<Order_By>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id?: InputMaybe<Order_By>;
+  /** FK to llm_models table. Links to a specific AI model. Cascade deletes when the model is removed. */
+  llm_model_id?: InputMaybe<Order_By>;
+  /** FK to plan_ai_capability_quality_levels table. Links to a specific plan-capability-quality combination. Cascade deletes when the parent record is removed. */
+  plan_ai_capability_quality_level_id?: InputMaybe<Order_By>;
+  /** Priority order for fallback selection. Lower numbers = higher priority (0 = primary). Used when primary model is unavailable or rate-limited. */
+  priority?: InputMaybe<Order_By>;
+};
+
+/** response of any mutation on the table "plan_quality_level_models" */
+export type Plan_Quality_Level_Models_Mutation_Response = {
+  __typename?: 'plan_quality_level_models_mutation_response';
+  /** number of rows affected by the mutation */
+  affected_rows: Scalars['Int']['output'];
+  /** data from the rows affected by the mutation */
+  returning: Array<Plan_Quality_Level_Models>;
+};
+
+/** on_conflict condition type for table "plan_quality_level_models" */
+export type Plan_Quality_Level_Models_On_Conflict = {
+  constraint: Plan_Quality_Level_Models_Constraint;
+  update_columns?: Array<Plan_Quality_Level_Models_Update_Column>;
+  where?: InputMaybe<Plan_Quality_Level_Models_Bool_Exp>;
+};
+
+/** Ordering options when selecting data from "plan_quality_level_models". */
+export type Plan_Quality_Level_Models_Order_By = {
+  created_at?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
+  is_default?: InputMaybe<Order_By>;
+  llm_model?: InputMaybe<Llm_Models_Order_By>;
+  llm_model_id?: InputMaybe<Order_By>;
+  plan_ai_capability_quality_level?: InputMaybe<Plan_Ai_Capability_Quality_Levels_Order_By>;
+  plan_ai_capability_quality_level_id?: InputMaybe<Order_By>;
+  priority?: InputMaybe<Order_By>;
+};
+
+/** primary key columns input for table: plan_quality_level_models */
+export type Plan_Quality_Level_Models_Pk_Columns_Input = {
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id: Scalars['String']['input'];
+};
+
+/** select columns of table "plan_quality_level_models" */
+export const Plan_Quality_Level_Models_Select_Column = {
+  /** column name */
+  CreatedAt: 'created_at',
+  /** column name */
+  Id: 'id',
+  /** column name */
+  IsDefault: 'is_default',
+  /** column name */
+  LlmModelId: 'llm_model_id',
+  /** column name */
+  PlanAiCapabilityQualityLevelId: 'plan_ai_capability_quality_level_id',
+  /** column name */
+  Priority: 'priority'
+} as const;
+
+export type Plan_Quality_Level_Models_Select_Column = typeof Plan_Quality_Level_Models_Select_Column[keyof typeof Plan_Quality_Level_Models_Select_Column];
+/** select "plan_quality_level_models_aggregate_bool_exp_bool_and_arguments_columns" columns of table "plan_quality_level_models" */
+export const Plan_Quality_Level_Models_Select_Column_Plan_Quality_Level_Models_Aggregate_Bool_Exp_Bool_And_Arguments_Columns = {
+  /** column name */
+  IsDefault: 'is_default'
+} as const;
+
+export type Plan_Quality_Level_Models_Select_Column_Plan_Quality_Level_Models_Aggregate_Bool_Exp_Bool_And_Arguments_Columns = typeof Plan_Quality_Level_Models_Select_Column_Plan_Quality_Level_Models_Aggregate_Bool_Exp_Bool_And_Arguments_Columns[keyof typeof Plan_Quality_Level_Models_Select_Column_Plan_Quality_Level_Models_Aggregate_Bool_Exp_Bool_And_Arguments_Columns];
+/** select "plan_quality_level_models_aggregate_bool_exp_bool_or_arguments_columns" columns of table "plan_quality_level_models" */
+export const Plan_Quality_Level_Models_Select_Column_Plan_Quality_Level_Models_Aggregate_Bool_Exp_Bool_Or_Arguments_Columns = {
+  /** column name */
+  IsDefault: 'is_default'
+} as const;
+
+export type Plan_Quality_Level_Models_Select_Column_Plan_Quality_Level_Models_Aggregate_Bool_Exp_Bool_Or_Arguments_Columns = typeof Plan_Quality_Level_Models_Select_Column_Plan_Quality_Level_Models_Aggregate_Bool_Exp_Bool_Or_Arguments_Columns[keyof typeof Plan_Quality_Level_Models_Select_Column_Plan_Quality_Level_Models_Aggregate_Bool_Exp_Bool_Or_Arguments_Columns];
+/** input type for updating data in table "plan_quality_level_models" */
+export type Plan_Quality_Level_Models_Set_Input = {
+  /** Timestamp when this record was first created. Set automatically, never modified. */
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id?: InputMaybe<Scalars['String']['input']>;
+  /** Whether this model is the default choice for this quality level. Only one model per quality level should be marked as default. Used for automatic model selection. */
+  is_default?: InputMaybe<Scalars['Boolean']['input']>;
+  /** FK to llm_models table. Links to a specific AI model. Cascade deletes when the model is removed. */
+  llm_model_id?: InputMaybe<Scalars['String']['input']>;
+  /** FK to plan_ai_capability_quality_levels table. Links to a specific plan-capability-quality combination. Cascade deletes when the parent record is removed. */
+  plan_ai_capability_quality_level_id?: InputMaybe<Scalars['String']['input']>;
+  /** Priority order for fallback selection. Lower numbers = higher priority (0 = primary). Used when primary model is unavailable or rate-limited. */
+  priority?: InputMaybe<Scalars['Int']['input']>;
+};
+
+/** aggregate stddev on columns */
+export type Plan_Quality_Level_Models_Stddev_Fields = {
+  __typename?: 'plan_quality_level_models_stddev_fields';
+  /** Priority order for fallback selection. Lower numbers = higher priority (0 = primary). Used when primary model is unavailable or rate-limited. */
+  priority: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by stddev() on columns of table "plan_quality_level_models" */
+export type Plan_Quality_Level_Models_Stddev_Order_By = {
+  /** Priority order for fallback selection. Lower numbers = higher priority (0 = primary). Used when primary model is unavailable or rate-limited. */
+  priority?: InputMaybe<Order_By>;
+};
+
+/** aggregate stddev_pop on columns */
+export type Plan_Quality_Level_Models_Stddev_Pop_Fields = {
+  __typename?: 'plan_quality_level_models_stddev_pop_fields';
+  /** Priority order for fallback selection. Lower numbers = higher priority (0 = primary). Used when primary model is unavailable or rate-limited. */
+  priority: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by stddev_pop() on columns of table "plan_quality_level_models" */
+export type Plan_Quality_Level_Models_Stddev_Pop_Order_By = {
+  /** Priority order for fallback selection. Lower numbers = higher priority (0 = primary). Used when primary model is unavailable or rate-limited. */
+  priority?: InputMaybe<Order_By>;
+};
+
+/** aggregate stddev_samp on columns */
+export type Plan_Quality_Level_Models_Stddev_Samp_Fields = {
+  __typename?: 'plan_quality_level_models_stddev_samp_fields';
+  /** Priority order for fallback selection. Lower numbers = higher priority (0 = primary). Used when primary model is unavailable or rate-limited. */
+  priority: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by stddev_samp() on columns of table "plan_quality_level_models" */
+export type Plan_Quality_Level_Models_Stddev_Samp_Order_By = {
+  /** Priority order for fallback selection. Lower numbers = higher priority (0 = primary). Used when primary model is unavailable or rate-limited. */
+  priority?: InputMaybe<Order_By>;
+};
+
+/** Streaming cursor of the table "plan_quality_level_models" */
+export type Plan_Quality_Level_Models_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Plan_Quality_Level_Models_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type Plan_Quality_Level_Models_Stream_Cursor_Value_Input = {
+  /** Timestamp when this record was first created. Set automatically, never modified. */
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id?: InputMaybe<Scalars['String']['input']>;
+  /** Whether this model is the default choice for this quality level. Only one model per quality level should be marked as default. Used for automatic model selection. */
+  is_default?: InputMaybe<Scalars['Boolean']['input']>;
+  /** FK to llm_models table. Links to a specific AI model. Cascade deletes when the model is removed. */
+  llm_model_id?: InputMaybe<Scalars['String']['input']>;
+  /** FK to plan_ai_capability_quality_levels table. Links to a specific plan-capability-quality combination. Cascade deletes when the parent record is removed. */
+  plan_ai_capability_quality_level_id?: InputMaybe<Scalars['String']['input']>;
+  /** Priority order for fallback selection. Lower numbers = higher priority (0 = primary). Used when primary model is unavailable or rate-limited. */
+  priority?: InputMaybe<Scalars['Int']['input']>;
+};
+
+/** aggregate sum on columns */
+export type Plan_Quality_Level_Models_Sum_Fields = {
+  __typename?: 'plan_quality_level_models_sum_fields';
+  /** Priority order for fallback selection. Lower numbers = higher priority (0 = primary). Used when primary model is unavailable or rate-limited. */
+  priority: Maybe<Scalars['Int']['output']>;
+};
+
+/** order by sum() on columns of table "plan_quality_level_models" */
+export type Plan_Quality_Level_Models_Sum_Order_By = {
+  /** Priority order for fallback selection. Lower numbers = higher priority (0 = primary). Used when primary model is unavailable or rate-limited. */
+  priority?: InputMaybe<Order_By>;
+};
+
+/** update columns of table "plan_quality_level_models" */
+export const Plan_Quality_Level_Models_Update_Column = {
+  /** column name */
+  CreatedAt: 'created_at',
+  /** column name */
+  Id: 'id',
+  /** column name */
+  IsDefault: 'is_default',
+  /** column name */
+  LlmModelId: 'llm_model_id',
+  /** column name */
+  PlanAiCapabilityQualityLevelId: 'plan_ai_capability_quality_level_id',
+  /** column name */
+  Priority: 'priority'
+} as const;
+
+export type Plan_Quality_Level_Models_Update_Column = typeof Plan_Quality_Level_Models_Update_Column[keyof typeof Plan_Quality_Level_Models_Update_Column];
+export type Plan_Quality_Level_Models_Updates = {
+  /** increments the numeric columns with given value of the filtered values */
+  _inc?: InputMaybe<Plan_Quality_Level_Models_Inc_Input>;
+  /** sets the columns of the filtered rows to the given values */
+  _set?: InputMaybe<Plan_Quality_Level_Models_Set_Input>;
+  /** filter the rows which have to be updated */
+  where: Plan_Quality_Level_Models_Bool_Exp;
+};
+
+/** aggregate var_pop on columns */
+export type Plan_Quality_Level_Models_Var_Pop_Fields = {
+  __typename?: 'plan_quality_level_models_var_pop_fields';
+  /** Priority order for fallback selection. Lower numbers = higher priority (0 = primary). Used when primary model is unavailable or rate-limited. */
+  priority: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by var_pop() on columns of table "plan_quality_level_models" */
+export type Plan_Quality_Level_Models_Var_Pop_Order_By = {
+  /** Priority order for fallback selection. Lower numbers = higher priority (0 = primary). Used when primary model is unavailable or rate-limited. */
+  priority?: InputMaybe<Order_By>;
+};
+
+/** aggregate var_samp on columns */
+export type Plan_Quality_Level_Models_Var_Samp_Fields = {
+  __typename?: 'plan_quality_level_models_var_samp_fields';
+  /** Priority order for fallback selection. Lower numbers = higher priority (0 = primary). Used when primary model is unavailable or rate-limited. */
+  priority: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by var_samp() on columns of table "plan_quality_level_models" */
+export type Plan_Quality_Level_Models_Var_Samp_Order_By = {
+  /** Priority order for fallback selection. Lower numbers = higher priority (0 = primary). Used when primary model is unavailable or rate-limited. */
+  priority?: InputMaybe<Order_By>;
+};
+
+/** aggregate variance on columns */
+export type Plan_Quality_Level_Models_Variance_Fields = {
+  __typename?: 'plan_quality_level_models_variance_fields';
+  /** Priority order for fallback selection. Lower numbers = higher priority (0 = primary). Used when primary model is unavailable or rate-limited. */
+  priority: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by variance() on columns of table "plan_quality_level_models" */
+export type Plan_Quality_Level_Models_Variance_Order_By = {
+  /** Priority order for fallback selection. Lower numbers = higher priority (0 = primary). Used when primary model is unavailable or rate-limited. */
+  priority?: InputMaybe<Order_By>;
+};
+
 /** Junction table mapping plans to question_types - controls which question types are available per plan */
 export type Plan_Question_Types = {
   __typename?: 'plan_question_types';
@@ -12649,6 +17920,8 @@ export type Plans = {
   max_testimonials: Scalars['Int']['output'];
   /** Maximum display widgets allowed (-1 = unlimited) */
   max_widgets: Scalars['Int']['output'];
+  /** Number of AI credits allocated per billing period for this plan. Free=10, Pro=500, Team=2000. Credits are consumed by AI features like testimonial assembly and smart prompts. */
+  monthly_ai_credits: Scalars['Int']['output'];
   /** Display-ready label for UI (Free, Pro, Team) */
   name: Scalars['String']['output'];
   /** An array relationship */
@@ -12772,6 +18045,8 @@ export type Plans_Avg_Fields = {
   max_testimonials: Maybe<Scalars['Float']['output']>;
   /** Maximum display widgets allowed (-1 = unlimited) */
   max_widgets: Maybe<Scalars['Float']['output']>;
+  /** Number of AI credits allocated per billing period for this plan. Free=10, Pro=500, Team=2000. Credits are consumed by AI features like testimonial assembly and smart prompts. */
+  monthly_ai_credits: Maybe<Scalars['Float']['output']>;
 };
 
 /** Boolean expression to filter rows from the table "plans". All fields are combined with a logical 'AND'. */
@@ -12787,6 +18062,7 @@ export type Plans_Bool_Exp = {
   max_members?: InputMaybe<Int_Comparison_Exp>;
   max_testimonials?: InputMaybe<Int_Comparison_Exp>;
   max_widgets?: InputMaybe<Int_Comparison_Exp>;
+  monthly_ai_credits?: InputMaybe<Int_Comparison_Exp>;
   name?: InputMaybe<String_Comparison_Exp>;
   organization_plans?: InputMaybe<Organization_Plans_Bool_Exp>;
   organization_plans_aggregate?: InputMaybe<Organization_Plans_Aggregate_Bool_Exp>;
@@ -12818,6 +18094,8 @@ export type Plans_Inc_Input = {
   max_testimonials?: InputMaybe<Scalars['Int']['input']>;
   /** Maximum display widgets allowed (-1 = unlimited) */
   max_widgets?: InputMaybe<Scalars['Int']['input']>;
+  /** Number of AI credits allocated per billing period for this plan. Free=10, Pro=500, Team=2000. Credits are consumed by AI features like testimonial assembly and smart prompts. */
+  monthly_ai_credits?: InputMaybe<Scalars['Int']['input']>;
 };
 
 /** input type for inserting data into table "plans" */
@@ -12838,6 +18116,8 @@ export type Plans_Insert_Input = {
   max_testimonials?: InputMaybe<Scalars['Int']['input']>;
   /** Maximum display widgets allowed (-1 = unlimited) */
   max_widgets?: InputMaybe<Scalars['Int']['input']>;
+  /** Number of AI credits allocated per billing period for this plan. Free=10, Pro=500, Team=2000. Credits are consumed by AI features like testimonial assembly and smart prompts. */
+  monthly_ai_credits?: InputMaybe<Scalars['Int']['input']>;
   /** Display-ready label for UI (Free, Pro, Team) */
   name?: InputMaybe<Scalars['String']['input']>;
   organization_plans?: InputMaybe<Organization_Plans_Arr_Rel_Insert_Input>;
@@ -12868,6 +18148,8 @@ export type Plans_Max_Fields = {
   max_testimonials: Maybe<Scalars['Int']['output']>;
   /** Maximum display widgets allowed (-1 = unlimited) */
   max_widgets: Maybe<Scalars['Int']['output']>;
+  /** Number of AI credits allocated per billing period for this plan. Free=10, Pro=500, Team=2000. Credits are consumed by AI features like testimonial assembly and smart prompts. */
+  monthly_ai_credits: Maybe<Scalars['Int']['output']>;
   /** Display-ready label for UI (Free, Pro, Team) */
   name: Maybe<Scalars['String']['output']>;
   /** Slug for code comparisons (free, pro, team) */
@@ -12893,6 +18175,8 @@ export type Plans_Min_Fields = {
   max_testimonials: Maybe<Scalars['Int']['output']>;
   /** Maximum display widgets allowed (-1 = unlimited) */
   max_widgets: Maybe<Scalars['Int']['output']>;
+  /** Number of AI credits allocated per billing period for this plan. Free=10, Pro=500, Team=2000. Credits are consumed by AI features like testimonial assembly and smart prompts. */
+  monthly_ai_credits: Maybe<Scalars['Int']['output']>;
   /** Display-ready label for UI (Free, Pro, Team) */
   name: Maybe<Scalars['String']['output']>;
   /** Slug for code comparisons (free, pro, team) */
@@ -12934,6 +18218,7 @@ export type Plans_Order_By = {
   max_members?: InputMaybe<Order_By>;
   max_testimonials?: InputMaybe<Order_By>;
   max_widgets?: InputMaybe<Order_By>;
+  monthly_ai_credits?: InputMaybe<Order_By>;
   name?: InputMaybe<Order_By>;
   organization_plans_aggregate?: InputMaybe<Organization_Plans_Aggregate_Order_By>;
   prices_aggregate?: InputMaybe<Plan_Prices_Aggregate_Order_By>;
@@ -12968,6 +18253,8 @@ export const Plans_Select_Column = {
   /** column name */
   MaxWidgets: 'max_widgets',
   /** column name */
+  MonthlyAiCredits: 'monthly_ai_credits',
+  /** column name */
   Name: 'name',
   /** column name */
   ShowBranding: 'show_branding',
@@ -12996,6 +18283,8 @@ export type Plans_Set_Input = {
   max_testimonials?: InputMaybe<Scalars['Int']['input']>;
   /** Maximum display widgets allowed (-1 = unlimited) */
   max_widgets?: InputMaybe<Scalars['Int']['input']>;
+  /** Number of AI credits allocated per billing period for this plan. Free=10, Pro=500, Team=2000. Credits are consumed by AI features like testimonial assembly and smart prompts. */
+  monthly_ai_credits?: InputMaybe<Scalars['Int']['input']>;
   /** Display-ready label for UI (Free, Pro, Team) */
   name?: InputMaybe<Scalars['String']['input']>;
   /** Whether to show "Powered by" branding on widgets */
@@ -13017,6 +18306,8 @@ export type Plans_Stddev_Fields = {
   max_testimonials: Maybe<Scalars['Float']['output']>;
   /** Maximum display widgets allowed (-1 = unlimited) */
   max_widgets: Maybe<Scalars['Float']['output']>;
+  /** Number of AI credits allocated per billing period for this plan. Free=10, Pro=500, Team=2000. Credits are consumed by AI features like testimonial assembly and smart prompts. */
+  monthly_ai_credits: Maybe<Scalars['Float']['output']>;
 };
 
 /** aggregate stddev_pop on columns */
@@ -13030,6 +18321,8 @@ export type Plans_Stddev_Pop_Fields = {
   max_testimonials: Maybe<Scalars['Float']['output']>;
   /** Maximum display widgets allowed (-1 = unlimited) */
   max_widgets: Maybe<Scalars['Float']['output']>;
+  /** Number of AI credits allocated per billing period for this plan. Free=10, Pro=500, Team=2000. Credits are consumed by AI features like testimonial assembly and smart prompts. */
+  monthly_ai_credits: Maybe<Scalars['Float']['output']>;
 };
 
 /** aggregate stddev_samp on columns */
@@ -13043,6 +18336,8 @@ export type Plans_Stddev_Samp_Fields = {
   max_testimonials: Maybe<Scalars['Float']['output']>;
   /** Maximum display widgets allowed (-1 = unlimited) */
   max_widgets: Maybe<Scalars['Float']['output']>;
+  /** Number of AI credits allocated per billing period for this plan. Free=10, Pro=500, Team=2000. Credits are consumed by AI features like testimonial assembly and smart prompts. */
+  monthly_ai_credits: Maybe<Scalars['Float']['output']>;
 };
 
 /** Streaming cursor of the table "plans" */
@@ -13071,6 +18366,8 @@ export type Plans_Stream_Cursor_Value_Input = {
   max_testimonials?: InputMaybe<Scalars['Int']['input']>;
   /** Maximum display widgets allowed (-1 = unlimited) */
   max_widgets?: InputMaybe<Scalars['Int']['input']>;
+  /** Number of AI credits allocated per billing period for this plan. Free=10, Pro=500, Team=2000. Credits are consumed by AI features like testimonial assembly and smart prompts. */
+  monthly_ai_credits?: InputMaybe<Scalars['Int']['input']>;
   /** Display-ready label for UI (Free, Pro, Team) */
   name?: InputMaybe<Scalars['String']['input']>;
   /** Whether to show "Powered by" branding on widgets */
@@ -13092,6 +18389,8 @@ export type Plans_Sum_Fields = {
   max_testimonials: Maybe<Scalars['Int']['output']>;
   /** Maximum display widgets allowed (-1 = unlimited) */
   max_widgets: Maybe<Scalars['Int']['output']>;
+  /** Number of AI credits allocated per billing period for this plan. Free=10, Pro=500, Team=2000. Credits are consumed by AI features like testimonial assembly and smart prompts. */
+  monthly_ai_credits: Maybe<Scalars['Int']['output']>;
 };
 
 /** update columns of table "plans" */
@@ -13112,6 +18411,8 @@ export const Plans_Update_Column = {
   MaxTestimonials: 'max_testimonials',
   /** column name */
   MaxWidgets: 'max_widgets',
+  /** column name */
+  MonthlyAiCredits: 'monthly_ai_credits',
   /** column name */
   Name: 'name',
   /** column name */
@@ -13143,6 +18444,8 @@ export type Plans_Var_Pop_Fields = {
   max_testimonials: Maybe<Scalars['Float']['output']>;
   /** Maximum display widgets allowed (-1 = unlimited) */
   max_widgets: Maybe<Scalars['Float']['output']>;
+  /** Number of AI credits allocated per billing period for this plan. Free=10, Pro=500, Team=2000. Credits are consumed by AI features like testimonial assembly and smart prompts. */
+  monthly_ai_credits: Maybe<Scalars['Float']['output']>;
 };
 
 /** aggregate var_samp on columns */
@@ -13156,6 +18459,8 @@ export type Plans_Var_Samp_Fields = {
   max_testimonials: Maybe<Scalars['Float']['output']>;
   /** Maximum display widgets allowed (-1 = unlimited) */
   max_widgets: Maybe<Scalars['Float']['output']>;
+  /** Number of AI credits allocated per billing period for this plan. Free=10, Pro=500, Team=2000. Credits are consumed by AI features like testimonial assembly and smart prompts. */
+  monthly_ai_credits: Maybe<Scalars['Float']['output']>;
 };
 
 /** aggregate variance on columns */
@@ -13169,16 +18474,479 @@ export type Plans_Variance_Fields = {
   max_testimonials: Maybe<Scalars['Float']['output']>;
   /** Maximum display widgets allowed (-1 = unlimited) */
   max_widgets: Maybe<Scalars['Float']['output']>;
+  /** Number of AI credits allocated per billing period for this plan. Free=10, Pro=500, Team=2000. Credits are consumed by AI features like testimonial assembly and smart prompts. */
+  monthly_ai_credits: Maybe<Scalars['Float']['output']>;
+};
+
+/** Defines AI quality tiers (fast, enhanced, premium) that determine model selection and credit costs. Each AI capability references quality levels to specify supported tiers. Part of ADR-023 AI Capabilities Plan Integration. */
+export type Quality_Levels = {
+  __typename?: 'quality_levels';
+  /** Timestamp when this quality level was first created. Set automatically, never modified. */
+  created_at: Scalars['timestamptz']['output'];
+  /** Multiplier applied to base credit cost. 1.0 = base cost, 1.5 = 50% more credits, 3.0 = triple credits. */
+  credit_multiplier: Scalars['numeric']['output'];
+  /** An array relationship */
+  credit_reservations: Array<Credit_Reservations>;
+  /** An aggregate relationship */
+  credit_reservations_aggregate: Credit_Reservations_Aggregate;
+  /** An array relationship */
+  credit_transactions: Array<Credit_Transactions>;
+  /** An aggregate relationship */
+  credit_transactions_aggregate: Credit_Transactions_Aggregate;
+  /** Optional description explaining the quality level characteristics. Example: Quick responses using efficient models. */
+  description: Maybe<Scalars['String']['output']>;
+  /** Order for display in UI dropdowns and lists. Lower numbers appear first. */
+  display_order: Scalars['Int']['output'];
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id: Scalars['String']['output'];
+  /** Whether this quality level is currently available for use. Allows soft-disabling without deletion. */
+  is_active: Scalars['Boolean']['output'];
+  /** Human-readable display name shown in UI. Examples: Fast, Enhanced, Premium. */
+  name: Scalars['String']['output'];
+  /** An array relationship */
+  plan_ai_capability_quality_levels: Array<Plan_Ai_Capability_Quality_Levels>;
+  /** An aggregate relationship */
+  plan_ai_capability_quality_levels_aggregate: Plan_Ai_Capability_Quality_Levels_Aggregate;
+  /** Machine-readable unique identifier for the quality level. Used in code and API calls. Examples: fast, enhanced, premium. */
+  unique_name: Scalars['String']['output'];
+};
+
+
+/** Defines AI quality tiers (fast, enhanced, premium) that determine model selection and credit costs. Each AI capability references quality levels to specify supported tiers. Part of ADR-023 AI Capabilities Plan Integration. */
+export type Quality_LevelsCredit_ReservationsArgs = {
+  distinct_on?: InputMaybe<Array<Credit_Reservations_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Credit_Reservations_Order_By>>;
+  where?: InputMaybe<Credit_Reservations_Bool_Exp>;
+};
+
+
+/** Defines AI quality tiers (fast, enhanced, premium) that determine model selection and credit costs. Each AI capability references quality levels to specify supported tiers. Part of ADR-023 AI Capabilities Plan Integration. */
+export type Quality_LevelsCredit_Reservations_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Credit_Reservations_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Credit_Reservations_Order_By>>;
+  where?: InputMaybe<Credit_Reservations_Bool_Exp>;
+};
+
+
+/** Defines AI quality tiers (fast, enhanced, premium) that determine model selection and credit costs. Each AI capability references quality levels to specify supported tiers. Part of ADR-023 AI Capabilities Plan Integration. */
+export type Quality_LevelsCredit_TransactionsArgs = {
+  distinct_on?: InputMaybe<Array<Credit_Transactions_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Credit_Transactions_Order_By>>;
+  where?: InputMaybe<Credit_Transactions_Bool_Exp>;
+};
+
+
+/** Defines AI quality tiers (fast, enhanced, premium) that determine model selection and credit costs. Each AI capability references quality levels to specify supported tiers. Part of ADR-023 AI Capabilities Plan Integration. */
+export type Quality_LevelsCredit_Transactions_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Credit_Transactions_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Credit_Transactions_Order_By>>;
+  where?: InputMaybe<Credit_Transactions_Bool_Exp>;
+};
+
+
+/** Defines AI quality tiers (fast, enhanced, premium) that determine model selection and credit costs. Each AI capability references quality levels to specify supported tiers. Part of ADR-023 AI Capabilities Plan Integration. */
+export type Quality_LevelsPlan_Ai_Capability_Quality_LevelsArgs = {
+  distinct_on?: InputMaybe<Array<Plan_Ai_Capability_Quality_Levels_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Plan_Ai_Capability_Quality_Levels_Order_By>>;
+  where?: InputMaybe<Plan_Ai_Capability_Quality_Levels_Bool_Exp>;
+};
+
+
+/** Defines AI quality tiers (fast, enhanced, premium) that determine model selection and credit costs. Each AI capability references quality levels to specify supported tiers. Part of ADR-023 AI Capabilities Plan Integration. */
+export type Quality_LevelsPlan_Ai_Capability_Quality_Levels_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Plan_Ai_Capability_Quality_Levels_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Plan_Ai_Capability_Quality_Levels_Order_By>>;
+  where?: InputMaybe<Plan_Ai_Capability_Quality_Levels_Bool_Exp>;
+};
+
+/** aggregated selection of "quality_levels" */
+export type Quality_Levels_Aggregate = {
+  __typename?: 'quality_levels_aggregate';
+  aggregate: Maybe<Quality_Levels_Aggregate_Fields>;
+  nodes: Array<Quality_Levels>;
+};
+
+/** aggregate fields of "quality_levels" */
+export type Quality_Levels_Aggregate_Fields = {
+  __typename?: 'quality_levels_aggregate_fields';
+  avg: Maybe<Quality_Levels_Avg_Fields>;
+  count: Scalars['Int']['output'];
+  max: Maybe<Quality_Levels_Max_Fields>;
+  min: Maybe<Quality_Levels_Min_Fields>;
+  stddev: Maybe<Quality_Levels_Stddev_Fields>;
+  stddev_pop: Maybe<Quality_Levels_Stddev_Pop_Fields>;
+  stddev_samp: Maybe<Quality_Levels_Stddev_Samp_Fields>;
+  sum: Maybe<Quality_Levels_Sum_Fields>;
+  var_pop: Maybe<Quality_Levels_Var_Pop_Fields>;
+  var_samp: Maybe<Quality_Levels_Var_Samp_Fields>;
+  variance: Maybe<Quality_Levels_Variance_Fields>;
+};
+
+
+/** aggregate fields of "quality_levels" */
+export type Quality_Levels_Aggregate_FieldsCountArgs = {
+  columns?: InputMaybe<Array<Quality_Levels_Select_Column>>;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+/** aggregate avg on columns */
+export type Quality_Levels_Avg_Fields = {
+  __typename?: 'quality_levels_avg_fields';
+  /** Multiplier applied to base credit cost. 1.0 = base cost, 1.5 = 50% more credits, 3.0 = triple credits. */
+  credit_multiplier: Maybe<Scalars['Float']['output']>;
+  /** Order for display in UI dropdowns and lists. Lower numbers appear first. */
+  display_order: Maybe<Scalars['Float']['output']>;
+};
+
+/** Boolean expression to filter rows from the table "quality_levels". All fields are combined with a logical 'AND'. */
+export type Quality_Levels_Bool_Exp = {
+  _and?: InputMaybe<Array<Quality_Levels_Bool_Exp>>;
+  _not?: InputMaybe<Quality_Levels_Bool_Exp>;
+  _or?: InputMaybe<Array<Quality_Levels_Bool_Exp>>;
+  created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  credit_multiplier?: InputMaybe<Numeric_Comparison_Exp>;
+  credit_reservations?: InputMaybe<Credit_Reservations_Bool_Exp>;
+  credit_reservations_aggregate?: InputMaybe<Credit_Reservations_Aggregate_Bool_Exp>;
+  credit_transactions?: InputMaybe<Credit_Transactions_Bool_Exp>;
+  credit_transactions_aggregate?: InputMaybe<Credit_Transactions_Aggregate_Bool_Exp>;
+  description?: InputMaybe<String_Comparison_Exp>;
+  display_order?: InputMaybe<Int_Comparison_Exp>;
+  id?: InputMaybe<String_Comparison_Exp>;
+  is_active?: InputMaybe<Boolean_Comparison_Exp>;
+  name?: InputMaybe<String_Comparison_Exp>;
+  plan_ai_capability_quality_levels?: InputMaybe<Plan_Ai_Capability_Quality_Levels_Bool_Exp>;
+  plan_ai_capability_quality_levels_aggregate?: InputMaybe<Plan_Ai_Capability_Quality_Levels_Aggregate_Bool_Exp>;
+  unique_name?: InputMaybe<String_Comparison_Exp>;
+};
+
+/** unique or primary key constraints on table "quality_levels" */
+export const Quality_Levels_Constraint = {
+  /** unique or primary key constraint on columns "id" */
+  QualityLevelsPkey: 'quality_levels_pkey',
+  /** unique or primary key constraint on columns "unique_name" */
+  QualityLevelsUniqueNameKey: 'quality_levels_unique_name_key'
+} as const;
+
+export type Quality_Levels_Constraint = typeof Quality_Levels_Constraint[keyof typeof Quality_Levels_Constraint];
+/** input type for incrementing numeric columns in table "quality_levels" */
+export type Quality_Levels_Inc_Input = {
+  /** Multiplier applied to base credit cost. 1.0 = base cost, 1.5 = 50% more credits, 3.0 = triple credits. */
+  credit_multiplier?: InputMaybe<Scalars['numeric']['input']>;
+  /** Order for display in UI dropdowns and lists. Lower numbers appear first. */
+  display_order?: InputMaybe<Scalars['Int']['input']>;
+};
+
+/** input type for inserting data into table "quality_levels" */
+export type Quality_Levels_Insert_Input = {
+  /** Timestamp when this quality level was first created. Set automatically, never modified. */
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Multiplier applied to base credit cost. 1.0 = base cost, 1.5 = 50% more credits, 3.0 = triple credits. */
+  credit_multiplier?: InputMaybe<Scalars['numeric']['input']>;
+  credit_reservations?: InputMaybe<Credit_Reservations_Arr_Rel_Insert_Input>;
+  credit_transactions?: InputMaybe<Credit_Transactions_Arr_Rel_Insert_Input>;
+  /** Optional description explaining the quality level characteristics. Example: Quick responses using efficient models. */
+  description?: InputMaybe<Scalars['String']['input']>;
+  /** Order for display in UI dropdowns and lists. Lower numbers appear first. */
+  display_order?: InputMaybe<Scalars['Int']['input']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id?: InputMaybe<Scalars['String']['input']>;
+  /** Whether this quality level is currently available for use. Allows soft-disabling without deletion. */
+  is_active?: InputMaybe<Scalars['Boolean']['input']>;
+  /** Human-readable display name shown in UI. Examples: Fast, Enhanced, Premium. */
+  name?: InputMaybe<Scalars['String']['input']>;
+  plan_ai_capability_quality_levels?: InputMaybe<Plan_Ai_Capability_Quality_Levels_Arr_Rel_Insert_Input>;
+  /** Machine-readable unique identifier for the quality level. Used in code and API calls. Examples: fast, enhanced, premium. */
+  unique_name?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** aggregate max on columns */
+export type Quality_Levels_Max_Fields = {
+  __typename?: 'quality_levels_max_fields';
+  /** Timestamp when this quality level was first created. Set automatically, never modified. */
+  created_at: Maybe<Scalars['timestamptz']['output']>;
+  /** Multiplier applied to base credit cost. 1.0 = base cost, 1.5 = 50% more credits, 3.0 = triple credits. */
+  credit_multiplier: Maybe<Scalars['numeric']['output']>;
+  /** Optional description explaining the quality level characteristics. Example: Quick responses using efficient models. */
+  description: Maybe<Scalars['String']['output']>;
+  /** Order for display in UI dropdowns and lists. Lower numbers appear first. */
+  display_order: Maybe<Scalars['Int']['output']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id: Maybe<Scalars['String']['output']>;
+  /** Human-readable display name shown in UI. Examples: Fast, Enhanced, Premium. */
+  name: Maybe<Scalars['String']['output']>;
+  /** Machine-readable unique identifier for the quality level. Used in code and API calls. Examples: fast, enhanced, premium. */
+  unique_name: Maybe<Scalars['String']['output']>;
+};
+
+/** aggregate min on columns */
+export type Quality_Levels_Min_Fields = {
+  __typename?: 'quality_levels_min_fields';
+  /** Timestamp when this quality level was first created. Set automatically, never modified. */
+  created_at: Maybe<Scalars['timestamptz']['output']>;
+  /** Multiplier applied to base credit cost. 1.0 = base cost, 1.5 = 50% more credits, 3.0 = triple credits. */
+  credit_multiplier: Maybe<Scalars['numeric']['output']>;
+  /** Optional description explaining the quality level characteristics. Example: Quick responses using efficient models. */
+  description: Maybe<Scalars['String']['output']>;
+  /** Order for display in UI dropdowns and lists. Lower numbers appear first. */
+  display_order: Maybe<Scalars['Int']['output']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id: Maybe<Scalars['String']['output']>;
+  /** Human-readable display name shown in UI. Examples: Fast, Enhanced, Premium. */
+  name: Maybe<Scalars['String']['output']>;
+  /** Machine-readable unique identifier for the quality level. Used in code and API calls. Examples: fast, enhanced, premium. */
+  unique_name: Maybe<Scalars['String']['output']>;
+};
+
+/** response of any mutation on the table "quality_levels" */
+export type Quality_Levels_Mutation_Response = {
+  __typename?: 'quality_levels_mutation_response';
+  /** number of rows affected by the mutation */
+  affected_rows: Scalars['Int']['output'];
+  /** data from the rows affected by the mutation */
+  returning: Array<Quality_Levels>;
+};
+
+/** input type for inserting object relation for remote table "quality_levels" */
+export type Quality_Levels_Obj_Rel_Insert_Input = {
+  data: Quality_Levels_Insert_Input;
+  /** upsert condition */
+  on_conflict?: InputMaybe<Quality_Levels_On_Conflict>;
+};
+
+/** on_conflict condition type for table "quality_levels" */
+export type Quality_Levels_On_Conflict = {
+  constraint: Quality_Levels_Constraint;
+  update_columns?: Array<Quality_Levels_Update_Column>;
+  where?: InputMaybe<Quality_Levels_Bool_Exp>;
+};
+
+/** Ordering options when selecting data from "quality_levels". */
+export type Quality_Levels_Order_By = {
+  created_at?: InputMaybe<Order_By>;
+  credit_multiplier?: InputMaybe<Order_By>;
+  credit_reservations_aggregate?: InputMaybe<Credit_Reservations_Aggregate_Order_By>;
+  credit_transactions_aggregate?: InputMaybe<Credit_Transactions_Aggregate_Order_By>;
+  description?: InputMaybe<Order_By>;
+  display_order?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
+  is_active?: InputMaybe<Order_By>;
+  name?: InputMaybe<Order_By>;
+  plan_ai_capability_quality_levels_aggregate?: InputMaybe<Plan_Ai_Capability_Quality_Levels_Aggregate_Order_By>;
+  unique_name?: InputMaybe<Order_By>;
+};
+
+/** primary key columns input for table: quality_levels */
+export type Quality_Levels_Pk_Columns_Input = {
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id: Scalars['String']['input'];
+};
+
+/** select columns of table "quality_levels" */
+export const Quality_Levels_Select_Column = {
+  /** column name */
+  CreatedAt: 'created_at',
+  /** column name */
+  CreditMultiplier: 'credit_multiplier',
+  /** column name */
+  Description: 'description',
+  /** column name */
+  DisplayOrder: 'display_order',
+  /** column name */
+  Id: 'id',
+  /** column name */
+  IsActive: 'is_active',
+  /** column name */
+  Name: 'name',
+  /** column name */
+  UniqueName: 'unique_name'
+} as const;
+
+export type Quality_Levels_Select_Column = typeof Quality_Levels_Select_Column[keyof typeof Quality_Levels_Select_Column];
+/** input type for updating data in table "quality_levels" */
+export type Quality_Levels_Set_Input = {
+  /** Timestamp when this quality level was first created. Set automatically, never modified. */
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Multiplier applied to base credit cost. 1.0 = base cost, 1.5 = 50% more credits, 3.0 = triple credits. */
+  credit_multiplier?: InputMaybe<Scalars['numeric']['input']>;
+  /** Optional description explaining the quality level characteristics. Example: Quick responses using efficient models. */
+  description?: InputMaybe<Scalars['String']['input']>;
+  /** Order for display in UI dropdowns and lists. Lower numbers appear first. */
+  display_order?: InputMaybe<Scalars['Int']['input']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id?: InputMaybe<Scalars['String']['input']>;
+  /** Whether this quality level is currently available for use. Allows soft-disabling without deletion. */
+  is_active?: InputMaybe<Scalars['Boolean']['input']>;
+  /** Human-readable display name shown in UI. Examples: Fast, Enhanced, Premium. */
+  name?: InputMaybe<Scalars['String']['input']>;
+  /** Machine-readable unique identifier for the quality level. Used in code and API calls. Examples: fast, enhanced, premium. */
+  unique_name?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** aggregate stddev on columns */
+export type Quality_Levels_Stddev_Fields = {
+  __typename?: 'quality_levels_stddev_fields';
+  /** Multiplier applied to base credit cost. 1.0 = base cost, 1.5 = 50% more credits, 3.0 = triple credits. */
+  credit_multiplier: Maybe<Scalars['Float']['output']>;
+  /** Order for display in UI dropdowns and lists. Lower numbers appear first. */
+  display_order: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate stddev_pop on columns */
+export type Quality_Levels_Stddev_Pop_Fields = {
+  __typename?: 'quality_levels_stddev_pop_fields';
+  /** Multiplier applied to base credit cost. 1.0 = base cost, 1.5 = 50% more credits, 3.0 = triple credits. */
+  credit_multiplier: Maybe<Scalars['Float']['output']>;
+  /** Order for display in UI dropdowns and lists. Lower numbers appear first. */
+  display_order: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate stddev_samp on columns */
+export type Quality_Levels_Stddev_Samp_Fields = {
+  __typename?: 'quality_levels_stddev_samp_fields';
+  /** Multiplier applied to base credit cost. 1.0 = base cost, 1.5 = 50% more credits, 3.0 = triple credits. */
+  credit_multiplier: Maybe<Scalars['Float']['output']>;
+  /** Order for display in UI dropdowns and lists. Lower numbers appear first. */
+  display_order: Maybe<Scalars['Float']['output']>;
+};
+
+/** Streaming cursor of the table "quality_levels" */
+export type Quality_Levels_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Quality_Levels_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type Quality_Levels_Stream_Cursor_Value_Input = {
+  /** Timestamp when this quality level was first created. Set automatically, never modified. */
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Multiplier applied to base credit cost. 1.0 = base cost, 1.5 = 50% more credits, 3.0 = triple credits. */
+  credit_multiplier?: InputMaybe<Scalars['numeric']['input']>;
+  /** Optional description explaining the quality level characteristics. Example: Quick responses using efficient models. */
+  description?: InputMaybe<Scalars['String']['input']>;
+  /** Order for display in UI dropdowns and lists. Lower numbers appear first. */
+  display_order?: InputMaybe<Scalars['Int']['input']>;
+  /** Primary key using NanoID 12-character format for URL-safe, collision-resistant identification. */
+  id?: InputMaybe<Scalars['String']['input']>;
+  /** Whether this quality level is currently available for use. Allows soft-disabling without deletion. */
+  is_active?: InputMaybe<Scalars['Boolean']['input']>;
+  /** Human-readable display name shown in UI. Examples: Fast, Enhanced, Premium. */
+  name?: InputMaybe<Scalars['String']['input']>;
+  /** Machine-readable unique identifier for the quality level. Used in code and API calls. Examples: fast, enhanced, premium. */
+  unique_name?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** aggregate sum on columns */
+export type Quality_Levels_Sum_Fields = {
+  __typename?: 'quality_levels_sum_fields';
+  /** Multiplier applied to base credit cost. 1.0 = base cost, 1.5 = 50% more credits, 3.0 = triple credits. */
+  credit_multiplier: Maybe<Scalars['numeric']['output']>;
+  /** Order for display in UI dropdowns and lists. Lower numbers appear first. */
+  display_order: Maybe<Scalars['Int']['output']>;
+};
+
+/** update columns of table "quality_levels" */
+export const Quality_Levels_Update_Column = {
+  /** column name */
+  CreatedAt: 'created_at',
+  /** column name */
+  CreditMultiplier: 'credit_multiplier',
+  /** column name */
+  Description: 'description',
+  /** column name */
+  DisplayOrder: 'display_order',
+  /** column name */
+  Id: 'id',
+  /** column name */
+  IsActive: 'is_active',
+  /** column name */
+  Name: 'name',
+  /** column name */
+  UniqueName: 'unique_name'
+} as const;
+
+export type Quality_Levels_Update_Column = typeof Quality_Levels_Update_Column[keyof typeof Quality_Levels_Update_Column];
+export type Quality_Levels_Updates = {
+  /** increments the numeric columns with given value of the filtered values */
+  _inc?: InputMaybe<Quality_Levels_Inc_Input>;
+  /** sets the columns of the filtered rows to the given values */
+  _set?: InputMaybe<Quality_Levels_Set_Input>;
+  /** filter the rows which have to be updated */
+  where: Quality_Levels_Bool_Exp;
+};
+
+/** aggregate var_pop on columns */
+export type Quality_Levels_Var_Pop_Fields = {
+  __typename?: 'quality_levels_var_pop_fields';
+  /** Multiplier applied to base credit cost. 1.0 = base cost, 1.5 = 50% more credits, 3.0 = triple credits. */
+  credit_multiplier: Maybe<Scalars['Float']['output']>;
+  /** Order for display in UI dropdowns and lists. Lower numbers appear first. */
+  display_order: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate var_samp on columns */
+export type Quality_Levels_Var_Samp_Fields = {
+  __typename?: 'quality_levels_var_samp_fields';
+  /** Multiplier applied to base credit cost. 1.0 = base cost, 1.5 = 50% more credits, 3.0 = triple credits. */
+  credit_multiplier: Maybe<Scalars['Float']['output']>;
+  /** Order for display in UI dropdowns and lists. Lower numbers appear first. */
+  display_order: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate variance on columns */
+export type Quality_Levels_Variance_Fields = {
+  __typename?: 'quality_levels_variance_fields';
+  /** Multiplier applied to base credit cost. 1.0 = base cost, 1.5 = 50% more credits, 3.0 = triple credits. */
+  credit_multiplier: Maybe<Scalars['Float']['output']>;
+  /** Order for display in UI dropdowns and lists. Lower numbers appear first. */
+  display_order: Maybe<Scalars['Float']['output']>;
 };
 
 export type Query_Root = {
   __typename?: 'query_root';
+  /** fetch data from the table: "ai_capabilities" */
+  ai_capabilities: Array<Ai_Capabilities>;
+  /** fetch aggregated fields from the table: "ai_capabilities" */
+  ai_capabilities_aggregate: Ai_Capabilities_Aggregate;
+  /** fetch data from the table: "ai_capabilities" using primary key columns */
+  ai_capabilities_by_pk: Maybe<Ai_Capabilities>;
   /** An array relationship */
   contacts: Array<Contacts>;
   /** An aggregate relationship */
   contacts_aggregate: Contacts_Aggregate;
   /** fetch data from the table: "contacts" using primary key columns */
   contacts_by_pk: Maybe<Contacts>;
+  /** An array relationship */
+  credit_reservations: Array<Credit_Reservations>;
+  /** An aggregate relationship */
+  credit_reservations_aggregate: Credit_Reservations_Aggregate;
+  /** fetch data from the table: "credit_reservations" using primary key columns */
+  credit_reservations_by_pk: Maybe<Credit_Reservations>;
+  /** fetch data from the table: "credit_topup_packages" */
+  credit_topup_packages: Array<Credit_Topup_Packages>;
+  /** fetch aggregated fields from the table: "credit_topup_packages" */
+  credit_topup_packages_aggregate: Credit_Topup_Packages_Aggregate;
+  /** fetch data from the table: "credit_topup_packages" using primary key columns */
+  credit_topup_packages_by_pk: Maybe<Credit_Topup_Packages>;
+  /** An array relationship */
+  credit_transactions: Array<Credit_Transactions>;
+  /** An aggregate relationship */
+  credit_transactions_aggregate: Credit_Transactions_Aggregate;
+  /** fetch data from the table: "credit_transactions" using primary key columns */
+  credit_transactions_by_pk: Maybe<Credit_Transactions>;
   /** An array relationship */
   flows: Array<Flows>;
   /** An aggregate relationship */
@@ -13221,6 +18989,12 @@ export type Query_Root = {
   forms_aggregate: Forms_Aggregate;
   /** fetch data from the table: "forms" using primary key columns */
   forms_by_pk: Maybe<Forms>;
+  /** fetch data from the table: "llm_models" */
+  llm_models: Array<Llm_Models>;
+  /** fetch aggregated fields from the table: "llm_models" */
+  llm_models_aggregate: Llm_Models_Aggregate;
+  /** fetch data from the table: "llm_models" using primary key columns */
+  llm_models_by_pk: Maybe<Llm_Models>;
   /** An array relationship */
   media: Array<Media>;
   /** An aggregate relationship */
@@ -13233,6 +19007,12 @@ export type Query_Root = {
   media_entity_types_aggregate: Media_Entity_Types_Aggregate;
   /** fetch data from the table: "media_entity_types" using primary key columns */
   media_entity_types_by_pk: Maybe<Media_Entity_Types>;
+  /** fetch data from the table: "organization_credit_balances" */
+  organization_credit_balances: Array<Organization_Credit_Balances>;
+  /** fetch aggregated fields from the table: "organization_credit_balances" */
+  organization_credit_balances_aggregate: Organization_Credit_Balances_Aggregate;
+  /** fetch data from the table: "organization_credit_balances" using primary key columns */
+  organization_credit_balances_by_pk: Maybe<Organization_Credit_Balances>;
   /** An array relationship */
   organization_plans: Array<Organization_Plans>;
   /** An aggregate relationship */
@@ -13251,12 +19031,30 @@ export type Query_Root = {
   organizations_aggregate: Organizations_Aggregate;
   /** fetch data from the table: "organizations" using primary key columns */
   organizations_by_pk: Maybe<Organizations>;
+  /** An array relationship */
+  plan_ai_capabilities: Array<Plan_Ai_Capabilities>;
+  /** An aggregate relationship */
+  plan_ai_capabilities_aggregate: Plan_Ai_Capabilities_Aggregate;
+  /** fetch data from the table: "plan_ai_capabilities" using primary key columns */
+  plan_ai_capabilities_by_pk: Maybe<Plan_Ai_Capabilities>;
+  /** An array relationship */
+  plan_ai_capability_quality_levels: Array<Plan_Ai_Capability_Quality_Levels>;
+  /** An aggregate relationship */
+  plan_ai_capability_quality_levels_aggregate: Plan_Ai_Capability_Quality_Levels_Aggregate;
+  /** fetch data from the table: "plan_ai_capability_quality_levels" using primary key columns */
+  plan_ai_capability_quality_levels_by_pk: Maybe<Plan_Ai_Capability_Quality_Levels>;
   /** fetch data from the table: "plan_prices" */
   plan_prices: Array<Plan_Prices>;
   /** fetch aggregated fields from the table: "plan_prices" */
   plan_prices_aggregate: Plan_Prices_Aggregate;
   /** fetch data from the table: "plan_prices" using primary key columns */
   plan_prices_by_pk: Maybe<Plan_Prices>;
+  /** An array relationship */
+  plan_quality_level_models: Array<Plan_Quality_Level_Models>;
+  /** An aggregate relationship */
+  plan_quality_level_models_aggregate: Plan_Quality_Level_Models_Aggregate;
+  /** fetch data from the table: "plan_quality_level_models" using primary key columns */
+  plan_quality_level_models_by_pk: Maybe<Plan_Quality_Level_Models>;
   /** fetch data from the table: "plan_question_types" */
   plan_question_types: Array<Plan_Question_Types>;
   /** fetch aggregated fields from the table: "plan_question_types" */
@@ -13269,6 +19067,12 @@ export type Query_Root = {
   plans_aggregate: Plans_Aggregate;
   /** fetch data from the table: "plans" using primary key columns */
   plans_by_pk: Maybe<Plans>;
+  /** fetch data from the table: "quality_levels" */
+  quality_levels: Array<Quality_Levels>;
+  /** fetch aggregated fields from the table: "quality_levels" */
+  quality_levels_aggregate: Quality_Levels_Aggregate;
+  /** fetch data from the table: "quality_levels" using primary key columns */
+  quality_levels_by_pk: Maybe<Quality_Levels>;
   /** fetch data from the table: "question_options" */
   question_options: Array<Question_Options>;
   /** fetch aggregated fields from the table: "question_options" */
@@ -13320,6 +19124,29 @@ export type Query_Root = {
 };
 
 
+export type Query_RootAi_CapabilitiesArgs = {
+  distinct_on?: InputMaybe<Array<Ai_Capabilities_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Ai_Capabilities_Order_By>>;
+  where?: InputMaybe<Ai_Capabilities_Bool_Exp>;
+};
+
+
+export type Query_RootAi_Capabilities_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Ai_Capabilities_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Ai_Capabilities_Order_By>>;
+  where?: InputMaybe<Ai_Capabilities_Bool_Exp>;
+};
+
+
+export type Query_RootAi_Capabilities_By_PkArgs = {
+  id: Scalars['String']['input'];
+};
+
+
 export type Query_RootContactsArgs = {
   distinct_on?: InputMaybe<Array<Contacts_Select_Column>>;
   limit?: InputMaybe<Scalars['Int']['input']>;
@@ -13339,6 +19166,75 @@ export type Query_RootContacts_AggregateArgs = {
 
 
 export type Query_RootContacts_By_PkArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+export type Query_RootCredit_ReservationsArgs = {
+  distinct_on?: InputMaybe<Array<Credit_Reservations_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Credit_Reservations_Order_By>>;
+  where?: InputMaybe<Credit_Reservations_Bool_Exp>;
+};
+
+
+export type Query_RootCredit_Reservations_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Credit_Reservations_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Credit_Reservations_Order_By>>;
+  where?: InputMaybe<Credit_Reservations_Bool_Exp>;
+};
+
+
+export type Query_RootCredit_Reservations_By_PkArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+export type Query_RootCredit_Topup_PackagesArgs = {
+  distinct_on?: InputMaybe<Array<Credit_Topup_Packages_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Credit_Topup_Packages_Order_By>>;
+  where?: InputMaybe<Credit_Topup_Packages_Bool_Exp>;
+};
+
+
+export type Query_RootCredit_Topup_Packages_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Credit_Topup_Packages_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Credit_Topup_Packages_Order_By>>;
+  where?: InputMaybe<Credit_Topup_Packages_Bool_Exp>;
+};
+
+
+export type Query_RootCredit_Topup_Packages_By_PkArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+export type Query_RootCredit_TransactionsArgs = {
+  distinct_on?: InputMaybe<Array<Credit_Transactions_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Credit_Transactions_Order_By>>;
+  where?: InputMaybe<Credit_Transactions_Bool_Exp>;
+};
+
+
+export type Query_RootCredit_Transactions_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Credit_Transactions_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Credit_Transactions_Order_By>>;
+  where?: InputMaybe<Credit_Transactions_Bool_Exp>;
+};
+
+
+export type Query_RootCredit_Transactions_By_PkArgs = {
   id: Scalars['String']['input'];
 };
 
@@ -13504,6 +19400,29 @@ export type Query_RootForms_By_PkArgs = {
 };
 
 
+export type Query_RootLlm_ModelsArgs = {
+  distinct_on?: InputMaybe<Array<Llm_Models_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Llm_Models_Order_By>>;
+  where?: InputMaybe<Llm_Models_Bool_Exp>;
+};
+
+
+export type Query_RootLlm_Models_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Llm_Models_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Llm_Models_Order_By>>;
+  where?: InputMaybe<Llm_Models_Bool_Exp>;
+};
+
+
+export type Query_RootLlm_Models_By_PkArgs = {
+  id: Scalars['String']['input'];
+};
+
+
 export type Query_RootMediaArgs = {
   distinct_on?: InputMaybe<Array<Media_Select_Column>>;
   limit?: InputMaybe<Scalars['Int']['input']>;
@@ -13546,6 +19465,29 @@ export type Query_RootMedia_Entity_Types_AggregateArgs = {
 
 
 export type Query_RootMedia_Entity_Types_By_PkArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+export type Query_RootOrganization_Credit_BalancesArgs = {
+  distinct_on?: InputMaybe<Array<Organization_Credit_Balances_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Organization_Credit_Balances_Order_By>>;
+  where?: InputMaybe<Organization_Credit_Balances_Bool_Exp>;
+};
+
+
+export type Query_RootOrganization_Credit_Balances_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Organization_Credit_Balances_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Organization_Credit_Balances_Order_By>>;
+  where?: InputMaybe<Organization_Credit_Balances_Bool_Exp>;
+};
+
+
+export type Query_RootOrganization_Credit_Balances_By_PkArgs = {
   id: Scalars['String']['input'];
 };
 
@@ -13619,6 +19561,52 @@ export type Query_RootOrganizations_By_PkArgs = {
 };
 
 
+export type Query_RootPlan_Ai_CapabilitiesArgs = {
+  distinct_on?: InputMaybe<Array<Plan_Ai_Capabilities_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Plan_Ai_Capabilities_Order_By>>;
+  where?: InputMaybe<Plan_Ai_Capabilities_Bool_Exp>;
+};
+
+
+export type Query_RootPlan_Ai_Capabilities_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Plan_Ai_Capabilities_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Plan_Ai_Capabilities_Order_By>>;
+  where?: InputMaybe<Plan_Ai_Capabilities_Bool_Exp>;
+};
+
+
+export type Query_RootPlan_Ai_Capabilities_By_PkArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+export type Query_RootPlan_Ai_Capability_Quality_LevelsArgs = {
+  distinct_on?: InputMaybe<Array<Plan_Ai_Capability_Quality_Levels_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Plan_Ai_Capability_Quality_Levels_Order_By>>;
+  where?: InputMaybe<Plan_Ai_Capability_Quality_Levels_Bool_Exp>;
+};
+
+
+export type Query_RootPlan_Ai_Capability_Quality_Levels_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Plan_Ai_Capability_Quality_Levels_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Plan_Ai_Capability_Quality_Levels_Order_By>>;
+  where?: InputMaybe<Plan_Ai_Capability_Quality_Levels_Bool_Exp>;
+};
+
+
+export type Query_RootPlan_Ai_Capability_Quality_Levels_By_PkArgs = {
+  id: Scalars['String']['input'];
+};
+
+
 export type Query_RootPlan_PricesArgs = {
   distinct_on?: InputMaybe<Array<Plan_Prices_Select_Column>>;
   limit?: InputMaybe<Scalars['Int']['input']>;
@@ -13638,6 +19626,29 @@ export type Query_RootPlan_Prices_AggregateArgs = {
 
 
 export type Query_RootPlan_Prices_By_PkArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+export type Query_RootPlan_Quality_Level_ModelsArgs = {
+  distinct_on?: InputMaybe<Array<Plan_Quality_Level_Models_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Plan_Quality_Level_Models_Order_By>>;
+  where?: InputMaybe<Plan_Quality_Level_Models_Bool_Exp>;
+};
+
+
+export type Query_RootPlan_Quality_Level_Models_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Plan_Quality_Level_Models_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Plan_Quality_Level_Models_Order_By>>;
+  where?: InputMaybe<Plan_Quality_Level_Models_Bool_Exp>;
+};
+
+
+export type Query_RootPlan_Quality_Level_Models_By_PkArgs = {
   id: Scalars['String']['input'];
 };
 
@@ -13684,6 +19695,29 @@ export type Query_RootPlans_AggregateArgs = {
 
 
 export type Query_RootPlans_By_PkArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+export type Query_RootQuality_LevelsArgs = {
+  distinct_on?: InputMaybe<Array<Quality_Levels_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Quality_Levels_Order_By>>;
+  where?: InputMaybe<Quality_Levels_Bool_Exp>;
+};
+
+
+export type Query_RootQuality_Levels_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Quality_Levels_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Quality_Levels_Order_By>>;
+  where?: InputMaybe<Quality_Levels_Bool_Exp>;
+};
+
+
+export type Query_RootQuality_Levels_By_PkArgs = {
   id: Scalars['String']['input'];
 };
 
@@ -15418,6 +21452,14 @@ export type Smallint_Comparison_Exp = {
 
 export type Subscription_Root = {
   __typename?: 'subscription_root';
+  /** fetch data from the table: "ai_capabilities" */
+  ai_capabilities: Array<Ai_Capabilities>;
+  /** fetch aggregated fields from the table: "ai_capabilities" */
+  ai_capabilities_aggregate: Ai_Capabilities_Aggregate;
+  /** fetch data from the table: "ai_capabilities" using primary key columns */
+  ai_capabilities_by_pk: Maybe<Ai_Capabilities>;
+  /** fetch data from the table in a streaming manner: "ai_capabilities" */
+  ai_capabilities_stream: Array<Ai_Capabilities>;
   /** An array relationship */
   contacts: Array<Contacts>;
   /** An aggregate relationship */
@@ -15426,6 +21468,30 @@ export type Subscription_Root = {
   contacts_by_pk: Maybe<Contacts>;
   /** fetch data from the table in a streaming manner: "contacts" */
   contacts_stream: Array<Contacts>;
+  /** An array relationship */
+  credit_reservations: Array<Credit_Reservations>;
+  /** An aggregate relationship */
+  credit_reservations_aggregate: Credit_Reservations_Aggregate;
+  /** fetch data from the table: "credit_reservations" using primary key columns */
+  credit_reservations_by_pk: Maybe<Credit_Reservations>;
+  /** fetch data from the table in a streaming manner: "credit_reservations" */
+  credit_reservations_stream: Array<Credit_Reservations>;
+  /** fetch data from the table: "credit_topup_packages" */
+  credit_topup_packages: Array<Credit_Topup_Packages>;
+  /** fetch aggregated fields from the table: "credit_topup_packages" */
+  credit_topup_packages_aggregate: Credit_Topup_Packages_Aggregate;
+  /** fetch data from the table: "credit_topup_packages" using primary key columns */
+  credit_topup_packages_by_pk: Maybe<Credit_Topup_Packages>;
+  /** fetch data from the table in a streaming manner: "credit_topup_packages" */
+  credit_topup_packages_stream: Array<Credit_Topup_Packages>;
+  /** An array relationship */
+  credit_transactions: Array<Credit_Transactions>;
+  /** An aggregate relationship */
+  credit_transactions_aggregate: Credit_Transactions_Aggregate;
+  /** fetch data from the table: "credit_transactions" using primary key columns */
+  credit_transactions_by_pk: Maybe<Credit_Transactions>;
+  /** fetch data from the table in a streaming manner: "credit_transactions" */
+  credit_transactions_stream: Array<Credit_Transactions>;
   /** An array relationship */
   flows: Array<Flows>;
   /** An aggregate relationship */
@@ -15482,6 +21548,14 @@ export type Subscription_Root = {
   forms_by_pk: Maybe<Forms>;
   /** fetch data from the table in a streaming manner: "forms" */
   forms_stream: Array<Forms>;
+  /** fetch data from the table: "llm_models" */
+  llm_models: Array<Llm_Models>;
+  /** fetch aggregated fields from the table: "llm_models" */
+  llm_models_aggregate: Llm_Models_Aggregate;
+  /** fetch data from the table: "llm_models" using primary key columns */
+  llm_models_by_pk: Maybe<Llm_Models>;
+  /** fetch data from the table in a streaming manner: "llm_models" */
+  llm_models_stream: Array<Llm_Models>;
   /** An array relationship */
   media: Array<Media>;
   /** An aggregate relationship */
@@ -15498,6 +21572,14 @@ export type Subscription_Root = {
   media_entity_types_stream: Array<Media_Entity_Types>;
   /** fetch data from the table in a streaming manner: "media" */
   media_stream: Array<Media>;
+  /** fetch data from the table: "organization_credit_balances" */
+  organization_credit_balances: Array<Organization_Credit_Balances>;
+  /** fetch aggregated fields from the table: "organization_credit_balances" */
+  organization_credit_balances_aggregate: Organization_Credit_Balances_Aggregate;
+  /** fetch data from the table: "organization_credit_balances" using primary key columns */
+  organization_credit_balances_by_pk: Maybe<Organization_Credit_Balances>;
+  /** fetch data from the table in a streaming manner: "organization_credit_balances" */
+  organization_credit_balances_stream: Array<Organization_Credit_Balances>;
   /** An array relationship */
   organization_plans: Array<Organization_Plans>;
   /** An aggregate relationship */
@@ -15522,6 +21604,22 @@ export type Subscription_Root = {
   organizations_by_pk: Maybe<Organizations>;
   /** fetch data from the table in a streaming manner: "organizations" */
   organizations_stream: Array<Organizations>;
+  /** An array relationship */
+  plan_ai_capabilities: Array<Plan_Ai_Capabilities>;
+  /** An aggregate relationship */
+  plan_ai_capabilities_aggregate: Plan_Ai_Capabilities_Aggregate;
+  /** fetch data from the table: "plan_ai_capabilities" using primary key columns */
+  plan_ai_capabilities_by_pk: Maybe<Plan_Ai_Capabilities>;
+  /** fetch data from the table in a streaming manner: "plan_ai_capabilities" */
+  plan_ai_capabilities_stream: Array<Plan_Ai_Capabilities>;
+  /** An array relationship */
+  plan_ai_capability_quality_levels: Array<Plan_Ai_Capability_Quality_Levels>;
+  /** An aggregate relationship */
+  plan_ai_capability_quality_levels_aggregate: Plan_Ai_Capability_Quality_Levels_Aggregate;
+  /** fetch data from the table: "plan_ai_capability_quality_levels" using primary key columns */
+  plan_ai_capability_quality_levels_by_pk: Maybe<Plan_Ai_Capability_Quality_Levels>;
+  /** fetch data from the table in a streaming manner: "plan_ai_capability_quality_levels" */
+  plan_ai_capability_quality_levels_stream: Array<Plan_Ai_Capability_Quality_Levels>;
   /** fetch data from the table: "plan_prices" */
   plan_prices: Array<Plan_Prices>;
   /** fetch aggregated fields from the table: "plan_prices" */
@@ -15530,6 +21628,14 @@ export type Subscription_Root = {
   plan_prices_by_pk: Maybe<Plan_Prices>;
   /** fetch data from the table in a streaming manner: "plan_prices" */
   plan_prices_stream: Array<Plan_Prices>;
+  /** An array relationship */
+  plan_quality_level_models: Array<Plan_Quality_Level_Models>;
+  /** An aggregate relationship */
+  plan_quality_level_models_aggregate: Plan_Quality_Level_Models_Aggregate;
+  /** fetch data from the table: "plan_quality_level_models" using primary key columns */
+  plan_quality_level_models_by_pk: Maybe<Plan_Quality_Level_Models>;
+  /** fetch data from the table in a streaming manner: "plan_quality_level_models" */
+  plan_quality_level_models_stream: Array<Plan_Quality_Level_Models>;
   /** fetch data from the table: "plan_question_types" */
   plan_question_types: Array<Plan_Question_Types>;
   /** fetch aggregated fields from the table: "plan_question_types" */
@@ -15546,6 +21652,14 @@ export type Subscription_Root = {
   plans_by_pk: Maybe<Plans>;
   /** fetch data from the table in a streaming manner: "plans" */
   plans_stream: Array<Plans>;
+  /** fetch data from the table: "quality_levels" */
+  quality_levels: Array<Quality_Levels>;
+  /** fetch aggregated fields from the table: "quality_levels" */
+  quality_levels_aggregate: Quality_Levels_Aggregate;
+  /** fetch data from the table: "quality_levels" using primary key columns */
+  quality_levels_by_pk: Maybe<Quality_Levels>;
+  /** fetch data from the table in a streaming manner: "quality_levels" */
+  quality_levels_stream: Array<Quality_Levels>;
   /** fetch data from the table: "question_options" */
   question_options: Array<Question_Options>;
   /** fetch aggregated fields from the table: "question_options" */
@@ -15613,6 +21727,36 @@ export type Subscription_Root = {
 };
 
 
+export type Subscription_RootAi_CapabilitiesArgs = {
+  distinct_on?: InputMaybe<Array<Ai_Capabilities_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Ai_Capabilities_Order_By>>;
+  where?: InputMaybe<Ai_Capabilities_Bool_Exp>;
+};
+
+
+export type Subscription_RootAi_Capabilities_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Ai_Capabilities_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Ai_Capabilities_Order_By>>;
+  where?: InputMaybe<Ai_Capabilities_Bool_Exp>;
+};
+
+
+export type Subscription_RootAi_Capabilities_By_PkArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+export type Subscription_RootAi_Capabilities_StreamArgs = {
+  batch_size: Scalars['Int']['input'];
+  cursor: Array<InputMaybe<Ai_Capabilities_Stream_Cursor_Input>>;
+  where?: InputMaybe<Ai_Capabilities_Bool_Exp>;
+};
+
+
 export type Subscription_RootContactsArgs = {
   distinct_on?: InputMaybe<Array<Contacts_Select_Column>>;
   limit?: InputMaybe<Scalars['Int']['input']>;
@@ -15640,6 +21784,96 @@ export type Subscription_RootContacts_StreamArgs = {
   batch_size: Scalars['Int']['input'];
   cursor: Array<InputMaybe<Contacts_Stream_Cursor_Input>>;
   where?: InputMaybe<Contacts_Bool_Exp>;
+};
+
+
+export type Subscription_RootCredit_ReservationsArgs = {
+  distinct_on?: InputMaybe<Array<Credit_Reservations_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Credit_Reservations_Order_By>>;
+  where?: InputMaybe<Credit_Reservations_Bool_Exp>;
+};
+
+
+export type Subscription_RootCredit_Reservations_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Credit_Reservations_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Credit_Reservations_Order_By>>;
+  where?: InputMaybe<Credit_Reservations_Bool_Exp>;
+};
+
+
+export type Subscription_RootCredit_Reservations_By_PkArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+export type Subscription_RootCredit_Reservations_StreamArgs = {
+  batch_size: Scalars['Int']['input'];
+  cursor: Array<InputMaybe<Credit_Reservations_Stream_Cursor_Input>>;
+  where?: InputMaybe<Credit_Reservations_Bool_Exp>;
+};
+
+
+export type Subscription_RootCredit_Topup_PackagesArgs = {
+  distinct_on?: InputMaybe<Array<Credit_Topup_Packages_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Credit_Topup_Packages_Order_By>>;
+  where?: InputMaybe<Credit_Topup_Packages_Bool_Exp>;
+};
+
+
+export type Subscription_RootCredit_Topup_Packages_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Credit_Topup_Packages_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Credit_Topup_Packages_Order_By>>;
+  where?: InputMaybe<Credit_Topup_Packages_Bool_Exp>;
+};
+
+
+export type Subscription_RootCredit_Topup_Packages_By_PkArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+export type Subscription_RootCredit_Topup_Packages_StreamArgs = {
+  batch_size: Scalars['Int']['input'];
+  cursor: Array<InputMaybe<Credit_Topup_Packages_Stream_Cursor_Input>>;
+  where?: InputMaybe<Credit_Topup_Packages_Bool_Exp>;
+};
+
+
+export type Subscription_RootCredit_TransactionsArgs = {
+  distinct_on?: InputMaybe<Array<Credit_Transactions_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Credit_Transactions_Order_By>>;
+  where?: InputMaybe<Credit_Transactions_Bool_Exp>;
+};
+
+
+export type Subscription_RootCredit_Transactions_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Credit_Transactions_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Credit_Transactions_Order_By>>;
+  where?: InputMaybe<Credit_Transactions_Bool_Exp>;
+};
+
+
+export type Subscription_RootCredit_Transactions_By_PkArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+export type Subscription_RootCredit_Transactions_StreamArgs = {
+  batch_size: Scalars['Int']['input'];
+  cursor: Array<InputMaybe<Credit_Transactions_Stream_Cursor_Input>>;
+  where?: InputMaybe<Credit_Transactions_Bool_Exp>;
 };
 
 
@@ -15853,6 +22087,36 @@ export type Subscription_RootForms_StreamArgs = {
 };
 
 
+export type Subscription_RootLlm_ModelsArgs = {
+  distinct_on?: InputMaybe<Array<Llm_Models_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Llm_Models_Order_By>>;
+  where?: InputMaybe<Llm_Models_Bool_Exp>;
+};
+
+
+export type Subscription_RootLlm_Models_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Llm_Models_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Llm_Models_Order_By>>;
+  where?: InputMaybe<Llm_Models_Bool_Exp>;
+};
+
+
+export type Subscription_RootLlm_Models_By_PkArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+export type Subscription_RootLlm_Models_StreamArgs = {
+  batch_size: Scalars['Int']['input'];
+  cursor: Array<InputMaybe<Llm_Models_Stream_Cursor_Input>>;
+  where?: InputMaybe<Llm_Models_Bool_Exp>;
+};
+
+
 export type Subscription_RootMediaArgs = {
   distinct_on?: InputMaybe<Array<Media_Select_Column>>;
   limit?: InputMaybe<Scalars['Int']['input']>;
@@ -15910,6 +22174,36 @@ export type Subscription_RootMedia_StreamArgs = {
   batch_size: Scalars['Int']['input'];
   cursor: Array<InputMaybe<Media_Stream_Cursor_Input>>;
   where?: InputMaybe<Media_Bool_Exp>;
+};
+
+
+export type Subscription_RootOrganization_Credit_BalancesArgs = {
+  distinct_on?: InputMaybe<Array<Organization_Credit_Balances_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Organization_Credit_Balances_Order_By>>;
+  where?: InputMaybe<Organization_Credit_Balances_Bool_Exp>;
+};
+
+
+export type Subscription_RootOrganization_Credit_Balances_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Organization_Credit_Balances_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Organization_Credit_Balances_Order_By>>;
+  where?: InputMaybe<Organization_Credit_Balances_Bool_Exp>;
+};
+
+
+export type Subscription_RootOrganization_Credit_Balances_By_PkArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+export type Subscription_RootOrganization_Credit_Balances_StreamArgs = {
+  batch_size: Scalars['Int']['input'];
+  cursor: Array<InputMaybe<Organization_Credit_Balances_Stream_Cursor_Input>>;
+  where?: InputMaybe<Organization_Credit_Balances_Bool_Exp>;
 };
 
 
@@ -16003,6 +22297,66 @@ export type Subscription_RootOrganizations_StreamArgs = {
 };
 
 
+export type Subscription_RootPlan_Ai_CapabilitiesArgs = {
+  distinct_on?: InputMaybe<Array<Plan_Ai_Capabilities_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Plan_Ai_Capabilities_Order_By>>;
+  where?: InputMaybe<Plan_Ai_Capabilities_Bool_Exp>;
+};
+
+
+export type Subscription_RootPlan_Ai_Capabilities_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Plan_Ai_Capabilities_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Plan_Ai_Capabilities_Order_By>>;
+  where?: InputMaybe<Plan_Ai_Capabilities_Bool_Exp>;
+};
+
+
+export type Subscription_RootPlan_Ai_Capabilities_By_PkArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+export type Subscription_RootPlan_Ai_Capabilities_StreamArgs = {
+  batch_size: Scalars['Int']['input'];
+  cursor: Array<InputMaybe<Plan_Ai_Capabilities_Stream_Cursor_Input>>;
+  where?: InputMaybe<Plan_Ai_Capabilities_Bool_Exp>;
+};
+
+
+export type Subscription_RootPlan_Ai_Capability_Quality_LevelsArgs = {
+  distinct_on?: InputMaybe<Array<Plan_Ai_Capability_Quality_Levels_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Plan_Ai_Capability_Quality_Levels_Order_By>>;
+  where?: InputMaybe<Plan_Ai_Capability_Quality_Levels_Bool_Exp>;
+};
+
+
+export type Subscription_RootPlan_Ai_Capability_Quality_Levels_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Plan_Ai_Capability_Quality_Levels_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Plan_Ai_Capability_Quality_Levels_Order_By>>;
+  where?: InputMaybe<Plan_Ai_Capability_Quality_Levels_Bool_Exp>;
+};
+
+
+export type Subscription_RootPlan_Ai_Capability_Quality_Levels_By_PkArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+export type Subscription_RootPlan_Ai_Capability_Quality_Levels_StreamArgs = {
+  batch_size: Scalars['Int']['input'];
+  cursor: Array<InputMaybe<Plan_Ai_Capability_Quality_Levels_Stream_Cursor_Input>>;
+  where?: InputMaybe<Plan_Ai_Capability_Quality_Levels_Bool_Exp>;
+};
+
+
 export type Subscription_RootPlan_PricesArgs = {
   distinct_on?: InputMaybe<Array<Plan_Prices_Select_Column>>;
   limit?: InputMaybe<Scalars['Int']['input']>;
@@ -16030,6 +22384,36 @@ export type Subscription_RootPlan_Prices_StreamArgs = {
   batch_size: Scalars['Int']['input'];
   cursor: Array<InputMaybe<Plan_Prices_Stream_Cursor_Input>>;
   where?: InputMaybe<Plan_Prices_Bool_Exp>;
+};
+
+
+export type Subscription_RootPlan_Quality_Level_ModelsArgs = {
+  distinct_on?: InputMaybe<Array<Plan_Quality_Level_Models_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Plan_Quality_Level_Models_Order_By>>;
+  where?: InputMaybe<Plan_Quality_Level_Models_Bool_Exp>;
+};
+
+
+export type Subscription_RootPlan_Quality_Level_Models_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Plan_Quality_Level_Models_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Plan_Quality_Level_Models_Order_By>>;
+  where?: InputMaybe<Plan_Quality_Level_Models_Bool_Exp>;
+};
+
+
+export type Subscription_RootPlan_Quality_Level_Models_By_PkArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+export type Subscription_RootPlan_Quality_Level_Models_StreamArgs = {
+  batch_size: Scalars['Int']['input'];
+  cursor: Array<InputMaybe<Plan_Quality_Level_Models_Stream_Cursor_Input>>;
+  where?: InputMaybe<Plan_Quality_Level_Models_Bool_Exp>;
 };
 
 
@@ -16090,6 +22474,36 @@ export type Subscription_RootPlans_StreamArgs = {
   batch_size: Scalars['Int']['input'];
   cursor: Array<InputMaybe<Plans_Stream_Cursor_Input>>;
   where?: InputMaybe<Plans_Bool_Exp>;
+};
+
+
+export type Subscription_RootQuality_LevelsArgs = {
+  distinct_on?: InputMaybe<Array<Quality_Levels_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Quality_Levels_Order_By>>;
+  where?: InputMaybe<Quality_Levels_Bool_Exp>;
+};
+
+
+export type Subscription_RootQuality_Levels_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Quality_Levels_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Quality_Levels_Order_By>>;
+  where?: InputMaybe<Quality_Levels_Bool_Exp>;
+};
+
+
+export type Subscription_RootQuality_Levels_By_PkArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+export type Subscription_RootQuality_Levels_StreamArgs = {
+  batch_size: Scalars['Int']['input'];
+  cursor: Array<InputMaybe<Quality_Levels_Stream_Cursor_Input>>;
+  where?: InputMaybe<Quality_Levels_Bool_Exp>;
 };
 
 
@@ -19591,6 +26005,13 @@ export type UpdateIdentityMutationVariables = Exact<{
 
 export type UpdateIdentityMutation = { __typename?: 'mutation_root', update_user_identities_by_pk: { __typename?: 'user_identities', id: string, user_id: string, provider: string } | null };
 
+export type GetFormByIdForAssemblyQueryVariables = Exact<{
+  id: Scalars['String']['input'];
+}>;
+
+
+export type GetFormByIdForAssemblyQuery = { __typename?: 'query_root', forms_by_pk: { __typename?: 'forms', id: string, name: string, product_name: string, is_active: boolean, organization_id: string } | null };
+
 
 export const CreateBranchFlowDocument = `
     mutation CreateBranchFlow($form_id: String!, $organization_id: String!, $name: String!, $flow_type: String!, $is_primary: Boolean!, $display_order: smallint!, $branch_question_id: String, $branch_field: String, $branch_operator: String, $branch_value: jsonb) {
@@ -20019,6 +26440,17 @@ export const UpdateIdentityDocument = `
   }
 }
     `;
+export const GetFormByIdForAssemblyDocument = `
+    query GetFormByIdForAssembly($id: String!) {
+  forms_by_pk(id: $id) {
+    id
+    name
+    product_name
+    is_active
+    organization_id
+  }
+}
+    `;
 
 export type SdkFunctionWrapper = <T>(action: (requestHeaders?:Record<string, string>) => Promise<T>, operationName: string, operationType?: string, variables?: any) => Promise<T>;
 
@@ -20128,6 +26560,9 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
     },
     UpdateIdentity(variables: UpdateIdentityMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<UpdateIdentityMutation> {
       return withWrapper((wrappedRequestHeaders) => client.request<UpdateIdentityMutation>({ document: UpdateIdentityDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'UpdateIdentity', 'mutation', variables);
+    },
+    GetFormByIdForAssembly(variables: GetFormByIdForAssemblyQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<GetFormByIdForAssemblyQuery> {
+      return withWrapper((wrappedRequestHeaders) => client.request<GetFormByIdForAssemblyQuery>({ document: GetFormByIdForAssemblyDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'GetFormByIdForAssembly', 'query', variables);
     }
   };
 }

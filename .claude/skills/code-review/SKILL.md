@@ -22,13 +22,21 @@ If staged changes include E2E test files (`*.spec.ts` in `tests/e2e/`), delegate
 - Run the tests and report pass/fail status
 - Report duration
 
-### Step 3: Analyze by Category
-Review each non-E2E file against the checklist below.
+### Step 3: Route API Files
+If staged changes include any files in `api/` folder, invoke `/api-code-review`. It will check:
+- Feature folder structure (`graphql/`, `functions/`, `handlers/`, `prompts/`)
+- Pure function purity (no side effects in `functions/` folder)
+- Function naming conventions (`derive*` not `generate*` for pure functions)
+- GraphQL operations in `.gql` files
+- Barrel exports and type safety
 
-### Step 4: Report Issues
+### Step 5: Analyze by Category
+Review remaining files (not E2E or API) against the checklist below.
+
+### Step 6: Report Issues
 Use the output format below. Include file:line references and severity levels.
 
-### Step 5: Chain to E2E Test Runner (Optional)
+### Step 7: Chain to E2E Test Runner (Optional)
 After completing the code review, offer to run relevant E2E tests:
 
 ```
@@ -124,7 +132,9 @@ This will analyze the changes and run only the E2E tests relevant to the modifie
 
 Project documentation:
 - `/apps/web/CLAUDE.md` - FSD architecture, composables, GraphQL patterns
+- `/docs/api/feature-structure.md` - API feature folder structure standards
 
 Related skills:
+- `/api-code-review` - Specialized review for API code (auto-delegated for `api/` files)
 - `/e2e-code-review` - Specialized review for E2E test files (auto-delegated)
 - `/code-review-e2e-runner` - Run relevant E2E tests based on code changes (chained after review)
