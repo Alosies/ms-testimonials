@@ -2,7 +2,7 @@
  * Credits Page Object
  *
  * Page object for AI Credits functionality. Provides locators and actions
- * for interacting with AI Limits and AI Usage pages.
+ * for the unified AI Settings page at /{org}/settings/ai.
  * Part of ADR-023 AI Capabilities Plan Integration.
  */
 import { Page, expect } from '@playwright/test';
@@ -10,7 +10,7 @@ import { creditTestIds } from '@/shared/constants/testIds';
 
 export function createCreditsPage(page: Page) {
   // ============================================================================
-  // AI Limits Page Locators
+  // AI Credits Card Locators
   // ============================================================================
   const balanceWidget = page.getByTestId(creditTestIds.balanceWidget);
   const balanceAvailable = page.getByTestId(creditTestIds.balanceAvailable);
@@ -19,6 +19,9 @@ export function createCreditsPage(page: Page) {
   const balanceBonus = page.getByTestId(creditTestIds.balanceBonus);
   const balanceResetDate = page.getByTestId(creditTestIds.balanceResetDate);
 
+  // ============================================================================
+  // Rate Limits Card Locators
+  // ============================================================================
   const rateLimitsSection = page.getByTestId(creditTestIds.rateLimitsSection);
   const rateLimitPlanName = page.getByTestId(creditTestIds.rateLimitPlanName);
   const rateLimitCapability = page.getByTestId(creditTestIds.rateLimitCapability);
@@ -26,7 +29,7 @@ export function createCreditsPage(page: Page) {
   const rateLimitDaily = page.getByTestId(creditTestIds.rateLimitDaily);
 
   // ============================================================================
-  // AI Usage Page Locators
+  // Usage History Section Locators
   // ============================================================================
   const historyTable = page.getByTestId(creditTestIds.historyTable);
   const historyFilter = page.getByTestId(creditTestIds.historyFilter);
@@ -36,20 +39,22 @@ export function createCreditsPage(page: Page) {
 
   return {
     page,
-    // AI Limits locators
+    // AI Credits Card locators
     balanceWidget,
     balanceAvailable,
     balanceUsed,
     balancePlan,
     balanceBonus,
     balanceResetDate,
+
+    // Rate Limits Card locators
     rateLimitsSection,
     rateLimitPlanName,
     rateLimitCapability,
     rateLimitHourly,
     rateLimitDaily,
 
-    // AI Usage locators
+    // Usage History locators
     historyTable,
     historyFilter,
     historyRefresh,
@@ -59,20 +64,26 @@ export function createCreditsPage(page: Page) {
     // ============================================================================
     // Navigation
     // ============================================================================
-    async gotoLimits(orgSlug: string) {
-      await page.goto(`/${orgSlug}/settings/limits`);
+    /**
+     * Navigate to the unified AI Settings page
+     */
+    async goto(orgSlug: string) {
+      await page.goto(`/${orgSlug}/settings/ai`);
       await balanceWidget.waitFor({ timeout: 15000 });
     },
 
+    /**
+     * @deprecated Use goto() instead - all AI settings are now on one page
+     */
+    async gotoLimits(orgSlug: string) {
+      await this.goto(orgSlug);
+    },
+
+    /**
+     * @deprecated Use goto() instead - all AI settings are now on one page
+     */
     async gotoUsage(orgSlug: string) {
-      await page.goto(`/${orgSlug}/settings/credits`);
-      // Wait for either table or empty state
-      await Promise.race([
-        historyTable.waitFor({ timeout: 15000 }),
-        historyEmpty.waitFor({ timeout: 15000 }),
-      ]).catch(() => {
-        // One of them should be visible
-      });
+      await this.goto(orgSlug);
     },
 
     // ============================================================================

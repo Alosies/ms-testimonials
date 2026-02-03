@@ -2,16 +2,20 @@
  * AI Credits Journey Test
  *
  * A comprehensive test that validates all critical AI Credits functionality
- * in one continuous flow. Covers AI Limits page (balance + rate limits) and
- * AI Usage page (transaction history).
+ * on the unified AI Settings page (/{org}/settings/ai).
+ *
+ * The page combines:
+ * - AI Credits Card (balance, breakdown, progress bar)
+ * - Rate Limits Card (plan limits, status)
+ * - Usage History (transaction table, filters)
  *
  * Part of ADR-023 AI Capabilities Plan Integration.
  *
  * ## What This Test Covers
- * - AI Limits page loads with balance widget and rate limits section
+ * - AI Settings page loads with both cards and history
  * - Credit balance displays valid numbers
- * - Plan name is shown in rate limits section
- * - AI Usage page loads with transaction history or empty state
+ * - Rate limits section shows plan information
+ * - Transaction history displays correctly
  * - Filter dropdown and refresh button work
  *
  * ## When to Run
@@ -21,8 +25,9 @@
  *
  * ## If Journey Test Fails
  * Run focused tests to pinpoint the issue:
- * - focused-tests/ai-limits.spec.ts - AI Limits page components
- * - focused-tests/ai-usage.spec.ts - AI Usage page components
+ * - focused-tests/ai-credits-card.spec.ts - AI Credits card components
+ * - focused-tests/ai-rate-limits.spec.ts - Rate Limits card components
+ * - focused-tests/ai-usage-history.spec.ts - Usage History section
  */
 import { test, expect } from '@e2e/app/fixtures';
 import { createCreditsPage } from '@e2e/shared';
@@ -34,41 +39,47 @@ test.describe('AI Credits', () => {
     const { nav, verify } = createCreditsActions(credits, orgSlug);
 
     // ========================================================================
-    // Part 1: AI Limits Page
+    // Part 1: Navigate to unified AI Settings page
     // ========================================================================
-    await test.step('1. Navigate to AI Limits page', async () => {
-      await nav.gotoLimitsPage();
+    await test.step('1. Navigate to AI Settings page', async () => {
+      await nav.gotoAISettings();
     });
 
-    await test.step('2. Verify balance widget displays correctly', async () => {
+    // ========================================================================
+    // Part 2: Verify AI Credits Card
+    // ========================================================================
+    await test.step('2. Verify AI Credits card displays correctly', async () => {
+      await credits.expectBalanceWidgetVisible();
+    });
+
+    await test.step('3. Verify balance shows valid amount', async () => {
       await verify.verifyBalanceDisplayed();
     });
 
-    await test.step('3. Verify rate limits section displays correctly', async () => {
+    // ========================================================================
+    // Part 3: Verify Rate Limits Card
+    // ========================================================================
+    await test.step('4. Verify Rate Limits card displays correctly', async () => {
       await credits.expectRateLimitsSectionVisible();
     });
 
-    await test.step('4. Verify plan name is displayed', async () => {
+    await test.step('5. Verify plan name is displayed', async () => {
       await verify.verifyPlanNameDisplayed();
     });
 
     // ========================================================================
-    // Part 2: AI Usage Page
+    // Part 4: Verify Usage History Section
     // ========================================================================
-    await test.step('5. Navigate to AI Usage page', async () => {
-      await nav.gotoUsagePage();
-    });
-
-    await test.step('6. Verify usage page loads correctly', async () => {
-      await verify.verifyUsagePageLoaded();
+    await test.step('6. Verify usage history loads correctly', async () => {
+      await verify.verifyUsageHistoryLoaded();
     });
 
     await test.step('7. Test refresh functionality', async () => {
       // Refresh should work without errors
       await credits.refreshHistory();
-      // Small wait for refresh to complete
-      await authedPage.waitForTimeout(500);
-      await verify.verifyUsagePageLoaded();
+      // Wait for data to reload
+      await credits.historyTable.or(credits.historyEmpty).waitFor({ timeout: 5000 });
+      await verify.verifyUsageHistoryLoaded();
     });
 
     await test.step('8. Test filter dropdown (if transactions exist)', async () => {
@@ -77,20 +88,20 @@ test.describe('AI Credits', () => {
         // Filter by AI Usage type
         await credits.filterByType('ai_consumption');
         // Verify filter was applied (either shows filtered results or empty state)
-        await verify.verifyUsagePageLoaded();
+        await verify.verifyUsageHistoryLoaded();
 
         // Reset filter to All Types
         await credits.filterByType('');
-        await verify.verifyUsagePageLoaded();
+        await verify.verifyUsageHistoryLoaded();
       }
     });
 
     // ========================================================================
-    // Part 3: Verify navigation between pages works
+    // Part 5: Verify page still works after interactions
     // ========================================================================
-    await test.step('9. Navigate back to AI Limits', async () => {
-      await nav.gotoLimitsPage();
-      await verify.verifyLimitsPageLoaded();
+    await test.step('9. Verify all sections still visible', async () => {
+      await verify.verifyPageLoaded();
+      await verify.verifyUsageHistoryLoaded();
     });
   });
 });

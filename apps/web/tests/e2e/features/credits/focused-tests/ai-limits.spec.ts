@@ -1,24 +1,23 @@
 /**
- * AI Limits Page Focused Tests
+ * AI Settings Page Focused Tests - Cards Section
  *
- * Detailed tests for the AI Limits settings page components:
- * - Credit Balance Widget (balance display, usage visualization)
- * - Rate Limits Section (plan info, capability limits)
+ * Detailed tests for the AI Credits and Rate Limits cards on the
+ * unified AI Settings page (/{org}/settings/ai).
  *
  * Part of ADR-023 AI Capabilities Plan Integration.
  *
- * Run these tests when debugging issues with the AI Limits page.
+ * Run these tests when debugging issues with the cards display.
  */
 import { test, expect } from '@e2e/app/fixtures';
 import { createCreditsPage } from '@e2e/shared';
 
-test.describe('AI Limits Page', () => {
+test.describe('AI Settings Page - Cards', () => {
   test.beforeEach(async ({ authedPage, orgSlug }) => {
     const credits = createCreditsPage(authedPage);
-    await credits.gotoLimits(orgSlug);
+    await credits.goto(orgSlug);
   });
 
-  test.describe('Credit Balance Widget', () => {
+  test.describe('AI Credits Card', () => {
     test('displays available credits', async ({ authedPage }) => {
       const credits = createCreditsPage(authedPage);
       await credits.expectBalanceWidgetVisible();
@@ -27,7 +26,7 @@ test.describe('AI Limits Page', () => {
       expect(available).toBeGreaterThanOrEqual(0);
     });
 
-    test('balance widget shows valid number format', async ({ authedPage }) => {
+    test('balance shows valid number format', async ({ authedPage }) => {
       const credits = createCreditsPage(authedPage);
       const text = await credits.balanceAvailable.textContent();
 
@@ -36,7 +35,7 @@ test.describe('AI Limits Page', () => {
     });
   });
 
-  test.describe('Rate Limits Section', () => {
+  test.describe('Rate Limits Card', () => {
     test('displays rate limits section', async ({ authedPage }) => {
       const credits = createCreditsPage(authedPage);
       await credits.expectRateLimitsSectionVisible();
@@ -48,17 +47,6 @@ test.describe('AI Limits Page', () => {
 
       // Plan name should not be empty
       expect(planName.length).toBeGreaterThan(0);
-    });
-
-    test('displays at least one AI capability', async ({ authedPage }) => {
-      const credits = createCreditsPage(authedPage);
-
-      // Should have at least one capability (or none if plan has no AI features)
-      const capabilities = credits.rateLimitCapability;
-      const count = await capabilities.count();
-
-      // Count can be 0 if plan has no AI, but should not error
-      expect(count).toBeGreaterThanOrEqual(0);
     });
   });
 });

@@ -1,25 +1,33 @@
 /**
  * Credits Navigation Actions
  *
- * Actions for navigating to credit-related pages.
+ * Actions for navigating to the unified AI Settings page.
  */
 import type { CreditsPage } from '@e2e/shared/pages/credits.page';
 
 export function createNavigationActions(credits: CreditsPage, orgSlug: string) {
   return {
     /**
-     * Navigate to AI Limits page and wait for balance widget
+     * Navigate to the unified AI Settings page
+     * This page contains credits, rate limits, and usage history.
      */
-    async gotoLimitsPage() {
-      await credits.gotoLimits(orgSlug);
+    async gotoAISettings() {
+      await credits.goto(orgSlug);
       await credits.expectBalanceWidgetVisible();
     },
 
     /**
-     * Navigate to AI Usage page and wait for history
+     * @deprecated Use gotoAISettings() - all AI settings are now on one page
+     */
+    async gotoLimitsPage() {
+      await this.gotoAISettings();
+    },
+
+    /**
+     * @deprecated Use gotoAISettings() - all AI settings are now on one page
      */
     async gotoUsagePage() {
-      await credits.gotoUsage(orgSlug);
+      await this.gotoAISettings();
     },
   };
 }

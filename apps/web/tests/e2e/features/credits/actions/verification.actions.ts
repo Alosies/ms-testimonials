@@ -1,7 +1,8 @@
 /**
  * Credits Verification Actions
  *
- * Actions for verifying credit balance and history state.
+ * Actions for verifying credit balance, rate limits, and usage history
+ * on the unified AI Settings page.
  */
 import { expect } from '@playwright/test';
 import type { CreditsPage } from '@e2e/shared/pages/credits.page';
@@ -9,11 +10,18 @@ import type { CreditsPage } from '@e2e/shared/pages/credits.page';
 export function createVerificationActions(credits: CreditsPage) {
   return {
     /**
-     * Verify AI Limits page displays correctly
+     * Verify AI Settings page displays correctly (both cards visible)
      */
-    async verifyLimitsPageLoaded() {
+    async verifyPageLoaded() {
       await credits.expectBalanceWidgetVisible();
       await credits.expectRateLimitsSectionVisible();
+    },
+
+    /**
+     * @deprecated Use verifyPageLoaded() - all AI settings are now on one page
+     */
+    async verifyLimitsPageLoaded() {
+      await this.verifyPageLoaded();
     },
 
     /**
@@ -25,7 +33,7 @@ export function createVerificationActions(credits: CreditsPage) {
     },
 
     /**
-     * Verify plan name is displayed in rate limits section
+     * Verify plan name is displayed in the credits card or rate limits section
      */
     async verifyPlanNameDisplayed() {
       const planName = await credits.getPlanName();
@@ -33,13 +41,20 @@ export function createVerificationActions(credits: CreditsPage) {
     },
 
     /**
-     * Verify AI Usage page displays correctly
+     * Verify usage history section displays correctly
      */
-    async verifyUsagePageLoaded() {
+    async verifyUsageHistoryLoaded() {
       // Either table or empty state should be visible
       const hasTable = await credits.historyTable.isVisible().catch(() => false);
       const hasEmpty = await credits.historyEmpty.isVisible().catch(() => false);
       expect(hasTable || hasEmpty).toBe(true);
+    },
+
+    /**
+     * @deprecated Use verifyUsageHistoryLoaded() - all AI settings are now on one page
+     */
+    async verifyUsagePageLoaded() {
+      await this.verifyUsageHistoryLoaded();
     },
 
     /**
