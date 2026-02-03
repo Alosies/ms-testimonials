@@ -230,3 +230,66 @@ export const PurchaseCreditsResponseSchema = z.object({
 }).openapi('PurchaseCreditsResponse');
 
 export type PurchaseCreditsResponse = z.infer<typeof PurchaseCreditsResponseSchema>;
+
+// ============================================================
+// GET /credits/limits - Rate limit usage per capability
+// ============================================================
+
+/**
+ * Rate limit info for a single AI capability
+ */
+export const CapabilityRateLimitSchema = z.object({
+  capabilityId: z.string().openapi({
+    description: 'AI capability ID',
+    example: 'cap_abc123',
+  }),
+  capabilityName: z.string().openapi({
+    description: 'Human-readable capability name',
+    example: 'Smart Question Generation',
+  }),
+  capabilityUniqueName: z.string().openapi({
+    description: 'Machine-readable capability identifier',
+    example: 'question_generation',
+  }),
+  hourlyLimit: z.number().nullable().openapi({
+    description: 'Maximum requests per hour (null = unlimited)',
+    example: 10,
+  }),
+  dailyLimit: z.number().nullable().openapi({
+    description: 'Maximum requests per day (null = unlimited)',
+    example: 50,
+  }),
+  usedThisHour: z.number().openapi({
+    description: 'Requests made in the last 60 minutes',
+    example: 3,
+  }),
+  usedToday: z.number().openapi({
+    description: 'Requests made since midnight UTC',
+    example: 15,
+  }),
+  hourlyResetsAt: z.string().datetime().nullable().openapi({
+    description: 'When the hourly limit resets (null if unlimited)',
+    example: '2026-02-02T11:00:00Z',
+  }),
+  dailyResetsAt: z.string().datetime().openapi({
+    description: 'When the daily limit resets (midnight UTC)',
+    example: '2026-02-03T00:00:00Z',
+  }),
+}).openapi('CapabilityRateLimit');
+
+export type CapabilityRateLimit = z.infer<typeof CapabilityRateLimitSchema>;
+
+/**
+ * Response for GET /credits/limits
+ */
+export const GetLimitsResponseSchema = z.object({
+  capabilities: z.array(CapabilityRateLimitSchema).openapi({
+    description: 'Rate limit info for each enabled AI capability',
+  }),
+  planName: z.string().openapi({
+    description: 'Name of the current plan',
+    example: 'Pro',
+  }),
+}).openapi('GetLimitsResponse');
+
+export type GetLimitsResponse = z.infer<typeof GetLimitsResponseSchema>;
