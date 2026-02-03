@@ -7,6 +7,7 @@ export {
   createFormsPage,
   createFormCreationPage,
   createPublicFormPage,
+  createCreditsPage,
 } from './pages';
 
 export type {
@@ -14,4 +15,5 @@ export type {
   FormsPage,
   FormCreationPage,
   PublicFormPage,
+  CreditsPage,
 } from './pages';
