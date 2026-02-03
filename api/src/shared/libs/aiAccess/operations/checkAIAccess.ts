@@ -172,7 +172,15 @@ function createCapabilityDeniedResult(
       reason = `The '${capabilityAccess.capabilityName}' feature is not included in your current plan.`;
       break;
     case 'rate_limit_exceeded':
-      reason = `You have reached the usage limit for '${capabilityAccess.capabilityName}'.`;
+      // Determine which limit was hit for better messaging
+      if (
+        capabilityAccess.hourlyLimit !== null &&
+        capabilityAccess.usedThisHour >= capabilityAccess.hourlyLimit
+      ) {
+        reason = `You've reached the hourly limit (${capabilityAccess.hourlyLimit} requests) for '${capabilityAccess.capabilityName}'. Try again in a few minutes.`;
+      } else {
+        reason = `You've reached the daily limit (${capabilityAccess.dailyLimit} requests) for '${capabilityAccess.capabilityName}'. Your limit resets at midnight UTC.`;
+      }
       break;
     default:
       reason = 'Access to this AI capability is not available.';

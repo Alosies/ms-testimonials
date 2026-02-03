@@ -8,3 +8,7 @@ export {
   type AIExecutionError,
   type AIExecutionResult,
 } from './executeWithAIAccess';
+export {
+  getCapabilityUsage,
+  type CapabilityUsage,
+} from './getCapabilityUsage';

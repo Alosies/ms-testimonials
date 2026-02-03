@@ -20,6 +20,7 @@ import type {
   AICapabilityDenialReason,
   QualityLevelInfo,
 } from '../types';
+import { getCapabilityUsage } from './getCapabilityUsage';
 
 // =============================================================================
 // Row Types for Drizzle Query Results
@@ -32,6 +33,7 @@ interface CapabilityAccessRow {
   is_enabled: string | boolean;
   rate_limit_rpm: string | null;
   rate_limit_rpd: string | null;
+  rate_limit_rph: string | null;
   estimated_credits_fast: string;
   estimated_credits_enhanced: string;
   estimated_credits_premium: string;
@@ -106,6 +108,7 @@ export async function checkCapabilityAccess(
       pac.is_enabled,
       pac.rate_limit_rpm,
       pac.rate_limit_rpd,
+      pac.rate_limit_rph,
       ac.estimated_credits_fast,
       ac.estimated_credits_enhanced,
       ac.estimated_credits_premium
@@ -256,18 +259,59 @@ export async function checkCapabilityAccess(
     }
   }
 
-  // Step 6: Build and return the successful access result
+  // Step 6: Parse rate limits and check usage
+  const hourlyLimit = capabilityRow.rate_limit_rph
+    ? parseInt(capabilityRow.rate_limit_rph)
+    : null;
+  const dailyLimit = capabilityRow.rate_limit_rpd
+    ? parseInt(capabilityRow.rate_limit_rpd)
+    : null;
+
+  // Query usage if at least one limit is configured
+  let usedToday = 0;
+  let usedThisHour = 0;
+
+  if (hourlyLimit !== null || dailyLimit !== null) {
+    const usage = await getCapabilityUsage({
+      organizationId,
+      aiCapabilityId: capabilityRow.capability_id,
+    });
+    usedToday = usage.usedToday;
+    usedThisHour = usage.usedThisHour;
+
+    // Enforce hourly rate limit (check first - more restrictive)
+    if (hourlyLimit !== null && usedThisHour >= hourlyLimit) {
+      return createDeniedResult(
+        capabilityUniqueName,
+        'rate_limit_exceeded',
+        capabilityRow.capability_id,
+        capabilityRow.capability_name
+      );
+    }
+
+    // Enforce daily rate limit
+    if (dailyLimit !== null && usedToday >= dailyLimit) {
+      return createDeniedResult(
+        capabilityUniqueName,
+        'rate_limit_exceeded',
+        capabilityRow.capability_id,
+        capabilityRow.capability_name
+      );
+    }
+  }
+
+  // Step 7: Build and return the successful access result
   return {
     hasAccess: true,
     capabilityId: capabilityRow.capability_id,
     capabilityName: capabilityRow.capability_name,
     availableQualityLevels,
-    dailyLimit: capabilityRow.rate_limit_rpd
-      ? parseInt(capabilityRow.rate_limit_rpd)
-      : null,
+    hourlyLimit,
+    dailyLimit,
     monthlyLimit: null, // Not tracked in current schema
-    usedToday: 0, // TODO: Implement usage tracking query
-    usedThisMonth: 0, // TODO: Implement usage tracking query
+    usedThisHour,
+    usedToday,
+    usedThisMonth: 0, // Monthly tracking not implemented yet
   };
 }
 
@@ -308,8 +352,10 @@ function createDeniedResult(
     capabilityId: capabilityId || '',
     capabilityName: capabilityName || capabilityUniqueName,
     availableQualityLevels: [],
+    hourlyLimit: null,
     dailyLimit: null,
     monthlyLimit: null,
+    usedThisHour: 0,
     usedToday: 0,
     usedThisMonth: 0,
     reason,

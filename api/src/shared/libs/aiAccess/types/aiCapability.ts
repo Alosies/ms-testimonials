@@ -119,8 +119,10 @@ export type AICapabilityDenialReason =
  * @property capabilityId - Database ID of the AI capability
  * @property capabilityName - Human-readable name of the capability
  * @property availableQualityLevels - Quality levels accessible to this plan
+ * @property hourlyLimit - Max requests per hour (null = unlimited)
  * @property dailyLimit - Max requests per day (null = unlimited)
  * @property monthlyLimit - Max requests per month (null = unlimited)
+ * @property usedThisHour - Requests made in last 60 minutes
  * @property usedToday - Requests made today for this capability
  * @property usedThisMonth - Requests made this month for this capability
  * @property reason - Why access was denied (only set when hasAccess is false)
@@ -138,11 +140,17 @@ export interface AICapabilityAccessResult {
   /** Quality levels available for this capability on the organization's plan */
   availableQualityLevels: QualityLevelInfo[];
 
+  /** Maximum requests per hour (null means unlimited) */
+  hourlyLimit: number | null;
+
   /** Maximum requests per day (null means unlimited) */
   dailyLimit: number | null;
 
   /** Maximum requests per month (null means unlimited) */
   monthlyLimit: number | null;
+
+  /** Number of requests made in the last 60 minutes */
+  usedThisHour: number;
 
   /** Number of requests made today for this capability */
   usedToday: number;
