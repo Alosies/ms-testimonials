@@ -1,9 +1,13 @@
 <script setup lang="ts">
 import { Icon } from '@testimonials/icons';
+import { creditTestIds } from '@/shared/constants/testIds';
 </script>
 
 <template>
-  <div class="flex flex-col items-center justify-center py-16 px-4">
+  <div
+    class="flex flex-col items-center justify-center py-16 px-4"
+    :data-testid="creditTestIds.historyEmpty"
+  >
     <!-- Decorative Icon Background -->
     <div class="relative mb-6">
       <div class="absolute inset-0 bg-gradient-to-br from-primary/20 to-primary/5 rounded-2xl transform rotate-6 scale-110" />

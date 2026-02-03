@@ -14,6 +14,15 @@ import CreditHistoryTableSkeleton from './CreditHistoryTableSkeleton.vue';
 import CreditHistoryEmptyState from './CreditHistoryEmptyState.vue';
 import CreditHistoryRow from './CreditHistoryRow.vue';
 
+interface Props {
+  /** Show the filter/refresh header. Set to false when embedding in another component. */
+  showHeader?: boolean;
+}
+
+withDefaults(defineProps<Props>(), {
+  showHeader: true,
+});
+
 const {
   transactions,
   pagination,
@@ -59,7 +68,7 @@ onMounted(() => {
 <template>
   <div>
     <!-- Filter Controls -->
-    <div class="mb-4 flex items-center justify-between">
+    <div v-if="showHeader" class="mb-4 flex items-center justify-between">
       <div class="flex items-center gap-2">
         <label for="type-filter" class="text-sm text-muted-foreground">Filter by:</label>
         <select
