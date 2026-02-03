@@ -1,11 +1,15 @@
 <script setup lang="ts">
 /**
- * Billing settings page
+ * Billing Settings Page
  * Route: /:org/settings/billing
+ *
+ * Shows current plan details and usage limits.
+ * Part of ADR-023 AI Capabilities Plan Integration.
  */
 import { definePage } from 'unplugin-vue-router/runtime';
 import AuthLayout from '@/layouts/AuthLayout.vue';
 import SettingsTabNav from '@/shared/ui/SettingsTabNav.vue';
+import { BillingPlanCard } from '@/features/billing';
 
 definePage({
   meta: {
@@ -32,17 +36,8 @@ definePage({
         <!-- Settings Tab Navigation -->
         <SettingsTabNav class="mb-8" />
 
-        <!-- Billing Content -->
-        <div class="bg-white border border-gray-200 rounded-xl p-6">
-          <h3 class="text-lg font-medium text-gray-900">Subscription & Billing</h3>
-          <p class="mt-1 text-sm text-gray-600">
-            Manage your subscription plan and payment methods.
-          </p>
-          <!-- TODO: Add BillingSettingsFeature component -->
-          <div class="mt-6 text-center py-12 text-gray-400">
-            Billing management coming soon
-          </div>
-        </div>
+        <!-- Billing Plan Card -->
+        <BillingPlanCard />
       </div>
     </div>
   </AuthLayout>

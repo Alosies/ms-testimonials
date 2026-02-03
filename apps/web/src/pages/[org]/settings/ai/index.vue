@@ -1,15 +1,19 @@
 <script setup lang="ts">
 /**
- * AI Limits Settings Page
- * Route: /:org/settings/limits
+ * AI Settings Page
+ * Route: /:org/settings/ai
  *
- * Displays credit balance and rate limit information.
+ * Unified page for AI-related settings including:
+ * - Credit balance and usage
+ * - Rate limits by capability
+ * - Transaction history
+ *
  * Part of ADR-023 AI Capabilities Plan Integration.
  */
 import { definePage } from 'unplugin-vue-router/runtime';
 import AuthLayout from '@/layouts/AuthLayout.vue';
-import { AILimitsWidget } from '@/features/credits';
 import SettingsTabNav from '@/shared/ui/SettingsTabNav.vue';
+import { AILimitsWidget, CreditHistoryTable } from '@/features/credits';
 
 definePage({
   meta: {
@@ -36,8 +40,14 @@ definePage({
         <!-- Settings Tab Navigation -->
         <SettingsTabNav class="mb-8" />
 
-        <!-- AI Limits Content -->
-        <AILimitsWidget />
+        <!-- AI Limits Section (Balance + Rate Limits Cards) -->
+        <AILimitsWidget class="mb-8" />
+
+        <!-- Usage History Section -->
+        <div>
+          <h2 class="text-lg font-semibold text-gray-900 mb-4">Usage History</h2>
+          <CreditHistoryTable />
+        </div>
       </div>
     </div>
   </AuthLayout>

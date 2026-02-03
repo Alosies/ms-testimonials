@@ -30,14 +30,9 @@ const settingsTabs = [
     pathSuffix: '/billing',
   },
   {
-    label: 'AI Usage',
+    label: 'AI',
     icon: 'heroicons:sparkles',
-    pathSuffix: '/credits',
-  },
-  {
-    label: 'AI Limits',
-    icon: 'heroicons:shield-check',
-    pathSuffix: '/limits',
+    pathSuffix: '/ai',
   },
 ];
 
