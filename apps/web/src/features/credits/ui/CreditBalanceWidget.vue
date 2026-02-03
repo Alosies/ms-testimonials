@@ -9,6 +9,7 @@ import { computed } from 'vue';
 import { Icon } from '@testimonials/icons';
 import { Button, Skeleton } from '@testimonials/ui';
 import { useCreditBalance } from '../composables';
+import { creditTestIds } from '@/shared/constants/testIds';
 
 interface Props {
   /** Smaller version for sidebar placement */
@@ -76,7 +77,7 @@ function handleGetCredits(): void {
   <div
     class="rounded-xl border border-border bg-card"
     :class="compact ? 'p-3' : 'p-5'"
-    data-testid="credit-balance-widget"
+    :data-testid="creditTestIds.balanceWidget"
   >
     <!-- Loading State -->
     <template v-if="loading && !balance">
@@ -157,7 +158,7 @@ function handleGetCredits(): void {
         <span
           :class="compact ? 'text-2xl' : 'text-3xl'"
           class="font-bold text-foreground"
-          data-testid="available-credits"
+          :data-testid="creditTestIds.balanceAvailable"
         >
           {{ formatNumber(balance.available) }}
         </span>
@@ -179,10 +180,10 @@ function handleGetCredits(): void {
           />
         </div>
         <div class="flex justify-between mt-1">
-          <span class="text-[10px] text-muted-foreground">
+          <span class="text-[10px] text-muted-foreground" :data-testid="creditTestIds.balanceUsed">
             {{ percentUsed }}% used
           </span>
-          <span class="text-[10px] text-muted-foreground">
+          <span class="text-[10px] text-muted-foreground" :data-testid="creditTestIds.balanceResetDate">
             Resets {{ formatResetDate(balance.periodEndsAt) }}
           </span>
         </div>
@@ -191,7 +192,7 @@ function handleGetCredits(): void {
       <!-- Credit Breakdown (Full version only) -->
       <div v-if="!compact" class="grid grid-cols-2 gap-3 mb-4">
         <!-- Monthly Credits -->
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2" :data-testid="creditTestIds.balancePlan">
           <div class="w-2 h-2 rounded-full bg-primary" />
           <div>
             <p class="text-xs text-muted-foreground">Monthly</p>
@@ -205,7 +206,7 @@ function handleGetCredits(): void {
         </div>
 
         <!-- Bonus Credits -->
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2" :data-testid="creditTestIds.balanceBonus">
           <div class="w-2 h-2 rounded-full bg-purple-500" />
           <div>
             <p class="text-xs text-muted-foreground">Bonus</p>

@@ -9,8 +9,10 @@ import {
   getActorInfo,
   hasActorInfo,
   TRANSACTION_TYPE_LABELS,
+  getCreditAmountClass,
 } from '../functions';
 import type { CreditTransaction, TransactionType } from '../models';
+import { creditTestIds } from '@/shared/constants/testIds';
 
 defineProps<{
   transaction: CreditTransaction;
@@ -73,7 +75,7 @@ function formatCredits(amount: number): string {
 <template>
   <tr
     class="group hover:bg-muted/30 transition-colors"
-    data-testid="transaction-row"
+    :data-testid="creditTestIds.historyRow"
   >
     <!-- Date -->
     <td class="py-2.5 px-4">
@@ -87,13 +89,14 @@ function formatCredits(amount: number): string {
       <span
         class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium"
         :class="getTypeBadgeClass(transaction.transactionType)"
+        :data-testid="creditTestIds.txType"
       >
         {{ getTypeLabel(transaction.transactionType) }}
       </span>
     </td>
 
     <!-- Actor (Form / User context) -->
-    <td class="py-2.5 px-4 hidden lg:table-cell">
+    <td class="py-2.5 px-4 hidden lg:table-cell" :data-testid="creditTestIds.txActor">
       <div v-if="hasActorInfo(transaction)" class="flex flex-col gap-0.5 min-w-0">
         <span
           v-if="getActorInfo(transaction).form"
@@ -128,7 +131,8 @@ function formatCredits(amount: number): string {
     <td class="py-2.5 px-4 text-right">
       <span
         class="text-xs font-medium font-mono"
-        :class="transaction.creditsAmount >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'"
+        :class="getCreditAmountClass(transaction.creditsAmount)"
+        :data-testid="creditTestIds.txAmount"
       >
         {{ formatCredits(transaction.creditsAmount) }}
       </span>

@@ -9,6 +9,7 @@ import { onMounted } from 'vue';
 import { Icon } from '@testimonials/icons';
 import { useCreditHistory } from '../composables';
 import { type TransactionType } from '../models';
+import { creditTestIds } from '@/shared/constants/testIds';
 import CreditHistoryTableSkeleton from './CreditHistoryTableSkeleton.vue';
 import CreditHistoryEmptyState from './CreditHistoryEmptyState.vue';
 import CreditHistoryRow from './CreditHistoryRow.vue';
@@ -65,6 +66,7 @@ onMounted(() => {
           id="type-filter"
           :value="typeFilter || ''"
           class="px-3 py-1.5 text-sm border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary/20"
+          :data-testid="creditTestIds.historyFilter"
           @change="handleFilterChange"
         >
           <option
@@ -81,6 +83,7 @@ onMounted(() => {
       <button
         class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground border border-border rounded-lg bg-background hover:bg-muted transition-colors disabled:opacity-50"
         :disabled="loading"
+        :data-testid="creditTestIds.historyRefresh"
         @click="fetchTransactions()"
       >
         <Icon
@@ -117,7 +120,7 @@ onMounted(() => {
     <div
       v-else
       class="rounded-xl border border-border bg-card overflow-hidden"
-      data-testid="credit-history-table"
+      :data-testid="creditTestIds.historyTable"
     >
       <table class="w-full table-fixed">
         <!-- Column widths (percentage-based for balanced distribution) -->

@@ -7,7 +7,7 @@
  */
 
 import type { Ref, ComputedRef } from 'vue';
-import type { GetBalanceResponse } from '@api/shared/schemas/credits';
+import type { GetBalanceResponse, GetLimitsResponse, CapabilityRateLimit } from '@api/shared/schemas/credits';
 
 // =============================================================================
 // Transaction Types
@@ -177,4 +177,56 @@ export interface PurchaseCreditsResponse {
   checkoutUrl: string;
   /** Stripe checkout session ID for tracking */
   sessionId: string;
+}
+
+// =============================================================================
+// Rate Limit Types
+// =============================================================================
+
+/**
+ * Rate limit info for a single AI capability (from API response)
+ */
+export type AICapabilityRateLimit = CapabilityRateLimit;
+
+/**
+ * Response from GET /credits/limits (from API response)
+ */
+export type AIRateLimitsResponse = GetLimitsResponse;
+
+/**
+ * Options for useAIRateLimits composable
+ */
+export interface UseAIRateLimitsOptions {
+  /**
+   * Whether to fetch limits automatically on mount.
+   * @default true
+   */
+  autoFetch?: boolean;
+
+  /**
+   * Auto-refresh interval in milliseconds.
+   * Set to 0 to disable auto-refresh.
+   * @default 0
+   */
+  refreshInterval?: number;
+}
+
+/**
+ * Return type for useAIRateLimits composable
+ */
+export interface UseAIRateLimitsReturn {
+  /** Rate limit data, null if not yet fetched */
+  limits: Ref<AIRateLimitsResponse | null>;
+
+  /** Whether a fetch is currently in progress */
+  loading: Ref<boolean>;
+
+  /** Error from the last fetch attempt, null if successful */
+  error: Ref<Error | null>;
+
+  /** Fetch the current rate limits from the API */
+  fetchLimits: () => Promise<void>;
+
+  /** Alias for fetchLimits */
+  refresh: () => Promise<void>;
 }

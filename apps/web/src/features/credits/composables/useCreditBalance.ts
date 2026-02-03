@@ -78,23 +78,28 @@ export function useCreditBalance(
     }
   }
 
-  // Computed: Percentage of monthly credits used this period
-  const percentUsed = computed<number>(() => {
-    if (!balance.value || balance.value.monthlyCredits === 0) {
-      return 0;
-    }
-    const used = balance.value.usedThisPeriod;
-    const monthly = balance.value.monthlyCredits;
-    return Math.min(100, Math.round((used / monthly) * 100));
+  // Computed: Original plan allocation (before any usage was consumed)
+  // Since monthlyCredits is reduced during settlement, we reconstruct:
+  // originalAllocation = currentMonthlyCredits + usedThisPeriod
+  const originalPlanAllocation = computed<number>(() => {
+    if (!balance.value) return 0;
+    return balance.value.monthlyCredits + balance.value.usedThisPeriod;
   });
 
-  // Computed: Whether remaining credits are low (< 20% of monthly allocation remaining)
+  // Computed: Percentage of monthly credits used this period
+  const percentUsed = computed<number>(() => {
+    const original = originalPlanAllocation.value;
+    if (original === 0) return 0;
+    const used = balance.value?.usedThisPeriod ?? 0;
+    return Math.min(100, Math.round((used / original) * 100));
+  });
+
+  // Computed: Whether remaining credits are low (< 20% of original allocation remaining)
   const isLow = computed<boolean>(() => {
-    if (!balance.value || balance.value.monthlyCredits === 0) {
-      return false;
-    }
-    const remaining = balance.value.monthlyCredits - balance.value.usedThisPeriod;
-    const threshold = balance.value.monthlyCredits * 0.2;
+    const original = originalPlanAllocation.value;
+    if (original === 0) return false;
+    const remaining = balance.value?.monthlyCredits ?? 0;
+    const threshold = original * 0.2;
     return remaining < threshold;
   });
 
