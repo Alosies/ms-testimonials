@@ -684,8 +684,9 @@ CREATE TABLE plan_ai_capabilities (
 
     -- Rate limiting (independent of credits)
     -- NULL = unlimited, 0 = blocked
-    rate_limit_rpm      INT,  -- Requests per minute
-    rate_limit_rpd      INT,  -- Requests per day
+    rate_limit_rpm      INT,  -- Requests per minute (deferred - requires caching)
+    rate_limit_rph      INT,  -- Requests per hour (sliding 60-min window)
+    rate_limit_rpd      INT,  -- Requests per day (since midnight UTC)
 
     -- Audit
     created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -707,9 +708,11 @@ COMMENT ON TABLE plan_ai_capabilities IS
 COMMENT ON COLUMN plan_ai_capabilities.is_enabled IS
     'Soft toggle. false = temporarily disabled without deleting config.';
 COMMENT ON COLUMN plan_ai_capabilities.rate_limit_rpm IS
-    'Max requests per minute. NULL=unlimited. Enforced via Redis sliding window.';
+    'Max requests per minute. NULL=unlimited. Deferred - requires caching layer.';
+COMMENT ON COLUMN plan_ai_capabilities.rate_limit_rph IS
+    'Max requests per hour (sliding 60-min window). NULL=unlimited. Primary abuse protection.';
 COMMENT ON COLUMN plan_ai_capabilities.rate_limit_rpd IS
-    'Max requests per day. NULL=unlimited. Prevents abuse on free tier.';
+    'Max requests per day (since midnight UTC). NULL=unlimited. Prevents abuse on free tier.';
 ```
 
 ### Table: `plan_ai_capability_quality_levels`
@@ -835,9 +838,26 @@ WHERE p.unique_name = 'team';
 
 | Plan | question_generation | testimonial_assembly | testimonial_polish | Quality Levels | Models | Rate Limits |
 |------|---------------------|---------------------|-------------------|----------------|--------|-------------|
-| Free | ✅ Enabled | ❌ Disabled | ❌ Disabled | fast | gpt-4o-mini | 5/min, 20/day |
-| Pro | ✅ Enabled | ✅ Enabled | ✅ Enabled | fast, enhanced | gpt-4o-mini, claude-3-haiku, gpt-4o, claude-3-5-sonnet | 30/min, 500/day |
+| Free | ✅ Enabled | ❌ Disabled | ❌ Disabled | fast | gpt-4o-mini | 10/hour, 50/day |
+| Pro | ✅ Enabled | ✅ Enabled | ✅ Enabled | fast, enhanced | gpt-4o-mini, claude-3-haiku, gpt-4o, claude-3-5-sonnet | 100/hour, 500/day |
 | Team | ✅ Enabled | ✅ Enabled | ✅ Enabled | all | All models including claude-3-opus | Unlimited |
+
+#### Rate Limit Rationale
+
+**Free Plan (10/hour, 50/day):**
+- Prevents burst abuse: attackers can't exhaust daily quota quickly
+- Forces usage spread over 5+ hours at max rate
+- Combined with RPM limit, hitting max rate triggers hourly limit in ~1 minute
+- Makes scripted abuse much less attractive while allowing legitimate exploration
+
+**Pro Plan (100/hour, 500/day):**
+- Allows productive work sessions during business hours
+- Prevents runaway scripts from burning through quota in minutes
+- Business users typically work in bursts; 100/hour accommodates this
+
+**Team Plan (Unlimited):**
+- Enterprise-grade trust; customers pay for capacity
+- No artificial limits that could disrupt production workflows
 
 ---
 
@@ -2192,12 +2212,30 @@ Stripe integration is deferred to a later stage.
 
 | Gap | Description | Priority |
 |-----|-------------|----------|
-| Rate limit enforcement | `rate_limit_rpm`/`rpd` values returned but not enforced at runtime | Medium |
-| Usage tracking for rate limits | `usedToday`/`usedThisMonth` hardcoded to 0 in `checkCapabilityAccess` | Medium |
+| ~~Rate limit enforcement~~ | ~~`rate_limit_rpm`/`rpd` values returned but not enforced at runtime~~ | ✅ Implemented |
+| ~~Usage tracking for rate limits~~ | ~~`usedToday`/`usedThisMonth` hardcoded to 0 in `checkCapabilityAccess`~~ | ✅ Implemented |
+| RPM (per-minute) enforcement | `rate_limit_rpm` exists but requires caching layer for performance | Low |
 | Model fallback on failure | No logic to try alternate models from `allowedModels` on failure | Low |
 | Model deprecation handling | `llm_models.replacement_model_id` exists but no auto-fallback logic | Low |
 | Admin adjustment endpoint | No API to manually adjust credits (transaction type exists) | Low |
 | Testimonial polish handler | Capability seeded but `/ai/polish-testimonial` not implemented | Low |
+
+#### Rate Limit Enforcement Implementation (2026-02-02)
+
+**Files Added:**
+- `api/src/shared/libs/aiAccess/operations/getCapabilityUsage.ts` - Queries `credit_transactions` to count AI operations
+
+**Files Modified:**
+- `api/src/shared/libs/aiAccess/types/aiCapability.ts` - Added `hourlyLimit`, `usedThisHour` fields
+- `api/src/shared/libs/aiAccess/operations/checkCapabilityAccess.ts` - Integrated usage query and enforcement
+- `api/src/shared/libs/aiAccess/operations/checkAIAccess.ts` - Improved rate limit error messages
+
+**Enforcement Logic:**
+1. Parse `rate_limit_rph` (hourly) and `rate_limit_rpd` (daily) from plan configuration
+2. If either limit is set, query `credit_transactions` for usage counts
+3. Check hourly limit first (more restrictive), then daily
+4. Return `rate_limit_exceeded` denial if either limit is reached
+5. Include helpful error messages distinguishing hourly vs daily limits
 
 ---
 
