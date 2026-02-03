@@ -30,6 +30,13 @@ If staged changes include any files in `api/` folder, invoke `/api-code-review`.
 - GraphQL operations in `.gql` files
 - Barrel exports and type safety
 
+### Step 4: Review Page Files
+If changes include files in `src/pages/`, check that they are thin wrappers:
+- Count lines in `<script setup>` - flag if >50 lines
+- Check for data fetching composables (`useGet*`, `useQuery`) - should be in feature components
+- Check for business logic (computed with rules, event handlers with logic)
+- Verify page only imports layouts and feature/entity components
+
 ### Step 5: Analyze by Category
 Review remaining files (not E2E or API) against the checklist below.
 
@@ -86,7 +93,53 @@ This will analyze the changes and run only the E2E tests relevant to the modifie
 ### Component Size & Structure
 - [ ] **Max 250 lines per Vue component** - refactor if exceeded (child components or composables)
 - [ ] **Max 300 lines per composable** - refactor if exceeded (smaller composables or shared utilities)
-- [ ] **Page files are thin wrappers** - only render components + high-level conditionals (no business logic)
+- [ ] **Page files are thin wrappers** - see Pages section below
+
+### Pages (`src/pages/`)
+Page files should be **thin wrappers** that only:
+- [ ] Render feature/entity components
+- [ ] Handle high-level conditional rendering (auth guards, loading states, error boundaries)
+- [ ] Define route metadata via `definePage()`
+
+Page files should **NOT** contain:
+- [ ] Business logic or complex state management
+- [ ] Data fetching (composables like `useGetX`) - move to feature components
+- [ ] Event handlers with logic - move to feature components
+- [ ] Computed properties with business rules - move to features
+- [ ] More than ~50 lines of `<script setup>` code
+
+```vue
+<!-- ✅ Good: Thin page wrapper -->
+<script setup lang="ts">
+import { definePage } from 'unplugin-vue-router/runtime';
+import AuthLayout from '@/layouts/AuthLayout.vue';
+import { CreditsSettingsView } from '@/features/credits';
+
+definePage({ meta: { requiresAuth: true } });
+</script>
+
+<template>
+  <AuthLayout>
+    <CreditsSettingsView />
+  </AuthLayout>
+</template>
+```
+
+```vue
+<!-- ❌ Bad: Page with business logic -->
+<script setup lang="ts">
+import { ref, computed, onMounted } from 'vue';
+import { useGetCredits } from '@/entities/credits';
+
+const { credits, loading } = useGetCredits();
+const filter = ref('all');
+const filteredCredits = computed(() =>
+  credits.value?.filter(c => filter.value === 'all' || c.type === filter.value)
+);
+const handleRefresh = async () => { /* logic */ };
+// ... more logic that belongs in a feature component
+</script>
+```
 
 ### Tailwind
 - [ ] Tailwind classes used (not custom CSS)
