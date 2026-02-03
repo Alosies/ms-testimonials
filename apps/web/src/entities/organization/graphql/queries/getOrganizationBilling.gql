@@ -1,0 +1,7 @@
+#import "../fragments/OrganizationBilling.gql"
+
+query GetOrganizationBilling($organizationId: String!) {
+  organizations_by_pk(id: $organizationId) {
+    ...OrganizationBilling
+  }
+}

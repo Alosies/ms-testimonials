@@ -2017,9 +2017,9 @@ type credit_reservations {
   """
   updated_at: timestamptz!
   """
-  Snapshot of user email/name at reservation time. Copied to transaction on settle. Values: email, "Anonymous".
+  Email of user who initiated the operation (snapshot at reservation time). NULL for system/anonymous operations.
   """
-  user_display_name: String
+  user_email: String
   """
   FK to users table. Who initiated this reservation. NULL for anonymous operations. SET NULL on delete preserves history.
   """
@@ -2138,7 +2138,7 @@ input credit_reservations_bool_exp {
   settled_credits: numeric_comparison_exp
   status: String_comparison_exp
   updated_at: timestamptz_comparison_exp
-  user_display_name: String_comparison_exp
+  user_email: String_comparison_exp
   user_id: String_comparison_exp
 }
 
@@ -2234,9 +2234,9 @@ input credit_reservations_insert_input {
   """
   updated_at: timestamptz
   """
-  Snapshot of user email/name at reservation time. Copied to transaction on settle. Values: email, "Anonymous".
+  Email of user who initiated the operation (snapshot at reservation time). NULL for system/anonymous operations.
   """
-  user_display_name: String
+  user_email: String
   """
   FK to users table. Who initiated this reservation. NULL for anonymous operations. SET NULL on delete preserves history.
   """
@@ -2302,9 +2302,9 @@ type credit_reservations_max_fields {
   """
   updated_at: timestamptz
   """
-  Snapshot of user email/name at reservation time. Copied to transaction on settle. Values: email, "Anonymous".
+  Email of user who initiated the operation (snapshot at reservation time). NULL for system/anonymous operations.
   """
-  user_display_name: String
+  user_email: String
   """
   FK to users table. Who initiated this reservation. NULL for anonymous operations. SET NULL on delete preserves history.
   """
@@ -2372,9 +2372,9 @@ input credit_reservations_max_order_by {
   """
   updated_at: order_by
   """
-  Snapshot of user email/name at reservation time. Copied to transaction on settle. Values: email, "Anonymous".
+  Email of user who initiated the operation (snapshot at reservation time). NULL for system/anonymous operations.
   """
-  user_display_name: order_by
+  user_email: order_by
   """
   FK to users table. Who initiated this reservation. NULL for anonymous operations. SET NULL on delete preserves history.
   """
@@ -2440,9 +2440,9 @@ type credit_reservations_min_fields {
   """
   updated_at: timestamptz
   """
-  Snapshot of user email/name at reservation time. Copied to transaction on settle. Values: email, "Anonymous".
+  Email of user who initiated the operation (snapshot at reservation time). NULL for system/anonymous operations.
   """
-  user_display_name: String
+  user_email: String
   """
   FK to users table. Who initiated this reservation. NULL for anonymous operations. SET NULL on delete preserves history.
   """
@@ -2510,9 +2510,9 @@ input credit_reservations_min_order_by {
   """
   updated_at: order_by
   """
-  Snapshot of user email/name at reservation time. Copied to transaction on settle. Values: email, "Anonymous".
+  Email of user who initiated the operation (snapshot at reservation time). NULL for system/anonymous operations.
   """
-  user_display_name: order_by
+  user_email: order_by
   """
   FK to users table. Who initiated this reservation. NULL for anonymous operations. SET NULL on delete preserves history.
   """
@@ -2557,7 +2557,7 @@ input credit_reservations_order_by {
   settled_credits: order_by
   status: order_by
   updated_at: order_by
-  user_display_name: order_by
+  user_email: order_by
   user_id: order_by
 }
 
@@ -2602,7 +2602,7 @@ enum credit_reservations_select_column {
   """column name"""
   updated_at
   """column name"""
-  user_display_name
+  user_email
   """column name"""
   user_id
 }
@@ -2668,9 +2668,9 @@ input credit_reservations_set_input {
   """
   updated_at: timestamptz
   """
-  Snapshot of user email/name at reservation time. Copied to transaction on settle. Values: email, "Anonymous".
+  Email of user who initiated the operation (snapshot at reservation time). NULL for system/anonymous operations.
   """
-  user_display_name: String
+  user_email: String
   """
   FK to users table. Who initiated this reservation. NULL for anonymous operations. SET NULL on delete preserves history.
   """
@@ -2824,9 +2824,9 @@ input credit_reservations_stream_cursor_value_input {
   """
   updated_at: timestamptz
   """
-  Snapshot of user email/name at reservation time. Copied to transaction on settle. Values: email, "Anonymous".
+  Email of user who initiated the operation (snapshot at reservation time). NULL for system/anonymous operations.
   """
-  user_display_name: String
+  user_email: String
   """
   FK to users table. Who initiated this reservation. NULL for anonymous operations. SET NULL on delete preserves history.
   """
@@ -2892,7 +2892,7 @@ enum credit_reservations_update_column {
   """column name"""
   updated_at
   """column name"""
-  user_display_name
+  user_email
   """column name"""
   user_id
 }
@@ -3662,9 +3662,9 @@ type credit_transactions {
   """
   transaction_type: String!
   """
-  Snapshot of user email/name at transaction time. Preserved when user deleted. Values: email, "Anonymous", "System".
+  Email of user who initiated the operation (snapshot at transaction time). NULL for system/anonymous operations.
   """
-  user_display_name: String
+  user_email: String
   """
   FK to users table. Who triggered this transaction. NULL for anonymous/system operations. SET NULL on delete preserves history.
   """
@@ -3809,7 +3809,7 @@ input credit_transactions_bool_exp {
   quality_level: quality_levels_bool_exp
   quality_level_id: String_comparison_exp
   transaction_type: String_comparison_exp
-  user_display_name: String_comparison_exp
+  user_email: String_comparison_exp
   user_id: String_comparison_exp
 }
 
@@ -3943,9 +3943,9 @@ input credit_transactions_insert_input {
   """
   transaction_type: String
   """
-  Snapshot of user email/name at transaction time. Preserved when user deleted. Values: email, "Anonymous", "System".
+  Email of user who initiated the operation (snapshot at transaction time). NULL for system/anonymous operations.
   """
-  user_display_name: String
+  user_email: String
   """
   FK to users table. Who triggered this transaction. NULL for anonymous/system operations. SET NULL on delete preserves history.
   """
@@ -4015,9 +4015,9 @@ type credit_transactions_max_fields {
   """
   transaction_type: String
   """
-  Snapshot of user email/name at transaction time. Preserved when user deleted. Values: email, "Anonymous", "System".
+  Email of user who initiated the operation (snapshot at transaction time). NULL for system/anonymous operations.
   """
-  user_display_name: String
+  user_email: String
   """
   FK to users table. Who triggered this transaction. NULL for anonymous/system operations. SET NULL on delete preserves history.
   """
@@ -4089,9 +4089,9 @@ input credit_transactions_max_order_by {
   """
   transaction_type: order_by
   """
-  Snapshot of user email/name at transaction time. Preserved when user deleted. Values: email, "Anonymous", "System".
+  Email of user who initiated the operation (snapshot at transaction time). NULL for system/anonymous operations.
   """
-  user_display_name: order_by
+  user_email: order_by
   """
   FK to users table. Who triggered this transaction. NULL for anonymous/system operations. SET NULL on delete preserves history.
   """
@@ -4161,9 +4161,9 @@ type credit_transactions_min_fields {
   """
   transaction_type: String
   """
-  Snapshot of user email/name at transaction time. Preserved when user deleted. Values: email, "Anonymous", "System".
+  Email of user who initiated the operation (snapshot at transaction time). NULL for system/anonymous operations.
   """
-  user_display_name: String
+  user_email: String
   """
   FK to users table. Who triggered this transaction. NULL for anonymous/system operations. SET NULL on delete preserves history.
   """
@@ -4235,9 +4235,9 @@ input credit_transactions_min_order_by {
   """
   transaction_type: order_by
   """
-  Snapshot of user email/name at transaction time. Preserved when user deleted. Values: email, "Anonymous", "System".
+  Email of user who initiated the operation (snapshot at transaction time). NULL for system/anonymous operations.
   """
-  user_display_name: order_by
+  user_email: order_by
   """
   FK to users table. Who triggered this transaction. NULL for anonymous/system operations. SET NULL on delete preserves history.
   """
@@ -4284,7 +4284,7 @@ input credit_transactions_order_by {
   quality_level: quality_levels_order_by
   quality_level_id: order_by
   transaction_type: order_by
-  user_display_name: order_by
+  user_email: order_by
   user_id: order_by
 }
 
@@ -4341,7 +4341,7 @@ enum credit_transactions_select_column {
   """column name"""
   transaction_type
   """column name"""
-  user_display_name
+  user_email
   """column name"""
   user_id
 }
@@ -4411,9 +4411,9 @@ input credit_transactions_set_input {
   """
   transaction_type: String
   """
-  Snapshot of user email/name at transaction time. Preserved when user deleted. Values: email, "Anonymous", "System".
+  Email of user who initiated the operation (snapshot at transaction time). NULL for system/anonymous operations.
   """
-  user_display_name: String
+  user_email: String
   """
   FK to users table. Who triggered this transaction. NULL for anonymous/system operations. SET NULL on delete preserves history.
   """
@@ -4623,9 +4623,9 @@ input credit_transactions_stream_cursor_value_input {
   """
   transaction_type: String
   """
-  Snapshot of user email/name at transaction time. Preserved when user deleted. Values: email, "Anonymous", "System".
+  Email of user who initiated the operation (snapshot at transaction time). NULL for system/anonymous operations.
   """
-  user_display_name: String
+  user_email: String
   """
   FK to users table. Who triggered this transaction. NULL for anonymous/system operations. SET NULL on delete preserves history.
   """
@@ -4709,7 +4709,7 @@ enum credit_transactions_update_column {
   """column name"""
   transaction_type
   """column name"""
-  user_display_name
+  user_email
   """column name"""
   user_id
 }
@@ -19614,6 +19614,10 @@ type plan_ai_capabilities {
   """
   rate_limit_rpd: Int
   """
+  Maximum requests per hour for this capability on this plan. NULL means unlimited.
+  """
+  rate_limit_rph: Int
+  """
   Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting).
   """
   rate_limit_rpm: Int
@@ -19708,6 +19712,10 @@ type plan_ai_capabilities_avg_fields {
   """
   rate_limit_rpd: Float
   """
+  Maximum requests per hour for this capability on this plan. NULL means unlimited.
+  """
+  rate_limit_rph: Float
+  """
   Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting).
   """
   rate_limit_rpm: Float
@@ -19721,6 +19729,10 @@ input plan_ai_capabilities_avg_order_by {
   Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap).
   """
   rate_limit_rpd: order_by
+  """
+  Maximum requests per hour for this capability on this plan. NULL means unlimited.
+  """
+  rate_limit_rph: order_by
   """
   Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting).
   """
@@ -19744,6 +19756,7 @@ input plan_ai_capabilities_bool_exp {
   quality_levels: plan_ai_capability_quality_levels_bool_exp
   quality_levels_aggregate: plan_ai_capability_quality_levels_aggregate_bool_exp
   rate_limit_rpd: Int_comparison_exp
+  rate_limit_rph: Int_comparison_exp
   rate_limit_rpm: Int_comparison_exp
   updated_at: timestamptz_comparison_exp
 }
@@ -19770,6 +19783,10 @@ input plan_ai_capabilities_inc_input {
   Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap).
   """
   rate_limit_rpd: Int
+  """
+  Maximum requests per hour for this capability on this plan. NULL means unlimited.
+  """
+  rate_limit_rph: Int
   """
   Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting).
   """
@@ -19808,6 +19825,10 @@ input plan_ai_capabilities_insert_input {
   """
   rate_limit_rpd: Int
   """
+  Maximum requests per hour for this capability on this plan. NULL means unlimited.
+  """
+  rate_limit_rph: Int
+  """
   Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting).
   """
   rate_limit_rpm: Int
@@ -19839,6 +19860,10 @@ type plan_ai_capabilities_max_fields {
   Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap).
   """
   rate_limit_rpd: Int
+  """
+  Maximum requests per hour for this capability on this plan. NULL means unlimited.
+  """
+  rate_limit_rph: Int
   """
   Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting).
   """
@@ -19874,6 +19899,10 @@ input plan_ai_capabilities_max_order_by {
   """
   rate_limit_rpd: order_by
   """
+  Maximum requests per hour for this capability on this plan. NULL means unlimited.
+  """
+  rate_limit_rph: order_by
+  """
   Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting).
   """
   rate_limit_rpm: order_by
@@ -19905,6 +19934,10 @@ type plan_ai_capabilities_min_fields {
   Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap).
   """
   rate_limit_rpd: Int
+  """
+  Maximum requests per hour for this capability on this plan. NULL means unlimited.
+  """
+  rate_limit_rph: Int
   """
   Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting).
   """
@@ -19939,6 +19972,10 @@ input plan_ai_capabilities_min_order_by {
   Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap).
   """
   rate_limit_rpd: order_by
+  """
+  Maximum requests per hour for this capability on this plan. NULL means unlimited.
+  """
+  rate_limit_rph: order_by
   """
   Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting).
   """
@@ -19988,6 +20025,7 @@ input plan_ai_capabilities_order_by {
   plan_id: order_by
   quality_levels_aggregate: plan_ai_capability_quality_levels_aggregate_order_by
   rate_limit_rpd: order_by
+  rate_limit_rph: order_by
   rate_limit_rpm: order_by
   updated_at: order_by
 }
@@ -20016,6 +20054,8 @@ enum plan_ai_capabilities_select_column {
   plan_id
   """column name"""
   rate_limit_rpd
+  """column name"""
+  rate_limit_rph
   """column name"""
   rate_limit_rpm
   """column name"""
@@ -20067,6 +20107,10 @@ input plan_ai_capabilities_set_input {
   """
   rate_limit_rpd: Int
   """
+  Maximum requests per hour for this capability on this plan. NULL means unlimited.
+  """
+  rate_limit_rph: Int
+  """
   Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting).
   """
   rate_limit_rpm: Int
@@ -20083,6 +20127,10 @@ type plan_ai_capabilities_stddev_fields {
   """
   rate_limit_rpd: Float
   """
+  Maximum requests per hour for this capability on this plan. NULL means unlimited.
+  """
+  rate_limit_rph: Float
+  """
   Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting).
   """
   rate_limit_rpm: Float
@@ -20097,6 +20145,10 @@ input plan_ai_capabilities_stddev_order_by {
   """
   rate_limit_rpd: order_by
   """
+  Maximum requests per hour for this capability on this plan. NULL means unlimited.
+  """
+  rate_limit_rph: order_by
+  """
   Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting).
   """
   rate_limit_rpm: order_by
@@ -20108,6 +20160,10 @@ type plan_ai_capabilities_stddev_pop_fields {
   Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap).
   """
   rate_limit_rpd: Float
+  """
+  Maximum requests per hour for this capability on this plan. NULL means unlimited.
+  """
+  rate_limit_rph: Float
   """
   Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting).
   """
@@ -20123,6 +20179,10 @@ input plan_ai_capabilities_stddev_pop_order_by {
   """
   rate_limit_rpd: order_by
   """
+  Maximum requests per hour for this capability on this plan. NULL means unlimited.
+  """
+  rate_limit_rph: order_by
+  """
   Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting).
   """
   rate_limit_rpm: order_by
@@ -20134,6 +20194,10 @@ type plan_ai_capabilities_stddev_samp_fields {
   Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap).
   """
   rate_limit_rpd: Float
+  """
+  Maximum requests per hour for this capability on this plan. NULL means unlimited.
+  """
+  rate_limit_rph: Float
   """
   Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting).
   """
@@ -20148,6 +20212,10 @@ input plan_ai_capabilities_stddev_samp_order_by {
   Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap).
   """
   rate_limit_rpd: order_by
+  """
+  Maximum requests per hour for this capability on this plan. NULL means unlimited.
+  """
+  rate_limit_rph: order_by
   """
   Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting).
   """
@@ -20191,6 +20259,10 @@ input plan_ai_capabilities_stream_cursor_value_input {
   """
   rate_limit_rpd: Int
   """
+  Maximum requests per hour for this capability on this plan. NULL means unlimited.
+  """
+  rate_limit_rph: Int
+  """
   Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting).
   """
   rate_limit_rpm: Int
@@ -20207,6 +20279,10 @@ type plan_ai_capabilities_sum_fields {
   """
   rate_limit_rpd: Int
   """
+  Maximum requests per hour for this capability on this plan. NULL means unlimited.
+  """
+  rate_limit_rph: Int
+  """
   Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting).
   """
   rate_limit_rpm: Int
@@ -20220,6 +20296,10 @@ input plan_ai_capabilities_sum_order_by {
   Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap).
   """
   rate_limit_rpd: order_by
+  """
+  Maximum requests per hour for this capability on this plan. NULL means unlimited.
+  """
+  rate_limit_rph: order_by
   """
   Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting).
   """
@@ -20243,6 +20323,8 @@ enum plan_ai_capabilities_update_column {
   """column name"""
   rate_limit_rpd
   """column name"""
+  rate_limit_rph
+  """column name"""
   rate_limit_rpm
   """column name"""
   updated_at
@@ -20264,6 +20346,10 @@ type plan_ai_capabilities_var_pop_fields {
   """
   rate_limit_rpd: Float
   """
+  Maximum requests per hour for this capability on this plan. NULL means unlimited.
+  """
+  rate_limit_rph: Float
+  """
   Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting).
   """
   rate_limit_rpm: Float
@@ -20278,6 +20364,10 @@ input plan_ai_capabilities_var_pop_order_by {
   """
   rate_limit_rpd: order_by
   """
+  Maximum requests per hour for this capability on this plan. NULL means unlimited.
+  """
+  rate_limit_rph: order_by
+  """
   Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting).
   """
   rate_limit_rpm: order_by
@@ -20289,6 +20379,10 @@ type plan_ai_capabilities_var_samp_fields {
   Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap).
   """
   rate_limit_rpd: Float
+  """
+  Maximum requests per hour for this capability on this plan. NULL means unlimited.
+  """
+  rate_limit_rph: Float
   """
   Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting).
   """
@@ -20304,6 +20398,10 @@ input plan_ai_capabilities_var_samp_order_by {
   """
   rate_limit_rpd: order_by
   """
+  Maximum requests per hour for this capability on this plan. NULL means unlimited.
+  """
+  rate_limit_rph: order_by
+  """
   Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting).
   """
   rate_limit_rpm: order_by
@@ -20315,6 +20413,10 @@ type plan_ai_capabilities_variance_fields {
   Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap).
   """
   rate_limit_rpd: Float
+  """
+  Maximum requests per hour for this capability on this plan. NULL means unlimited.
+  """
+  rate_limit_rph: Float
   """
   Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting).
   """
@@ -20329,6 +20431,10 @@ input plan_ai_capabilities_variance_order_by {
   Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap).
   """
   rate_limit_rpd: order_by
+  """
+  Maximum requests per hour for this capability on this plan. NULL means unlimited.
+  """
+  rate_limit_rph: order_by
   """
   Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting).
   """

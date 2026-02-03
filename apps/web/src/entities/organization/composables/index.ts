@@ -1,5 +1,10 @@
 // Query composables
-export { useGetOrganization, useGetUserDefaultOrganization } from './queries';
+export {
+  useGetOrganization,
+  useGetOrganizationBilling,
+  useGetUserDefaultOrganization,
+  useCheckSlugAvailability,
+} from './queries';
 
 // Mutation composables
 export { useUpdateOrganization } from './mutations';

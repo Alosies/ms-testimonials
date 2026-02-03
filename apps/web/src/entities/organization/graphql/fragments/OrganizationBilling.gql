@@ -1,0 +1,42 @@
+fragment OrganizationBilling on organizations {
+  id
+  name
+  slug
+  # Active plan with billing details
+  plans(where: { status: { _in: ["active", "trial"] } }, limit: 1) {
+    id
+    plan_id
+    status
+    billing_cycle
+    currency_code
+    price_in_base_unit
+    starts_at
+    current_period_ends_at
+    trial_ends_at
+    # Effective limits (may be overridden)
+    max_forms
+    max_members
+    max_testimonials
+    max_widgets
+    monthly_ai_credits
+    show_branding
+    has_overrides
+    # Pending downgrade info
+    pending_plan_id
+    pending_change_at
+    # Plan template for reference
+    plan {
+      id
+      unique_name
+      name
+      description
+      # Multi-currency pricing
+      prices(where: { is_active: { _eq: true } }) {
+        currency_code
+        price_monthly_in_base_unit
+        price_yearly_in_base_unit
+        price_lifetime_in_base_unit
+      }
+    }
+  }
+}

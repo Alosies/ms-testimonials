@@ -1413,8 +1413,8 @@ export interface Credit_Reservations {
   status: Scalars['String']['output'];
   /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
   updated_at: Scalars['timestamptz']['output'];
-  /** Snapshot of user email/name at reservation time. Copied to transaction on settle. Values: email, "Anonymous". */
-  user_display_name?: Maybe<Scalars['String']['output']>;
+  /** Email of user who initiated the operation (snapshot at reservation time). NULL for system/anonymous operations. */
+  user_email?: Maybe<Scalars['String']['output']>;
   /** FK to users table. Who initiated this reservation. NULL for anonymous operations. SET NULL on delete preserves history. */
   user_id?: Maybe<Scalars['String']['output']>;
 }
@@ -1521,7 +1521,7 @@ export interface Credit_Reservations_Bool_Exp {
   settled_credits?: InputMaybe<Numeric_Comparison_Exp>;
   status?: InputMaybe<String_Comparison_Exp>;
   updated_at?: InputMaybe<Timestamptz_Comparison_Exp>;
-  user_display_name?: InputMaybe<String_Comparison_Exp>;
+  user_email?: InputMaybe<String_Comparison_Exp>;
   user_id?: InputMaybe<String_Comparison_Exp>;
 }
 
@@ -1575,8 +1575,8 @@ export interface Credit_Reservations_Insert_Input {
   status?: InputMaybe<Scalars['String']['input']>;
   /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
   updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
-  /** Snapshot of user email/name at reservation time. Copied to transaction on settle. Values: email, "Anonymous". */
-  user_display_name?: InputMaybe<Scalars['String']['input']>;
+  /** Email of user who initiated the operation (snapshot at reservation time). NULL for system/anonymous operations. */
+  user_email?: InputMaybe<Scalars['String']['input']>;
   /** FK to users table. Who initiated this reservation. NULL for anonymous operations. SET NULL on delete preserves history. */
   user_id?: InputMaybe<Scalars['String']['input']>;
 }
@@ -1612,8 +1612,8 @@ export interface Credit_Reservations_Max_Fields {
   status?: Maybe<Scalars['String']['output']>;
   /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
   updated_at?: Maybe<Scalars['timestamptz']['output']>;
-  /** Snapshot of user email/name at reservation time. Copied to transaction on settle. Values: email, "Anonymous". */
-  user_display_name?: Maybe<Scalars['String']['output']>;
+  /** Email of user who initiated the operation (snapshot at reservation time). NULL for system/anonymous operations. */
+  user_email?: Maybe<Scalars['String']['output']>;
   /** FK to users table. Who initiated this reservation. NULL for anonymous operations. SET NULL on delete preserves history. */
   user_id?: Maybe<Scalars['String']['output']>;
 }
@@ -1648,8 +1648,8 @@ export interface Credit_Reservations_Max_Order_By {
   status?: InputMaybe<Order_By>;
   /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
   updated_at?: InputMaybe<Order_By>;
-  /** Snapshot of user email/name at reservation time. Copied to transaction on settle. Values: email, "Anonymous". */
-  user_display_name?: InputMaybe<Order_By>;
+  /** Email of user who initiated the operation (snapshot at reservation time). NULL for system/anonymous operations. */
+  user_email?: InputMaybe<Order_By>;
   /** FK to users table. Who initiated this reservation. NULL for anonymous operations. SET NULL on delete preserves history. */
   user_id?: InputMaybe<Order_By>;
 }
@@ -1685,8 +1685,8 @@ export interface Credit_Reservations_Min_Fields {
   status?: Maybe<Scalars['String']['output']>;
   /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
   updated_at?: Maybe<Scalars['timestamptz']['output']>;
-  /** Snapshot of user email/name at reservation time. Copied to transaction on settle. Values: email, "Anonymous". */
-  user_display_name?: Maybe<Scalars['String']['output']>;
+  /** Email of user who initiated the operation (snapshot at reservation time). NULL for system/anonymous operations. */
+  user_email?: Maybe<Scalars['String']['output']>;
   /** FK to users table. Who initiated this reservation. NULL for anonymous operations. SET NULL on delete preserves history. */
   user_id?: Maybe<Scalars['String']['output']>;
 }
@@ -1721,8 +1721,8 @@ export interface Credit_Reservations_Min_Order_By {
   status?: InputMaybe<Order_By>;
   /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
   updated_at?: InputMaybe<Order_By>;
-  /** Snapshot of user email/name at reservation time. Copied to transaction on settle. Values: email, "Anonymous". */
-  user_display_name?: InputMaybe<Order_By>;
+  /** Email of user who initiated the operation (snapshot at reservation time). NULL for system/anonymous operations. */
+  user_email?: InputMaybe<Order_By>;
   /** FK to users table. Who initiated this reservation. NULL for anonymous operations. SET NULL on delete preserves history. */
   user_id?: InputMaybe<Order_By>;
 }
@@ -1762,7 +1762,7 @@ export interface Credit_Reservations_Order_By {
   settled_credits?: InputMaybe<Order_By>;
   status?: InputMaybe<Order_By>;
   updated_at?: InputMaybe<Order_By>;
-  user_display_name?: InputMaybe<Order_By>;
+  user_email?: InputMaybe<Order_By>;
   user_id?: InputMaybe<Order_By>;
 }
 
@@ -1803,7 +1803,7 @@ export const Credit_Reservations_Select_Column = {
   /** column name */
   UpdatedAt: 'updated_at',
   /** column name */
-  UserDisplayName: 'user_display_name',
+  UserEmail: 'user_email',
   /** column name */
   UserId: 'user_id'
 } as const;
@@ -1839,8 +1839,8 @@ export interface Credit_Reservations_Set_Input {
   status?: InputMaybe<Scalars['String']['input']>;
   /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
   updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
-  /** Snapshot of user email/name at reservation time. Copied to transaction on settle. Values: email, "Anonymous". */
-  user_display_name?: InputMaybe<Scalars['String']['input']>;
+  /** Email of user who initiated the operation (snapshot at reservation time). NULL for system/anonymous operations. */
+  user_email?: InputMaybe<Scalars['String']['input']>;
   /** FK to users table. Who initiated this reservation. NULL for anonymous operations. SET NULL on delete preserves history. */
   user_id?: InputMaybe<Scalars['String']['input']>;
 }
@@ -1934,8 +1934,8 @@ export interface Credit_Reservations_Stream_Cursor_Value_Input {
   status?: InputMaybe<Scalars['String']['input']>;
   /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
   updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
-  /** Snapshot of user email/name at reservation time. Copied to transaction on settle. Values: email, "Anonymous". */
-  user_display_name?: InputMaybe<Scalars['String']['input']>;
+  /** Email of user who initiated the operation (snapshot at reservation time). NULL for system/anonymous operations. */
+  user_email?: InputMaybe<Scalars['String']['input']>;
   /** FK to users table. Who initiated this reservation. NULL for anonymous operations. SET NULL on delete preserves history. */
   user_id?: InputMaybe<Scalars['String']['input']>;
 }
@@ -1988,7 +1988,7 @@ export const Credit_Reservations_Update_Column = {
   /** column name */
   UpdatedAt: 'updated_at',
   /** column name */
-  UserDisplayName: 'user_display_name',
+  UserEmail: 'user_email',
   /** column name */
   UserId: 'user_id'
 } as const;
@@ -2505,8 +2505,8 @@ export interface Credit_Transactions {
   quality_level_id?: Maybe<Scalars['String']['output']>;
   /** Type of credit transaction: ai_consumption, plan_allocation, topup_purchase, promo_bonus, admin_adjustment, plan_change_adjustment, expiration. */
   transaction_type: Scalars['String']['output'];
-  /** Snapshot of user email/name at transaction time. Preserved when user deleted. Values: email, "Anonymous", "System". */
-  user_display_name?: Maybe<Scalars['String']['output']>;
+  /** Email of user who initiated the operation (snapshot at transaction time). NULL for system/anonymous operations. */
+  user_email?: Maybe<Scalars['String']['output']>;
   /** FK to users table. Who triggered this transaction. NULL for anonymous/system operations. SET NULL on delete preserves history. */
   user_id?: Maybe<Scalars['String']['output']>;
 }
@@ -2635,7 +2635,7 @@ export interface Credit_Transactions_Bool_Exp {
   quality_level?: InputMaybe<Quality_Levels_Bool_Exp>;
   quality_level_id?: InputMaybe<String_Comparison_Exp>;
   transaction_type?: InputMaybe<String_Comparison_Exp>;
-  user_display_name?: InputMaybe<String_Comparison_Exp>;
+  user_email?: InputMaybe<String_Comparison_Exp>;
   user_id?: InputMaybe<String_Comparison_Exp>;
 }
 
@@ -2711,8 +2711,8 @@ export interface Credit_Transactions_Insert_Input {
   quality_level_id?: InputMaybe<Scalars['String']['input']>;
   /** Type of credit transaction: ai_consumption, plan_allocation, topup_purchase, promo_bonus, admin_adjustment, plan_change_adjustment, expiration. */
   transaction_type?: InputMaybe<Scalars['String']['input']>;
-  /** Snapshot of user email/name at transaction time. Preserved when user deleted. Values: email, "Anonymous", "System". */
-  user_display_name?: InputMaybe<Scalars['String']['input']>;
+  /** Email of user who initiated the operation (snapshot at transaction time). NULL for system/anonymous operations. */
+  user_email?: InputMaybe<Scalars['String']['input']>;
   /** FK to users table. Who triggered this transaction. NULL for anonymous/system operations. SET NULL on delete preserves history. */
   user_id?: InputMaybe<Scalars['String']['input']>;
 }
@@ -2750,8 +2750,8 @@ export interface Credit_Transactions_Max_Fields {
   quality_level_id?: Maybe<Scalars['String']['output']>;
   /** Type of credit transaction: ai_consumption, plan_allocation, topup_purchase, promo_bonus, admin_adjustment, plan_change_adjustment, expiration. */
   transaction_type?: Maybe<Scalars['String']['output']>;
-  /** Snapshot of user email/name at transaction time. Preserved when user deleted. Values: email, "Anonymous", "System". */
-  user_display_name?: Maybe<Scalars['String']['output']>;
+  /** Email of user who initiated the operation (snapshot at transaction time). NULL for system/anonymous operations. */
+  user_email?: Maybe<Scalars['String']['output']>;
   /** FK to users table. Who triggered this transaction. NULL for anonymous/system operations. SET NULL on delete preserves history. */
   user_id?: Maybe<Scalars['String']['output']>;
 }
@@ -2788,8 +2788,8 @@ export interface Credit_Transactions_Max_Order_By {
   quality_level_id?: InputMaybe<Order_By>;
   /** Type of credit transaction: ai_consumption, plan_allocation, topup_purchase, promo_bonus, admin_adjustment, plan_change_adjustment, expiration. */
   transaction_type?: InputMaybe<Order_By>;
-  /** Snapshot of user email/name at transaction time. Preserved when user deleted. Values: email, "Anonymous", "System". */
-  user_display_name?: InputMaybe<Order_By>;
+  /** Email of user who initiated the operation (snapshot at transaction time). NULL for system/anonymous operations. */
+  user_email?: InputMaybe<Order_By>;
   /** FK to users table. Who triggered this transaction. NULL for anonymous/system operations. SET NULL on delete preserves history. */
   user_id?: InputMaybe<Order_By>;
 }
@@ -2827,8 +2827,8 @@ export interface Credit_Transactions_Min_Fields {
   quality_level_id?: Maybe<Scalars['String']['output']>;
   /** Type of credit transaction: ai_consumption, plan_allocation, topup_purchase, promo_bonus, admin_adjustment, plan_change_adjustment, expiration. */
   transaction_type?: Maybe<Scalars['String']['output']>;
-  /** Snapshot of user email/name at transaction time. Preserved when user deleted. Values: email, "Anonymous", "System". */
-  user_display_name?: Maybe<Scalars['String']['output']>;
+  /** Email of user who initiated the operation (snapshot at transaction time). NULL for system/anonymous operations. */
+  user_email?: Maybe<Scalars['String']['output']>;
   /** FK to users table. Who triggered this transaction. NULL for anonymous/system operations. SET NULL on delete preserves history. */
   user_id?: Maybe<Scalars['String']['output']>;
 }
@@ -2865,8 +2865,8 @@ export interface Credit_Transactions_Min_Order_By {
   quality_level_id?: InputMaybe<Order_By>;
   /** Type of credit transaction: ai_consumption, plan_allocation, topup_purchase, promo_bonus, admin_adjustment, plan_change_adjustment, expiration. */
   transaction_type?: InputMaybe<Order_By>;
-  /** Snapshot of user email/name at transaction time. Preserved when user deleted. Values: email, "Anonymous", "System". */
-  user_display_name?: InputMaybe<Order_By>;
+  /** Email of user who initiated the operation (snapshot at transaction time). NULL for system/anonymous operations. */
+  user_email?: InputMaybe<Order_By>;
   /** FK to users table. Who triggered this transaction. NULL for anonymous/system operations. SET NULL on delete preserves history. */
   user_id?: InputMaybe<Order_By>;
 }
@@ -2908,7 +2908,7 @@ export interface Credit_Transactions_Order_By {
   quality_level?: InputMaybe<Quality_Levels_Order_By>;
   quality_level_id?: InputMaybe<Order_By>;
   transaction_type?: InputMaybe<Order_By>;
-  user_display_name?: InputMaybe<Order_By>;
+  user_email?: InputMaybe<Order_By>;
   user_id?: InputMaybe<Order_By>;
 }
 
@@ -2959,7 +2959,7 @@ export const Credit_Transactions_Select_Column = {
   /** column name */
   TransactionType: 'transaction_type',
   /** column name */
-  UserDisplayName: 'user_display_name',
+  UserEmail: 'user_email',
   /** column name */
   UserId: 'user_id'
 } as const;
@@ -2997,8 +2997,8 @@ export interface Credit_Transactions_Set_Input {
   quality_level_id?: InputMaybe<Scalars['String']['input']>;
   /** Type of credit transaction: ai_consumption, plan_allocation, topup_purchase, promo_bonus, admin_adjustment, plan_change_adjustment, expiration. */
   transaction_type?: InputMaybe<Scalars['String']['input']>;
-  /** Snapshot of user email/name at transaction time. Preserved when user deleted. Values: email, "Anonymous", "System". */
-  user_display_name?: InputMaybe<Scalars['String']['input']>;
+  /** Email of user who initiated the operation (snapshot at transaction time). NULL for system/anonymous operations. */
+  user_email?: InputMaybe<Scalars['String']['input']>;
   /** FK to users table. Who triggered this transaction. NULL for anonymous/system operations. SET NULL on delete preserves history. */
   user_id?: InputMaybe<Scalars['String']['input']>;
 }
@@ -3120,8 +3120,8 @@ export interface Credit_Transactions_Stream_Cursor_Value_Input {
   quality_level_id?: InputMaybe<Scalars['String']['input']>;
   /** Type of credit transaction: ai_consumption, plan_allocation, topup_purchase, promo_bonus, admin_adjustment, plan_change_adjustment, expiration. */
   transaction_type?: InputMaybe<Scalars['String']['input']>;
-  /** Snapshot of user email/name at transaction time. Preserved when user deleted. Values: email, "Anonymous", "System". */
-  user_display_name?: InputMaybe<Scalars['String']['input']>;
+  /** Email of user who initiated the operation (snapshot at transaction time). NULL for system/anonymous operations. */
+  user_email?: InputMaybe<Scalars['String']['input']>;
   /** FK to users table. Who triggered this transaction. NULL for anonymous/system operations. SET NULL on delete preserves history. */
   user_id?: InputMaybe<Scalars['String']['input']>;
 }
@@ -3184,7 +3184,7 @@ export const Credit_Transactions_Update_Column = {
   /** column name */
   TransactionType: 'transaction_type',
   /** column name */
-  UserDisplayName: 'user_display_name',
+  UserEmail: 'user_email',
   /** column name */
   UserId: 'user_id'
 } as const;
@@ -15978,6 +15978,8 @@ export interface Plan_Ai_Capabilities {
   quality_levels_aggregate: Plan_Ai_Capability_Quality_Levels_Aggregate;
   /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
   rate_limit_rpd?: Maybe<Scalars['Int']['output']>;
+  /** Maximum requests per hour for this capability on this plan. NULL means unlimited. */
+  rate_limit_rph?: Maybe<Scalars['Int']['output']>;
   /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
   rate_limit_rpm?: Maybe<Scalars['Int']['output']>;
   /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
@@ -16088,6 +16090,8 @@ export interface Plan_Ai_Capabilities_Avg_Fields {
   __typename?: 'plan_ai_capabilities_avg_fields';
   /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
   rate_limit_rpd?: Maybe<Scalars['Float']['output']>;
+  /** Maximum requests per hour for this capability on this plan. NULL means unlimited. */
+  rate_limit_rph?: Maybe<Scalars['Float']['output']>;
   /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
   rate_limit_rpm?: Maybe<Scalars['Float']['output']>;
 }
@@ -16096,6 +16100,8 @@ export interface Plan_Ai_Capabilities_Avg_Fields {
 export interface Plan_Ai_Capabilities_Avg_Order_By {
   /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
   rate_limit_rpd?: InputMaybe<Order_By>;
+  /** Maximum requests per hour for this capability on this plan. NULL means unlimited. */
+  rate_limit_rph?: InputMaybe<Order_By>;
   /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
   rate_limit_rpm?: InputMaybe<Order_By>;
 }
@@ -16115,6 +16121,7 @@ export interface Plan_Ai_Capabilities_Bool_Exp {
   quality_levels?: InputMaybe<Plan_Ai_Capability_Quality_Levels_Bool_Exp>;
   quality_levels_aggregate?: InputMaybe<Plan_Ai_Capability_Quality_Levels_Aggregate_Bool_Exp>;
   rate_limit_rpd?: InputMaybe<Int_Comparison_Exp>;
+  rate_limit_rph?: InputMaybe<Int_Comparison_Exp>;
   rate_limit_rpm?: InputMaybe<Int_Comparison_Exp>;
   updated_at?: InputMaybe<Timestamptz_Comparison_Exp>;
 }
@@ -16132,6 +16139,8 @@ export type Plan_Ai_Capabilities_Constraint = typeof Plan_Ai_Capabilities_Constr
 export interface Plan_Ai_Capabilities_Inc_Input {
   /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
   rate_limit_rpd?: InputMaybe<Scalars['Int']['input']>;
+  /** Maximum requests per hour for this capability on this plan. NULL means unlimited. */
+  rate_limit_rph?: InputMaybe<Scalars['Int']['input']>;
   /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
   rate_limit_rpm?: InputMaybe<Scalars['Int']['input']>;
 }
@@ -16153,6 +16162,8 @@ export interface Plan_Ai_Capabilities_Insert_Input {
   quality_levels?: InputMaybe<Plan_Ai_Capability_Quality_Levels_Arr_Rel_Insert_Input>;
   /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
   rate_limit_rpd?: InputMaybe<Scalars['Int']['input']>;
+  /** Maximum requests per hour for this capability on this plan. NULL means unlimited. */
+  rate_limit_rph?: InputMaybe<Scalars['Int']['input']>;
   /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
   rate_limit_rpm?: InputMaybe<Scalars['Int']['input']>;
   /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
@@ -16172,6 +16183,8 @@ export interface Plan_Ai_Capabilities_Max_Fields {
   plan_id?: Maybe<Scalars['String']['output']>;
   /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
   rate_limit_rpd?: Maybe<Scalars['Int']['output']>;
+  /** Maximum requests per hour for this capability on this plan. NULL means unlimited. */
+  rate_limit_rph?: Maybe<Scalars['Int']['output']>;
   /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
   rate_limit_rpm?: Maybe<Scalars['Int']['output']>;
   /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
@@ -16190,6 +16203,8 @@ export interface Plan_Ai_Capabilities_Max_Order_By {
   plan_id?: InputMaybe<Order_By>;
   /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
   rate_limit_rpd?: InputMaybe<Order_By>;
+  /** Maximum requests per hour for this capability on this plan. NULL means unlimited. */
+  rate_limit_rph?: InputMaybe<Order_By>;
   /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
   rate_limit_rpm?: InputMaybe<Order_By>;
   /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
@@ -16209,6 +16224,8 @@ export interface Plan_Ai_Capabilities_Min_Fields {
   plan_id?: Maybe<Scalars['String']['output']>;
   /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
   rate_limit_rpd?: Maybe<Scalars['Int']['output']>;
+  /** Maximum requests per hour for this capability on this plan. NULL means unlimited. */
+  rate_limit_rph?: Maybe<Scalars['Int']['output']>;
   /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
   rate_limit_rpm?: Maybe<Scalars['Int']['output']>;
   /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
@@ -16227,6 +16244,8 @@ export interface Plan_Ai_Capabilities_Min_Order_By {
   plan_id?: InputMaybe<Order_By>;
   /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
   rate_limit_rpd?: InputMaybe<Order_By>;
+  /** Maximum requests per hour for this capability on this plan. NULL means unlimited. */
+  rate_limit_rph?: InputMaybe<Order_By>;
   /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
   rate_limit_rpm?: InputMaybe<Order_By>;
   /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
@@ -16267,6 +16286,7 @@ export interface Plan_Ai_Capabilities_Order_By {
   plan_id?: InputMaybe<Order_By>;
   quality_levels_aggregate?: InputMaybe<Plan_Ai_Capability_Quality_Levels_Aggregate_Order_By>;
   rate_limit_rpd?: InputMaybe<Order_By>;
+  rate_limit_rph?: InputMaybe<Order_By>;
   rate_limit_rpm?: InputMaybe<Order_By>;
   updated_at?: InputMaybe<Order_By>;
 }
@@ -16291,6 +16311,8 @@ export const Plan_Ai_Capabilities_Select_Column = {
   PlanId: 'plan_id',
   /** column name */
   RateLimitRpd: 'rate_limit_rpd',
+  /** column name */
+  RateLimitRph: 'rate_limit_rph',
   /** column name */
   RateLimitRpm: 'rate_limit_rpm',
   /** column name */
@@ -16326,6 +16348,8 @@ export interface Plan_Ai_Capabilities_Set_Input {
   plan_id?: InputMaybe<Scalars['String']['input']>;
   /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
   rate_limit_rpd?: InputMaybe<Scalars['Int']['input']>;
+  /** Maximum requests per hour for this capability on this plan. NULL means unlimited. */
+  rate_limit_rph?: InputMaybe<Scalars['Int']['input']>;
   /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
   rate_limit_rpm?: InputMaybe<Scalars['Int']['input']>;
   /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
@@ -16337,6 +16361,8 @@ export interface Plan_Ai_Capabilities_Stddev_Fields {
   __typename?: 'plan_ai_capabilities_stddev_fields';
   /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
   rate_limit_rpd?: Maybe<Scalars['Float']['output']>;
+  /** Maximum requests per hour for this capability on this plan. NULL means unlimited. */
+  rate_limit_rph?: Maybe<Scalars['Float']['output']>;
   /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
   rate_limit_rpm?: Maybe<Scalars['Float']['output']>;
 }
@@ -16345,6 +16371,8 @@ export interface Plan_Ai_Capabilities_Stddev_Fields {
 export interface Plan_Ai_Capabilities_Stddev_Order_By {
   /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
   rate_limit_rpd?: InputMaybe<Order_By>;
+  /** Maximum requests per hour for this capability on this plan. NULL means unlimited. */
+  rate_limit_rph?: InputMaybe<Order_By>;
   /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
   rate_limit_rpm?: InputMaybe<Order_By>;
 }
@@ -16354,6 +16382,8 @@ export interface Plan_Ai_Capabilities_Stddev_Pop_Fields {
   __typename?: 'plan_ai_capabilities_stddev_pop_fields';
   /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
   rate_limit_rpd?: Maybe<Scalars['Float']['output']>;
+  /** Maximum requests per hour for this capability on this plan. NULL means unlimited. */
+  rate_limit_rph?: Maybe<Scalars['Float']['output']>;
   /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
   rate_limit_rpm?: Maybe<Scalars['Float']['output']>;
 }
@@ -16362,6 +16392,8 @@ export interface Plan_Ai_Capabilities_Stddev_Pop_Fields {
 export interface Plan_Ai_Capabilities_Stddev_Pop_Order_By {
   /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
   rate_limit_rpd?: InputMaybe<Order_By>;
+  /** Maximum requests per hour for this capability on this plan. NULL means unlimited. */
+  rate_limit_rph?: InputMaybe<Order_By>;
   /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
   rate_limit_rpm?: InputMaybe<Order_By>;
 }
@@ -16371,6 +16403,8 @@ export interface Plan_Ai_Capabilities_Stddev_Samp_Fields {
   __typename?: 'plan_ai_capabilities_stddev_samp_fields';
   /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
   rate_limit_rpd?: Maybe<Scalars['Float']['output']>;
+  /** Maximum requests per hour for this capability on this plan. NULL means unlimited. */
+  rate_limit_rph?: Maybe<Scalars['Float']['output']>;
   /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
   rate_limit_rpm?: Maybe<Scalars['Float']['output']>;
 }
@@ -16379,6 +16413,8 @@ export interface Plan_Ai_Capabilities_Stddev_Samp_Fields {
 export interface Plan_Ai_Capabilities_Stddev_Samp_Order_By {
   /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
   rate_limit_rpd?: InputMaybe<Order_By>;
+  /** Maximum requests per hour for this capability on this plan. NULL means unlimited. */
+  rate_limit_rph?: InputMaybe<Order_By>;
   /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
   rate_limit_rpm?: InputMaybe<Order_By>;
 }
@@ -16405,6 +16441,8 @@ export interface Plan_Ai_Capabilities_Stream_Cursor_Value_Input {
   plan_id?: InputMaybe<Scalars['String']['input']>;
   /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
   rate_limit_rpd?: InputMaybe<Scalars['Int']['input']>;
+  /** Maximum requests per hour for this capability on this plan. NULL means unlimited. */
+  rate_limit_rph?: InputMaybe<Scalars['Int']['input']>;
   /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
   rate_limit_rpm?: InputMaybe<Scalars['Int']['input']>;
   /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
@@ -16416,6 +16454,8 @@ export interface Plan_Ai_Capabilities_Sum_Fields {
   __typename?: 'plan_ai_capabilities_sum_fields';
   /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
   rate_limit_rpd?: Maybe<Scalars['Int']['output']>;
+  /** Maximum requests per hour for this capability on this plan. NULL means unlimited. */
+  rate_limit_rph?: Maybe<Scalars['Int']['output']>;
   /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
   rate_limit_rpm?: Maybe<Scalars['Int']['output']>;
 }
@@ -16424,6 +16464,8 @@ export interface Plan_Ai_Capabilities_Sum_Fields {
 export interface Plan_Ai_Capabilities_Sum_Order_By {
   /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
   rate_limit_rpd?: InputMaybe<Order_By>;
+  /** Maximum requests per hour for this capability on this plan. NULL means unlimited. */
+  rate_limit_rph?: InputMaybe<Order_By>;
   /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
   rate_limit_rpm?: InputMaybe<Order_By>;
 }
@@ -16442,6 +16484,8 @@ export const Plan_Ai_Capabilities_Update_Column = {
   PlanId: 'plan_id',
   /** column name */
   RateLimitRpd: 'rate_limit_rpd',
+  /** column name */
+  RateLimitRph: 'rate_limit_rph',
   /** column name */
   RateLimitRpm: 'rate_limit_rpm',
   /** column name */
@@ -16463,6 +16507,8 @@ export interface Plan_Ai_Capabilities_Var_Pop_Fields {
   __typename?: 'plan_ai_capabilities_var_pop_fields';
   /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
   rate_limit_rpd?: Maybe<Scalars['Float']['output']>;
+  /** Maximum requests per hour for this capability on this plan. NULL means unlimited. */
+  rate_limit_rph?: Maybe<Scalars['Float']['output']>;
   /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
   rate_limit_rpm?: Maybe<Scalars['Float']['output']>;
 }
@@ -16471,6 +16517,8 @@ export interface Plan_Ai_Capabilities_Var_Pop_Fields {
 export interface Plan_Ai_Capabilities_Var_Pop_Order_By {
   /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
   rate_limit_rpd?: InputMaybe<Order_By>;
+  /** Maximum requests per hour for this capability on this plan. NULL means unlimited. */
+  rate_limit_rph?: InputMaybe<Order_By>;
   /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
   rate_limit_rpm?: InputMaybe<Order_By>;
 }
@@ -16480,6 +16528,8 @@ export interface Plan_Ai_Capabilities_Var_Samp_Fields {
   __typename?: 'plan_ai_capabilities_var_samp_fields';
   /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
   rate_limit_rpd?: Maybe<Scalars['Float']['output']>;
+  /** Maximum requests per hour for this capability on this plan. NULL means unlimited. */
+  rate_limit_rph?: Maybe<Scalars['Float']['output']>;
   /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
   rate_limit_rpm?: Maybe<Scalars['Float']['output']>;
 }
@@ -16488,6 +16538,8 @@ export interface Plan_Ai_Capabilities_Var_Samp_Fields {
 export interface Plan_Ai_Capabilities_Var_Samp_Order_By {
   /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
   rate_limit_rpd?: InputMaybe<Order_By>;
+  /** Maximum requests per hour for this capability on this plan. NULL means unlimited. */
+  rate_limit_rph?: InputMaybe<Order_By>;
   /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
   rate_limit_rpm?: InputMaybe<Order_By>;
 }
@@ -16497,6 +16549,8 @@ export interface Plan_Ai_Capabilities_Variance_Fields {
   __typename?: 'plan_ai_capabilities_variance_fields';
   /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
   rate_limit_rpd?: Maybe<Scalars['Float']['output']>;
+  /** Maximum requests per hour for this capability on this plan. NULL means unlimited. */
+  rate_limit_rph?: Maybe<Scalars['Float']['output']>;
   /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
   rate_limit_rpm?: Maybe<Scalars['Float']['output']>;
 }
@@ -16505,6 +16559,8 @@ export interface Plan_Ai_Capabilities_Variance_Fields {
 export interface Plan_Ai_Capabilities_Variance_Order_By {
   /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
   rate_limit_rpd?: InputMaybe<Order_By>;
+  /** Maximum requests per hour for this capability on this plan. NULL means unlimited. */
+  rate_limit_rph?: InputMaybe<Order_By>;
   /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
   rate_limit_rpm?: InputMaybe<Order_By>;
 }
