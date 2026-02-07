@@ -18,6 +18,7 @@
 **Proposed** - 2026-02-02
 
 - 2026-02-02: Research completed, initial proposal
+- 2026-02-08: Reviewed — corrected data model to match implemented schema, added hybrid form scoping decision, added embed build strategy, positioned multi-form widgets as premium
 
 ---
 
@@ -40,7 +41,7 @@ Widgets are a core monetization driver for testimonial platforms:
 | **Social proof display** | Convert website visitors with visible testimonials |
 | **No-code embedding** | Non-technical users can add testimonials anywhere |
 | **Brand consistency** | Customizable to match customer branding |
-| **Premium features** | Branding removal, advanced customization as upsells |
+| **Premium features** | Branding removal, multi-form widgets, advanced customization as upsells |
 
 ### Competitive Analysis
 
@@ -158,6 +159,7 @@ Implement **three core widget types** that cover 90% of use cases:
 
 | Category | Options |
 |----------|---------|
+| **Multi-form widgets** | Pull testimonials from any form in the org (org-wide scope) |
 | **Branding** | Remove "Powered by" badge |
 | **Filtering** | Filter by tags, rating, date range |
 | **Animation** | Carousel speed, hover effects |
@@ -188,61 +190,130 @@ Use **div + script approach with Shadow DOM**:
 
 **Technical flow:**
 1. Script loads and finds all `[data-testimonials-widget]` elements
-2. Fetches widget config + testimonials from API
+2. Fetches widget config + testimonials from public API (`GET /public/widgets/:id`)
 3. Renders widget inside Shadow DOM
 4. Applies user's customization settings
 
+#### Build & Deploy Strategy
+
+The embed script is a **standalone package** (`packages/widget-embed/`) built with **Vite library mode**:
+
+| Concern | Approach |
+|---------|----------|
+| **Build** | Vite library mode → single IIFE bundle (`embed.js`) with inlined CSS |
+| **Bundle size** | Target < 30KB gzipped. No framework runtime — vanilla TS + DOM APIs |
+| **Versioning** | URL-versioned: `/v1/embed.js`. Breaking changes → `/v2/embed.js` |
+| **Hosting** | Served from API domain initially (`/public/embed/v1/embed.js`), CDN later |
+| **Caching** | `Cache-Control: public, max-age=3600` for script. Widget data: `stale-while-revalidate` |
+| **CORS** | Public API endpoint allows `*` origin for embed requests |
+| **Error handling** | Graceful degradation — if API unreachable, show "Powered by" placeholder, never break host site |
+| **Browser support** | ES2020+ (Shadow DOM supported in all modern browsers). No IE11 |
+
 ---
+
+### Widget Scoping: Hybrid Form Approach
+
+Widgets use a **hybrid scoping model** with an optional `form_id`:
+
+| `form_id` | Scope | Behavior | Plan |
+|-----------|-------|----------|------|
+| **Set** | Form-scoped | Auto-includes all approved testimonials from that form. Testimonial picker scoped to that form | Free |
+| **NULL** | Org-wide | Pulls testimonials from any form in the org. Testimonial picker shows all, grouped by form | Premium |
+
+**Why hybrid:**
+- **Simple default** — most users create one widget per form (pick form, done)
+- **Power user unlock** — cross-form "Best of Company" showcases as a premium upsell
+- **No schema debt** — optional FK is clean, no breaking changes later
+
+**Builder UX flow:**
+1. User selects a form (default, pre-selected if coming from a form page)
+2. Testimonial picker scopes to that form's approved testimonials
+3. Premium users see "All forms" option to unlock org-wide selection
 
 ### Widget Data Model
 
+> **Note:** This reflects the implemented database schema. See migrations for authoritative DDL.
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│ widgets                                                         │
+├─────────────────────────────────────────────────────────────────┤
+│ id                  TEXT PK  (nanoid_12)                        │
+│ organization_id     TEXT FK  → organizations (tenant boundary)  │
+│ form_id             TEXT FK  → forms (NULL = org-wide, premium) │
+│ created_by          TEXT FK  → users                            │
+│ name                TEXT     (e.g. "Homepage Carousel")         │
+│ type                TEXT     CHECK (wall_of_love|carousel|      │
+│                               single_quote)                    │
+│ theme               TEXT     CHECK (light|dark) DEFAULT 'light' │
+│ show_ratings        BOOLEAN  DEFAULT true                       │
+│ show_dates          BOOLEAN  DEFAULT false                      │
+│ show_company        BOOLEAN  DEFAULT true                       │
+│ show_avatar         BOOLEAN  DEFAULT true                       │
+│ max_display         SMALLINT (NULL = show all)                  │
+│ settings            JSONB    DEFAULT '{}'  (type-specific)      │
+│ is_active           BOOLEAN  DEFAULT true  (soft delete)        │
+│ created_at          TIMESTAMPTZ                                 │
+│ updated_at          TIMESTAMPTZ (auto-trigger)                  │
+│ updated_by          TEXT FK  → users                            │
+└─────────────────────────────────────────────────────────────────┘
+         │ 1
+         │
+         │ M
+┌─────────────────────────────────────────────────────────────────┐
+│ widget_testimonials  (junction table)                           │
+├─────────────────────────────────────────────────────────────────┤
+│ id                  TEXT PK  (nanoid_12)                        │
+│ organization_id     TEXT FK  → organizations (RLS boundary)     │
+│ widget_id           TEXT FK  → widgets (CASCADE)                │
+│ testimonial_id      TEXT FK  → testimonials (CASCADE)           │
+│ display_order       SMALLINT (UNIQUE per widget)                │
+│ is_featured         BOOLEAN  DEFAULT false                      │
+│ added_at            TIMESTAMPTZ                                 │
+│ added_by            TEXT FK  → users                            │
+│                                                                 │
+│ UNIQUE (widget_id, testimonial_id)                              │
+│ UNIQUE (widget_id, display_order)                               │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**Key design decisions:**
+- **Display toggles as columns, not JSONB** — `show_ratings`, `show_dates`, etc. are explicit boolean columns for Hasura permission control and query filtering
+- **Junction table for testimonial selection** — not an array on the widget. Enables ordering (`display_order`), featuring (`is_featured`), and audit trail (`added_by`)
+- **`settings` JSONB for type-specific config only** — truly varies by widget type (carousel speed, grid columns, etc.)
+
+#### Settings JSONB Structure & Defaults
+
 ```typescript
-interface Widget {
-  id: string;                    // wgt_nanoid12
-  form_id: string;               // Associated form
-  organization_id: string;       // Owner org
-  name: string;                  // User-friendly name
-  type: 'wall_of_love' | 'carousel' | 'single_quote';
-
-  // Content selection
-  testimonial_ids: string[];     // Manually selected (if empty, use all approved)
-  filter_tags: string[];         // Filter by tags
-  filter_min_rating: number;     // Minimum star rating
-  max_items: number;             // Limit displayed
-
-  // Display settings
-  settings: WidgetSettings;
-
-  // Metadata
-  created_at: Date;
-  updated_at: Date;
+// Wall of Love defaults
+interface WallOfLoveSettings {
+  columns: number;              // default: 3
+  card_gap: number;             // default: 16 (px)
 }
 
-interface WidgetSettings {
-  theme: 'light' | 'dark' | 'auto';
-  background_color: string;
-  card_color: string;
-  text_color: string;
-  accent_color: string;
+// Carousel defaults
+interface CarouselSettings {
+  autoplay: boolean;            // default: true
+  autoplay_interval: number;    // default: 5000 (ms)
+  show_navigation: boolean;     // default: true
+}
 
-  show_rating: boolean;
-  show_avatar: boolean;
-  show_date: boolean;
-  show_company: boolean;
-  show_source_icon: boolean;
+// Single Quote defaults
+interface SingleQuoteSettings {
+  rotate: boolean;              // default: false
+}
 
-  font_size: 'small' | 'medium' | 'large';
-  font_family: 'inherit' | 'system' | string;
-
-  // Type-specific settings
-  columns?: number;              // Wall of Love
-  card_gap?: number;             // Wall of Love
-  autoplay?: boolean;            // Carousel
-  autoplay_interval?: number;    // Carousel (ms)
-  show_navigation?: boolean;     // Carousel
-  rotate?: boolean;              // Single Quote
+// Shared customization (all types, stored in JSONB)
+interface SharedSettings {
+  background_color?: string;    // default: theme-dependent
+  card_color?: string;          // default: theme-dependent
+  text_color?: string;          // default: theme-dependent
+  accent_color?: string;        // default: theme-dependent
+  font_size?: 'small' | 'medium' | 'large';  // default: 'medium'
 }
 ```
+
+**Default resolution:** When `settings` is `{}`, the embed script applies sensible defaults based on `theme` and `type`. Users only override what they customize.
 
 ---
 
@@ -272,6 +343,12 @@ Located at `/:org/widgets/new` and `/:org/widgets/:id/edit`:
 │                                                             │
 │  Widget Name: [My Wall of Love_________]                    │
 │                                                             │
+│  Form:                                                      │
+│  [Product Feedback Form ▼]                                  │
+│    ├── Product Feedback Form                                │
+│    ├── Customer Satisfaction                                │
+│    └── 🔒 All forms (Premium)                              │
+│                                                             │
 │  Widget Type:                                               │
 │  ┌──────────┐  ┌──────────┐  ┌──────────┐                  │
 │  │ ▦▦▦▦     │  │ ← ▢ →    │  │   ▢      │                  │
@@ -293,12 +370,12 @@ Located at `/:org/widgets/new` and `/:org/widgets/:id/edit`:
 │  Show Date     [ ]    │  │ "Wow!"  │                       │
 │  Show Company  [✓]    │  │ Bob K.  │                       │
 │                       │  └─────────┘                       │
-│  Max Items     [12]   │                                     │
+│  Max Display   [12]   │                                     │
 │  Columns       [3 ▼]  │                                     │
 │                       │                                     │
 ├───────────────────────┴─────────────────────────────────────┤
 │  Testimonials                                               │
-│  ○ All approved testimonials                                │
+│  ○ All approved testimonials (from selected form)           │
 │  ● Select specific testimonials                             │
 │    [✓] "Great product!" - John D.                          │
 │    [✓] "Changed my life" - Jane S.                         │
@@ -375,7 +452,27 @@ After saving widget:
 - Can iterate based on user feedback
 - Competitors confirm these 3 are most used
 
-### Alternative 4: No Shadow DOM (Direct DOM)
+### Alternative 4: Form-Scoped Only (No Org-Wide Widgets)
+
+**Approach:** Every widget must be tied to exactly one form. No cross-form widgets.
+
+**Rejected because:**
+- Blocks "Best of Company" showcase use case entirely
+- Forces users to create duplicate widgets per form for homepage
+- Simpler initially, but creates schema debt if we add org-wide later
+- Hybrid approach (optional `form_id`) gives us both with minimal extra complexity
+
+### Alternative 5: Org-Wide Only (No Form Scoping)
+
+**Approach:** Widgets are always org-scoped. Users pick testimonials from any form. This is what the current schema implements (no `form_id` column).
+
+**Modified because:**
+- Overwhelming testimonial picker for orgs with many forms
+- No simple "show all from this form" default
+- Most users think in terms of forms, not orgs
+- Adding optional `form_id` gives a natural default scope without removing flexibility
+
+### Alternative 6: No Shadow DOM (Direct DOM)
 
 **Approach:** Inject styles directly into host page
 
@@ -391,32 +488,38 @@ After saving widget:
 
 ### Phase 1: Data Layer
 
-1. Create `widgets` table migration
-2. Add Hasura metadata (permissions, relationships)
-3. Create widget CRUD API endpoints
-4. Create public widget data endpoint
+> `widgets` and `widget_testimonials` tables + Hasura metadata already exist.
+
+1. Add migration: `form_id` optional FK column on `widgets` table
+2. Update Hasura metadata for `form_id` relationship and permissions
+3. Create widget CRUD API endpoints (routes skeleton exists, needs handlers)
+4. Create public widget data endpoint (`GET /public/widgets/:id` — returns widget config + testimonials in one response)
+5. Add Zod validation schemas for widget settings JSONB
+6. Create GraphQL mutations + mutation composables in web entity
 
 ### Phase 2: Widget Builder UI
 
 1. Create widget list page (`/:org/widgets`)
 2. Create widget builder page (`/:org/widgets/new`)
-3. Implement live preview component
-4. Add testimonial selection UI
-5. Implement embed code generation modal
+3. Implement form selector (dropdown, scopes testimonial picker)
+4. Implement live preview component
+5. Add testimonial selection UI (scoped by form, with ordering)
+6. Implement embed code generation modal
 
 ### Phase 3: Embed Script & Rendering
 
-1. Build embed.js script (Vite library mode)
-2. Implement Shadow DOM rendering
-3. Create Wall of Love component
-4. Create Carousel component
-5. Create Single Quote component
-6. Add responsive behavior
+1. Create `packages/widget-embed/` package with Vite library build config
+2. Build loader.ts — find `[data-testimonials-widget]` elements, fetch data
+3. Build renderer.ts — Shadow DOM setup, style injection
+4. Create Wall of Love component (masonry grid, vanilla TS)
+5. Create Carousel component (slider, touch/swipe)
+6. Create Single Quote component
+7. Add responsive behavior and loading states
 
 ### Phase 4: Polish
 
-1. Loading states and skeletons
-2. Error handling for embed failures
+1. Error handling for embed failures (graceful degradation)
+2. Caching headers for public endpoint and embed script
 3. Widget analytics (impressions, optional)
 4. Integration guides documentation
 
@@ -429,7 +532,7 @@ After saving widget:
 | Benefit | Description |
 |---------|-------------|
 | **Core feature complete** | Users can display testimonials anywhere |
-| **Revenue enabler** | Premium features (branding removal) drive upgrades |
+| **Revenue enabler** | Premium features (multi-form widgets, branding removal) drive upgrades |
 | **Market parity** | Matches competitor offerings |
 | **Extensible foundation** | Easy to add more widget types later |
 
@@ -457,11 +560,16 @@ After saving widget:
 
 ```
 db/hasura/migrations/default/
-└── XXXXXX_create_widgets_table/
+├── 1767078492000_...__widgets__create_table/           # ✅ EXISTS
+│   └── up.sql
+├── 1767078552000_...__widget_testimonials__create_table/ # ✅ EXISTS
+│   └── up.sql
+└── XXXXXX__widgets__add_form_id/                       # 🔲 TODO
     └── up.sql
 
 db/hasura/metadata/databases/default/tables/
-└── public_widgets.yaml
+├── public_widgets.yaml                                 # ✅ EXISTS
+└── public_widget_testimonials.yaml                     # ✅ EXISTS
 ```
 
 ### API
@@ -485,17 +593,35 @@ api/src/features/widgets/
 ```
 apps/web/src/
 ├── entities/widget/
+│   ├── graphql/
+│   │   ├── fragments/
+│   │   │   └── WidgetBasic.gql         # ✅ EXISTS
+│   │   ├── queries/
+│   │   │   ├── getWidget.gql           # ✅ EXISTS
+│   │   │   └── getWidgets.gql          # ✅ EXISTS
+│   │   └── mutations/                  # 🔲 TODO
+│   │       ├── createWidget.gql
+│   │       ├── updateWidget.gql
+│   │       └── deleteWidget.gql
 │   ├── composables/
-│   │   ├── useWidgets.ts        # List widgets
-│   │   ├── useWidget.ts         # Get single widget
-│   │   └── useWidgetMutations.ts
-│   └── models/
-│       └── index.ts             # Widget types
+│   │   ├── queries/
+│   │   │   ├── useGetWidget.ts         # ✅ EXISTS
+│   │   │   └── useGetWidgets.ts        # ✅ EXISTS
+│   │   ├── mutations/                  # 🔲 TODO
+│   │   │   ├── useCreateWidget.ts
+│   │   │   ├── useUpdateWidget.ts
+│   │   │   └── useDeleteWidget.ts
+│   │   └── index.ts                    # ✅ EXISTS
+│   ├── models/
+│   │   ├── index.ts                    # ✅ EXISTS (types)
+│   │   └── queries.ts                  # ✅ EXISTS
+│   └── index.ts                        # ✅ EXISTS
 │
-├── features/widgetBuilder/
+├── features/widgetBuilder/              # 🔲 TODO (entire feature)
 │   ├── ui/
 │   │   ├── WidgetBuilder.vue
 │   │   ├── WidgetTypeSelector.vue
+│   │   ├── WidgetFormSelector.vue
 │   │   ├── WidgetSettingsPanel.vue
 │   │   ├── WidgetPreview.vue
 │   │   ├── WidgetTestimonialSelector.vue
@@ -505,10 +631,8 @@ apps/web/src/
 │   └── index.ts
 │
 └── pages/[org]/widgets/
-    ├── index.vue                # Widget list
-    ├── new.vue                  # Create widget
-    └── [id]/
-        └── edit.vue             # Edit widget
+    ├── index.vue                        # ✅ EXISTS (skeleton)
+    └── [urlSlug].vue                    # ✅ EXISTS (skeleton)
 ```
 
 ### Embed Script
