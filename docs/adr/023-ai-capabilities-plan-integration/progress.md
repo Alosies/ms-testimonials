@@ -131,7 +131,7 @@
 | T6.3 | CreditBalanceWidget | ✅ | `apps/web/src/features/credits/ui/CreditBalanceWidget.vue` |
 | T6.4 | QualityLevelSelector | ✅ | `apps/web/src/features/ai/ui/QualityLevelSelector.vue` |
 | T6.5 | Update AI UIs | ✅ | AIAccessDeniedPrompt, AIOperationResult, useAIOperationWithCredits |
-| T6.6 | CreditHistoryPage | ✅ | `apps/web/src/pages/[org]/settings/credits/index.vue` |
+| T6.6 | CreditHistoryPage | ✅ | `apps/web/src/pages/[org]/settings/ai/index.vue` (integrated into AI settings) |
 | T6.7 | TopupPurchaseModal | ✅ | `apps/web/src/features/credits/ui/TopupPurchaseModal.vue` |
 
 ### Phase 7: Billing Integration

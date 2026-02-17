@@ -6,8 +6,8 @@ Implementation plan for AI Credits & Plan Integration system.
 
 **ADR**: [adr.md](./adr.md)
 **Progress**: [progress.md](./progress.md)
-**Status**: In Progress (Phase 1-2 Database)
-**Last Updated**: 2026-01-31
+**Status**: Near Complete (Unit tests remaining)
+**Last Updated**: 2026-02-17
 
 ---
 
