@@ -31,6 +31,7 @@ import { getContainer, findCenteredItemIndex, findCenteredItemId, supportsScroll
  *
  * @param ctx - Navigation context
  * @param isProgrammaticScroll - Ref to check if scroll is programmatic
+ * @param isDetectionSuppressed - Ref for explicit suppression (not clearable by scrollend)
  * @param onScrollEnd - Callback when scroll completes (clears programmatic flag)
  * @param debounceMs - Debounce time for scroll detection
  * @returns Scroll detection state and methods
@@ -38,6 +39,7 @@ import { getContainer, findCenteredItemIndex, findCenteredItemId, supportsScroll
 export function useScrollDetection(
   ctx: ScrollNavContext,
   isProgrammaticScroll: Ref<boolean>,
+  isDetectionSuppressed: Ref<boolean>,
   onScrollEnd: () => void,
   debounceMs: number = 50
 ): ScrollDetectionState {
@@ -68,6 +70,7 @@ export function useScrollDetection(
    */
   function detectCenteredItem(): void {
     if (isProgrammaticScroll.value) return;
+    if (isDetectionSuppressed.value) return;
 
     // Skip detection if a selection was made recently (prevents overriding keyboard/click selections)
     if (Date.now() - lastSelectionTime < SELECTION_COOLDOWN_MS) return;

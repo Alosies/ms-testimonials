@@ -130,7 +130,9 @@ const {
     setDesignConfig: editor.setDesignConfig,
     setBranchingConfig: editor.setBranchingConfig,
     setSteps: editor.setSteps,
+    selectStep: editor.selectStep,
   },
+  suppressScrollDetection: navigation.suppressDetection,
 });
 
 // Computed save status based on actual state

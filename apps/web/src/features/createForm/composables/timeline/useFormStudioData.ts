@@ -25,11 +25,13 @@ export interface UseFormStudioDataOptions {
     setDesignConfig: (settings: unknown, orgLogoPath: string | null) => void;
     setBranchingConfig: (config: BranchingConfig) => void;
     setSteps: (steps: FormStep[]) => void;
+    selectStep: (index: number) => void;
   };
+  suppressScrollDetection: (durationMs?: number) => void;
 }
 
 export function useFormStudioData(options: UseFormStudioDataOptions) {
-  const { formId, editor } = options;
+  const { formId, editor, suppressScrollDetection } = options;
 
   // Track if design config has been loaded for current form
   const designConfigLoaded = ref(false);
@@ -129,8 +131,15 @@ export function useFormStudioData(options: UseFormStudioDataOptions) {
       hasInitialDataLoaded.value = true;
 
       if (steps.length > 0) {
+        // Suppress scroll detection BEFORE setSteps to prevent race condition:
+        // setSteps triggers watch(() => itemCount()) which re-initializes scroll
+        // listeners. DOM layout changes then fire scroll events through those
+        // listeners. The 50ms debounce can resolve before nextTick, so suppression
+        // must be set synchronously before the reactive change.
+        suppressScrollDetection(2000);
         const transformed = transformFormSteps(steps);
         editor.setSteps(transformed);
+        editor.selectStep(0);
       } else {
         // Empty form - clear steps to show empty state
         editor.setSteps([]);

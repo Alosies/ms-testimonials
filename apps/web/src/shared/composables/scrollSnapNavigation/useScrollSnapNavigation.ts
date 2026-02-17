@@ -1,4 +1,4 @@
-import { readonly, computed, onMounted, onUnmounted, watch } from 'vue';
+import { ref, readonly, computed, onMounted, onUnmounted, watch } from 'vue';
 import type { ScrollSnapNavigationOptions, ScrollSnapNavigation } from './types';
 import { useProgrammaticScroll } from './useProgrammaticScroll';
 import { useScrollDetection } from './useScrollDetection';
@@ -91,11 +91,17 @@ export function useScrollSnapNavigation(
   // Programmatic scroll with coordination flag
   const programmaticScroll = useProgrammaticScroll(ctx);
 
+  // Separate suppression flag that scrollend events cannot clear.
+  // isProgrammaticScroll gets cleared by handleScrollEnd when scroll-snap settles,
+  // but suppressDetection needs to block detection for a guaranteed duration.
+  const isDetectionSuppressed = ref(false);
+
   // Scroll detection (only if enabled)
   const scrollDetection = enableScrollDetection
     ? useScrollDetection(
         ctx,
         programmaticScroll.isProgrammaticScroll,
+        isDetectionSuppressed,
         programmaticScroll.markScrollComplete,
         scrollDebounceMs
       )
@@ -150,10 +156,11 @@ export function useScrollSnapNavigation(
   /**
    * Suppress scroll detection temporarily.
    * Use this before programmatic actions that will trigger scroll
-   * but shouldn't update selection (e.g., keyboard branch switching).
+   * but shouldn't update selection (e.g., keyboard branch switching, initial load).
    *
-   * This sets isProgrammaticScroll to true for the specified duration,
-   * preventing scroll detection from overriding the selection.
+   * Uses a dedicated isDetectionSuppressed flag instead of isProgrammaticScroll,
+   * because scrollend events clear isProgrammaticScroll prematurely when
+   * scroll-snap settles after DOM layout changes.
    */
   let suppressionTimeout: ReturnType<typeof setTimeout> | null = null;
 
@@ -163,12 +170,12 @@ export function useScrollSnapNavigation(
       clearTimeout(suppressionTimeout);
     }
 
-    // Set programmatic scroll flag
-    programmaticScroll.isProgrammaticScroll.value = true;
+    // Set dedicated suppression flag (not clearable by scrollend events)
+    isDetectionSuppressed.value = true;
 
     // Auto-clear after duration
     suppressionTimeout = setTimeout(() => {
-      programmaticScroll.markScrollComplete();
+      isDetectionSuppressed.value = false;
       suppressionTimeout = null;
     }, durationMs);
   }

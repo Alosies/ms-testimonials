@@ -11,6 +11,25 @@ import { createStudioPage } from '@e2e/shared';
 import { createStudioActions } from '@e2e/features/form-studio/actions';
 
 test.describe('Studio Navigation', () => {
+  test.describe('Initial Load', () => {
+    test('first step is selected on page load without user interaction', async ({ authedPage, formViaApi }) => {
+      const studio = createStudioPage(authedPage);
+      const actions = createStudioActions(studio);
+
+      await actions.setup.loadWithSteps(formViaApi);
+
+      const steps = formViaApi.steps ?? [];
+      expect(steps.length).toBeGreaterThanOrEqual(2);
+
+      // Wait for scroll detection to settle without any user interaction
+      await studio.waitForScrollSettle(2500);
+
+      // First step should be selected automatically on load
+      const firstStep = steps[0];
+      await studio.expectSidebarStepSelected(firstStep.id);
+    });
+  });
+
   test.describe('Sidebar Click Navigation', () => {
     test('clicking sidebar step scrolls canvas to that step', async ({ authedPage, formViaApi }) => {
       const studio = createStudioPage(authedPage);
