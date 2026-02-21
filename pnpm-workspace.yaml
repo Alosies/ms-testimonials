@@ -5,3 +5,4 @@ packages:
   - 'packages/libs/ui'
   - 'packages/libs/icons'
   - 'packages/libs/media-service'
+  - 'packages/widget-embed'

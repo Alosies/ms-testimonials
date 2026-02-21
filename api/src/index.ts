@@ -5,6 +5,10 @@ import { cors } from 'hono/cors';
 import { HTTPException } from 'hono/http-exception';
 import { logger } from 'hono/logger';
 
+import { readFileSync, existsSync } from 'fs';
+import { resolve, dirname } from 'path';
+import { fileURLToPath } from 'url';
+
 import { env } from '@/shared/config/env';
 import { corsConfig } from '@/shared/config/cors';
 
@@ -25,6 +29,12 @@ app.openAPIRegistry.registerComponent('securitySchemes', 'BearerAuth', {
 
 // Middleware
 app.use('*', logger());
+
+// Open CORS for public/embed endpoints (used by embed script from any origin)
+app.use('/public/*', cors({ origin: '*', allowMethods: ['GET', 'OPTIONS'] }));
+app.use('/embed/*', cors({ origin: '*', allowMethods: ['GET', 'OPTIONS'] }));
+
+// Standard CORS for authenticated endpoints
 app.use('*', cors(corsConfig));
 
 // Health check endpoint
@@ -60,6 +70,21 @@ app.route('/webhooks', webhooks);
 app.route('/jobs', jobs);
 app.route('/widgets', widgets);
 app.route('/public/widgets', publicWidgets);
+// Serve embed script
+app.get('/embed/widgets.js', (c) => {
+  const currentDir = dirname(fileURLToPath(import.meta.url));
+  const scriptPath = resolve(currentDir, '../../packages/widget-embed/dist/widgets.js');
+  if (!existsSync(scriptPath)) {
+    return c.text('// Widget embed script not built yet', 404);
+  }
+  const script = readFileSync(scriptPath, 'utf-8');
+  return c.body(script, 200, {
+    'Content-Type': 'application/javascript',
+    'Cache-Control': 'public, max-age=3600',
+    'Access-Control-Allow-Origin': '*',
+  });
+});
+
 // Non-OpenAPI routes (still using default exports)
 app.route('/testimonials', testimonialRoutes);
 app.route('/forms', formRoutes);
