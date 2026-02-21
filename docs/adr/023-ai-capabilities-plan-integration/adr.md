@@ -16,9 +16,10 @@
 
 ## Status
 
-**Implemented** - 2026-02-01 (Phases 1-6 complete, Phase 7 deferred)
+**Implemented** - 2026-02-01 (Phases 1-6 complete, Phase 7 deferred, Phase 8 proposed)
 
 *Originally Proposed: 2026-01-26*
+*Amended: 2026-02-21 — Decision 8a: Public Endpoint Customer Identity*
 
 ## Context
 
@@ -584,6 +585,147 @@ form_name TEXT,
 ```
 
 **Reference:** This pattern is inspired by Cursor's Usage page which shows minimal but transparent audit info: Date | User | Type | Credits.
+
+#### 8a. Public Endpoint Customer Identity via Google JWT (Amendment — 2026-02-21)
+
+**Problem:** Decision 8 acknowledged that public endpoint operations (testimonial assembly) record `"Anonymous"` as the actor. This creates two issues:
+
+1. **No audit trail** — Form owners cannot see *who* consumed their AI credits
+2. **No abuse prevention** — A single person can drain an org's credits by repeatedly regenerating testimonials, since the server has no concept of customer identity
+3. **Regeneration limit is client-only** — The `regenerationsRemaining` counter resets on page refresh
+
+**Context:** The public form already requires Google Sign-In (One Tap) before the AI path. The frontend captures `google_id`, `email`, `name`, and `picture` from the Google JWT — but this identity is never sent to the API. The credential is decoded client-side only.
+
+**Decision:** Verify the Google JWT server-side and use the verified identity for audit + per-customer rate limiting.
+
+**Flow:**
+
+```
+Customer clicks "Let AI craft your story"
+  → Google One Tap popup → receives JWT credential
+  → Frontend sends credential in assembleTestimonial request
+  → API verifies JWT against Google's public keys
+  → Extracts google_id, email, name
+  → Passes into executeWithAIAccess audit context
+  → Checks per-customer generation count before proceeding
+```
+
+**API Changes:**
+
+1. Add `customer_credential` (optional string) to `AssembleTestimonialRequest` schema:
+   ```typescript
+   customer_credential: z.string().optional()
+   // The raw Google One Tap JWT (id_token)
+   ```
+
+2. Add server-side Google JWT verification utility:
+   ```typescript
+   // api/src/shared/utils/googleAuth.ts
+   interface VerifiedCustomer {
+     google_id: string;
+     email: string;
+     name: string;
+     picture?: string;
+   }
+
+   async function verifyGoogleCredential(
+     credential: string
+   ): Promise<VerifiedCustomer | null>
+   // Verifies JWT signature against Google's public keys (JWKS)
+   // Validates: iss, aud (our client_id), exp, nbf
+   // Returns null if invalid (don't throw — treat as anonymous)
+   ```
+
+3. Update `assembleTestimonial` handler audit context:
+   ```typescript
+   // Before (current):
+   userId: null,
+   userEmail: null,
+
+   // After:
+   userId: null,  // Still null — customer is not a platform user
+   userEmail: verifiedCustomer?.email ?? null,
+   // New field for display:
+   userDisplayName: verifiedCustomer
+     ? `${verifiedCustomer.name} (${verifiedCustomer.email})`
+     : 'Anonymous',
+   ```
+
+4. Add per-customer generation limit check:
+   ```typescript
+   // Before executing AI operation, query credit_transactions:
+   // COUNT(*) WHERE form_id = :formId
+   //   AND customer_google_id = :googleId
+   //   AND created_at > NOW() - INTERVAL '24 hours'
+   //   AND transaction_type = 'ai_consumption'
+   //
+   // If count >= MAX_GENERATIONS_PER_CUSTOMER (e.g., 4), deny with:
+   //   { code: 'CUSTOMER_LIMIT_EXCEEDED', message: '...' }
+   ```
+
+**Schema Changes:**
+
+Add `customer_google_id` to `credit_transactions` and `credit_reservations`:
+
+```sql
+-- credit_transactions (audit log)
+ALTER TABLE credit_transactions
+  ADD COLUMN customer_google_id TEXT;
+-- Not a FK — external identity, no referential integrity needed
+
+CREATE INDEX idx_credit_transactions_customer
+  ON credit_transactions (form_id, customer_google_id, created_at DESC)
+  WHERE customer_google_id IS NOT NULL;
+
+-- credit_reservations (in-flight tracking)
+ALTER TABLE credit_reservations
+  ADD COLUMN customer_google_id TEXT;
+```
+
+**Updated Transaction Types & Context (extends Decision 8 table):**
+
+| Transaction Type | User Context | Form Context | Customer Context |
+|------------------|--------------|--------------|------------------|
+| `ai_consumption` (logged-in user) | ✅ User email | ✅ Form name | — |
+| `ai_consumption` (public, verified) | — | ✅ Form name | ✅ Google email + ID |
+| `ai_consumption` (public, anonymous) | — | ✅ Form name | "Anonymous" |
+| `plan_allocation` | "System" | — | — |
+
+**Updated Display Logic (extends Decision 8):**
+
+```typescript
+function getActorDisplay(tx: CreditTransaction): string {
+  if (tx.user_display_name) return tx.user_display_name;
+  if (tx.customerGoogleId && tx.form_name) {
+    return `${tx.user_display_name} • ${tx.form_name}`;
+  }
+  if (tx.form_name) return `Anonymous • ${tx.form_name}`;
+  return 'System';
+}
+```
+
+**Per-Customer Limit Constants:**
+
+| Constant | Value | Rationale |
+|----------|-------|-----------|
+| `MAX_GENERATIONS_PER_CUSTOMER_PER_FORM` | 4 | 1 initial + 3 refinements. Matches frontend counter. |
+| `CUSTOMER_LIMIT_WINDOW_HOURS` | 24 | Resets daily. Prevents accumulation exploits. |
+
+**Why verify server-side instead of trusting the client?**
+
+| Approach | Trust | Abuse Risk | Effort |
+|----------|-------|------------|--------|
+| Trust client-sent email | None | High — anyone can send `"ceo@company.com"` | Low |
+| Verify Google JWT server-side | Cryptographic | Low — can't forge Google's signature | Medium |
+| Full account creation | Full | Lowest | High (overkill for testimonial customers) |
+
+**Graceful degradation:** If `customer_credential` is missing or verification fails, the operation proceeds as anonymous (current behavior). This ensures backwards compatibility and handles edge cases (expired token, Google outage). The per-customer limit simply doesn't apply for anonymous requests — the existing org-level rate limits still protect against bulk abuse.
+
+**Frontend changes:**
+
+- `useTestimonialAIFlow` sends `customerInfo.credential` (the raw JWT) alongside existing request fields
+- `useCustomerGoogleAuth` stores the raw `credential` string in addition to the decoded info
+- Regeneration counter becomes server-informed: API returns `generations_remaining` in response
 
 ---
 
@@ -2198,6 +2340,21 @@ The `credit_transactions` table will grow significantly over time. Strategy:
 - [x] Create `TopupPurchaseModal` component (Stripe checkout redirect)
 - [x] Create credit models and types (`apps/web/src/features/credits/models/index.ts`)
 
+### Phase 8: Public Endpoint Customer Identity ⏳ PROPOSED
+
+Implements Decision 8a — verified customer identity on public AI endpoints.
+
+- [ ] Add `customer_credential` field to `AssembleTestimonialRequest` schema (API + frontend)
+- [ ] Create `verifyGoogleCredential()` utility in `api/src/shared/utils/googleAuth.ts`
+- [ ] Store raw Google JWT `credential` in `useCustomerGoogleAuth` composable
+- [ ] Send credential from `useTestimonialAIFlow` to `assembleTestimonial` API
+- [ ] Verify JWT in `assembleTestimonial` handler and populate audit context
+- [ ] Migration: add `customer_google_id` column to `credit_transactions` and `credit_reservations`
+- [ ] Add per-customer generation count query + limit enforcement (4 per form per 24h)
+- [ ] Return `generations_remaining` in `AssembleTestimonialResponse`
+- [ ] Frontend: use server-returned `generations_remaining` instead of client-only counter
+- [ ] Update Usage History ACTOR display to show verified customer name/email
+
 ### Phase 7: Billing Integration ⏳ DEFERRED
 Stripe integration is deferred to a later stage.
 
@@ -2219,6 +2376,8 @@ Stripe integration is deferred to a later stage.
 | Model deprecation handling | `llm_models.replacement_model_id` exists but no auto-fallback logic | Low |
 | Admin adjustment endpoint | No API to manually adjust credits (transaction type exists) | Low |
 | Testimonial polish handler | Capability seeded but `/ai/polish-testimonial` not implemented | Low |
+| Public endpoint customer identity | Google JWT collected but not verified or sent to API (see Decision 8a) | Medium — Phase 8 |
+| Per-customer generation limit | Regeneration counter is client-only, resets on refresh | Medium — Phase 8 |
 
 #### Rate Limit Enforcement Implementation (2026-02-02)
 
