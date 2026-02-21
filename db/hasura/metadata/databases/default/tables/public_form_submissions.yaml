@@ -40,6 +40,7 @@ insert_permissions:
         - organization_id
         - form_id
         - contact_id
+        - consent_type
   - role: member
     permission:
       check:

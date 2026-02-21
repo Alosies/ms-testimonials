@@ -40,6 +40,7 @@ select_permissions:
         - option_label
         - display_order
         - is_default
+        - is_active
       filter:
         _and:
           - is_active:

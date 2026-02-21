@@ -31,6 +31,22 @@ insert_permissions:
           _eq: X-Hasura-Organization-Id
       columns: '*'
 select_permissions:
+  - role: anonymous
+    permission:
+      columns:
+        - id
+        - storage_path
+      filter:
+        organization:
+          _and:
+            - is_active:
+                _eq: true
+            - forms:
+                _and:
+                  - is_active:
+                      _eq: true
+                  - status:
+                      _eq: published
   - role: member
     permission:
       columns: '*'

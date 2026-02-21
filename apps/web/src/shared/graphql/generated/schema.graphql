@@ -9627,6 +9627,10 @@ input form_steps_variance_order_by {
 Raw form submission event - submitter info lives here, responses in form_question_responses
 """
 type form_submissions {
+  """
+  Consent choice from the form consent step. 'public' allows testimonial display on widgets; 'private' restricts to internal use. NULL when form has no consent step or for legacy submissions.
+  """
+  consent_type: String
   """An object relationship"""
   contact: contacts
   """
@@ -9760,6 +9764,7 @@ input form_submissions_bool_exp {
   _and: [form_submissions_bool_exp!]
   _not: form_submissions_bool_exp
   _or: [form_submissions_bool_exp!]
+  consent_type: String_comparison_exp
   contact: contacts_bool_exp
   contact_id: String_comparison_exp
   created_at: timestamptz_comparison_exp
@@ -9792,6 +9797,10 @@ enum form_submissions_constraint {
 input type for inserting data into table "form_submissions"
 """
 input form_submissions_insert_input {
+  """
+  Consent choice from the form consent step. 'public' allows testimonial display on widgets; 'private' restricts to internal use. NULL when form has no consent step or for legacy submissions.
+  """
+  consent_type: String
   contact: contacts_obj_rel_insert_input
   """
   Foreign key to contacts table. Links this submission to a normalized contact record for deduplication and contact management. NULL for legacy submissions or anonymous submissions.
@@ -9821,6 +9830,10 @@ input form_submissions_insert_input {
 """aggregate max on columns"""
 type form_submissions_max_fields {
   """
+  Consent choice from the form consent step. 'public' allows testimonial display on widgets; 'private' restricts to internal use. NULL when form has no consent step or for legacy submissions.
+  """
+  consent_type: String
+  """
   Foreign key to contacts table. Links this submission to a normalized contact record for deduplication and contact management. NULL for legacy submissions or anonymous submissions.
   """
   contact_id: String
@@ -9845,6 +9858,10 @@ order by max() on columns of table "form_submissions"
 """
 input form_submissions_max_order_by {
   """
+  Consent choice from the form consent step. 'public' allows testimonial display on widgets; 'private' restricts to internal use. NULL when form has no consent step or for legacy submissions.
+  """
+  consent_type: order_by
+  """
   Foreign key to contacts table. Links this submission to a normalized contact record for deduplication and contact management. NULL for legacy submissions or anonymous submissions.
   """
   contact_id: order_by
@@ -9866,6 +9883,10 @@ input form_submissions_max_order_by {
 
 """aggregate min on columns"""
 type form_submissions_min_fields {
+  """
+  Consent choice from the form consent step. 'public' allows testimonial display on widgets; 'private' restricts to internal use. NULL when form has no consent step or for legacy submissions.
+  """
+  consent_type: String
   """
   Foreign key to contacts table. Links this submission to a normalized contact record for deduplication and contact management. NULL for legacy submissions or anonymous submissions.
   """
@@ -9890,6 +9911,10 @@ type form_submissions_min_fields {
 order by min() on columns of table "form_submissions"
 """
 input form_submissions_min_order_by {
+  """
+  Consent choice from the form consent step. 'public' allows testimonial display on widgets; 'private' restricts to internal use. NULL when form has no consent step or for legacy submissions.
+  """
+  consent_type: order_by
   """
   Foreign key to contacts table. Links this submission to a normalized contact record for deduplication and contact management. NULL for legacy submissions or anonymous submissions.
   """
@@ -9940,6 +9965,7 @@ input form_submissions_on_conflict {
 
 """Ordering options when selecting data from "form_submissions"."""
 input form_submissions_order_by {
+  consent_type: order_by
   contact: contacts_order_by
   contact_id: order_by
   created_at: order_by
@@ -9967,6 +9993,8 @@ select columns of table "form_submissions"
 """
 enum form_submissions_select_column {
   """column name"""
+  consent_type
+  """column name"""
   contact_id
   """column name"""
   created_at
@@ -9988,6 +10016,10 @@ enum form_submissions_select_column {
 input type for updating data in table "form_submissions"
 """
 input form_submissions_set_input {
+  """
+  Consent choice from the form consent step. 'public' allows testimonial display on widgets; 'private' restricts to internal use. NULL when form has no consent step or for legacy submissions.
+  """
+  consent_type: String
   """
   Foreign key to contacts table. Links this submission to a normalized contact record for deduplication and contact management. NULL for legacy submissions or anonymous submissions.
   """
@@ -10021,6 +10053,10 @@ input form_submissions_stream_cursor_input {
 """Initial value of the column from where the streaming should start"""
 input form_submissions_stream_cursor_value_input {
   """
+  Consent choice from the form consent step. 'public' allows testimonial display on widgets; 'private' restricts to internal use. NULL when form has no consent step or for legacy submissions.
+  """
+  consent_type: String
+  """
   Foreign key to contacts table. Links this submission to a normalized contact record for deduplication and contact management. NULL for legacy submissions or anonymous submissions.
   """
   contact_id: String
@@ -10044,6 +10080,8 @@ input form_submissions_stream_cursor_value_input {
 update columns of table "form_submissions"
 """
 enum form_submissions_update_column {
+  """column name"""
+  consent_type
   """column name"""
   contact_id
   """column name"""

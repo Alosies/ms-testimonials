@@ -52,6 +52,9 @@ select_permissions:
         - content
         - tips
         - flow_membership
+        - is_active
+        - created_at
+        - updated_at
       filter:
         _and:
           - is_active:

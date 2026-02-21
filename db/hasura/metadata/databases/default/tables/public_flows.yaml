@@ -39,6 +39,21 @@ insert_permissions:
           _eq: X-Hasura-Organization-Id
       columns: '*'
 select_permissions:
+  - role: anonymous
+    permission:
+      columns:
+        - id
+        - flow_type
+        - display_order
+        - form_id
+        - branch_operator
+      filter:
+        form:
+          _and:
+            - is_active:
+                _eq: true
+            - status:
+                _eq: published
   - role: member
     permission:
       columns: '*'

@@ -23,6 +23,7 @@ select_permissions:
         - status
         - expires_at
         - settled_credits
+        - customer_google_id
         - created_at
         - updated_at
       filter:
@@ -52,6 +53,7 @@ select_permissions:
         - status
         - expires_at
         - settled_credits
+        - customer_google_id
         - created_at
       filter:
         organization_id:

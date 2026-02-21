@@ -25,6 +25,7 @@ select_permissions:
         - name
         - category
         - answer_data_type
+        - input_component
       filter:
         is_active:
           _eq: true

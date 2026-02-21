@@ -25,6 +25,7 @@ select_permissions:
         - estimation_variance
         - balance_after
         - description
+        - customer_google_id
         - created_at
       filter:
         organization_id:
@@ -54,6 +55,7 @@ select_permissions:
         - credits_amount
         - balance_after
         - description
+        - customer_google_id
         - created_at
       filter:
         organization_id:

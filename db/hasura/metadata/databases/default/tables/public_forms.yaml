@@ -63,6 +63,11 @@ select_permissions:
         - settings
         - status
         - branching_config
+        - is_active
+        - organization_id
+        - created_by
+        - created_at
+        - updated_at
       filter:
         _and:
           - is_active:

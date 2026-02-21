@@ -64,6 +64,21 @@ insert_permissions:
         - settings
         - created_by
 select_permissions:
+  - role: anonymous
+    permission:
+      columns:
+        - id
+        - logo_id
+      filter:
+        _and:
+          - is_active:
+              _eq: true
+          - forms:
+              _and:
+                - is_active:
+                    _eq: true
+                - status:
+                    _eq: published
   - role: member
     permission:
       columns: '*'

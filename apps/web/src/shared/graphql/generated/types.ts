@@ -7043,6 +7043,8 @@ export interface Form_Steps_Variance_Order_By {
 /** Raw form submission event - submitter info lives here, responses in form_question_responses */
 export interface Form_Submissions {
   __typename?: 'form_submissions';
+  /** Consent choice from the form consent step. 'public' allows testimonial display on widgets; 'private' restricts to internal use. NULL when form has no consent step or for legacy submissions. */
+  consent_type?: Maybe<Scalars['String']['output']>;
   /** An object relationship */
   contact?: Maybe<Contacts>;
   /** Foreign key to contacts table. Links this submission to a normalized contact record for deduplication and contact management. NULL for legacy submissions or anonymous submissions. */
@@ -7169,6 +7171,7 @@ export interface Form_Submissions_Bool_Exp {
   _and?: InputMaybe<Array<Form_Submissions_Bool_Exp>>;
   _not?: InputMaybe<Form_Submissions_Bool_Exp>;
   _or?: InputMaybe<Array<Form_Submissions_Bool_Exp>>;
+  consent_type?: InputMaybe<String_Comparison_Exp>;
   contact?: InputMaybe<Contacts_Bool_Exp>;
   contact_id?: InputMaybe<String_Comparison_Exp>;
   created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
@@ -7196,6 +7199,8 @@ export const Form_Submissions_Constraint = {
 export type Form_Submissions_Constraint = typeof Form_Submissions_Constraint[keyof typeof Form_Submissions_Constraint];
 /** input type for inserting data into table "form_submissions" */
 export interface Form_Submissions_Insert_Input {
+  /** Consent choice from the form consent step. 'public' allows testimonial display on widgets; 'private' restricts to internal use. NULL when form has no consent step or for legacy submissions. */
+  consent_type?: InputMaybe<Scalars['String']['input']>;
   contact?: InputMaybe<Contacts_Obj_Rel_Insert_Input>;
   /** Foreign key to contacts table. Links this submission to a normalized contact record for deduplication and contact management. NULL for legacy submissions or anonymous submissions. */
   contact_id?: InputMaybe<Scalars['String']['input']>;
@@ -7223,6 +7228,8 @@ export interface Form_Submissions_Insert_Input {
 /** aggregate max on columns */
 export interface Form_Submissions_Max_Fields {
   __typename?: 'form_submissions_max_fields';
+  /** Consent choice from the form consent step. 'public' allows testimonial display on widgets; 'private' restricts to internal use. NULL when form has no consent step or for legacy submissions. */
+  consent_type?: Maybe<Scalars['String']['output']>;
   /** Foreign key to contacts table. Links this submission to a normalized contact record for deduplication and contact management. NULL for legacy submissions or anonymous submissions. */
   contact_id?: Maybe<Scalars['String']['output']>;
   /** Record creation timestamp. Same as submitted_at */
@@ -7243,6 +7250,8 @@ export interface Form_Submissions_Max_Fields {
 
 /** order by max() on columns of table "form_submissions" */
 export interface Form_Submissions_Max_Order_By {
+  /** Consent choice from the form consent step. 'public' allows testimonial display on widgets; 'private' restricts to internal use. NULL when form has no consent step or for legacy submissions. */
+  consent_type?: InputMaybe<Order_By>;
   /** Foreign key to contacts table. Links this submission to a normalized contact record for deduplication and contact management. NULL for legacy submissions or anonymous submissions. */
   contact_id?: InputMaybe<Order_By>;
   /** Record creation timestamp. Same as submitted_at */
@@ -7264,6 +7273,8 @@ export interface Form_Submissions_Max_Order_By {
 /** aggregate min on columns */
 export interface Form_Submissions_Min_Fields {
   __typename?: 'form_submissions_min_fields';
+  /** Consent choice from the form consent step. 'public' allows testimonial display on widgets; 'private' restricts to internal use. NULL when form has no consent step or for legacy submissions. */
+  consent_type?: Maybe<Scalars['String']['output']>;
   /** Foreign key to contacts table. Links this submission to a normalized contact record for deduplication and contact management. NULL for legacy submissions or anonymous submissions. */
   contact_id?: Maybe<Scalars['String']['output']>;
   /** Record creation timestamp. Same as submitted_at */
@@ -7284,6 +7295,8 @@ export interface Form_Submissions_Min_Fields {
 
 /** order by min() on columns of table "form_submissions" */
 export interface Form_Submissions_Min_Order_By {
+  /** Consent choice from the form consent step. 'public' allows testimonial display on widgets; 'private' restricts to internal use. NULL when form has no consent step or for legacy submissions. */
+  consent_type?: InputMaybe<Order_By>;
   /** Foreign key to contacts table. Links this submission to a normalized contact record for deduplication and contact management. NULL for legacy submissions or anonymous submissions. */
   contact_id?: InputMaybe<Order_By>;
   /** Record creation timestamp. Same as submitted_at */
@@ -7327,6 +7340,7 @@ export interface Form_Submissions_On_Conflict {
 
 /** Ordering options when selecting data from "form_submissions". */
 export interface Form_Submissions_Order_By {
+  consent_type?: InputMaybe<Order_By>;
   contact?: InputMaybe<Contacts_Order_By>;
   contact_id?: InputMaybe<Order_By>;
   created_at?: InputMaybe<Order_By>;
@@ -7352,6 +7366,8 @@ export interface Form_Submissions_Pk_Columns_Input {
 /** select columns of table "form_submissions" */
 export const Form_Submissions_Select_Column = {
   /** column name */
+  ConsentType: 'consent_type',
+  /** column name */
   ContactId: 'contact_id',
   /** column name */
   CreatedAt: 'created_at',
@@ -7372,6 +7388,8 @@ export const Form_Submissions_Select_Column = {
 export type Form_Submissions_Select_Column = typeof Form_Submissions_Select_Column[keyof typeof Form_Submissions_Select_Column];
 /** input type for updating data in table "form_submissions" */
 export interface Form_Submissions_Set_Input {
+  /** Consent choice from the form consent step. 'public' allows testimonial display on widgets; 'private' restricts to internal use. NULL when form has no consent step or for legacy submissions. */
+  consent_type?: InputMaybe<Scalars['String']['input']>;
   /** Foreign key to contacts table. Links this submission to a normalized contact record for deduplication and contact management. NULL for legacy submissions or anonymous submissions. */
   contact_id?: InputMaybe<Scalars['String']['input']>;
   /** Record creation timestamp. Same as submitted_at */
@@ -7400,6 +7418,8 @@ export interface Form_Submissions_Stream_Cursor_Input {
 
 /** Initial value of the column from where the streaming should start */
 export interface Form_Submissions_Stream_Cursor_Value_Input {
+  /** Consent choice from the form consent step. 'public' allows testimonial display on widgets; 'private' restricts to internal use. NULL when form has no consent step or for legacy submissions. */
+  consent_type?: InputMaybe<Scalars['String']['input']>;
   /** Foreign key to contacts table. Links this submission to a normalized contact record for deduplication and contact management. NULL for legacy submissions or anonymous submissions. */
   contact_id?: InputMaybe<Scalars['String']['input']>;
   /** Record creation timestamp. Same as submitted_at */
@@ -7420,6 +7440,8 @@ export interface Form_Submissions_Stream_Cursor_Value_Input {
 
 /** update columns of table "form_submissions" */
 export const Form_Submissions_Update_Column = {
+  /** column name */
+  ConsentType: 'consent_type',
   /** column name */
   ContactId: 'contact_id',
   /** column name */
