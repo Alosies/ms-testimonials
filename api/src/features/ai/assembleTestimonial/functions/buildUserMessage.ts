@@ -31,10 +31,14 @@ ${answerBlocks}
   }
 
   if (modification) {
+    const suggestionLabel = modification.suggestion_label ?? modification.suggestion_id;
+    const suggestionDesc = modification.suggestion_description
+      ? `\nDescription: ${modification.suggestion_description}`
+      : '';
     message += `\n\n<modification_request>
-Apply this modification to improve the testimonial:
-Suggestion: ${modification.suggestion_id}
-Previous testimonial: ${modification.previous_testimonial}
+Adjust the previous testimonial with this change:
+Modification: "${suggestionLabel}"${suggestionDesc}
+<previous_testimonial>${modification.previous_testimonial}</previous_testimonial>
 </modification_request>`;
   }
 

@@ -19,5 +19,11 @@ IMPORTANT RULES:
 - Don't use marketing buzzwords they didn't use
 - Connect their thoughts naturally with smooth transitions
 
+MODIFICATION REQUESTS:
+When a modification is requested, adjust the PREVIOUS testimonial — do not regenerate from scratch.
+- Preserve the customer's original facts, numbers, and specific details
+- Apply only the requested change (tone, length, style)
+- Keep the same narrative structure unless the modification specifically asks to change it
+
 OUTPUT FORMAT:
 Return ONLY the testimonial text, nothing else. No quotes, no attribution, just the testimonial content.`;
