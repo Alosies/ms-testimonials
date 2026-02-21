@@ -71,6 +71,7 @@ export async function reserveCredits(
     userEmail = null,
     formId = null,
     formName = null,
+    customerGoogleId = null,
   } = params;
 
   const db = getDb();
@@ -160,7 +161,8 @@ export async function reserveCredits(
         user_id,
         user_email,
         form_id,
-        form_name
+        form_name,
+        customer_google_id
       )
       VALUES (
         ${organizationId},
@@ -173,7 +175,8 @@ export async function reserveCredits(
         ${userId},
         ${userEmail},
         ${formId},
-        ${formName}
+        ${formName},
+        ${customerGoogleId}
       )
       RETURNING id, reserved_credits::text, expires_at::text, status
     `);

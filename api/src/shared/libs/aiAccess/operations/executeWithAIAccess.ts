@@ -58,6 +58,9 @@ export interface ExecuteWithAIAccessParams<T> {
 
   /** Name of form at operation time (snapshot) */
   formName?: string | null;
+
+  /** Google ID of the customer who triggered the operation (public endpoints) */
+  customerGoogleId?: string | null;
 }
 
 /**
@@ -209,6 +212,7 @@ export async function executeWithAIAccess<T>(
     userEmail,
     formId,
     formName,
+    customerGoogleId,
   } = params;
 
   // Step 1: Check AI access (capability + credits)
@@ -239,6 +243,7 @@ export async function executeWithAIAccess<T>(
       userEmail,
       formId,
       formName,
+      customerGoogleId,
     });
     reservationId = reservation.id;
   } catch (error) {
@@ -291,7 +296,7 @@ export async function executeWithAIAccess<T>(
   } catch (error) {
     // Settlement failed - this is a critical error but operation succeeded
     // Log the error but still return success since the AI operation worked
-    console.error('Credit settlement failed:', error);
+    console.error('Credit settlement error:', error);
   }
 
   // Step 7: Calculate remaining balance

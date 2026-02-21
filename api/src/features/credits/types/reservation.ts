@@ -43,6 +43,9 @@ export interface ReserveCreditParams {
 
   /** Name of form at reservation time (snapshot) */
   formName?: string | null;
+
+  /** Google ID of the customer (public endpoints) */
+  customerGoogleId?: string | null;
 }
 
 /**

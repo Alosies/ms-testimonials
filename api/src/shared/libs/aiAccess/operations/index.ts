@@ -12,3 +12,4 @@ export {
   getCapabilityUsage,
   type CapabilityUsage,
 } from './getCapabilityUsage';
+export { getCustomerUsage } from './getCustomerUsage';

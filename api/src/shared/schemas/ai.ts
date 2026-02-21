@@ -355,6 +355,14 @@ export const TestimonialModificationSchema = z.object({
     example: 'make_briefer',
     description: 'ID of the suggestion to apply',
   }),
+  suggestion_label: z.string().optional().openapi({
+    example: 'Make it briefer',
+    description: 'Human-readable label for the suggestion',
+  }),
+  suggestion_description: z.string().optional().openapi({
+    example: 'Shorten while keeping key points',
+    description: 'Detailed description of what this suggestion does',
+  }),
   previous_testimonial: z.string().openapi({
     example: 'Before TaskFlow, I was spending hours...',
     description: 'The previous testimonial text to modify',
@@ -409,6 +417,9 @@ export const AssembleTestimonialRequestSchema = z.object({
   modification: TestimonialModificationSchema.optional().openapi({
     description: 'Optional modification to apply to a previous testimonial',
   }),
+  customer_credential: z.string().optional().openapi({
+    description: 'Raw Google One Tap JWT (id_token) for server-side verification of customer identity',
+  }),
 }).openapi('AssembleTestimonialRequest');
 
 /**
@@ -432,6 +443,10 @@ export const AssembleTestimonialResponseSchema = z.object({
   balance_remaining: z.number().optional().openapi({
     example: 73.5,
     description: 'Remaining credit balance after this operation',
+  }),
+  generations_remaining: z.number().int().nullable().optional().openapi({
+    example: 3,
+    description: 'Remaining generations for this customer on this form. null = anonymous (no limit enforced), number = verified customer count.',
   }),
 }).openapi('AssembleTestimonialResponse');
 

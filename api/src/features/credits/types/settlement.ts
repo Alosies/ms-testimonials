@@ -81,6 +81,7 @@ export type SettlementReservationRow = {
   user_email: string | null;
   form_id: string | null;
   form_name: string | null;
+  customer_google_id: string | null;
   [key: string]: unknown;
 };
 

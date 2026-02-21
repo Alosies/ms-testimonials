@@ -20,6 +20,7 @@
 
 export { checkCapabilityAccess } from './operations';
 export { checkAIAccess, type CheckAIAccessParams } from './operations';
+export { getCustomerUsage } from './operations';
 export {
   executeWithAIAccess,
   type ExecuteWithAIAccessParams,

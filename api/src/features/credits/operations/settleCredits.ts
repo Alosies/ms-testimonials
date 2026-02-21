@@ -84,7 +84,8 @@ export async function settleCredits(
       user_id,
       user_email,
       form_id,
-      form_name
+      form_name,
+      customer_google_id
     FROM credit_reservations
     WHERE id = ${reservationId}
   `);
@@ -112,6 +113,7 @@ export async function settleCredits(
   const userEmail = reservation.user_email;
   const formId = reservation.form_id;
   const formName = reservation.form_name;
+  const customerGoogleId = reservation.customer_google_id;
 
   // Step 2: Get current credit balance to calculate deduction split
   const balanceResult = await db.execute<SettlementBalanceRow>(sql`
@@ -188,7 +190,8 @@ export async function settleCredits(
           user_id,
           user_email,
           form_id,
-          form_name
+          form_name,
+          customer_google_id
         )
         VALUES (
           ${organizationId},
@@ -204,7 +207,8 @@ export async function settleCredits(
           ${userId},
           ${userEmail},
           ${formId},
-          ${formName}
+          ${formName},
+          ${customerGoogleId}
         )
         RETURNING id
       `);
@@ -223,7 +227,8 @@ export async function settleCredits(
           user_id,
           user_email,
           form_id,
-          form_name
+          form_name,
+          customer_google_id
         )
         VALUES (
           ${organizationId},
@@ -238,7 +243,8 @@ export async function settleCredits(
           ${userId},
           ${userEmail},
           ${formId},
-          ${formName}
+          ${formName},
+          ${customerGoogleId}
         )
         RETURNING id
       `);
