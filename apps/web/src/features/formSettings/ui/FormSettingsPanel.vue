@@ -16,6 +16,7 @@ import GeneralSettingsSection from './GeneralSettingsSection.vue';
 import StatusSection from './StatusSection.vue';
 import DesignSection from './DesignSection.vue';
 import SharingSection from './SharingSection.vue';
+import AISection from './AISection.vue';
 
 interface Props {
   form: FormBasicFragment;
@@ -148,6 +149,9 @@ onKeyStroke('s', (e) => {
       <SharingSection
         :form-id="form.id"
         :form-name="form.name"
+      />
+      <AISection
+        v-model:ai-generation-limit="settings.aiGenerationLimit.value"
       />
     </section>
   </div>

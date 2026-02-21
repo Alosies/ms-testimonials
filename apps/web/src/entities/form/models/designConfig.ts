@@ -12,6 +12,8 @@ export interface FormDesignConfig {
   primaryColor: string | null;
   /** Form-specific logo URL/path. Falls back to organization.logo.storage_path if null. */
   logoUrl: string | null;
+  /** Max AI generations per customer per 24h. null = use system default (4). */
+  aiGenerationLimit: number | null;
 }
 
 /**
@@ -20,6 +22,7 @@ export interface FormDesignConfig {
 export const DEFAULT_DESIGN_CONFIG: FormDesignConfig = {
   primaryColor: null,
   logoUrl: null,
+  aiGenerationLimit: null,
 };
 
 /**
@@ -44,6 +47,8 @@ export function parseDesignConfig(raw: unknown): FormDesignConfig {
         : null,
     logoUrl:
       typeof config.logoUrl === 'string' && config.logoUrl ? config.logoUrl : null,
+    aiGenerationLimit:
+      typeof config.aiGenerationLimit === 'number' ? config.aiGenerationLimit : null,
   };
 }
 
@@ -54,5 +59,6 @@ export function serializeDesignConfig(config: FormDesignConfig): Record<string, 
   return {
     primaryColor: config.primaryColor,
     logoUrl: config.logoUrl,
+    aiGenerationLimit: config.aiGenerationLimit,
   };
 }

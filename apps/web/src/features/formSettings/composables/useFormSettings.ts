@@ -29,6 +29,9 @@ export interface UseFormSettingsReturn {
   hasCustomColor: ComputedRef<boolean>;
   resetColor: () => void;
 
+  // AI
+  aiGenerationLimit: Ref<number | null>;
+
   // State
   hasChanges: ComputedRef<boolean>;
   isSaving: Ref<boolean>;
@@ -63,6 +66,9 @@ export function useFormSettings(options: UseFormSettingsOptions): UseFormSetting
   // Design
   const primaryColor = ref(DEFAULT_PRIMARY_COLOR_HEX);
 
+  // AI
+  const aiGenerationLimit = ref<number | null>(null);
+
   // Error state
   const saveError = ref<string | null>(null);
 
@@ -78,6 +84,7 @@ export function useFormSettings(options: UseFormSettingsOptions): UseFormSetting
 
     const designConfig = parseDesignConfig(formData.settings);
     primaryColor.value = designConfig.primaryColor ?? DEFAULT_PRIMARY_COLOR_HEX;
+    aiGenerationLimit.value = designConfig.aiGenerationLimit;
   }
 
   // Watch for form data changes (e.g., refetch)
@@ -113,13 +120,16 @@ export function useFormSettings(options: UseFormSettingsOptions): UseFormSetting
     const statusChanged = status.value !== form.value.status;
     const colorChanged =
       primaryColor.value !== (currentDesignConfig.primaryColor ?? DEFAULT_PRIMARY_COLOR_HEX);
+    const aiLimitChanged =
+      aiGenerationLimit.value !== currentDesignConfig.aiGenerationLimit;
 
     return (
       nameChanged ||
       productNameChanged ||
       productDescriptionChanged ||
       statusChanged ||
-      colorChanged
+      colorChanged ||
+      aiLimitChanged
     );
   });
 
@@ -142,6 +152,7 @@ export function useFormSettings(options: UseFormSettingsOptions): UseFormSetting
         ...currentDesignConfig,
         primaryColor:
           primaryColor.value === DEFAULT_PRIMARY_COLOR_HEX ? null : primaryColor.value,
+        aiGenerationLimit: aiGenerationLimit.value,
       };
 
       const result = await updateForm({
@@ -178,6 +189,9 @@ export function useFormSettings(options: UseFormSettingsOptions): UseFormSetting
     primaryColor,
     hasCustomColor,
     resetColor,
+
+    // AI
+    aiGenerationLimit,
 
     // State
     hasChanges,

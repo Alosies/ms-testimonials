@@ -26258,7 +26258,7 @@ export type GetFormByIdForAssemblyQueryVariables = Exact<{
 }>;
 
 
-export type GetFormByIdForAssemblyQuery = { __typename?: 'query_root', forms_by_pk: { __typename?: 'forms', id: string, name: string, product_name: string, is_active: boolean, organization_id: string } | null };
+export type GetFormByIdForAssemblyQuery = { __typename?: 'query_root', forms_by_pk: { __typename?: 'forms', id: string, name: string, product_name: string, is_active: boolean, organization_id: string, settings: Record<string, unknown> | null } | null };
 
 export type GetCreditBalanceQueryVariables = Exact<{
   organizationId: Scalars['String']['input'];
@@ -26719,6 +26719,7 @@ export const GetFormByIdForAssemblyDocument = `
     product_name
     is_active
     organization_id
+    settings
   }
 }
     `;

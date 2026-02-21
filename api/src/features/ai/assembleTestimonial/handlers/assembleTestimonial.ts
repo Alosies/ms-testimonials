@@ -7,10 +7,12 @@ import type {
 } from '@/shared/schemas/ai';
 import {
   executeWithAIAccess,
+  getCustomerUsage,
   type AIExecutionContext,
   type AICapabilityId,
   type QualityLevelId,
 } from '@/features/ai';
+import { verifyGoogleCredential, type VerifiedCustomer } from '@/shared/utils/googleAuth';
 import { getFormById } from './getFormById';
 import { executeAssembly, type AssemblyResult } from './executeAssembly';
 
@@ -37,6 +39,7 @@ export async function assembleTestimonial(c: Context) {
       qualityLevel,
       idempotencyKey,
       modification,
+      customer_credential,
     } = body;
 
     // Input validation
@@ -65,15 +68,33 @@ export async function assembleTestimonial(c: Context) {
     // Generate idempotency key if not provided
     const effectiveIdempotencyKey = idempotencyKey ?? `assemble-${form_id}-${Date.now()}`;
 
-    console.log(`AI Testimonial Assembly (with credits)`);
-    console.table({
-      OrganizationId: organizationId,
-      FormId: form_id,
-      QualityLevel: selectedQuality,
-      AnswerCount: answers.length,
-      IsModification: !!modification,
-      IdempotencyKey: effectiveIdempotencyKey,
-    });
+    // Verify Google credential (if provided)
+    let verifiedCustomer: VerifiedCustomer | null = null;
+    if (customer_credential) {
+      verifiedCustomer = await verifyGoogleCredential(customer_credential);
+    }
+
+    // Determine per-customer generation limit from form settings or system default
+    const DEFAULT_MAX_GENERATIONS = 4; // 1 initial + 3 refinements
+    const formSettings = formResult.form.settings as Record<string, unknown> | null;
+    const configuredLimit = typeof formSettings?.aiGenerationLimit === 'number'
+      ? Math.max(1, Math.min(20, formSettings.aiGenerationLimit))
+      : null;
+    const maxGenerations = configuredLimit ?? DEFAULT_MAX_GENERATIONS;
+
+    // Check per-customer limit (if verified)
+    let generationsRemaining: number | null = null;
+    if (verifiedCustomer) {
+      const usage = await getCustomerUsage({
+        formId: form_id,
+        customerGoogleId: verifiedCustomer.googleId,
+        windowHours: 24,
+      });
+      generationsRemaining = Math.max(0, maxGenerations - usage.generationsUsed);
+      if (generationsRemaining <= 0) {
+        return errorResponse(c, 'Generation limit reached. Try again tomorrow.', 429, 'CUSTOMER_LIMIT_EXCEEDED');
+      }
+    }
 
     // Execute with credit management
     const executionResult = await executeWithAIAccess<AssemblyResult>({
@@ -84,9 +105,10 @@ export async function assembleTestimonial(c: Context) {
       // Audit context (ADR-023 Decision 8)
       // Note: This is a public endpoint (form submission), so no authenticated user
       userId: null,
-      userEmail: null,
+      userEmail: verifiedCustomer?.email ?? null,
       formId: form_id,
       formName: formResult.form.name ?? null,
+      customerGoogleId: verifiedCustomer?.googleId ?? null,
       execute: async (context: AIExecutionContext) => {
         return executeAssembly({
           context,
@@ -154,11 +176,17 @@ export async function assembleTestimonial(c: Context) {
       }
     }
 
+    // Decrement remaining count after successful execution
+    if (verifiedCustomer && generationsRemaining !== null) {
+      generationsRemaining = generationsRemaining - 1;
+    }
+
     // Build successful response with credit information
     const response: AssembleTestimonialResponse = {
       ...executionResult.result!,
       credits_used: executionResult.creditsUsed,
       balance_remaining: executionResult.balanceRemaining,
+      generations_remaining: generationsRemaining,
     };
 
     // Set response headers with credit info
@@ -171,7 +199,7 @@ export async function assembleTestimonial(c: Context) {
 
     return successResponse(c, response);
   } catch (error) {
-    console.error('assembleTestimonial error:', error);
+    console.error('Unhandled error in assembleTestimonial:', error);
 
     // Handle specific AI SDK errors
     if (error instanceof Error) {
