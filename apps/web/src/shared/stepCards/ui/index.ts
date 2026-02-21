@@ -9,6 +9,7 @@ export { default as ThankYouStepCard } from './ThankYouStepCard.vue';
 export { default as TestimonialWriteStepCard } from './TestimonialWriteStepCard.vue';
 export { default as TestimonialPathSelector } from './TestimonialPathSelector.vue';
 export { default as TestimonialReviewStepCard } from './TestimonialReviewStepCard.vue';
+export { default as AITestimonialAssemblyLoader } from './AITestimonialAssemblyLoader.vue';
 
 // Re-export types
 export type { TestimonialPath } from './TestimonialPathSelector.vue';

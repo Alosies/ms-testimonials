@@ -3,12 +3,12 @@
  * Testimonial Write Section — multi-state UI for the testimonial write step.
  * Renders path selection, manual writing, AI generating, and AI review states.
  */
-import { Icon } from '@testimonials/icons';
 import type { FormStep } from '@/shared/stepCards';
 import {
   TestimonialWriteStepCard,
   TestimonialPathSelector,
   TestimonialReviewStepCard,
+  AITestimonialAssemblyLoader,
   type TestimonialPath,
 } from '@/shared/stepCards';
 import type { TestimonialSuggestion, TestimonialMetadata } from '@/shared/api/ai';
@@ -68,21 +68,7 @@ defineEmits<{
   </div>
 
   <!-- Generating State -->
-  <div
-    v-else-if="state === 'generating'"
-    class="text-center py-12"
-  >
-    <Icon
-      icon="svg-spinners:90-ring-with-bg"
-      class="w-12 h-12 text-primary mx-auto mb-4"
-    />
-    <h3 class="text-xl font-semibold text-gray-900 mb-2">
-      Crafting your testimonial...
-    </h3>
-    <p class="text-gray-600">
-      Our AI is transforming your answers into a compelling story.
-    </p>
-  </div>
+  <AITestimonialAssemblyLoader v-else-if="state === 'generating'" />
 
   <!-- Review State -->
   <TestimonialReviewStepCard
