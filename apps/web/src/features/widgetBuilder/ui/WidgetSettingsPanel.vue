@@ -59,8 +59,8 @@ function update(patch: Partial<WidgetFormState>) {
         <Label for="show-ratings" class="text-sm text-muted-foreground">Show ratings</Label>
         <Switch
           id="show-ratings"
-          :checked="state.show_ratings"
-          @update:checked="update({ show_ratings: $event })"
+          :model-value="state.show_ratings"
+          @update:model-value="update({ show_ratings: $event })"
         />
       </div>
 
@@ -68,8 +68,8 @@ function update(patch: Partial<WidgetFormState>) {
         <Label for="show-dates" class="text-sm text-muted-foreground">Show dates</Label>
         <Switch
           id="show-dates"
-          :checked="state.show_dates"
-          @update:checked="update({ show_dates: $event })"
+          :model-value="state.show_dates"
+          @update:model-value="update({ show_dates: $event })"
         />
       </div>
 
@@ -77,8 +77,8 @@ function update(patch: Partial<WidgetFormState>) {
         <Label for="show-company" class="text-sm text-muted-foreground">Show company</Label>
         <Switch
           id="show-company"
-          :checked="state.show_company"
-          @update:checked="update({ show_company: $event })"
+          :model-value="state.show_company"
+          @update:model-value="update({ show_company: $event })"
         />
       </div>
 
@@ -86,8 +86,8 @@ function update(patch: Partial<WidgetFormState>) {
         <Label for="show-avatar" class="text-sm text-muted-foreground">Show avatar</Label>
         <Switch
           id="show-avatar"
-          :checked="state.show_avatar"
-          @update:checked="update({ show_avatar: $event })"
+          :model-value="state.show_avatar"
+          @update:model-value="update({ show_avatar: $event })"
         />
       </div>
     </div>
@@ -113,8 +113,8 @@ function update(patch: Partial<WidgetFormState>) {
       </div>
       <Switch
         id="is-active"
-        :checked="state.is_active"
-        @update:checked="update({ is_active: $event })"
+        :model-value="state.is_active"
+        @update:model-value="update({ is_active: $event })"
       />
     </div>
   </div>
