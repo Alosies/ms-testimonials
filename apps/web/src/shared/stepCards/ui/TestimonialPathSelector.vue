@@ -18,11 +18,14 @@ interface Props {
   step: FormStep;
   mode?: StepCardMode;
   isGoogleAuthLoading?: boolean;
+  /** Whether AI assembly is available for this form's org plan. Defaults to true (optimistic). */
+  isAIAvailable?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   mode: 'preview',
   isGoogleAuthLoading: false,
+  isAIAvailable: true,
 });
 
 const emit = defineEmits<{
@@ -37,8 +40,8 @@ const content = computed((): TestimonialWriteContent | null => {
   return null;
 });
 
-// Check if AI path is enabled
-const isAIPathEnabled = computed(() => content.value?.enableAIPath ?? true);
+// Check if AI path is enabled (content toggle AND org plan availability)
+const isAIPathEnabled = computed(() => (content.value?.enableAIPath ?? true) && props.isAIAvailable);
 
 function handleManualSelect() {
   emit('select', 'manual');

@@ -7,7 +7,7 @@
  * @see PRD-005: AI Testimonial Generation
  * @see ADR-023: AI Credits
  */
-import { computed, ref, watch, type Ref } from 'vue';
+import { computed, onMounted, ref, watch, type Ref } from 'vue';
 import type { FormStep } from '@/shared/stepCards';
 import type { TestimonialPath } from '@/shared/stepCards';
 import { useApiForAI, AIApiError } from '@/shared/api/ai';
@@ -26,6 +26,33 @@ interface UseTestimonialAIFlowOptions {
   goToNext: () => void;
   isAIAvailable: Ref<boolean>;
   ratingResponse: Ref<number | null>;
+  customerCredential: Ref<string | null>;
+}
+
+/**
+ * SessionStorage key for per-form AI generation exhaustion state.
+ * Prevents showing the AI path when the customer already used all generations.
+ */
+function getExhaustionKey(fId: string): string {
+  return `testimonials_ai_exhausted_${fId}`;
+}
+
+function markFormExhausted(fId: string): void {
+  try {
+    sessionStorage.setItem(getExhaustionKey(fId), String(Date.now()));
+  } catch { /* ignore */ }
+}
+
+function isFormExhausted(fId: string): boolean {
+  try {
+    const ts = sessionStorage.getItem(getExhaustionKey(fId));
+    if (!ts) return false;
+    // Expire after 24 hours (matches server-side window)
+    const WINDOW_MS = 24 * 60 * 60 * 1000;
+    return Date.now() - Number(ts) < WINDOW_MS;
+  } catch {
+    return false;
+  }
 }
 
 export function useTestimonialAIFlow({
@@ -37,6 +64,7 @@ export function useTestimonialAIFlow({
   goToNext,
   isAIAvailable,
   ratingResponse,
+  customerCredential,
 }: UseTestimonialAIFlowOptions) {
   // API composable (called at setup root)
   const aiApi = useApiForAI();
@@ -53,6 +81,15 @@ export function useTestimonialAIFlow({
   // When AI is unavailable, skip path selection and go straight to manual
   watch(isAIAvailable, (available) => {
     if (!available && selectedPath.value === null) {
+      selectedPath.value = 'manual';
+    }
+  });
+
+  // On mount, check if this customer already exhausted their generations for this form
+  onMounted(() => {
+    if (formId.value && customerCredential.value && isFormExhausted(formId.value)) {
+      regenerationsRemaining.value = 0;
+      aiCreditsError.value = 'AI generation limit reached. Please write your testimonial below.';
       selectedPath.value = 'manual';
     }
   });
@@ -123,7 +160,11 @@ export function useTestimonialAIFlow({
    * Credits are consumed from the form owner's account (ADR-023).
    * If the form owner has insufficient credits, we gracefully fall back to manual mode.
    */
-  async function generateTestimonial(modification?: { suggestion_id: string }) {
+  async function generateTestimonial(modification?: {
+    suggestion_id: string;
+    suggestion_label?: string;
+    suggestion_description?: string;
+  }) {
     if (!formId.value) {
       console.error('Form ID is required for AI testimonial generation');
       return;
@@ -136,6 +177,8 @@ export function useTestimonialAIFlow({
       const answers = buildAnswersForAI();
       const rating = ratingResponse.value ?? undefined;
 
+      const credentialToSend = customerCredential.value ?? undefined;
+
       const response = await aiApi.assembleTestimonial({
         form_id: formId.value,
         answers,
@@ -144,16 +187,44 @@ export function useTestimonialAIFlow({
           ? {
               type: 'suggestion',
               suggestion_id: modification.suggestion_id,
+              suggestion_label: modification.suggestion_label,
+              suggestion_description: modification.suggestion_description,
               previous_testimonial: generatedTestimonial.value || '',
             }
           : undefined,
+        customer_credential: credentialToSend,
       });
 
       generatedTestimonial.value = response.testimonial;
       testimonialSuggestions.value = response.suggestions;
       testimonialMetadata.value = response.metadata;
+
+      // Use server-side generation count if available, otherwise decrement client-side
+      if (response.generations_remaining !== undefined && response.generations_remaining !== null) {
+        regenerationsRemaining.value = response.generations_remaining;
+        // Persist exhaustion state so refresh skips AI path
+        if (response.generations_remaining <= 0) {
+          markFormExhausted(formId.value);
+        }
+      } else {
+        regenerationsRemaining.value = Math.max(0, regenerationsRemaining.value - 1);
+      }
     } catch (error) {
       console.error('Failed to generate testimonial:', error);
+
+      // Handle per-customer generation limit exceeded
+      const isLimitExceeded =
+        error instanceof AIApiError &&
+        error.code === 'CUSTOMER_LIMIT_EXCEEDED';
+
+      if (isLimitExceeded) {
+        regenerationsRemaining.value = 0;
+        aiCreditsError.value =
+          'AI generation limit reached. Please write your testimonial below.';
+        markFormExhausted(formId.value);
+        selectedPath.value = 'manual';
+        return;
+      }
 
       const isCapabilityError =
         error instanceof AIApiError &&
@@ -174,12 +245,17 @@ export function useTestimonialAIFlow({
 
   async function handleRegenerate() {
     if (regenerationsRemaining.value <= 0) return;
-    regenerationsRemaining.value--;
     await generateTestimonial();
   }
 
   async function handleApplySuggestion(suggestionId: string) {
-    await generateTestimonial({ suggestion_id: suggestionId });
+    if (regenerationsRemaining.value <= 0) return;
+    const suggestion = testimonialSuggestions.value.find((s) => s.id === suggestionId);
+    await generateTestimonial({
+      suggestion_id: suggestionId,
+      suggestion_label: suggestion?.label,
+      suggestion_description: suggestion?.description,
+    });
   }
 
   function handleAcceptTestimonial(testimonial: string) {
@@ -195,6 +271,7 @@ export function useTestimonialAIFlow({
     generatedTestimonial.value = null;
     testimonialSuggestions.value = [];
     testimonialMetadata.value = null;
+    // Note: do NOT clear exhaustion flag here — it should persist across resets
   }
 
   return {

@@ -9,3 +9,10 @@ export type {
   TrackEventRequest,
   DeviceInfo,
 } from './analytics';
+
+// AI availability types
+export interface PublicAIAvailability {
+  isAIAvailable: boolean;
+  isCheckingAI: boolean;
+  aiUnavailableReason: string | null;
+}

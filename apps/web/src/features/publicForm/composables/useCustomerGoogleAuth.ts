@@ -110,12 +110,13 @@ export function useCustomerGoogleAuth() {
   const isLoading = ref(false);
   const isAuthenticated = ref(false);
   const customerInfo = ref<CustomerGoogleInfo | null>(null);
+  const credential = ref<string | null>(null);
   const error = ref<string | null>(null);
 
   /**
    * Get stored session from sessionStorage
    */
-  function getStoredSession(): CustomerGoogleInfo | null {
+  function getStoredSession(): { user: CustomerGoogleInfo; credential: string | null } | null {
     try {
       const stored = sessionStorage.getItem(STORAGE_KEY);
       if (!stored) return null;
@@ -129,7 +130,10 @@ export function useCustomerGoogleAuth() {
         return null;
       }
 
-      return parsed.user as CustomerGoogleInfo;
+      return {
+        user: parsed.user as CustomerGoogleInfo,
+        credential: (parsed.credential as string) ?? null,
+      };
     } catch {
       return null;
     }
@@ -138,12 +142,13 @@ export function useCustomerGoogleAuth() {
   /**
    * Store session in sessionStorage
    */
-  function storeSession(user: CustomerGoogleInfo): void {
+  function storeSession(user: CustomerGoogleInfo, rawCredential: string): void {
     try {
       sessionStorage.setItem(
         STORAGE_KEY,
         JSON.stringify({
           user,
+          credential: rawCredential,
           expiresAt: Date.now() + SESSION_DURATION_MS,
         })
       );
@@ -241,12 +246,13 @@ export function useCustomerGoogleAuth() {
     };
 
     customerInfo.value = user;
+    credential.value = response.credential;
     isAuthenticated.value = true;
     error.value = null;
     isLoading.value = false;
 
     // Store in session
-    storeSession(user);
+    storeSession(user, response.credential);
   }
 
   /**
@@ -257,13 +263,14 @@ export function useCustomerGoogleAuth() {
     error.value = null;
 
     try {
-      // Check for stored session first
+      // Check for stored session first (must have credential for server-side verification)
       const stored = getStoredSession();
-      if (stored) {
-        customerInfo.value = stored;
+      if (stored && stored.credential) {
+        customerInfo.value = stored.user;
+        credential.value = stored.credential;
         isAuthenticated.value = true;
         isLoading.value = false;
-        return { success: true, user: stored };
+        return { success: true, user: stored.user };
       }
 
       // Initialize if needed
@@ -322,6 +329,7 @@ export function useCustomerGoogleAuth() {
     const googleId = customerInfo.value?.google_id;
 
     customerInfo.value = null;
+    credential.value = null;
     isAuthenticated.value = false;
     clearSession();
 
@@ -337,7 +345,8 @@ export function useCustomerGoogleAuth() {
   onMounted(() => {
     const stored = getStoredSession();
     if (stored) {
-      customerInfo.value = stored;
+      customerInfo.value = stored.user;
+      credential.value = stored.credential;
       isAuthenticated.value = true;
     }
   });
@@ -346,6 +355,7 @@ export function useCustomerGoogleAuth() {
     isLoading,
     isAuthenticated,
     customerInfo,
+    credential,
     error,
     signInWithGoogle,
     signOut,

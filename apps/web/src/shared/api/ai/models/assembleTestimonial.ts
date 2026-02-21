@@ -22,6 +22,8 @@ export interface TestimonialAnswer {
 export interface TestimonialModification {
   type: 'suggestion';
   suggestion_id: string;
+  suggestion_label?: string;
+  suggestion_description?: string;
   previous_testimonial: string;
 }
 
@@ -40,6 +42,7 @@ export interface AssembleTestimonialRequest {
   rating?: number;
   quality?: TestimonialQuality;
   modification?: TestimonialModification;
+  customer_credential?: string;
 }
 
 /**
@@ -79,4 +82,5 @@ export interface AssembleTestimonialResponse {
   testimonial: string;
   suggestions: TestimonialSuggestion[];
   metadata: TestimonialMetadata;
+  generations_remaining?: number | null;
 }

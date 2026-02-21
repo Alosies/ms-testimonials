@@ -89,6 +89,7 @@ const {
   goToNext,
   isAIAvailable,
   ratingResponse,
+  customerCredential: googleAuth.credential,
 });
 
 const customPrimaryStyles = computed(() => {
@@ -171,7 +172,7 @@ function handleBack() {
       />
     </div>
 
-    <div class="w-full max-w-4xl px-4">
+    <div class="w-full max-w-5xl px-4">
       <div
         v-if="currentStep"
         :data-testid="publicFormTestIds.stepCard"

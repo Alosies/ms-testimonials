@@ -118,16 +118,26 @@ const topSuggestions = computed(() =>
       <!-- View mode -->
       <div
         v-if="!isEditing"
-        class="p-6 bg-white border border-gray-200 rounded-xl shadow-sm"
+        class="p-8 bg-white border border-gray-200 rounded-xl shadow-sm"
       >
-        <!-- AI sparkle indicator -->
-        <div class="absolute -top-3 left-4 flex items-center gap-1.5 px-2 py-0.5 bg-primary/10 rounded-full">
-          <Icon icon="heroicons:sparkles" class="w-4 h-4 text-primary" />
-          <span class="text-xs font-medium text-primary">AI Generated</span>
+        <!-- Header row: AI badge + edit button -->
+        <div class="flex items-center justify-between mb-3">
+          <div class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-primary/10 rounded-full">
+            <Icon icon="heroicons:sparkles" class="w-3.5 h-3.5 text-primary" />
+            <span class="text-xs font-medium text-primary">AI Generated</span>
+          </div>
+          <button
+            type="button"
+            class="p-1.5 text-muted-foreground hover:text-foreground hover:bg-gray-100 rounded-md transition-colors"
+            title="Edit testimonial"
+            @click="startEditing"
+          >
+            <Icon icon="heroicons:pencil-square" class="w-5 h-5" />
+          </button>
         </div>
 
         <!-- Testimonial text -->
-        <blockquote class="text-lg text-gray-800 leading-relaxed mt-2">
+        <blockquote class="text-base text-gray-800 leading-relaxed py-4">
           "{{ testimonial }}"
         </blockquote>
 
@@ -150,16 +160,6 @@ const topSuggestions = computed(() =>
             {{ theme }}
           </span>
         </div>
-
-        <!-- Edit button -->
-        <button
-          type="button"
-          class="absolute top-4 right-4 p-2 text-muted-foreground hover:text-foreground transition-colors"
-          title="Edit testimonial"
-          @click="startEditing"
-        >
-          <Icon icon="heroicons:pencil-square" class="w-5 h-5" />
-        </button>
       </div>
 
       <!-- Edit mode -->
@@ -209,24 +209,34 @@ const topSuggestions = computed(() =>
           v-for="suggestion in topSuggestions"
           :key="suggestion.id"
           type="button"
-          class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 rounded-full transition-colors"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-full transition-colors"
+          :class="regenerationsRemaining > 0
+            ? 'bg-gray-100 hover:bg-gray-200 text-foreground'
+            : 'bg-gray-50 text-gray-400 cursor-not-allowed'"
           :title="suggestion.description"
-          :disabled="isRegenerating"
+          :disabled="isRegenerating || regenerationsRemaining <= 0"
           @click="handleApplySuggestion(suggestion.id)"
         >
-          <Icon icon="heroicons:sparkles" class="w-3.5 h-3.5 text-primary" />
+          <Icon icon="heroicons:sparkles" class="w-3.5 h-3.5" :class="regenerationsRemaining > 0 ? 'text-primary' : 'text-gray-300'" />
           {{ suggestion.label }}
         </button>
       </div>
     </div>
 
+    <!-- Exhausted notice -->
+    <p
+      v-if="regenerationsRemaining <= 0 && !isEditing"
+      class="mt-3 text-xs text-muted-foreground text-center"
+    >
+      You've used all regenerations. You can still edit the text manually above.
+    </p>
+
     <!-- Actions -->
     <div class="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
       <!-- Regenerate button -->
       <Button
-        v-if="regenerationsRemaining > 0"
         variant="outline"
-        :disabled="isRegenerating || isEditing"
+        :disabled="isRegenerating || isEditing || regenerationsRemaining <= 0"
         @click="handleRegenerate"
       >
         <Icon
