@@ -8,6 +8,7 @@ export {
   createFormCreationPage,
   createPublicFormPage,
   createCreditsPage,
+  createWidgetsPage,
 } from './pages';
 
 export type {
@@ -16,4 +17,5 @@ export type {
   FormCreationPage,
   PublicFormPage,
   CreditsPage,
+  WidgetsPage,
 } from './pages';

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Icon } from '@testimonials/icons';
 import type { WidgetType } from '@/entities/widget';
+import { widgetsTestIds } from '@/shared/constants/testIds';
 
 const modelValue = defineModel<WidgetType>({ required: true });
 
@@ -35,11 +36,13 @@ const types = [
 <template>
   <div>
     <label class="text-sm font-medium text-foreground mb-3 block">Widget Type</label>
-    <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+    <div class="grid grid-cols-1 gap-3 sm:grid-cols-3" :data-testid="widgetsTestIds.typeSelector">
       <button
         v-for="t in types"
         :key="t.value"
         type="button"
+        :data-testid="widgetsTestIds.typeOption"
+        :data-widget-type="t.value"
         class="flex flex-col items-center gap-2 rounded-lg border p-4 text-center transition-all hover:shadow-sm"
         :class="[
           modelValue === t.value ? t.selectedClass : 'border-border hover:border-border/80',

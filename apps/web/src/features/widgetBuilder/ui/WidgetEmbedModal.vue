@@ -9,6 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@testimonials/ui';
+import { widgetsTestIds } from '@/shared/constants/testIds';
 
 const props = defineProps<{
   open: boolean;
@@ -42,7 +43,7 @@ async function copyToClipboard() {
 
 <template>
   <Dialog :open="open" @update:open="emit('update:open', $event)">
-    <DialogContent class="sm:max-w-lg">
+    <DialogContent class="sm:max-w-lg" :data-testid="widgetsTestIds.embedModal">
       <DialogHeader>
         <DialogTitle>Embed Code</DialogTitle>
         <DialogDescription>
@@ -52,12 +53,14 @@ async function copyToClipboard() {
 
       <div class="relative">
         <pre
+          :data-testid="widgetsTestIds.embedCode"
           class="rounded-lg bg-muted p-4 text-sm text-foreground overflow-x-auto font-mono whitespace-pre-wrap break-all"
         >{{ embedCode }}</pre>
         <Button
           variant="outline"
           size="sm"
           class="absolute top-2 right-2 gap-1.5"
+          :data-testid="widgetsTestIds.embedCopyButton"
           @click="copyToClipboard"
         >
           <Icon

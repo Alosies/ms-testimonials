@@ -3,6 +3,7 @@ import { computed } from 'vue';
 import { Icon } from '@testimonials/icons';
 import { Badge, Button } from '@testimonials/ui';
 import type { WidgetListItem } from '../models';
+import { widgetsTestIds } from '@/shared/constants/testIds';
 
 const props = defineProps<{
   widget: WidgetListItem;
@@ -45,6 +46,8 @@ const createdDate = computed(() => {
 
 <template>
   <div
+    :data-testid="widgetsTestIds.widgetCard"
+    :data-widget-id="widget.id"
     class="group relative rounded-lg border border-border bg-card p-5 transition-all hover:shadow-md hover:border-border/80 cursor-pointer"
     @click="emit('edit', widget)"
   >
@@ -57,7 +60,7 @@ const createdDate = computed(() => {
           <Icon :icon="widgetTypeConfig.icon" class="h-5 w-5" />
         </div>
         <div>
-          <h3 class="font-medium text-foreground leading-tight">{{ widget.name }}</h3>
+          <h3 class="font-medium text-foreground leading-tight" :data-testid="widgetsTestIds.widgetCardName">{{ widget.name }}</h3>
           <p class="text-xs text-muted-foreground mt-0.5">{{ createdDate }}</p>
         </div>
       </div>
@@ -65,6 +68,7 @@ const createdDate = computed(() => {
         variant="ghost"
         size="icon"
         class="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+        :data-testid="widgetsTestIds.widgetCardDeleteButton"
         @click.stop="emit('delete', widget)"
       >
         <Icon icon="heroicons:trash" class="h-4 w-4 text-muted-foreground hover:text-destructive" />
@@ -72,7 +76,7 @@ const createdDate = computed(() => {
     </div>
 
     <div class="flex items-center gap-2">
-      <Badge variant="secondary" class="text-xs">
+      <Badge variant="secondary" class="text-xs" :data-testid="widgetsTestIds.widgetCardType">
         {{ widgetTypeConfig.label }}
       </Badge>
       <Badge v-if="!widget.is_active" variant="outline" class="text-xs text-muted-foreground">

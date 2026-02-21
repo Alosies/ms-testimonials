@@ -13,6 +13,7 @@ import { useGetWidgets, useDeleteWidget } from '@/entities/widget';
 import { useCurrentContextStore } from '@/shared/currentContext';
 import { useRouting } from '@/shared/routing';
 import { useConfirmationModal } from '@/shared/widgets/ConfirmationModal';
+import { widgetsTestIds } from '@/shared/constants/testIds';
 
 definePage({
   meta: {
@@ -55,15 +56,15 @@ function handleDelete(widget: { name: string; id: string }) {
 <template>
   <AuthLayout>
     <div class="min-h-full bg-background">
-      <div class="mx-auto max-w-6xl px-6 py-8">
+      <div class="mx-auto max-w-6xl px-6 py-8" :data-testid="widgetsTestIds.listPage">
         <header class="flex items-start justify-between mb-8">
           <div class="space-y-1">
-            <h1 class="text-2xl font-semibold tracking-tight text-foreground">Widgets</h1>
+            <h1 class="text-2xl font-semibold tracking-tight text-foreground" :data-testid="widgetsTestIds.listPageTitle">Widgets</h1>
             <p class="text-sm text-muted-foreground">
               Create and manage embeddable testimonial widgets.
             </p>
           </div>
-          <Button v-if="hasWidgets" @click="goToNewWidget" class="gap-2">
+          <Button v-if="hasWidgets" @click="goToNewWidget" class="gap-2" :data-testid="widgetsTestIds.listCreateButton">
             <Icon icon="heroicons:plus" class="h-4 w-4" />
             Create Widget
           </Button>

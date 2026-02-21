@@ -13,6 +13,7 @@ import WidgetSettingsPanel from './WidgetSettingsPanel.vue';
 import WidgetTestimonialSelector from './WidgetTestimonialSelector.vue';
 import WidgetPreview from './WidgetPreview.vue';
 import WidgetEmbedModal from './WidgetEmbedModal.vue';
+import { widgetsTestIds } from '@/shared/constants/testIds';
 
 const props = defineProps<{
   widgetId?: string | null;
@@ -53,16 +54,16 @@ function handleUpdateState(newState: WidgetFormState) {
 </script>
 
 <template>
-  <div class="min-h-full bg-background">
+  <div class="min-h-full bg-background" :data-testid="widgetsTestIds.builderPage">
     <div class="mx-auto max-w-6xl px-6 py-8">
       <!-- Header -->
       <header class="flex items-center justify-between mb-6">
         <div class="flex items-center gap-3">
-          <Button variant="ghost" size="icon" class="h-8 w-8" @click="goToWidgets">
+          <Button variant="ghost" size="icon" class="h-8 w-8" @click="goToWidgets" :data-testid="widgetsTestIds.builderBackButton">
             <Icon icon="heroicons:arrow-left" class="h-4 w-4" />
           </Button>
           <div>
-            <h1 class="text-xl font-semibold tracking-tight text-foreground">
+            <h1 class="text-xl font-semibold tracking-tight text-foreground" :data-testid="widgetsTestIds.builderTitle">
               {{ isEditMode ? 'Edit Widget' : 'Create Widget' }}
             </h1>
             <p v-if="isEditMode && state.name" class="text-sm text-muted-foreground">
@@ -75,12 +76,13 @@ function handleUpdateState(newState: WidgetFormState) {
             v-if="savedWidgetId"
             variant="outline"
             class="gap-2"
+            :data-testid="widgetsTestIds.builderEmbedButton"
             @click="showEmbedModal = true"
           >
             <Icon icon="heroicons:code-bracket" class="h-4 w-4" />
             Embed Code
           </Button>
-          <Button :disabled="!canSave" class="gap-2" @click="handleSave">
+          <Button :disabled="!canSave" class="gap-2" :data-testid="widgetsTestIds.builderSaveButton" @click="handleSave">
             <Icon
               v-if="isSaving"
               icon="heroicons:arrow-path"
