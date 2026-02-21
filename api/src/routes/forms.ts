@@ -1,4 +1,6 @@
 import { Hono } from 'hono';
+import { getFormById } from '@/features/ai/assembleTestimonial/handlers/getFormById';
+import { checkCapabilityAccess } from '@/shared/libs/aiAccess';
 
 const forms = new Hono();
 
@@ -9,6 +11,31 @@ const forms = new Hono();
 forms.get('/', async (c) => {
   // TODO: Implement get forms
   return c.json({ forms: [] });
+});
+
+/**
+ * GET /forms/:formId/ai-availability
+ * Check if AI testimonial assembly is available for a form (public endpoint).
+ * Returns only a boolean — no plan details leaked.
+ */
+forms.get('/:formId/ai-availability', async (c) => {
+  const formId = c.req.param('formId');
+
+  const formResult = await getFormById(formId);
+  if (!formResult.success) {
+    return c.json({ available: false, reason: 'form_not_found' as const });
+  }
+
+  const access = await checkCapabilityAccess(
+    formResult.form.organization_id,
+    'testimonial_assembly',
+  );
+
+  if (!access.hasAccess) {
+    return c.json({ available: false, reason: 'plan_not_included' as const });
+  }
+
+  return c.json({ available: true });
 });
 
 /**
