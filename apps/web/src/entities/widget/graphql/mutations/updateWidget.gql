@@ -1,0 +1,5 @@
+mutation UpdateWidget($widgetId: String!, $set: widgets_set_input!) {
+  update_widgets_by_pk(pk_columns: { id: $widgetId }, _set: $set) {
+    ...WidgetBasic
+  }
+}

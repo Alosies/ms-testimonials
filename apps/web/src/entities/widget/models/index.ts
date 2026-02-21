@@ -1,4 +1,5 @@
 export type * from './queries';
+export type * from './mutations';
 
 // Utility types
 export type WidgetId = string;

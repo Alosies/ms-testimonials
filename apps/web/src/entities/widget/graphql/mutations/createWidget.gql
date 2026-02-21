@@ -1,0 +1,5 @@
+mutation CreateWidget($object: widgets_insert_input!) {
+  insert_widgets_one(object: $object) {
+    ...WidgetBasic
+  }
+}

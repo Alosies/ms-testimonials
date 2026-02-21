@@ -1,0 +1,39 @@
+# Get a single widget by ID (authenticated, for builder)
+query GetWidgetById($widgetId: String!, $organizationId: String!) {
+  widgets_by_pk(id: $widgetId) {
+    id
+    organization_id
+    created_by
+    name
+    type
+    theme
+    show_ratings
+    show_dates
+    show_company
+    show_avatar
+    max_display
+    settings
+    form_id
+    is_active
+    created_at
+    updated_at
+    updated_by
+    testimonial_placements {
+      id
+      testimonial_id
+      display_order
+      is_featured
+      testimonial {
+        id
+        content
+        customer_name
+        customer_company
+        customer_title
+        customer_avatar_url
+        rating
+        status
+        created_at
+      }
+    }
+  }
+}

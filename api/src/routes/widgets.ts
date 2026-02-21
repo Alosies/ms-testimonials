@@ -1,43 +1,43 @@
-import { Hono } from 'hono';
-
-const widgets = new Hono();
-
 /**
- * GET /widgets
- * Get all widgets for a user
+ * Widget Routes
+ *
+ * CRUD endpoints (authenticated) + public widget data endpoint (unauthenticated).
+ *
+ * Part of ADR-024 Widgets v1
  */
-widgets.get('/', async (c) => {
-  // TODO: Implement get widgets
-  return c.json({ widgets: [] });
-});
 
-/**
- * GET /widgets/:id
- * Get widget data (public endpoint for embed)
- */
-widgets.get('/:id', async (c) => {
-  const id = c.req.param('id');
-  // TODO: Implement get widget data
-  return c.json({ id, widget: null, testimonials: [] });
-});
+import { OpenAPIHono } from '@hono/zod-openapi';
+import { authMiddleware } from '@/shared/middleware/auth';
 
-/**
- * POST /widgets
- * Create a new widget
- */
-widgets.post('/', async (c) => {
-  // TODO: Implement widget creation
-  return c.json({ message: 'Widget created' });
-});
+import {
+  listWidgetsRoute,
+  listWidgetsHandler,
+  getWidgetRoute,
+  getWidgetHandler,
+  createWidgetRoute,
+  createWidgetHandler,
+  updateWidgetRoute,
+  updateWidgetHandler,
+  deleteWidgetRoute,
+  deleteWidgetHandler,
+} from '@/features/widgets';
 
-/**
- * PUT /widgets/:id
- * Update a widget
- */
-widgets.put('/:id', async (c) => {
-  const id = c.req.param('id');
-  // TODO: Implement widget update
-  return c.json({ message: `Widget ${id} updated` });
-});
+const widgets = new OpenAPIHono();
 
-export default widgets;
+// Apply auth middleware to all CRUD routes
+widgets.use('/*', authMiddleware);
+
+// Register routes with handlers
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+widgets.openapi(listWidgetsRoute, listWidgetsHandler as any);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+widgets.openapi(getWidgetRoute, getWidgetHandler as any);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+widgets.openapi(createWidgetRoute, createWidgetHandler as any);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+widgets.openapi(updateWidgetRoute, updateWidgetHandler as any);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+widgets.openapi(deleteWidgetRoute, deleteWidgetHandler as any);
+
+export { widgets };
+export type WidgetsRoutes = typeof widgets;

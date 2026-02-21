@@ -1,0 +1,33 @@
+# Get widget data for public embed (no auth required)
+# Uses admin execution but returns only public-safe fields
+query GetPublicWidget($widgetId: String!) {
+  widgets_by_pk(id: $widgetId) {
+    id
+    name
+    type
+    theme
+    show_ratings
+    show_dates
+    show_company
+    show_avatar
+    max_display
+    settings
+    form_id
+    is_active
+    testimonial_placements(order_by: { display_order: asc }) {
+      testimonial_id
+      display_order
+      is_featured
+      testimonial {
+        id
+        content
+        customer_name
+        customer_company
+        customer_title
+        customer_avatar_url
+        rating
+        created_at
+      }
+    }
+  }
+}

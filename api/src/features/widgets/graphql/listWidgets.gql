@@ -1,0 +1,30 @@
+# List all widgets for an organization
+query ListWidgets($organizationId: String!) {
+  widgets(
+    where: { organization_id: { _eq: $organizationId } }
+    order_by: { created_at: desc }
+  ) {
+    id
+    organization_id
+    created_by
+    name
+    type
+    theme
+    show_ratings
+    show_dates
+    show_company
+    show_avatar
+    max_display
+    settings
+    form_id
+    is_active
+    created_at
+    updated_at
+    updated_by
+    testimonial_placements_aggregate {
+      aggregate {
+        count
+      }
+    }
+  }
+}

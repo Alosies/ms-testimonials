@@ -1387,6 +1387,8 @@ export type Credit_Reservations = {
   ai_capability_id: Scalars['String']['output'];
   /** Timestamp when this reservation was first created. Set automatically, never modified. */
   created_at: Scalars['timestamptz']['output'];
+  /** Google ID (sub claim) of the customer. Copied to credit_transactions on settlement. */
+  customer_google_id: Maybe<Scalars['String']['output']>;
   /** When this reservation expires if not settled. Expired reservations are automatically released by cleanup jobs. */
   expires_at: Scalars['timestamptz']['output'];
   /** FK to forms table. Which form this operation relates to. SET NULL on delete preserves history. */
@@ -1415,7 +1417,7 @@ export type Credit_Reservations = {
   status: Scalars['String']['output'];
   /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
   updated_at: Scalars['timestamptz']['output'];
-  /** Snapshot of user email/name at reservation time. Copied to transaction on settle. Values: email, "Anonymous". */
+  /** Email of user who initiated the operation (snapshot at reservation time). NULL for system/anonymous operations. */
   user_email: Maybe<Scalars['String']['output']>;
   /** FK to users table. Who initiated this reservation. NULL for anonymous operations. SET NULL on delete preserves history. */
   user_id: Maybe<Scalars['String']['output']>;
@@ -1509,6 +1511,7 @@ export type Credit_Reservations_Bool_Exp = {
   ai_capability?: InputMaybe<Ai_Capabilities_Bool_Exp>;
   ai_capability_id?: InputMaybe<String_Comparison_Exp>;
   created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  customer_google_id?: InputMaybe<String_Comparison_Exp>;
   expires_at?: InputMaybe<Timestamptz_Comparison_Exp>;
   form_id?: InputMaybe<String_Comparison_Exp>;
   form_name?: InputMaybe<String_Comparison_Exp>;
@@ -1551,6 +1554,8 @@ export type Credit_Reservations_Insert_Input = {
   ai_capability_id?: InputMaybe<Scalars['String']['input']>;
   /** Timestamp when this reservation was first created. Set automatically, never modified. */
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Google ID (sub claim) of the customer. Copied to credit_transactions on settlement. */
+  customer_google_id?: InputMaybe<Scalars['String']['input']>;
   /** When this reservation expires if not settled. Expired reservations are automatically released by cleanup jobs. */
   expires_at?: InputMaybe<Scalars['timestamptz']['input']>;
   /** FK to forms table. Which form this operation relates to. SET NULL on delete preserves history. */
@@ -1577,7 +1582,7 @@ export type Credit_Reservations_Insert_Input = {
   status?: InputMaybe<Scalars['String']['input']>;
   /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
   updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
-  /** Snapshot of user email/name at reservation time. Copied to transaction on settle. Values: email, "Anonymous". */
+  /** Email of user who initiated the operation (snapshot at reservation time). NULL for system/anonymous operations. */
   user_email?: InputMaybe<Scalars['String']['input']>;
   /** FK to users table. Who initiated this reservation. NULL for anonymous operations. SET NULL on delete preserves history. */
   user_id?: InputMaybe<Scalars['String']['input']>;
@@ -1590,6 +1595,8 @@ export type Credit_Reservations_Max_Fields = {
   ai_capability_id: Maybe<Scalars['String']['output']>;
   /** Timestamp when this reservation was first created. Set automatically, never modified. */
   created_at: Maybe<Scalars['timestamptz']['output']>;
+  /** Google ID (sub claim) of the customer. Copied to credit_transactions on settlement. */
+  customer_google_id: Maybe<Scalars['String']['output']>;
   /** When this reservation expires if not settled. Expired reservations are automatically released by cleanup jobs. */
   expires_at: Maybe<Scalars['timestamptz']['output']>;
   /** FK to forms table. Which form this operation relates to. SET NULL on delete preserves history. */
@@ -1614,7 +1621,7 @@ export type Credit_Reservations_Max_Fields = {
   status: Maybe<Scalars['String']['output']>;
   /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
   updated_at: Maybe<Scalars['timestamptz']['output']>;
-  /** Snapshot of user email/name at reservation time. Copied to transaction on settle. Values: email, "Anonymous". */
+  /** Email of user who initiated the operation (snapshot at reservation time). NULL for system/anonymous operations. */
   user_email: Maybe<Scalars['String']['output']>;
   /** FK to users table. Who initiated this reservation. NULL for anonymous operations. SET NULL on delete preserves history. */
   user_id: Maybe<Scalars['String']['output']>;
@@ -1626,6 +1633,8 @@ export type Credit_Reservations_Max_Order_By = {
   ai_capability_id?: InputMaybe<Order_By>;
   /** Timestamp when this reservation was first created. Set automatically, never modified. */
   created_at?: InputMaybe<Order_By>;
+  /** Google ID (sub claim) of the customer. Copied to credit_transactions on settlement. */
+  customer_google_id?: InputMaybe<Order_By>;
   /** When this reservation expires if not settled. Expired reservations are automatically released by cleanup jobs. */
   expires_at?: InputMaybe<Order_By>;
   /** FK to forms table. Which form this operation relates to. SET NULL on delete preserves history. */
@@ -1650,7 +1659,7 @@ export type Credit_Reservations_Max_Order_By = {
   status?: InputMaybe<Order_By>;
   /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
   updated_at?: InputMaybe<Order_By>;
-  /** Snapshot of user email/name at reservation time. Copied to transaction on settle. Values: email, "Anonymous". */
+  /** Email of user who initiated the operation (snapshot at reservation time). NULL for system/anonymous operations. */
   user_email?: InputMaybe<Order_By>;
   /** FK to users table. Who initiated this reservation. NULL for anonymous operations. SET NULL on delete preserves history. */
   user_id?: InputMaybe<Order_By>;
@@ -1663,6 +1672,8 @@ export type Credit_Reservations_Min_Fields = {
   ai_capability_id: Maybe<Scalars['String']['output']>;
   /** Timestamp when this reservation was first created. Set automatically, never modified. */
   created_at: Maybe<Scalars['timestamptz']['output']>;
+  /** Google ID (sub claim) of the customer. Copied to credit_transactions on settlement. */
+  customer_google_id: Maybe<Scalars['String']['output']>;
   /** When this reservation expires if not settled. Expired reservations are automatically released by cleanup jobs. */
   expires_at: Maybe<Scalars['timestamptz']['output']>;
   /** FK to forms table. Which form this operation relates to. SET NULL on delete preserves history. */
@@ -1687,7 +1698,7 @@ export type Credit_Reservations_Min_Fields = {
   status: Maybe<Scalars['String']['output']>;
   /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
   updated_at: Maybe<Scalars['timestamptz']['output']>;
-  /** Snapshot of user email/name at reservation time. Copied to transaction on settle. Values: email, "Anonymous". */
+  /** Email of user who initiated the operation (snapshot at reservation time). NULL for system/anonymous operations. */
   user_email: Maybe<Scalars['String']['output']>;
   /** FK to users table. Who initiated this reservation. NULL for anonymous operations. SET NULL on delete preserves history. */
   user_id: Maybe<Scalars['String']['output']>;
@@ -1699,6 +1710,8 @@ export type Credit_Reservations_Min_Order_By = {
   ai_capability_id?: InputMaybe<Order_By>;
   /** Timestamp when this reservation was first created. Set automatically, never modified. */
   created_at?: InputMaybe<Order_By>;
+  /** Google ID (sub claim) of the customer. Copied to credit_transactions on settlement. */
+  customer_google_id?: InputMaybe<Order_By>;
   /** When this reservation expires if not settled. Expired reservations are automatically released by cleanup jobs. */
   expires_at?: InputMaybe<Order_By>;
   /** FK to forms table. Which form this operation relates to. SET NULL on delete preserves history. */
@@ -1723,7 +1736,7 @@ export type Credit_Reservations_Min_Order_By = {
   status?: InputMaybe<Order_By>;
   /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
   updated_at?: InputMaybe<Order_By>;
-  /** Snapshot of user email/name at reservation time. Copied to transaction on settle. Values: email, "Anonymous". */
+  /** Email of user who initiated the operation (snapshot at reservation time). NULL for system/anonymous operations. */
   user_email?: InputMaybe<Order_By>;
   /** FK to users table. Who initiated this reservation. NULL for anonymous operations. SET NULL on delete preserves history. */
   user_id?: InputMaybe<Order_By>;
@@ -1750,6 +1763,7 @@ export type Credit_Reservations_Order_By = {
   ai_capability?: InputMaybe<Ai_Capabilities_Order_By>;
   ai_capability_id?: InputMaybe<Order_By>;
   created_at?: InputMaybe<Order_By>;
+  customer_google_id?: InputMaybe<Order_By>;
   expires_at?: InputMaybe<Order_By>;
   form_id?: InputMaybe<Order_By>;
   form_name?: InputMaybe<Order_By>;
@@ -1780,6 +1794,8 @@ export const Credit_Reservations_Select_Column = {
   AiCapabilityId: 'ai_capability_id',
   /** column name */
   CreatedAt: 'created_at',
+  /** column name */
+  CustomerGoogleId: 'customer_google_id',
   /** column name */
   ExpiresAt: 'expires_at',
   /** column name */
@@ -1817,6 +1833,8 @@ export type Credit_Reservations_Set_Input = {
   ai_capability_id?: InputMaybe<Scalars['String']['input']>;
   /** Timestamp when this reservation was first created. Set automatically, never modified. */
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Google ID (sub claim) of the customer. Copied to credit_transactions on settlement. */
+  customer_google_id?: InputMaybe<Scalars['String']['input']>;
   /** When this reservation expires if not settled. Expired reservations are automatically released by cleanup jobs. */
   expires_at?: InputMaybe<Scalars['timestamptz']['input']>;
   /** FK to forms table. Which form this operation relates to. SET NULL on delete preserves history. */
@@ -1841,7 +1859,7 @@ export type Credit_Reservations_Set_Input = {
   status?: InputMaybe<Scalars['String']['input']>;
   /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
   updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
-  /** Snapshot of user email/name at reservation time. Copied to transaction on settle. Values: email, "Anonymous". */
+  /** Email of user who initiated the operation (snapshot at reservation time). NULL for system/anonymous operations. */
   user_email?: InputMaybe<Scalars['String']['input']>;
   /** FK to users table. Who initiated this reservation. NULL for anonymous operations. SET NULL on delete preserves history. */
   user_id?: InputMaybe<Scalars['String']['input']>;
@@ -1912,6 +1930,8 @@ export type Credit_Reservations_Stream_Cursor_Value_Input = {
   ai_capability_id?: InputMaybe<Scalars['String']['input']>;
   /** Timestamp when this reservation was first created. Set automatically, never modified. */
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Google ID (sub claim) of the customer. Copied to credit_transactions on settlement. */
+  customer_google_id?: InputMaybe<Scalars['String']['input']>;
   /** When this reservation expires if not settled. Expired reservations are automatically released by cleanup jobs. */
   expires_at?: InputMaybe<Scalars['timestamptz']['input']>;
   /** FK to forms table. Which form this operation relates to. SET NULL on delete preserves history. */
@@ -1936,7 +1956,7 @@ export type Credit_Reservations_Stream_Cursor_Value_Input = {
   status?: InputMaybe<Scalars['String']['input']>;
   /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
   updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
-  /** Snapshot of user email/name at reservation time. Copied to transaction on settle. Values: email, "Anonymous". */
+  /** Email of user who initiated the operation (snapshot at reservation time). NULL for system/anonymous operations. */
   user_email?: InputMaybe<Scalars['String']['input']>;
   /** FK to users table. Who initiated this reservation. NULL for anonymous operations. SET NULL on delete preserves history. */
   user_id?: InputMaybe<Scalars['String']['input']>;
@@ -1965,6 +1985,8 @@ export const Credit_Reservations_Update_Column = {
   AiCapabilityId: 'ai_capability_id',
   /** column name */
   CreatedAt: 'created_at',
+  /** column name */
+  CustomerGoogleId: 'customer_google_id',
   /** column name */
   ExpiresAt: 'expires_at',
   /** column name */
@@ -2479,6 +2501,8 @@ export type Credit_Transactions = {
   created_at: Scalars['timestamptz']['output'];
   /** Actual credits amount. Positive for additions (allocations, purchases). Negative for consumption/expiration. admin_adjustment can be either. */
   credits_amount: Scalars['numeric']['output'];
+  /** Google ID (sub claim) of the customer who triggered this AI operation. NULL for authenticated user or anonymous operations. */
+  customer_google_id: Maybe<Scalars['String']['output']>;
   /** Human-readable description. Examples: AI question generation, Monthly credit allocation, Credit pack purchase. */
   description: Maybe<Scalars['String']['output']>;
   /** Estimated credits before AI execution. Used to track estimation accuracy. NULL for non-AI transactions. */
@@ -2507,7 +2531,7 @@ export type Credit_Transactions = {
   quality_level_id: Maybe<Scalars['String']['output']>;
   /** Type of credit transaction: ai_consumption, plan_allocation, topup_purchase, promo_bonus, admin_adjustment, plan_change_adjustment, expiration. */
   transaction_type: Scalars['String']['output'];
-  /** Snapshot of user email/name at transaction time. Preserved when user deleted. Values: email, "Anonymous", "System". */
+  /** Email of user who initiated the operation (snapshot at transaction time). NULL for system/anonymous operations. */
   user_email: Maybe<Scalars['String']['output']>;
   /** FK to users table. Who triggered this transaction. NULL for anonymous/system operations. SET NULL on delete preserves history. */
   user_id: Maybe<Scalars['String']['output']>;
@@ -2623,6 +2647,7 @@ export type Credit_Transactions_Bool_Exp = {
   balance_after?: InputMaybe<Numeric_Comparison_Exp>;
   created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
   credits_amount?: InputMaybe<Numeric_Comparison_Exp>;
+  customer_google_id?: InputMaybe<String_Comparison_Exp>;
   description?: InputMaybe<String_Comparison_Exp>;
   estimated_credits?: InputMaybe<Numeric_Comparison_Exp>;
   estimation_variance?: InputMaybe<Numeric_Comparison_Exp>;
@@ -2689,6 +2714,8 @@ export type Credit_Transactions_Insert_Input = {
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
   /** Actual credits amount. Positive for additions (allocations, purchases). Negative for consumption/expiration. admin_adjustment can be either. */
   credits_amount?: InputMaybe<Scalars['numeric']['input']>;
+  /** Google ID (sub claim) of the customer who triggered this AI operation. NULL for authenticated user or anonymous operations. */
+  customer_google_id?: InputMaybe<Scalars['String']['input']>;
   /** Human-readable description. Examples: AI question generation, Monthly credit allocation, Credit pack purchase. */
   description?: InputMaybe<Scalars['String']['input']>;
   /** Estimated credits before AI execution. Used to track estimation accuracy. NULL for non-AI transactions. */
@@ -2713,7 +2740,7 @@ export type Credit_Transactions_Insert_Input = {
   quality_level_id?: InputMaybe<Scalars['String']['input']>;
   /** Type of credit transaction: ai_consumption, plan_allocation, topup_purchase, promo_bonus, admin_adjustment, plan_change_adjustment, expiration. */
   transaction_type?: InputMaybe<Scalars['String']['input']>;
-  /** Snapshot of user email/name at transaction time. Preserved when user deleted. Values: email, "Anonymous", "System". */
+  /** Email of user who initiated the operation (snapshot at transaction time). NULL for system/anonymous operations. */
   user_email?: InputMaybe<Scalars['String']['input']>;
   /** FK to users table. Who triggered this transaction. NULL for anonymous/system operations. SET NULL on delete preserves history. */
   user_id?: InputMaybe<Scalars['String']['input']>;
@@ -2730,6 +2757,8 @@ export type Credit_Transactions_Max_Fields = {
   created_at: Maybe<Scalars['timestamptz']['output']>;
   /** Actual credits amount. Positive for additions (allocations, purchases). Negative for consumption/expiration. admin_adjustment can be either. */
   credits_amount: Maybe<Scalars['numeric']['output']>;
+  /** Google ID (sub claim) of the customer who triggered this AI operation. NULL for authenticated user or anonymous operations. */
+  customer_google_id: Maybe<Scalars['String']['output']>;
   /** Human-readable description. Examples: AI question generation, Monthly credit allocation, Credit pack purchase. */
   description: Maybe<Scalars['String']['output']>;
   /** Estimated credits before AI execution. Used to track estimation accuracy. NULL for non-AI transactions. */
@@ -2752,7 +2781,7 @@ export type Credit_Transactions_Max_Fields = {
   quality_level_id: Maybe<Scalars['String']['output']>;
   /** Type of credit transaction: ai_consumption, plan_allocation, topup_purchase, promo_bonus, admin_adjustment, plan_change_adjustment, expiration. */
   transaction_type: Maybe<Scalars['String']['output']>;
-  /** Snapshot of user email/name at transaction time. Preserved when user deleted. Values: email, "Anonymous", "System". */
+  /** Email of user who initiated the operation (snapshot at transaction time). NULL for system/anonymous operations. */
   user_email: Maybe<Scalars['String']['output']>;
   /** FK to users table. Who triggered this transaction. NULL for anonymous/system operations. SET NULL on delete preserves history. */
   user_id: Maybe<Scalars['String']['output']>;
@@ -2768,6 +2797,8 @@ export type Credit_Transactions_Max_Order_By = {
   created_at?: InputMaybe<Order_By>;
   /** Actual credits amount. Positive for additions (allocations, purchases). Negative for consumption/expiration. admin_adjustment can be either. */
   credits_amount?: InputMaybe<Order_By>;
+  /** Google ID (sub claim) of the customer who triggered this AI operation. NULL for authenticated user or anonymous operations. */
+  customer_google_id?: InputMaybe<Order_By>;
   /** Human-readable description. Examples: AI question generation, Monthly credit allocation, Credit pack purchase. */
   description?: InputMaybe<Order_By>;
   /** Estimated credits before AI execution. Used to track estimation accuracy. NULL for non-AI transactions. */
@@ -2790,7 +2821,7 @@ export type Credit_Transactions_Max_Order_By = {
   quality_level_id?: InputMaybe<Order_By>;
   /** Type of credit transaction: ai_consumption, plan_allocation, topup_purchase, promo_bonus, admin_adjustment, plan_change_adjustment, expiration. */
   transaction_type?: InputMaybe<Order_By>;
-  /** Snapshot of user email/name at transaction time. Preserved when user deleted. Values: email, "Anonymous", "System". */
+  /** Email of user who initiated the operation (snapshot at transaction time). NULL for system/anonymous operations. */
   user_email?: InputMaybe<Order_By>;
   /** FK to users table. Who triggered this transaction. NULL for anonymous/system operations. SET NULL on delete preserves history. */
   user_id?: InputMaybe<Order_By>;
@@ -2807,6 +2838,8 @@ export type Credit_Transactions_Min_Fields = {
   created_at: Maybe<Scalars['timestamptz']['output']>;
   /** Actual credits amount. Positive for additions (allocations, purchases). Negative for consumption/expiration. admin_adjustment can be either. */
   credits_amount: Maybe<Scalars['numeric']['output']>;
+  /** Google ID (sub claim) of the customer who triggered this AI operation. NULL for authenticated user or anonymous operations. */
+  customer_google_id: Maybe<Scalars['String']['output']>;
   /** Human-readable description. Examples: AI question generation, Monthly credit allocation, Credit pack purchase. */
   description: Maybe<Scalars['String']['output']>;
   /** Estimated credits before AI execution. Used to track estimation accuracy. NULL for non-AI transactions. */
@@ -2829,7 +2862,7 @@ export type Credit_Transactions_Min_Fields = {
   quality_level_id: Maybe<Scalars['String']['output']>;
   /** Type of credit transaction: ai_consumption, plan_allocation, topup_purchase, promo_bonus, admin_adjustment, plan_change_adjustment, expiration. */
   transaction_type: Maybe<Scalars['String']['output']>;
-  /** Snapshot of user email/name at transaction time. Preserved when user deleted. Values: email, "Anonymous", "System". */
+  /** Email of user who initiated the operation (snapshot at transaction time). NULL for system/anonymous operations. */
   user_email: Maybe<Scalars['String']['output']>;
   /** FK to users table. Who triggered this transaction. NULL for anonymous/system operations. SET NULL on delete preserves history. */
   user_id: Maybe<Scalars['String']['output']>;
@@ -2845,6 +2878,8 @@ export type Credit_Transactions_Min_Order_By = {
   created_at?: InputMaybe<Order_By>;
   /** Actual credits amount. Positive for additions (allocations, purchases). Negative for consumption/expiration. admin_adjustment can be either. */
   credits_amount?: InputMaybe<Order_By>;
+  /** Google ID (sub claim) of the customer who triggered this AI operation. NULL for authenticated user or anonymous operations. */
+  customer_google_id?: InputMaybe<Order_By>;
   /** Human-readable description. Examples: AI question generation, Monthly credit allocation, Credit pack purchase. */
   description?: InputMaybe<Order_By>;
   /** Estimated credits before AI execution. Used to track estimation accuracy. NULL for non-AI transactions. */
@@ -2867,7 +2902,7 @@ export type Credit_Transactions_Min_Order_By = {
   quality_level_id?: InputMaybe<Order_By>;
   /** Type of credit transaction: ai_consumption, plan_allocation, topup_purchase, promo_bonus, admin_adjustment, plan_change_adjustment, expiration. */
   transaction_type?: InputMaybe<Order_By>;
-  /** Snapshot of user email/name at transaction time. Preserved when user deleted. Values: email, "Anonymous", "System". */
+  /** Email of user who initiated the operation (snapshot at transaction time). NULL for system/anonymous operations. */
   user_email?: InputMaybe<Order_By>;
   /** FK to users table. Who triggered this transaction. NULL for anonymous/system operations. SET NULL on delete preserves history. */
   user_id?: InputMaybe<Order_By>;
@@ -2896,6 +2931,7 @@ export type Credit_Transactions_Order_By = {
   balance_after?: InputMaybe<Order_By>;
   created_at?: InputMaybe<Order_By>;
   credits_amount?: InputMaybe<Order_By>;
+  customer_google_id?: InputMaybe<Order_By>;
   description?: InputMaybe<Order_By>;
   estimated_credits?: InputMaybe<Order_By>;
   estimation_variance?: InputMaybe<Order_By>;
@@ -2937,6 +2973,8 @@ export const Credit_Transactions_Select_Column = {
   /** column name */
   CreditsAmount: 'credits_amount',
   /** column name */
+  CustomerGoogleId: 'customer_google_id',
+  /** column name */
   Description: 'description',
   /** column name */
   EstimatedCredits: 'estimated_credits',
@@ -2977,6 +3015,8 @@ export type Credit_Transactions_Set_Input = {
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
   /** Actual credits amount. Positive for additions (allocations, purchases). Negative for consumption/expiration. admin_adjustment can be either. */
   credits_amount?: InputMaybe<Scalars['numeric']['input']>;
+  /** Google ID (sub claim) of the customer who triggered this AI operation. NULL for authenticated user or anonymous operations. */
+  customer_google_id?: InputMaybe<Scalars['String']['input']>;
   /** Human-readable description. Examples: AI question generation, Monthly credit allocation, Credit pack purchase. */
   description?: InputMaybe<Scalars['String']['input']>;
   /** Estimated credits before AI execution. Used to track estimation accuracy. NULL for non-AI transactions. */
@@ -2999,7 +3039,7 @@ export type Credit_Transactions_Set_Input = {
   quality_level_id?: InputMaybe<Scalars['String']['input']>;
   /** Type of credit transaction: ai_consumption, plan_allocation, topup_purchase, promo_bonus, admin_adjustment, plan_change_adjustment, expiration. */
   transaction_type?: InputMaybe<Scalars['String']['input']>;
-  /** Snapshot of user email/name at transaction time. Preserved when user deleted. Values: email, "Anonymous", "System". */
+  /** Email of user who initiated the operation (snapshot at transaction time). NULL for system/anonymous operations. */
   user_email?: InputMaybe<Scalars['String']['input']>;
   /** FK to users table. Who triggered this transaction. NULL for anonymous/system operations. SET NULL on delete preserves history. */
   user_id?: InputMaybe<Scalars['String']['input']>;
@@ -3098,6 +3138,8 @@ export type Credit_Transactions_Stream_Cursor_Value_Input = {
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
   /** Actual credits amount. Positive for additions (allocations, purchases). Negative for consumption/expiration. admin_adjustment can be either. */
   credits_amount?: InputMaybe<Scalars['numeric']['input']>;
+  /** Google ID (sub claim) of the customer who triggered this AI operation. NULL for authenticated user or anonymous operations. */
+  customer_google_id?: InputMaybe<Scalars['String']['input']>;
   /** Human-readable description. Examples: AI question generation, Monthly credit allocation, Credit pack purchase. */
   description?: InputMaybe<Scalars['String']['input']>;
   /** Estimated credits before AI execution. Used to track estimation accuracy. NULL for non-AI transactions. */
@@ -3122,7 +3164,7 @@ export type Credit_Transactions_Stream_Cursor_Value_Input = {
   quality_level_id?: InputMaybe<Scalars['String']['input']>;
   /** Type of credit transaction: ai_consumption, plan_allocation, topup_purchase, promo_bonus, admin_adjustment, plan_change_adjustment, expiration. */
   transaction_type?: InputMaybe<Scalars['String']['input']>;
-  /** Snapshot of user email/name at transaction time. Preserved when user deleted. Values: email, "Anonymous", "System". */
+  /** Email of user who initiated the operation (snapshot at transaction time). NULL for system/anonymous operations. */
   user_email?: InputMaybe<Scalars['String']['input']>;
   /** FK to users table. Who triggered this transaction. NULL for anonymous/system operations. SET NULL on delete preserves history. */
   user_id?: InputMaybe<Scalars['String']['input']>;
@@ -3163,6 +3205,8 @@ export const Credit_Transactions_Update_Column = {
   CreatedAt: 'created_at',
   /** column name */
   CreditsAmount: 'credits_amount',
+  /** column name */
+  CustomerGoogleId: 'customer_google_id',
   /** column name */
   Description: 'description',
   /** column name */
@@ -7045,6 +7089,8 @@ export type Form_Steps_Variance_Order_By = {
 /** Raw form submission event - submitter info lives here, responses in form_question_responses */
 export type Form_Submissions = {
   __typename?: 'form_submissions';
+  /** Consent choice from the form consent step. 'public' allows testimonial display on widgets; 'private' restricts to internal use. NULL when form has no consent step or for legacy submissions. */
+  consent_type: Maybe<Scalars['String']['output']>;
   /** An object relationship */
   contact: Maybe<Contacts>;
   /** Foreign key to contacts table. Links this submission to a normalized contact record for deduplication and contact management. NULL for legacy submissions or anonymous submissions. */
@@ -7171,6 +7217,7 @@ export type Form_Submissions_Bool_Exp = {
   _and?: InputMaybe<Array<Form_Submissions_Bool_Exp>>;
   _not?: InputMaybe<Form_Submissions_Bool_Exp>;
   _or?: InputMaybe<Array<Form_Submissions_Bool_Exp>>;
+  consent_type?: InputMaybe<String_Comparison_Exp>;
   contact?: InputMaybe<Contacts_Bool_Exp>;
   contact_id?: InputMaybe<String_Comparison_Exp>;
   created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
@@ -7198,6 +7245,8 @@ export const Form_Submissions_Constraint = {
 export type Form_Submissions_Constraint = typeof Form_Submissions_Constraint[keyof typeof Form_Submissions_Constraint];
 /** input type for inserting data into table "form_submissions" */
 export type Form_Submissions_Insert_Input = {
+  /** Consent choice from the form consent step. 'public' allows testimonial display on widgets; 'private' restricts to internal use. NULL when form has no consent step or for legacy submissions. */
+  consent_type?: InputMaybe<Scalars['String']['input']>;
   contact?: InputMaybe<Contacts_Obj_Rel_Insert_Input>;
   /** Foreign key to contacts table. Links this submission to a normalized contact record for deduplication and contact management. NULL for legacy submissions or anonymous submissions. */
   contact_id?: InputMaybe<Scalars['String']['input']>;
@@ -7225,6 +7274,8 @@ export type Form_Submissions_Insert_Input = {
 /** aggregate max on columns */
 export type Form_Submissions_Max_Fields = {
   __typename?: 'form_submissions_max_fields';
+  /** Consent choice from the form consent step. 'public' allows testimonial display on widgets; 'private' restricts to internal use. NULL when form has no consent step or for legacy submissions. */
+  consent_type: Maybe<Scalars['String']['output']>;
   /** Foreign key to contacts table. Links this submission to a normalized contact record for deduplication and contact management. NULL for legacy submissions or anonymous submissions. */
   contact_id: Maybe<Scalars['String']['output']>;
   /** Record creation timestamp. Same as submitted_at */
@@ -7245,6 +7296,8 @@ export type Form_Submissions_Max_Fields = {
 
 /** order by max() on columns of table "form_submissions" */
 export type Form_Submissions_Max_Order_By = {
+  /** Consent choice from the form consent step. 'public' allows testimonial display on widgets; 'private' restricts to internal use. NULL when form has no consent step or for legacy submissions. */
+  consent_type?: InputMaybe<Order_By>;
   /** Foreign key to contacts table. Links this submission to a normalized contact record for deduplication and contact management. NULL for legacy submissions or anonymous submissions. */
   contact_id?: InputMaybe<Order_By>;
   /** Record creation timestamp. Same as submitted_at */
@@ -7266,6 +7319,8 @@ export type Form_Submissions_Max_Order_By = {
 /** aggregate min on columns */
 export type Form_Submissions_Min_Fields = {
   __typename?: 'form_submissions_min_fields';
+  /** Consent choice from the form consent step. 'public' allows testimonial display on widgets; 'private' restricts to internal use. NULL when form has no consent step or for legacy submissions. */
+  consent_type: Maybe<Scalars['String']['output']>;
   /** Foreign key to contacts table. Links this submission to a normalized contact record for deduplication and contact management. NULL for legacy submissions or anonymous submissions. */
   contact_id: Maybe<Scalars['String']['output']>;
   /** Record creation timestamp. Same as submitted_at */
@@ -7286,6 +7341,8 @@ export type Form_Submissions_Min_Fields = {
 
 /** order by min() on columns of table "form_submissions" */
 export type Form_Submissions_Min_Order_By = {
+  /** Consent choice from the form consent step. 'public' allows testimonial display on widgets; 'private' restricts to internal use. NULL when form has no consent step or for legacy submissions. */
+  consent_type?: InputMaybe<Order_By>;
   /** Foreign key to contacts table. Links this submission to a normalized contact record for deduplication and contact management. NULL for legacy submissions or anonymous submissions. */
   contact_id?: InputMaybe<Order_By>;
   /** Record creation timestamp. Same as submitted_at */
@@ -7329,6 +7386,7 @@ export type Form_Submissions_On_Conflict = {
 
 /** Ordering options when selecting data from "form_submissions". */
 export type Form_Submissions_Order_By = {
+  consent_type?: InputMaybe<Order_By>;
   contact?: InputMaybe<Contacts_Order_By>;
   contact_id?: InputMaybe<Order_By>;
   created_at?: InputMaybe<Order_By>;
@@ -7354,6 +7412,8 @@ export type Form_Submissions_Pk_Columns_Input = {
 /** select columns of table "form_submissions" */
 export const Form_Submissions_Select_Column = {
   /** column name */
+  ConsentType: 'consent_type',
+  /** column name */
   ContactId: 'contact_id',
   /** column name */
   CreatedAt: 'created_at',
@@ -7374,6 +7434,8 @@ export const Form_Submissions_Select_Column = {
 export type Form_Submissions_Select_Column = typeof Form_Submissions_Select_Column[keyof typeof Form_Submissions_Select_Column];
 /** input type for updating data in table "form_submissions" */
 export type Form_Submissions_Set_Input = {
+  /** Consent choice from the form consent step. 'public' allows testimonial display on widgets; 'private' restricts to internal use. NULL when form has no consent step or for legacy submissions. */
+  consent_type?: InputMaybe<Scalars['String']['input']>;
   /** Foreign key to contacts table. Links this submission to a normalized contact record for deduplication and contact management. NULL for legacy submissions or anonymous submissions. */
   contact_id?: InputMaybe<Scalars['String']['input']>;
   /** Record creation timestamp. Same as submitted_at */
@@ -7402,6 +7464,8 @@ export type Form_Submissions_Stream_Cursor_Input = {
 
 /** Initial value of the column from where the streaming should start */
 export type Form_Submissions_Stream_Cursor_Value_Input = {
+  /** Consent choice from the form consent step. 'public' allows testimonial display on widgets; 'private' restricts to internal use. NULL when form has no consent step or for legacy submissions. */
+  consent_type?: InputMaybe<Scalars['String']['input']>;
   /** Foreign key to contacts table. Links this submission to a normalized contact record for deduplication and contact management. NULL for legacy submissions or anonymous submissions. */
   contact_id?: InputMaybe<Scalars['String']['input']>;
   /** Record creation timestamp. Same as submitted_at */
@@ -7422,6 +7486,8 @@ export type Form_Submissions_Stream_Cursor_Value_Input = {
 
 /** update columns of table "form_submissions" */
 export const Form_Submissions_Update_Column = {
+  /** column name */
+  ConsentType: 'consent_type',
   /** column name */
   ContactId: 'contact_id',
   /** column name */
@@ -15980,6 +16046,8 @@ export type Plan_Ai_Capabilities = {
   quality_levels_aggregate: Plan_Ai_Capability_Quality_Levels_Aggregate;
   /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
   rate_limit_rpd: Maybe<Scalars['Int']['output']>;
+  /** Maximum requests per hour for this capability on this plan. NULL means unlimited. */
+  rate_limit_rph: Maybe<Scalars['Int']['output']>;
   /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
   rate_limit_rpm: Maybe<Scalars['Int']['output']>;
   /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
@@ -16090,6 +16158,8 @@ export type Plan_Ai_Capabilities_Avg_Fields = {
   __typename?: 'plan_ai_capabilities_avg_fields';
   /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
   rate_limit_rpd: Maybe<Scalars['Float']['output']>;
+  /** Maximum requests per hour for this capability on this plan. NULL means unlimited. */
+  rate_limit_rph: Maybe<Scalars['Float']['output']>;
   /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
   rate_limit_rpm: Maybe<Scalars['Float']['output']>;
 };
@@ -16098,6 +16168,8 @@ export type Plan_Ai_Capabilities_Avg_Fields = {
 export type Plan_Ai_Capabilities_Avg_Order_By = {
   /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
   rate_limit_rpd?: InputMaybe<Order_By>;
+  /** Maximum requests per hour for this capability on this plan. NULL means unlimited. */
+  rate_limit_rph?: InputMaybe<Order_By>;
   /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
   rate_limit_rpm?: InputMaybe<Order_By>;
 };
@@ -16117,6 +16189,7 @@ export type Plan_Ai_Capabilities_Bool_Exp = {
   quality_levels?: InputMaybe<Plan_Ai_Capability_Quality_Levels_Bool_Exp>;
   quality_levels_aggregate?: InputMaybe<Plan_Ai_Capability_Quality_Levels_Aggregate_Bool_Exp>;
   rate_limit_rpd?: InputMaybe<Int_Comparison_Exp>;
+  rate_limit_rph?: InputMaybe<Int_Comparison_Exp>;
   rate_limit_rpm?: InputMaybe<Int_Comparison_Exp>;
   updated_at?: InputMaybe<Timestamptz_Comparison_Exp>;
 };
@@ -16134,6 +16207,8 @@ export type Plan_Ai_Capabilities_Constraint = typeof Plan_Ai_Capabilities_Constr
 export type Plan_Ai_Capabilities_Inc_Input = {
   /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
   rate_limit_rpd?: InputMaybe<Scalars['Int']['input']>;
+  /** Maximum requests per hour for this capability on this plan. NULL means unlimited. */
+  rate_limit_rph?: InputMaybe<Scalars['Int']['input']>;
   /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
   rate_limit_rpm?: InputMaybe<Scalars['Int']['input']>;
 };
@@ -16155,6 +16230,8 @@ export type Plan_Ai_Capabilities_Insert_Input = {
   quality_levels?: InputMaybe<Plan_Ai_Capability_Quality_Levels_Arr_Rel_Insert_Input>;
   /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
   rate_limit_rpd?: InputMaybe<Scalars['Int']['input']>;
+  /** Maximum requests per hour for this capability on this plan. NULL means unlimited. */
+  rate_limit_rph?: InputMaybe<Scalars['Int']['input']>;
   /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
   rate_limit_rpm?: InputMaybe<Scalars['Int']['input']>;
   /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
@@ -16174,6 +16251,8 @@ export type Plan_Ai_Capabilities_Max_Fields = {
   plan_id: Maybe<Scalars['String']['output']>;
   /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
   rate_limit_rpd: Maybe<Scalars['Int']['output']>;
+  /** Maximum requests per hour for this capability on this plan. NULL means unlimited. */
+  rate_limit_rph: Maybe<Scalars['Int']['output']>;
   /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
   rate_limit_rpm: Maybe<Scalars['Int']['output']>;
   /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
@@ -16192,6 +16271,8 @@ export type Plan_Ai_Capabilities_Max_Order_By = {
   plan_id?: InputMaybe<Order_By>;
   /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
   rate_limit_rpd?: InputMaybe<Order_By>;
+  /** Maximum requests per hour for this capability on this plan. NULL means unlimited. */
+  rate_limit_rph?: InputMaybe<Order_By>;
   /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
   rate_limit_rpm?: InputMaybe<Order_By>;
   /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
@@ -16211,6 +16292,8 @@ export type Plan_Ai_Capabilities_Min_Fields = {
   plan_id: Maybe<Scalars['String']['output']>;
   /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
   rate_limit_rpd: Maybe<Scalars['Int']['output']>;
+  /** Maximum requests per hour for this capability on this plan. NULL means unlimited. */
+  rate_limit_rph: Maybe<Scalars['Int']['output']>;
   /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
   rate_limit_rpm: Maybe<Scalars['Int']['output']>;
   /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
@@ -16229,6 +16312,8 @@ export type Plan_Ai_Capabilities_Min_Order_By = {
   plan_id?: InputMaybe<Order_By>;
   /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
   rate_limit_rpd?: InputMaybe<Order_By>;
+  /** Maximum requests per hour for this capability on this plan. NULL means unlimited. */
+  rate_limit_rph?: InputMaybe<Order_By>;
   /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
   rate_limit_rpm?: InputMaybe<Order_By>;
   /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
@@ -16269,6 +16354,7 @@ export type Plan_Ai_Capabilities_Order_By = {
   plan_id?: InputMaybe<Order_By>;
   quality_levels_aggregate?: InputMaybe<Plan_Ai_Capability_Quality_Levels_Aggregate_Order_By>;
   rate_limit_rpd?: InputMaybe<Order_By>;
+  rate_limit_rph?: InputMaybe<Order_By>;
   rate_limit_rpm?: InputMaybe<Order_By>;
   updated_at?: InputMaybe<Order_By>;
 };
@@ -16293,6 +16379,8 @@ export const Plan_Ai_Capabilities_Select_Column = {
   PlanId: 'plan_id',
   /** column name */
   RateLimitRpd: 'rate_limit_rpd',
+  /** column name */
+  RateLimitRph: 'rate_limit_rph',
   /** column name */
   RateLimitRpm: 'rate_limit_rpm',
   /** column name */
@@ -16328,6 +16416,8 @@ export type Plan_Ai_Capabilities_Set_Input = {
   plan_id?: InputMaybe<Scalars['String']['input']>;
   /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
   rate_limit_rpd?: InputMaybe<Scalars['Int']['input']>;
+  /** Maximum requests per hour for this capability on this plan. NULL means unlimited. */
+  rate_limit_rph?: InputMaybe<Scalars['Int']['input']>;
   /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
   rate_limit_rpm?: InputMaybe<Scalars['Int']['input']>;
   /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
@@ -16339,6 +16429,8 @@ export type Plan_Ai_Capabilities_Stddev_Fields = {
   __typename?: 'plan_ai_capabilities_stddev_fields';
   /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
   rate_limit_rpd: Maybe<Scalars['Float']['output']>;
+  /** Maximum requests per hour for this capability on this plan. NULL means unlimited. */
+  rate_limit_rph: Maybe<Scalars['Float']['output']>;
   /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
   rate_limit_rpm: Maybe<Scalars['Float']['output']>;
 };
@@ -16347,6 +16439,8 @@ export type Plan_Ai_Capabilities_Stddev_Fields = {
 export type Plan_Ai_Capabilities_Stddev_Order_By = {
   /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
   rate_limit_rpd?: InputMaybe<Order_By>;
+  /** Maximum requests per hour for this capability on this plan. NULL means unlimited. */
+  rate_limit_rph?: InputMaybe<Order_By>;
   /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
   rate_limit_rpm?: InputMaybe<Order_By>;
 };
@@ -16356,6 +16450,8 @@ export type Plan_Ai_Capabilities_Stddev_Pop_Fields = {
   __typename?: 'plan_ai_capabilities_stddev_pop_fields';
   /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
   rate_limit_rpd: Maybe<Scalars['Float']['output']>;
+  /** Maximum requests per hour for this capability on this plan. NULL means unlimited. */
+  rate_limit_rph: Maybe<Scalars['Float']['output']>;
   /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
   rate_limit_rpm: Maybe<Scalars['Float']['output']>;
 };
@@ -16364,6 +16460,8 @@ export type Plan_Ai_Capabilities_Stddev_Pop_Fields = {
 export type Plan_Ai_Capabilities_Stddev_Pop_Order_By = {
   /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
   rate_limit_rpd?: InputMaybe<Order_By>;
+  /** Maximum requests per hour for this capability on this plan. NULL means unlimited. */
+  rate_limit_rph?: InputMaybe<Order_By>;
   /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
   rate_limit_rpm?: InputMaybe<Order_By>;
 };
@@ -16373,6 +16471,8 @@ export type Plan_Ai_Capabilities_Stddev_Samp_Fields = {
   __typename?: 'plan_ai_capabilities_stddev_samp_fields';
   /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
   rate_limit_rpd: Maybe<Scalars['Float']['output']>;
+  /** Maximum requests per hour for this capability on this plan. NULL means unlimited. */
+  rate_limit_rph: Maybe<Scalars['Float']['output']>;
   /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
   rate_limit_rpm: Maybe<Scalars['Float']['output']>;
 };
@@ -16381,6 +16481,8 @@ export type Plan_Ai_Capabilities_Stddev_Samp_Fields = {
 export type Plan_Ai_Capabilities_Stddev_Samp_Order_By = {
   /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
   rate_limit_rpd?: InputMaybe<Order_By>;
+  /** Maximum requests per hour for this capability on this plan. NULL means unlimited. */
+  rate_limit_rph?: InputMaybe<Order_By>;
   /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
   rate_limit_rpm?: InputMaybe<Order_By>;
 };
@@ -16407,6 +16509,8 @@ export type Plan_Ai_Capabilities_Stream_Cursor_Value_Input = {
   plan_id?: InputMaybe<Scalars['String']['input']>;
   /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
   rate_limit_rpd?: InputMaybe<Scalars['Int']['input']>;
+  /** Maximum requests per hour for this capability on this plan. NULL means unlimited. */
+  rate_limit_rph?: InputMaybe<Scalars['Int']['input']>;
   /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
   rate_limit_rpm?: InputMaybe<Scalars['Int']['input']>;
   /** Timestamp of last modification. Automatically updated by database trigger on any column change. */
@@ -16418,6 +16522,8 @@ export type Plan_Ai_Capabilities_Sum_Fields = {
   __typename?: 'plan_ai_capabilities_sum_fields';
   /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
   rate_limit_rpd: Maybe<Scalars['Int']['output']>;
+  /** Maximum requests per hour for this capability on this plan. NULL means unlimited. */
+  rate_limit_rph: Maybe<Scalars['Int']['output']>;
   /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
   rate_limit_rpm: Maybe<Scalars['Int']['output']>;
 };
@@ -16426,6 +16532,8 @@ export type Plan_Ai_Capabilities_Sum_Fields = {
 export type Plan_Ai_Capabilities_Sum_Order_By = {
   /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
   rate_limit_rpd?: InputMaybe<Order_By>;
+  /** Maximum requests per hour for this capability on this plan. NULL means unlimited. */
+  rate_limit_rph?: InputMaybe<Order_By>;
   /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
   rate_limit_rpm?: InputMaybe<Order_By>;
 };
@@ -16444,6 +16552,8 @@ export const Plan_Ai_Capabilities_Update_Column = {
   PlanId: 'plan_id',
   /** column name */
   RateLimitRpd: 'rate_limit_rpd',
+  /** column name */
+  RateLimitRph: 'rate_limit_rph',
   /** column name */
   RateLimitRpm: 'rate_limit_rpm',
   /** column name */
@@ -16465,6 +16575,8 @@ export type Plan_Ai_Capabilities_Var_Pop_Fields = {
   __typename?: 'plan_ai_capabilities_var_pop_fields';
   /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
   rate_limit_rpd: Maybe<Scalars['Float']['output']>;
+  /** Maximum requests per hour for this capability on this plan. NULL means unlimited. */
+  rate_limit_rph: Maybe<Scalars['Float']['output']>;
   /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
   rate_limit_rpm: Maybe<Scalars['Float']['output']>;
 };
@@ -16473,6 +16585,8 @@ export type Plan_Ai_Capabilities_Var_Pop_Fields = {
 export type Plan_Ai_Capabilities_Var_Pop_Order_By = {
   /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
   rate_limit_rpd?: InputMaybe<Order_By>;
+  /** Maximum requests per hour for this capability on this plan. NULL means unlimited. */
+  rate_limit_rph?: InputMaybe<Order_By>;
   /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
   rate_limit_rpm?: InputMaybe<Order_By>;
 };
@@ -16482,6 +16596,8 @@ export type Plan_Ai_Capabilities_Var_Samp_Fields = {
   __typename?: 'plan_ai_capabilities_var_samp_fields';
   /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
   rate_limit_rpd: Maybe<Scalars['Float']['output']>;
+  /** Maximum requests per hour for this capability on this plan. NULL means unlimited. */
+  rate_limit_rph: Maybe<Scalars['Float']['output']>;
   /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
   rate_limit_rpm: Maybe<Scalars['Float']['output']>;
 };
@@ -16490,6 +16606,8 @@ export type Plan_Ai_Capabilities_Var_Samp_Fields = {
 export type Plan_Ai_Capabilities_Var_Samp_Order_By = {
   /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
   rate_limit_rpd?: InputMaybe<Order_By>;
+  /** Maximum requests per hour for this capability on this plan. NULL means unlimited. */
+  rate_limit_rph?: InputMaybe<Order_By>;
   /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
   rate_limit_rpm?: InputMaybe<Order_By>;
 };
@@ -16499,6 +16617,8 @@ export type Plan_Ai_Capabilities_Variance_Fields = {
   __typename?: 'plan_ai_capabilities_variance_fields';
   /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
   rate_limit_rpd: Maybe<Scalars['Float']['output']>;
+  /** Maximum requests per hour for this capability on this plan. NULL means unlimited. */
+  rate_limit_rph: Maybe<Scalars['Float']['output']>;
   /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
   rate_limit_rpm: Maybe<Scalars['Float']['output']>;
 };
@@ -16507,6 +16627,8 @@ export type Plan_Ai_Capabilities_Variance_Fields = {
 export type Plan_Ai_Capabilities_Variance_Order_By = {
   /** Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap). */
   rate_limit_rpd?: InputMaybe<Order_By>;
+  /** Maximum requests per hour for this capability on this plan. NULL means unlimited. */
+  rate_limit_rph?: InputMaybe<Order_By>;
   /** Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting). */
   rate_limit_rpm?: InputMaybe<Order_By>;
 };
@@ -25225,6 +25347,10 @@ export type Widgets = {
   created_by: Scalars['String']['output'];
   /** An object relationship */
   creator: Users;
+  /** An object relationship */
+  form: Maybe<Forms>;
+  /** Optional FK to forms table. When set, widget is scoped to testimonials from this form (free tier default). NULL = org-wide widget with manual testimonial selection via widget_testimonials junction table. */
+  form_id: Maybe<Scalars['String']['output']>;
   /** Primary key - NanoID 12-char unique identifier. Used in embed code */
   id: Scalars['String']['output'];
   /** Soft delete flag. False = embed script returns empty widget */
@@ -25395,6 +25521,8 @@ export type Widgets_Bool_Exp = {
   created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
   created_by?: InputMaybe<String_Comparison_Exp>;
   creator?: InputMaybe<Users_Bool_Exp>;
+  form?: InputMaybe<Forms_Bool_Exp>;
+  form_id?: InputMaybe<String_Comparison_Exp>;
   id?: InputMaybe<String_Comparison_Exp>;
   is_active?: InputMaybe<Boolean_Comparison_Exp>;
   max_display?: InputMaybe<Smallint_Comparison_Exp>;
@@ -25453,6 +25581,9 @@ export type Widgets_Insert_Input = {
   /** FK to users - user who created this widget */
   created_by?: InputMaybe<Scalars['String']['input']>;
   creator?: InputMaybe<Users_Obj_Rel_Insert_Input>;
+  form?: InputMaybe<Forms_Obj_Rel_Insert_Input>;
+  /** Optional FK to forms table. When set, widget is scoped to testimonials from this form (free tier default). NULL = org-wide widget with manual testimonial selection via widget_testimonials junction table. */
+  form_id?: InputMaybe<Scalars['String']['input']>;
   /** Primary key - NanoID 12-char unique identifier. Used in embed code */
   id?: InputMaybe<Scalars['String']['input']>;
   /** Soft delete flag. False = embed script returns empty widget */
@@ -25493,6 +25624,8 @@ export type Widgets_Max_Fields = {
   created_at: Maybe<Scalars['timestamptz']['output']>;
   /** FK to users - user who created this widget */
   created_by: Maybe<Scalars['String']['output']>;
+  /** Optional FK to forms table. When set, widget is scoped to testimonials from this form (free tier default). NULL = org-wide widget with manual testimonial selection via widget_testimonials junction table. */
+  form_id: Maybe<Scalars['String']['output']>;
   /** Primary key - NanoID 12-char unique identifier. Used in embed code */
   id: Maybe<Scalars['String']['output']>;
   /** Maximum testimonials to display. NULL = show all selected */
@@ -25517,6 +25650,8 @@ export type Widgets_Max_Order_By = {
   created_at?: InputMaybe<Order_By>;
   /** FK to users - user who created this widget */
   created_by?: InputMaybe<Order_By>;
+  /** Optional FK to forms table. When set, widget is scoped to testimonials from this form (free tier default). NULL = org-wide widget with manual testimonial selection via widget_testimonials junction table. */
+  form_id?: InputMaybe<Order_By>;
   /** Primary key - NanoID 12-char unique identifier. Used in embed code */
   id?: InputMaybe<Order_By>;
   /** Maximum testimonials to display. NULL = show all selected */
@@ -25542,6 +25677,8 @@ export type Widgets_Min_Fields = {
   created_at: Maybe<Scalars['timestamptz']['output']>;
   /** FK to users - user who created this widget */
   created_by: Maybe<Scalars['String']['output']>;
+  /** Optional FK to forms table. When set, widget is scoped to testimonials from this form (free tier default). NULL = org-wide widget with manual testimonial selection via widget_testimonials junction table. */
+  form_id: Maybe<Scalars['String']['output']>;
   /** Primary key - NanoID 12-char unique identifier. Used in embed code */
   id: Maybe<Scalars['String']['output']>;
   /** Maximum testimonials to display. NULL = show all selected */
@@ -25566,6 +25703,8 @@ export type Widgets_Min_Order_By = {
   created_at?: InputMaybe<Order_By>;
   /** FK to users - user who created this widget */
   created_by?: InputMaybe<Order_By>;
+  /** Optional FK to forms table. When set, widget is scoped to testimonials from this form (free tier default). NULL = org-wide widget with manual testimonial selection via widget_testimonials junction table. */
+  form_id?: InputMaybe<Order_By>;
   /** Primary key - NanoID 12-char unique identifier. Used in embed code */
   id?: InputMaybe<Order_By>;
   /** Maximum testimonials to display. NULL = show all selected */
@@ -25612,6 +25751,8 @@ export type Widgets_Order_By = {
   created_at?: InputMaybe<Order_By>;
   created_by?: InputMaybe<Order_By>;
   creator?: InputMaybe<Users_Order_By>;
+  form?: InputMaybe<Forms_Order_By>;
+  form_id?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
   is_active?: InputMaybe<Order_By>;
   max_display?: InputMaybe<Order_By>;
@@ -25649,6 +25790,8 @@ export const Widgets_Select_Column = {
   CreatedAt: 'created_at',
   /** column name */
   CreatedBy: 'created_by',
+  /** column name */
+  FormId: 'form_id',
   /** column name */
   Id: 'id',
   /** column name */
@@ -25716,6 +25859,8 @@ export type Widgets_Set_Input = {
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
   /** FK to users - user who created this widget */
   created_by?: InputMaybe<Scalars['String']['input']>;
+  /** Optional FK to forms table. When set, widget is scoped to testimonials from this form (free tier default). NULL = org-wide widget with manual testimonial selection via widget_testimonials junction table. */
+  form_id?: InputMaybe<Scalars['String']['input']>;
   /** Primary key - NanoID 12-char unique identifier. Used in embed code */
   id?: InputMaybe<Scalars['String']['input']>;
   /** Soft delete flag. False = embed script returns empty widget */
@@ -25799,6 +25944,8 @@ export type Widgets_Stream_Cursor_Value_Input = {
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
   /** FK to users - user who created this widget */
   created_by?: InputMaybe<Scalars['String']['input']>;
+  /** Optional FK to forms table. When set, widget is scoped to testimonials from this form (free tier default). NULL = org-wide widget with manual testimonial selection via widget_testimonials junction table. */
+  form_id?: InputMaybe<Scalars['String']['input']>;
   /** Primary key - NanoID 12-char unique identifier. Used in embed code */
   id?: InputMaybe<Scalars['String']['input']>;
   /** Soft delete flag. False = embed script returns empty widget */
@@ -25848,6 +25995,8 @@ export const Widgets_Update_Column = {
   CreatedAt: 'created_at',
   /** column name */
   CreatedBy: 'created_by',
+  /** column name */
+  FormId: 'form_id',
   /** column name */
   Id: 'id',
   /** column name */
@@ -26258,7 +26407,7 @@ export type GetFormByIdForAssemblyQueryVariables = Exact<{
 }>;
 
 
-export type GetFormByIdForAssemblyQuery = { __typename?: 'query_root', forms_by_pk: { __typename?: 'forms', id: string, name: string, product_name: string, is_active: boolean, organization_id: string, settings: Record<string, unknown> | null } | null };
+export type GetFormByIdForAssemblyQuery = { __typename?: 'query_root', forms_by_pk: { __typename?: 'forms', id: string, name: string, product_name: string, is_active: boolean, organization_id: string, settings: any } | null };
 
 export type GetCreditBalanceQueryVariables = Exact<{
   organizationId: Scalars['String']['input'];
@@ -26282,6 +26431,50 @@ export type GetCreditTransactionsQueryVariables = Exact<{
 
 
 export type GetCreditTransactionsQuery = { __typename?: 'query_root', credit_transactions: Array<{ __typename?: 'credit_transactions', id: string, transaction_type: string, credits_amount: number, balance_after: number, description: string | null, created_at: string, user_id: string | null, user_email: string | null, form_id: string | null, form_name: string | null, ai_capability: { __typename?: 'ai_capabilities', name: string } | null, quality_level: { __typename?: 'quality_levels', name: string } | null }>, credit_transactions_aggregate: { __typename?: 'credit_transactions_aggregate', aggregate: { __typename?: 'credit_transactions_aggregate_fields', count: number } | null } };
+
+export type CreateWidgetMutationVariables = Exact<{
+  object: Widgets_Insert_Input;
+}>;
+
+
+export type CreateWidgetMutation = { __typename?: 'mutation_root', insert_widgets_one: { __typename?: 'widgets', id: string, organization_id: string, created_by: string, name: string, type: string, theme: string, show_ratings: boolean, show_dates: boolean, show_company: boolean, show_avatar: boolean, max_display: number | null, settings: any, form_id: string | null, is_active: boolean, created_at: string, updated_at: string } | null };
+
+export type DeleteWidgetMutationVariables = Exact<{
+  widgetId: Scalars['String']['input'];
+}>;
+
+
+export type DeleteWidgetMutation = { __typename?: 'mutation_root', delete_widgets_by_pk: { __typename?: 'widgets', id: string } | null };
+
+export type GetPublicWidgetQueryVariables = Exact<{
+  widgetId: Scalars['String']['input'];
+}>;
+
+
+export type GetPublicWidgetQuery = { __typename?: 'query_root', widgets_by_pk: { __typename?: 'widgets', id: string, name: string, type: string, theme: string, show_ratings: boolean, show_dates: boolean, show_company: boolean, show_avatar: boolean, max_display: number | null, settings: any, form_id: string | null, is_active: boolean, testimonial_placements: Array<{ __typename?: 'widget_testimonials', testimonial_id: string, display_order: number, is_featured: boolean, testimonial: { __typename?: 'testimonials', id: string, content: string | null, customer_name: string, customer_company: string | null, customer_title: string | null, customer_avatar_url: string | null, rating: number | null, created_at: string } }> } | null };
+
+export type GetWidgetByIdQueryVariables = Exact<{
+  widgetId: Scalars['String']['input'];
+  organizationId: Scalars['String']['input'];
+}>;
+
+
+export type GetWidgetByIdQuery = { __typename?: 'query_root', widgets_by_pk: { __typename?: 'widgets', id: string, organization_id: string, created_by: string, name: string, type: string, theme: string, show_ratings: boolean, show_dates: boolean, show_company: boolean, show_avatar: boolean, max_display: number | null, settings: any, form_id: string | null, is_active: boolean, created_at: string, updated_at: string, updated_by: string | null, testimonial_placements: Array<{ __typename?: 'widget_testimonials', id: string, testimonial_id: string, display_order: number, is_featured: boolean, testimonial: { __typename?: 'testimonials', id: string, content: string | null, customer_name: string, customer_company: string | null, customer_title: string | null, customer_avatar_url: string | null, rating: number | null, status: string, created_at: string } }> } | null };
+
+export type ListWidgetsQueryVariables = Exact<{
+  organizationId: Scalars['String']['input'];
+}>;
+
+
+export type ListWidgetsQuery = { __typename?: 'query_root', widgets: Array<{ __typename?: 'widgets', id: string, organization_id: string, created_by: string, name: string, type: string, theme: string, show_ratings: boolean, show_dates: boolean, show_company: boolean, show_avatar: boolean, max_display: number | null, settings: any, form_id: string | null, is_active: boolean, created_at: string, updated_at: string, updated_by: string | null, testimonial_placements_aggregate: { __typename?: 'widget_testimonials_aggregate', aggregate: { __typename?: 'widget_testimonials_aggregate_fields', count: number } | null } }> };
+
+export type UpdateWidgetMutationVariables = Exact<{
+  widgetId: Scalars['String']['input'];
+  set: Widgets_Set_Input;
+}>;
+
+
+export type UpdateWidgetMutation = { __typename?: 'mutation_root', update_widgets_by_pk: { __typename?: 'widgets', id: string, organization_id: string, created_by: string, name: string, type: string, theme: string, show_ratings: boolean, show_dates: boolean, show_company: boolean, show_avatar: boolean, max_display: number | null, settings: any, form_id: string | null, is_active: boolean, created_at: string, updated_at: string, updated_by: string | null } | null };
 
 
 export const CreateBranchFlowDocument = `
@@ -26794,6 +26987,162 @@ export const GetCreditTransactionsDocument = `
   }
 }
     `;
+export const CreateWidgetDocument = `
+    mutation CreateWidget($object: widgets_insert_input!) {
+  insert_widgets_one(object: $object) {
+    id
+    organization_id
+    created_by
+    name
+    type
+    theme
+    show_ratings
+    show_dates
+    show_company
+    show_avatar
+    max_display
+    settings
+    form_id
+    is_active
+    created_at
+    updated_at
+  }
+}
+    `;
+export const DeleteWidgetDocument = `
+    mutation DeleteWidget($widgetId: String!) {
+  delete_widgets_by_pk(id: $widgetId) {
+    id
+  }
+}
+    `;
+export const GetPublicWidgetDocument = `
+    query GetPublicWidget($widgetId: String!) {
+  widgets_by_pk(id: $widgetId) {
+    id
+    name
+    type
+    theme
+    show_ratings
+    show_dates
+    show_company
+    show_avatar
+    max_display
+    settings
+    form_id
+    is_active
+    testimonial_placements(order_by: {display_order: asc}) {
+      testimonial_id
+      display_order
+      is_featured
+      testimonial {
+        id
+        content
+        customer_name
+        customer_company
+        customer_title
+        customer_avatar_url
+        rating
+        created_at
+      }
+    }
+  }
+}
+    `;
+export const GetWidgetByIdDocument = `
+    query GetWidgetById($widgetId: String!, $organizationId: String!) {
+  widgets_by_pk(id: $widgetId) {
+    id
+    organization_id
+    created_by
+    name
+    type
+    theme
+    show_ratings
+    show_dates
+    show_company
+    show_avatar
+    max_display
+    settings
+    form_id
+    is_active
+    created_at
+    updated_at
+    updated_by
+    testimonial_placements {
+      id
+      testimonial_id
+      display_order
+      is_featured
+      testimonial {
+        id
+        content
+        customer_name
+        customer_company
+        customer_title
+        customer_avatar_url
+        rating
+        status
+        created_at
+      }
+    }
+  }
+}
+    `;
+export const ListWidgetsDocument = `
+    query ListWidgets($organizationId: String!) {
+  widgets(
+    where: {organization_id: {_eq: $organizationId}}
+    order_by: {created_at: desc}
+  ) {
+    id
+    organization_id
+    created_by
+    name
+    type
+    theme
+    show_ratings
+    show_dates
+    show_company
+    show_avatar
+    max_display
+    settings
+    form_id
+    is_active
+    created_at
+    updated_at
+    updated_by
+    testimonial_placements_aggregate {
+      aggregate {
+        count
+      }
+    }
+  }
+}
+    `;
+export const UpdateWidgetDocument = `
+    mutation UpdateWidget($widgetId: String!, $set: widgets_set_input!) {
+  update_widgets_by_pk(pk_columns: {id: $widgetId}, _set: $set) {
+    id
+    organization_id
+    created_by
+    name
+    type
+    theme
+    show_ratings
+    show_dates
+    show_company
+    show_avatar
+    max_display
+    settings
+    form_id
+    is_active
+    created_at
+    updated_at
+    updated_by
+  }
+}
+    `;
 
 export type SdkFunctionWrapper = <T>(action: (requestHeaders?:Record<string, string>) => Promise<T>, operationName: string, operationType?: string, variables?: any) => Promise<T>;
 
@@ -26915,6 +27264,24 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
     },
     GetCreditTransactions(variables: GetCreditTransactionsQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<GetCreditTransactionsQuery> {
       return withWrapper((wrappedRequestHeaders) => client.request<GetCreditTransactionsQuery>({ document: GetCreditTransactionsDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'GetCreditTransactions', 'query', variables);
+    },
+    CreateWidget(variables: CreateWidgetMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<CreateWidgetMutation> {
+      return withWrapper((wrappedRequestHeaders) => client.request<CreateWidgetMutation>({ document: CreateWidgetDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'CreateWidget', 'mutation', variables);
+    },
+    DeleteWidget(variables: DeleteWidgetMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<DeleteWidgetMutation> {
+      return withWrapper((wrappedRequestHeaders) => client.request<DeleteWidgetMutation>({ document: DeleteWidgetDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'DeleteWidget', 'mutation', variables);
+    },
+    GetPublicWidget(variables: GetPublicWidgetQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<GetPublicWidgetQuery> {
+      return withWrapper((wrappedRequestHeaders) => client.request<GetPublicWidgetQuery>({ document: GetPublicWidgetDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'GetPublicWidget', 'query', variables);
+    },
+    GetWidgetById(variables: GetWidgetByIdQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<GetWidgetByIdQuery> {
+      return withWrapper((wrappedRequestHeaders) => client.request<GetWidgetByIdQuery>({ document: GetWidgetByIdDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'GetWidgetById', 'query', variables);
+    },
+    ListWidgets(variables: ListWidgetsQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<ListWidgetsQuery> {
+      return withWrapper((wrappedRequestHeaders) => client.request<ListWidgetsQuery>({ document: ListWidgetsDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'ListWidgets', 'query', variables);
+    },
+    UpdateWidget(variables: UpdateWidgetMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<UpdateWidgetMutation> {
+      return withWrapper((wrappedRequestHeaders) => client.request<UpdateWidgetMutation>({ document: UpdateWidgetDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'UpdateWidget', 'mutation', variables);
     }
   };
 }

@@ -5,6 +5,9 @@ object_relationships:
   - name: creator
     using:
       foreign_key_constraint_on: created_by
+  - name: form
+    using:
+      foreign_key_constraint_on: form_id
   - name: organization
     using:
       foreign_key_constraint_on: organization_id

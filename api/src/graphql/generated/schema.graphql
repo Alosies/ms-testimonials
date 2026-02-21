@@ -1965,6 +1965,10 @@ type credit_reservations {
   """
   created_at: timestamptz!
   """
+  Google ID (sub claim) of the customer. Copied to credit_transactions on settlement.
+  """
+  customer_google_id: String
+  """
   When this reservation expires if not settled. Expired reservations are automatically released by cleanup jobs.
   """
   expires_at: timestamptz!
@@ -2017,9 +2021,9 @@ type credit_reservations {
   """
   updated_at: timestamptz!
   """
-  Snapshot of user email/name at reservation time. Copied to transaction on settle. Values: email, "Anonymous".
+  Email of user who initiated the operation (snapshot at reservation time). NULL for system/anonymous operations.
   """
-  user_display_name: String
+  user_email: String
   """
   FK to users table. Who initiated this reservation. NULL for anonymous operations. SET NULL on delete preserves history.
   """
@@ -2124,6 +2128,7 @@ input credit_reservations_bool_exp {
   ai_capability: ai_capabilities_bool_exp
   ai_capability_id: String_comparison_exp
   created_at: timestamptz_comparison_exp
+  customer_google_id: String_comparison_exp
   expires_at: timestamptz_comparison_exp
   form_id: String_comparison_exp
   form_name: String_comparison_exp
@@ -2138,7 +2143,7 @@ input credit_reservations_bool_exp {
   settled_credits: numeric_comparison_exp
   status: String_comparison_exp
   updated_at: timestamptz_comparison_exp
-  user_display_name: String_comparison_exp
+  user_email: String_comparison_exp
   user_id: String_comparison_exp
 }
 
@@ -2183,6 +2188,10 @@ input credit_reservations_insert_input {
   Timestamp when this reservation was first created. Set automatically, never modified.
   """
   created_at: timestamptz
+  """
+  Google ID (sub claim) of the customer. Copied to credit_transactions on settlement.
+  """
+  customer_google_id: String
   """
   When this reservation expires if not settled. Expired reservations are automatically released by cleanup jobs.
   """
@@ -2234,9 +2243,9 @@ input credit_reservations_insert_input {
   """
   updated_at: timestamptz
   """
-  Snapshot of user email/name at reservation time. Copied to transaction on settle. Values: email, "Anonymous".
+  Email of user who initiated the operation (snapshot at reservation time). NULL for system/anonymous operations.
   """
-  user_display_name: String
+  user_email: String
   """
   FK to users table. Who initiated this reservation. NULL for anonymous operations. SET NULL on delete preserves history.
   """
@@ -2253,6 +2262,10 @@ type credit_reservations_max_fields {
   Timestamp when this reservation was first created. Set automatically, never modified.
   """
   created_at: timestamptz
+  """
+  Google ID (sub claim) of the customer. Copied to credit_transactions on settlement.
+  """
+  customer_google_id: String
   """
   When this reservation expires if not settled. Expired reservations are automatically released by cleanup jobs.
   """
@@ -2302,9 +2315,9 @@ type credit_reservations_max_fields {
   """
   updated_at: timestamptz
   """
-  Snapshot of user email/name at reservation time. Copied to transaction on settle. Values: email, "Anonymous".
+  Email of user who initiated the operation (snapshot at reservation time). NULL for system/anonymous operations.
   """
-  user_display_name: String
+  user_email: String
   """
   FK to users table. Who initiated this reservation. NULL for anonymous operations. SET NULL on delete preserves history.
   """
@@ -2324,6 +2337,10 @@ input credit_reservations_max_order_by {
   """
   created_at: order_by
   """
+  Google ID (sub claim) of the customer. Copied to credit_transactions on settlement.
+  """
+  customer_google_id: order_by
+  """
   When this reservation expires if not settled. Expired reservations are automatically released by cleanup jobs.
   """
   expires_at: order_by
@@ -2372,9 +2389,9 @@ input credit_reservations_max_order_by {
   """
   updated_at: order_by
   """
-  Snapshot of user email/name at reservation time. Copied to transaction on settle. Values: email, "Anonymous".
+  Email of user who initiated the operation (snapshot at reservation time). NULL for system/anonymous operations.
   """
-  user_display_name: order_by
+  user_email: order_by
   """
   FK to users table. Who initiated this reservation. NULL for anonymous operations. SET NULL on delete preserves history.
   """
@@ -2391,6 +2408,10 @@ type credit_reservations_min_fields {
   Timestamp when this reservation was first created. Set automatically, never modified.
   """
   created_at: timestamptz
+  """
+  Google ID (sub claim) of the customer. Copied to credit_transactions on settlement.
+  """
+  customer_google_id: String
   """
   When this reservation expires if not settled. Expired reservations are automatically released by cleanup jobs.
   """
@@ -2440,9 +2461,9 @@ type credit_reservations_min_fields {
   """
   updated_at: timestamptz
   """
-  Snapshot of user email/name at reservation time. Copied to transaction on settle. Values: email, "Anonymous".
+  Email of user who initiated the operation (snapshot at reservation time). NULL for system/anonymous operations.
   """
-  user_display_name: String
+  user_email: String
   """
   FK to users table. Who initiated this reservation. NULL for anonymous operations. SET NULL on delete preserves history.
   """
@@ -2461,6 +2482,10 @@ input credit_reservations_min_order_by {
   Timestamp when this reservation was first created. Set automatically, never modified.
   """
   created_at: order_by
+  """
+  Google ID (sub claim) of the customer. Copied to credit_transactions on settlement.
+  """
+  customer_google_id: order_by
   """
   When this reservation expires if not settled. Expired reservations are automatically released by cleanup jobs.
   """
@@ -2510,9 +2535,9 @@ input credit_reservations_min_order_by {
   """
   updated_at: order_by
   """
-  Snapshot of user email/name at reservation time. Copied to transaction on settle. Values: email, "Anonymous".
+  Email of user who initiated the operation (snapshot at reservation time). NULL for system/anonymous operations.
   """
-  user_display_name: order_by
+  user_email: order_by
   """
   FK to users table. Who initiated this reservation. NULL for anonymous operations. SET NULL on delete preserves history.
   """
@@ -2543,6 +2568,7 @@ input credit_reservations_order_by {
   ai_capability: ai_capabilities_order_by
   ai_capability_id: order_by
   created_at: order_by
+  customer_google_id: order_by
   expires_at: order_by
   form_id: order_by
   form_name: order_by
@@ -2557,7 +2583,7 @@ input credit_reservations_order_by {
   settled_credits: order_by
   status: order_by
   updated_at: order_by
-  user_display_name: order_by
+  user_email: order_by
   user_id: order_by
 }
 
@@ -2577,6 +2603,8 @@ enum credit_reservations_select_column {
   ai_capability_id
   """column name"""
   created_at
+  """column name"""
+  customer_google_id
   """column name"""
   expires_at
   """column name"""
@@ -2602,7 +2630,7 @@ enum credit_reservations_select_column {
   """column name"""
   updated_at
   """column name"""
-  user_display_name
+  user_email
   """column name"""
   user_id
 }
@@ -2619,6 +2647,10 @@ input credit_reservations_set_input {
   Timestamp when this reservation was first created. Set automatically, never modified.
   """
   created_at: timestamptz
+  """
+  Google ID (sub claim) of the customer. Copied to credit_transactions on settlement.
+  """
+  customer_google_id: String
   """
   When this reservation expires if not settled. Expired reservations are automatically released by cleanup jobs.
   """
@@ -2668,9 +2700,9 @@ input credit_reservations_set_input {
   """
   updated_at: timestamptz
   """
-  Snapshot of user email/name at reservation time. Copied to transaction on settle. Values: email, "Anonymous".
+  Email of user who initiated the operation (snapshot at reservation time). NULL for system/anonymous operations.
   """
-  user_display_name: String
+  user_email: String
   """
   FK to users table. Who initiated this reservation. NULL for anonymous operations. SET NULL on delete preserves history.
   """
@@ -2776,6 +2808,10 @@ input credit_reservations_stream_cursor_value_input {
   """
   created_at: timestamptz
   """
+  Google ID (sub claim) of the customer. Copied to credit_transactions on settlement.
+  """
+  customer_google_id: String
+  """
   When this reservation expires if not settled. Expired reservations are automatically released by cleanup jobs.
   """
   expires_at: timestamptz
@@ -2824,9 +2860,9 @@ input credit_reservations_stream_cursor_value_input {
   """
   updated_at: timestamptz
   """
-  Snapshot of user email/name at reservation time. Copied to transaction on settle. Values: email, "Anonymous".
+  Email of user who initiated the operation (snapshot at reservation time). NULL for system/anonymous operations.
   """
-  user_display_name: String
+  user_email: String
   """
   FK to users table. Who initiated this reservation. NULL for anonymous operations. SET NULL on delete preserves history.
   """
@@ -2868,6 +2904,8 @@ enum credit_reservations_update_column {
   """column name"""
   created_at
   """column name"""
+  customer_google_id
+  """column name"""
   expires_at
   """column name"""
   form_id
@@ -2892,7 +2930,7 @@ enum credit_reservations_update_column {
   """column name"""
   updated_at
   """column name"""
-  user_display_name
+  user_email
   """column name"""
   user_id
 }
@@ -3607,6 +3645,10 @@ type credit_transactions {
   """
   credits_amount: numeric!
   """
+  Google ID (sub claim) of the customer who triggered this AI operation. NULL for authenticated user or anonymous operations.
+  """
+  customer_google_id: String
+  """
   Human-readable description. Examples: AI question generation, Monthly credit allocation, Credit pack purchase.
   """
   description: String
@@ -3662,9 +3704,9 @@ type credit_transactions {
   """
   transaction_type: String!
   """
-  Snapshot of user email/name at transaction time. Preserved when user deleted. Values: email, "Anonymous", "System".
+  Email of user who initiated the operation (snapshot at transaction time). NULL for system/anonymous operations.
   """
-  user_display_name: String
+  user_email: String
   """
   FK to users table. Who triggered this transaction. NULL for anonymous/system operations. SET NULL on delete preserves history.
   """
@@ -3795,6 +3837,7 @@ input credit_transactions_bool_exp {
   balance_after: numeric_comparison_exp
   created_at: timestamptz_comparison_exp
   credits_amount: numeric_comparison_exp
+  customer_google_id: String_comparison_exp
   description: String_comparison_exp
   estimated_credits: numeric_comparison_exp
   estimation_variance: numeric_comparison_exp
@@ -3809,7 +3852,7 @@ input credit_transactions_bool_exp {
   quality_level: quality_levels_bool_exp
   quality_level_id: String_comparison_exp
   transaction_type: String_comparison_exp
-  user_display_name: String_comparison_exp
+  user_email: String_comparison_exp
   user_id: String_comparison_exp
 }
 
@@ -3897,6 +3940,10 @@ input credit_transactions_insert_input {
   """
   credits_amount: numeric
   """
+  Google ID (sub claim) of the customer who triggered this AI operation. NULL for authenticated user or anonymous operations.
+  """
+  customer_google_id: String
+  """
   Human-readable description. Examples: AI question generation, Monthly credit allocation, Credit pack purchase.
   """
   description: String
@@ -3943,9 +3990,9 @@ input credit_transactions_insert_input {
   """
   transaction_type: String
   """
-  Snapshot of user email/name at transaction time. Preserved when user deleted. Values: email, "Anonymous", "System".
+  Email of user who initiated the operation (snapshot at transaction time). NULL for system/anonymous operations.
   """
-  user_display_name: String
+  user_email: String
   """
   FK to users table. Who triggered this transaction. NULL for anonymous/system operations. SET NULL on delete preserves history.
   """
@@ -3970,6 +4017,10 @@ type credit_transactions_max_fields {
   Actual credits amount. Positive for additions (allocations, purchases). Negative for consumption/expiration. admin_adjustment can be either.
   """
   credits_amount: numeric
+  """
+  Google ID (sub claim) of the customer who triggered this AI operation. NULL for authenticated user or anonymous operations.
+  """
+  customer_google_id: String
   """
   Human-readable description. Examples: AI question generation, Monthly credit allocation, Credit pack purchase.
   """
@@ -4015,9 +4066,9 @@ type credit_transactions_max_fields {
   """
   transaction_type: String
   """
-  Snapshot of user email/name at transaction time. Preserved when user deleted. Values: email, "Anonymous", "System".
+  Email of user who initiated the operation (snapshot at transaction time). NULL for system/anonymous operations.
   """
-  user_display_name: String
+  user_email: String
   """
   FK to users table. Who triggered this transaction. NULL for anonymous/system operations. SET NULL on delete preserves history.
   """
@@ -4045,6 +4096,10 @@ input credit_transactions_max_order_by {
   """
   credits_amount: order_by
   """
+  Google ID (sub claim) of the customer who triggered this AI operation. NULL for authenticated user or anonymous operations.
+  """
+  customer_google_id: order_by
+  """
   Human-readable description. Examples: AI question generation, Monthly credit allocation, Credit pack purchase.
   """
   description: order_by
@@ -4089,9 +4144,9 @@ input credit_transactions_max_order_by {
   """
   transaction_type: order_by
   """
-  Snapshot of user email/name at transaction time. Preserved when user deleted. Values: email, "Anonymous", "System".
+  Email of user who initiated the operation (snapshot at transaction time). NULL for system/anonymous operations.
   """
-  user_display_name: order_by
+  user_email: order_by
   """
   FK to users table. Who triggered this transaction. NULL for anonymous/system operations. SET NULL on delete preserves history.
   """
@@ -4116,6 +4171,10 @@ type credit_transactions_min_fields {
   Actual credits amount. Positive for additions (allocations, purchases). Negative for consumption/expiration. admin_adjustment can be either.
   """
   credits_amount: numeric
+  """
+  Google ID (sub claim) of the customer who triggered this AI operation. NULL for authenticated user or anonymous operations.
+  """
+  customer_google_id: String
   """
   Human-readable description. Examples: AI question generation, Monthly credit allocation, Credit pack purchase.
   """
@@ -4161,9 +4220,9 @@ type credit_transactions_min_fields {
   """
   transaction_type: String
   """
-  Snapshot of user email/name at transaction time. Preserved when user deleted. Values: email, "Anonymous", "System".
+  Email of user who initiated the operation (snapshot at transaction time). NULL for system/anonymous operations.
   """
-  user_display_name: String
+  user_email: String
   """
   FK to users table. Who triggered this transaction. NULL for anonymous/system operations. SET NULL on delete preserves history.
   """
@@ -4190,6 +4249,10 @@ input credit_transactions_min_order_by {
   Actual credits amount. Positive for additions (allocations, purchases). Negative for consumption/expiration. admin_adjustment can be either.
   """
   credits_amount: order_by
+  """
+  Google ID (sub claim) of the customer who triggered this AI operation. NULL for authenticated user or anonymous operations.
+  """
+  customer_google_id: order_by
   """
   Human-readable description. Examples: AI question generation, Monthly credit allocation, Credit pack purchase.
   """
@@ -4235,9 +4298,9 @@ input credit_transactions_min_order_by {
   """
   transaction_type: order_by
   """
-  Snapshot of user email/name at transaction time. Preserved when user deleted. Values: email, "Anonymous", "System".
+  Email of user who initiated the operation (snapshot at transaction time). NULL for system/anonymous operations.
   """
-  user_display_name: order_by
+  user_email: order_by
   """
   FK to users table. Who triggered this transaction. NULL for anonymous/system operations. SET NULL on delete preserves history.
   """
@@ -4270,6 +4333,7 @@ input credit_transactions_order_by {
   balance_after: order_by
   created_at: order_by
   credits_amount: order_by
+  customer_google_id: order_by
   description: order_by
   estimated_credits: order_by
   estimation_variance: order_by
@@ -4284,7 +4348,7 @@ input credit_transactions_order_by {
   quality_level: quality_levels_order_by
   quality_level_id: order_by
   transaction_type: order_by
-  user_display_name: order_by
+  user_email: order_by
   user_id: order_by
 }
 
@@ -4317,6 +4381,8 @@ enum credit_transactions_select_column {
   """column name"""
   credits_amount
   """column name"""
+  customer_google_id
+  """column name"""
   description
   """column name"""
   estimated_credits
@@ -4341,7 +4407,7 @@ enum credit_transactions_select_column {
   """column name"""
   transaction_type
   """column name"""
-  user_display_name
+  user_email
   """column name"""
   user_id
 }
@@ -4366,6 +4432,10 @@ input credit_transactions_set_input {
   Actual credits amount. Positive for additions (allocations, purchases). Negative for consumption/expiration. admin_adjustment can be either.
   """
   credits_amount: numeric
+  """
+  Google ID (sub claim) of the customer who triggered this AI operation. NULL for authenticated user or anonymous operations.
+  """
+  customer_google_id: String
   """
   Human-readable description. Examples: AI question generation, Monthly credit allocation, Credit pack purchase.
   """
@@ -4411,9 +4481,9 @@ input credit_transactions_set_input {
   """
   transaction_type: String
   """
-  Snapshot of user email/name at transaction time. Preserved when user deleted. Values: email, "Anonymous", "System".
+  Email of user who initiated the operation (snapshot at transaction time). NULL for system/anonymous operations.
   """
-  user_display_name: String
+  user_email: String
   """
   FK to users table. Who triggered this transaction. NULL for anonymous/system operations. SET NULL on delete preserves history.
   """
@@ -4575,6 +4645,10 @@ input credit_transactions_stream_cursor_value_input {
   """
   credits_amount: numeric
   """
+  Google ID (sub claim) of the customer who triggered this AI operation. NULL for authenticated user or anonymous operations.
+  """
+  customer_google_id: String
+  """
   Human-readable description. Examples: AI question generation, Monthly credit allocation, Credit pack purchase.
   """
   description: String
@@ -4623,9 +4697,9 @@ input credit_transactions_stream_cursor_value_input {
   """
   transaction_type: String
   """
-  Snapshot of user email/name at transaction time. Preserved when user deleted. Values: email, "Anonymous", "System".
+  Email of user who initiated the operation (snapshot at transaction time). NULL for system/anonymous operations.
   """
-  user_display_name: String
+  user_email: String
   """
   FK to users table. Who triggered this transaction. NULL for anonymous/system operations. SET NULL on delete preserves history.
   """
@@ -4687,6 +4761,8 @@ enum credit_transactions_update_column {
   """column name"""
   credits_amount
   """column name"""
+  customer_google_id
+  """column name"""
   description
   """column name"""
   estimated_credits
@@ -4709,7 +4785,7 @@ enum credit_transactions_update_column {
   """column name"""
   transaction_type
   """column name"""
-  user_display_name
+  user_email
   """column name"""
   user_id
 }
@@ -9627,6 +9703,10 @@ input form_steps_variance_order_by {
 Raw form submission event - submitter info lives here, responses in form_question_responses
 """
 type form_submissions {
+  """
+  Consent choice from the form consent step. 'public' allows testimonial display on widgets; 'private' restricts to internal use. NULL when form has no consent step or for legacy submissions.
+  """
+  consent_type: String
   """An object relationship"""
   contact: contacts
   """
@@ -9760,6 +9840,7 @@ input form_submissions_bool_exp {
   _and: [form_submissions_bool_exp!]
   _not: form_submissions_bool_exp
   _or: [form_submissions_bool_exp!]
+  consent_type: String_comparison_exp
   contact: contacts_bool_exp
   contact_id: String_comparison_exp
   created_at: timestamptz_comparison_exp
@@ -9792,6 +9873,10 @@ enum form_submissions_constraint {
 input type for inserting data into table "form_submissions"
 """
 input form_submissions_insert_input {
+  """
+  Consent choice from the form consent step. 'public' allows testimonial display on widgets; 'private' restricts to internal use. NULL when form has no consent step or for legacy submissions.
+  """
+  consent_type: String
   contact: contacts_obj_rel_insert_input
   """
   Foreign key to contacts table. Links this submission to a normalized contact record for deduplication and contact management. NULL for legacy submissions or anonymous submissions.
@@ -9821,6 +9906,10 @@ input form_submissions_insert_input {
 """aggregate max on columns"""
 type form_submissions_max_fields {
   """
+  Consent choice from the form consent step. 'public' allows testimonial display on widgets; 'private' restricts to internal use. NULL when form has no consent step or for legacy submissions.
+  """
+  consent_type: String
+  """
   Foreign key to contacts table. Links this submission to a normalized contact record for deduplication and contact management. NULL for legacy submissions or anonymous submissions.
   """
   contact_id: String
@@ -9845,6 +9934,10 @@ order by max() on columns of table "form_submissions"
 """
 input form_submissions_max_order_by {
   """
+  Consent choice from the form consent step. 'public' allows testimonial display on widgets; 'private' restricts to internal use. NULL when form has no consent step or for legacy submissions.
+  """
+  consent_type: order_by
+  """
   Foreign key to contacts table. Links this submission to a normalized contact record for deduplication and contact management. NULL for legacy submissions or anonymous submissions.
   """
   contact_id: order_by
@@ -9866,6 +9959,10 @@ input form_submissions_max_order_by {
 
 """aggregate min on columns"""
 type form_submissions_min_fields {
+  """
+  Consent choice from the form consent step. 'public' allows testimonial display on widgets; 'private' restricts to internal use. NULL when form has no consent step or for legacy submissions.
+  """
+  consent_type: String
   """
   Foreign key to contacts table. Links this submission to a normalized contact record for deduplication and contact management. NULL for legacy submissions or anonymous submissions.
   """
@@ -9890,6 +9987,10 @@ type form_submissions_min_fields {
 order by min() on columns of table "form_submissions"
 """
 input form_submissions_min_order_by {
+  """
+  Consent choice from the form consent step. 'public' allows testimonial display on widgets; 'private' restricts to internal use. NULL when form has no consent step or for legacy submissions.
+  """
+  consent_type: order_by
   """
   Foreign key to contacts table. Links this submission to a normalized contact record for deduplication and contact management. NULL for legacy submissions or anonymous submissions.
   """
@@ -9940,6 +10041,7 @@ input form_submissions_on_conflict {
 
 """Ordering options when selecting data from "form_submissions"."""
 input form_submissions_order_by {
+  consent_type: order_by
   contact: contacts_order_by
   contact_id: order_by
   created_at: order_by
@@ -9967,6 +10069,8 @@ select columns of table "form_submissions"
 """
 enum form_submissions_select_column {
   """column name"""
+  consent_type
+  """column name"""
   contact_id
   """column name"""
   created_at
@@ -9988,6 +10092,10 @@ enum form_submissions_select_column {
 input type for updating data in table "form_submissions"
 """
 input form_submissions_set_input {
+  """
+  Consent choice from the form consent step. 'public' allows testimonial display on widgets; 'private' restricts to internal use. NULL when form has no consent step or for legacy submissions.
+  """
+  consent_type: String
   """
   Foreign key to contacts table. Links this submission to a normalized contact record for deduplication and contact management. NULL for legacy submissions or anonymous submissions.
   """
@@ -10021,6 +10129,10 @@ input form_submissions_stream_cursor_input {
 """Initial value of the column from where the streaming should start"""
 input form_submissions_stream_cursor_value_input {
   """
+  Consent choice from the form consent step. 'public' allows testimonial display on widgets; 'private' restricts to internal use. NULL when form has no consent step or for legacy submissions.
+  """
+  consent_type: String
+  """
   Foreign key to contacts table. Links this submission to a normalized contact record for deduplication and contact management. NULL for legacy submissions or anonymous submissions.
   """
   contact_id: String
@@ -10044,6 +10156,8 @@ input form_submissions_stream_cursor_value_input {
 update columns of table "form_submissions"
 """
 enum form_submissions_update_column {
+  """column name"""
+  consent_type
   """column name"""
   contact_id
   """column name"""
@@ -19614,6 +19728,10 @@ type plan_ai_capabilities {
   """
   rate_limit_rpd: Int
   """
+  Maximum requests per hour for this capability on this plan. NULL means unlimited.
+  """
+  rate_limit_rph: Int
+  """
   Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting).
   """
   rate_limit_rpm: Int
@@ -19708,6 +19826,10 @@ type plan_ai_capabilities_avg_fields {
   """
   rate_limit_rpd: Float
   """
+  Maximum requests per hour for this capability on this plan. NULL means unlimited.
+  """
+  rate_limit_rph: Float
+  """
   Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting).
   """
   rate_limit_rpm: Float
@@ -19721,6 +19843,10 @@ input plan_ai_capabilities_avg_order_by {
   Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap).
   """
   rate_limit_rpd: order_by
+  """
+  Maximum requests per hour for this capability on this plan. NULL means unlimited.
+  """
+  rate_limit_rph: order_by
   """
   Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting).
   """
@@ -19744,6 +19870,7 @@ input plan_ai_capabilities_bool_exp {
   quality_levels: plan_ai_capability_quality_levels_bool_exp
   quality_levels_aggregate: plan_ai_capability_quality_levels_aggregate_bool_exp
   rate_limit_rpd: Int_comparison_exp
+  rate_limit_rph: Int_comparison_exp
   rate_limit_rpm: Int_comparison_exp
   updated_at: timestamptz_comparison_exp
 }
@@ -19770,6 +19897,10 @@ input plan_ai_capabilities_inc_input {
   Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap).
   """
   rate_limit_rpd: Int
+  """
+  Maximum requests per hour for this capability on this plan. NULL means unlimited.
+  """
+  rate_limit_rph: Int
   """
   Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting).
   """
@@ -19808,6 +19939,10 @@ input plan_ai_capabilities_insert_input {
   """
   rate_limit_rpd: Int
   """
+  Maximum requests per hour for this capability on this plan. NULL means unlimited.
+  """
+  rate_limit_rph: Int
+  """
   Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting).
   """
   rate_limit_rpm: Int
@@ -19839,6 +19974,10 @@ type plan_ai_capabilities_max_fields {
   Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap).
   """
   rate_limit_rpd: Int
+  """
+  Maximum requests per hour for this capability on this plan. NULL means unlimited.
+  """
+  rate_limit_rph: Int
   """
   Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting).
   """
@@ -19874,6 +20013,10 @@ input plan_ai_capabilities_max_order_by {
   """
   rate_limit_rpd: order_by
   """
+  Maximum requests per hour for this capability on this plan. NULL means unlimited.
+  """
+  rate_limit_rph: order_by
+  """
   Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting).
   """
   rate_limit_rpm: order_by
@@ -19905,6 +20048,10 @@ type plan_ai_capabilities_min_fields {
   Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap).
   """
   rate_limit_rpd: Int
+  """
+  Maximum requests per hour for this capability on this plan. NULL means unlimited.
+  """
+  rate_limit_rph: Int
   """
   Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting).
   """
@@ -19939,6 +20086,10 @@ input plan_ai_capabilities_min_order_by {
   Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap).
   """
   rate_limit_rpd: order_by
+  """
+  Maximum requests per hour for this capability on this plan. NULL means unlimited.
+  """
+  rate_limit_rph: order_by
   """
   Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting).
   """
@@ -19988,6 +20139,7 @@ input plan_ai_capabilities_order_by {
   plan_id: order_by
   quality_levels_aggregate: plan_ai_capability_quality_levels_aggregate_order_by
   rate_limit_rpd: order_by
+  rate_limit_rph: order_by
   rate_limit_rpm: order_by
   updated_at: order_by
 }
@@ -20016,6 +20168,8 @@ enum plan_ai_capabilities_select_column {
   plan_id
   """column name"""
   rate_limit_rpd
+  """column name"""
+  rate_limit_rph
   """column name"""
   rate_limit_rpm
   """column name"""
@@ -20067,6 +20221,10 @@ input plan_ai_capabilities_set_input {
   """
   rate_limit_rpd: Int
   """
+  Maximum requests per hour for this capability on this plan. NULL means unlimited.
+  """
+  rate_limit_rph: Int
+  """
   Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting).
   """
   rate_limit_rpm: Int
@@ -20083,6 +20241,10 @@ type plan_ai_capabilities_stddev_fields {
   """
   rate_limit_rpd: Float
   """
+  Maximum requests per hour for this capability on this plan. NULL means unlimited.
+  """
+  rate_limit_rph: Float
+  """
   Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting).
   """
   rate_limit_rpm: Float
@@ -20097,6 +20259,10 @@ input plan_ai_capabilities_stddev_order_by {
   """
   rate_limit_rpd: order_by
   """
+  Maximum requests per hour for this capability on this plan. NULL means unlimited.
+  """
+  rate_limit_rph: order_by
+  """
   Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting).
   """
   rate_limit_rpm: order_by
@@ -20108,6 +20274,10 @@ type plan_ai_capabilities_stddev_pop_fields {
   Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap).
   """
   rate_limit_rpd: Float
+  """
+  Maximum requests per hour for this capability on this plan. NULL means unlimited.
+  """
+  rate_limit_rph: Float
   """
   Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting).
   """
@@ -20123,6 +20293,10 @@ input plan_ai_capabilities_stddev_pop_order_by {
   """
   rate_limit_rpd: order_by
   """
+  Maximum requests per hour for this capability on this plan. NULL means unlimited.
+  """
+  rate_limit_rph: order_by
+  """
   Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting).
   """
   rate_limit_rpm: order_by
@@ -20134,6 +20308,10 @@ type plan_ai_capabilities_stddev_samp_fields {
   Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap).
   """
   rate_limit_rpd: Float
+  """
+  Maximum requests per hour for this capability on this plan. NULL means unlimited.
+  """
+  rate_limit_rph: Float
   """
   Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting).
   """
@@ -20148,6 +20326,10 @@ input plan_ai_capabilities_stddev_samp_order_by {
   Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap).
   """
   rate_limit_rpd: order_by
+  """
+  Maximum requests per hour for this capability on this plan. NULL means unlimited.
+  """
+  rate_limit_rph: order_by
   """
   Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting).
   """
@@ -20191,6 +20373,10 @@ input plan_ai_capabilities_stream_cursor_value_input {
   """
   rate_limit_rpd: Int
   """
+  Maximum requests per hour for this capability on this plan. NULL means unlimited.
+  """
+  rate_limit_rph: Int
+  """
   Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting).
   """
   rate_limit_rpm: Int
@@ -20207,6 +20393,10 @@ type plan_ai_capabilities_sum_fields {
   """
   rate_limit_rpd: Int
   """
+  Maximum requests per hour for this capability on this plan. NULL means unlimited.
+  """
+  rate_limit_rph: Int
+  """
   Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting).
   """
   rate_limit_rpm: Int
@@ -20220,6 +20410,10 @@ input plan_ai_capabilities_sum_order_by {
   Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap).
   """
   rate_limit_rpd: order_by
+  """
+  Maximum requests per hour for this capability on this plan. NULL means unlimited.
+  """
+  rate_limit_rph: order_by
   """
   Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting).
   """
@@ -20243,6 +20437,8 @@ enum plan_ai_capabilities_update_column {
   """column name"""
   rate_limit_rpd
   """column name"""
+  rate_limit_rph
+  """column name"""
   rate_limit_rpm
   """column name"""
   updated_at
@@ -20264,6 +20460,10 @@ type plan_ai_capabilities_var_pop_fields {
   """
   rate_limit_rpd: Float
   """
+  Maximum requests per hour for this capability on this plan. NULL means unlimited.
+  """
+  rate_limit_rph: Float
+  """
   Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting).
   """
   rate_limit_rpm: Float
@@ -20278,6 +20478,10 @@ input plan_ai_capabilities_var_pop_order_by {
   """
   rate_limit_rpd: order_by
   """
+  Maximum requests per hour for this capability on this plan. NULL means unlimited.
+  """
+  rate_limit_rph: order_by
+  """
   Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting).
   """
   rate_limit_rpm: order_by
@@ -20289,6 +20493,10 @@ type plan_ai_capabilities_var_samp_fields {
   Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap).
   """
   rate_limit_rpd: Float
+  """
+  Maximum requests per hour for this capability on this plan. NULL means unlimited.
+  """
+  rate_limit_rph: Float
   """
   Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting).
   """
@@ -20304,6 +20512,10 @@ input plan_ai_capabilities_var_samp_order_by {
   """
   rate_limit_rpd: order_by
   """
+  Maximum requests per hour for this capability on this plan. NULL means unlimited.
+  """
+  rate_limit_rph: order_by
+  """
   Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting).
   """
   rate_limit_rpm: order_by
@@ -20315,6 +20527,10 @@ type plan_ai_capabilities_variance_fields {
   Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap).
   """
   rate_limit_rpd: Float
+  """
+  Maximum requests per hour for this capability on this plan. NULL means unlimited.
+  """
+  rate_limit_rph: Float
   """
   Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting).
   """
@@ -20329,6 +20545,10 @@ input plan_ai_capabilities_variance_order_by {
   Maximum requests per day for this capability on this plan. NULL means unlimited (no daily cap).
   """
   rate_limit_rpd: order_by
+  """
+  Maximum requests per hour for this capability on this plan. NULL means unlimited.
+  """
+  rate_limit_rph: order_by
   """
   Maximum requests per minute for this capability on this plan. NULL means unlimited (no rate limiting).
   """
@@ -30450,6 +30670,12 @@ type widgets {
   created_by: String!
   """An object relationship"""
   creator: users!
+  """An object relationship"""
+  form: forms
+  """
+  Optional FK to forms table. When set, widget is scoped to testimonials from this form (free tier default). NULL = org-wide widget with manual testimonial selection via widget_testimonials junction table.
+  """
+  form_id: String
   """Primary key - NanoID 12-char unique identifier. Used in embed code"""
   id: String!
   """Soft delete flag. False = embed script returns empty widget"""
@@ -30627,6 +30853,8 @@ input widgets_bool_exp {
   created_at: timestamptz_comparison_exp
   created_by: String_comparison_exp
   creator: users_bool_exp
+  form: forms_bool_exp
+  form_id: String_comparison_exp
   id: String_comparison_exp
   is_active: Boolean_comparison_exp
   max_display: smallint_comparison_exp
@@ -30704,6 +30932,11 @@ input widgets_insert_input {
   """FK to users - user who created this widget"""
   created_by: String
   creator: users_obj_rel_insert_input
+  form: forms_obj_rel_insert_input
+  """
+  Optional FK to forms table. When set, widget is scoped to testimonials from this form (free tier default). NULL = org-wide widget with manual testimonial selection via widget_testimonials junction table.
+  """
+  form_id: String
   """Primary key - NanoID 12-char unique identifier. Used in embed code"""
   id: String
   """Soft delete flag. False = embed script returns empty widget"""
@@ -30747,6 +30980,10 @@ type widgets_max_fields {
   created_at: timestamptz
   """FK to users - user who created this widget"""
   created_by: String
+  """
+  Optional FK to forms table. When set, widget is scoped to testimonials from this form (free tier default). NULL = org-wide widget with manual testimonial selection via widget_testimonials junction table.
+  """
+  form_id: String
   """Primary key - NanoID 12-char unique identifier. Used in embed code"""
   id: String
   """Maximum testimonials to display. NULL = show all selected"""
@@ -30775,6 +31012,10 @@ input widgets_max_order_by {
   created_at: order_by
   """FK to users - user who created this widget"""
   created_by: order_by
+  """
+  Optional FK to forms table. When set, widget is scoped to testimonials from this form (free tier default). NULL = org-wide widget with manual testimonial selection via widget_testimonials junction table.
+  """
+  form_id: order_by
   """Primary key - NanoID 12-char unique identifier. Used in embed code"""
   id: order_by
   """Maximum testimonials to display. NULL = show all selected"""
@@ -30801,6 +31042,10 @@ type widgets_min_fields {
   created_at: timestamptz
   """FK to users - user who created this widget"""
   created_by: String
+  """
+  Optional FK to forms table. When set, widget is scoped to testimonials from this form (free tier default). NULL = org-wide widget with manual testimonial selection via widget_testimonials junction table.
+  """
+  form_id: String
   """Primary key - NanoID 12-char unique identifier. Used in embed code"""
   id: String
   """Maximum testimonials to display. NULL = show all selected"""
@@ -30829,6 +31074,10 @@ input widgets_min_order_by {
   created_at: order_by
   """FK to users - user who created this widget"""
   created_by: order_by
+  """
+  Optional FK to forms table. When set, widget is scoped to testimonials from this form (free tier default). NULL = org-wide widget with manual testimonial selection via widget_testimonials junction table.
+  """
+  form_id: order_by
   """Primary key - NanoID 12-char unique identifier. Used in embed code"""
   id: order_by
   """Maximum testimonials to display. NULL = show all selected"""
@@ -30882,6 +31131,8 @@ input widgets_order_by {
   created_at: order_by
   created_by: order_by
   creator: users_order_by
+  form: forms_order_by
+  form_id: order_by
   id: order_by
   is_active: order_by
   max_display: order_by
@@ -30923,6 +31174,8 @@ enum widgets_select_column {
   created_at
   """column name"""
   created_by
+  """column name"""
+  form_id
   """column name"""
   id
   """column name"""
@@ -30993,6 +31246,10 @@ input widgets_set_input {
   created_at: timestamptz
   """FK to users - user who created this widget"""
   created_by: String
+  """
+  Optional FK to forms table. When set, widget is scoped to testimonials from this form (free tier default). NULL = org-wide widget with manual testimonial selection via widget_testimonials junction table.
+  """
+  form_id: String
   """Primary key - NanoID 12-char unique identifier. Used in embed code"""
   id: String
   """Soft delete flag. False = embed script returns empty widget"""
@@ -31085,6 +31342,10 @@ input widgets_stream_cursor_value_input {
   created_at: timestamptz
   """FK to users - user who created this widget"""
   created_by: String
+  """
+  Optional FK to forms table. When set, widget is scoped to testimonials from this form (free tier default). NULL = org-wide widget with manual testimonial selection via widget_testimonials junction table.
+  """
+  form_id: String
   """Primary key - NanoID 12-char unique identifier. Used in embed code"""
   id: String
   """Soft delete flag. False = embed script returns empty widget"""
@@ -31141,6 +31402,8 @@ enum widgets_update_column {
   created_at
   """column name"""
   created_by
+  """column name"""
+  form_id
   """column name"""
   id
   """column name"""

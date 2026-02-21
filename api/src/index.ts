@@ -8,10 +8,9 @@ import { logger } from 'hono/logger';
 import { env } from '@/shared/config/env';
 import { corsConfig } from '@/shared/config/cors';
 
-import { auth, ai, media, analytics, dashboard, credits, billing, webhooks, jobs } from '@/routes';
+import { auth, ai, media, analytics, dashboard, credits, billing, webhooks, jobs, widgets, publicWidgets } from '@/routes';
 import testimonialRoutes from '@/routes/testimonials';
 import formRoutes from '@/routes/forms';
-import widgetRoutes from '@/routes/widgets';
 import { createE2ERoutes } from '@/routes/e2e';
 
 const app = new OpenAPIHono();
@@ -59,10 +58,11 @@ app.route('/credits', credits);
 app.route('/billing', billing);
 app.route('/webhooks', webhooks);
 app.route('/jobs', jobs);
+app.route('/widgets', widgets);
+app.route('/public/widgets', publicWidgets);
 // Non-OpenAPI routes (still using default exports)
 app.route('/testimonials', testimonialRoutes);
 app.route('/forms', formRoutes);
-app.route('/widgets', widgetRoutes);
 
 // E2E testing support routes (only active when E2E_API_SECRET is configured)
 app.route('/e2e', createE2ERoutes());

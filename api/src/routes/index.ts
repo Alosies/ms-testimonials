@@ -8,6 +8,8 @@ export { credits } from './credits';
 export { billing } from './billing';
 export { webhooks } from './webhooks';
 export { jobs } from './jobs';
+export { widgets } from './widgets';
+export { publicWidgets } from './publicWidgets';
 
 // Type exports for Hono RPC client consumption
 export type { AuthRoutes } from './auth';
@@ -19,3 +21,5 @@ export type { CreditsRoutes } from './credits';
 export type { BillingRoutes } from './billing';
 export type { WebhooksRoutes } from './webhooks';
 export type { JobsRoutes } from './jobs';
+export type { WidgetsRoutes } from './widgets';
+export type { PublicWidgetsRoutes } from './publicWidgets';

@@ -11,7 +11,9 @@ fragment WidgetBasic on widgets {
   show_avatar
   max_display
   settings
+  form_id
   is_active
   created_at
   updated_at
+  updated_by
 }

@@ -1965,6 +1965,10 @@ type credit_reservations {
   """
   created_at: timestamptz!
   """
+  Google ID (sub claim) of the customer. Copied to credit_transactions on settlement.
+  """
+  customer_google_id: String
+  """
   When this reservation expires if not settled. Expired reservations are automatically released by cleanup jobs.
   """
   expires_at: timestamptz!
@@ -2124,6 +2128,7 @@ input credit_reservations_bool_exp {
   ai_capability: ai_capabilities_bool_exp
   ai_capability_id: String_comparison_exp
   created_at: timestamptz_comparison_exp
+  customer_google_id: String_comparison_exp
   expires_at: timestamptz_comparison_exp
   form_id: String_comparison_exp
   form_name: String_comparison_exp
@@ -2183,6 +2188,10 @@ input credit_reservations_insert_input {
   Timestamp when this reservation was first created. Set automatically, never modified.
   """
   created_at: timestamptz
+  """
+  Google ID (sub claim) of the customer. Copied to credit_transactions on settlement.
+  """
+  customer_google_id: String
   """
   When this reservation expires if not settled. Expired reservations are automatically released by cleanup jobs.
   """
@@ -2254,6 +2263,10 @@ type credit_reservations_max_fields {
   """
   created_at: timestamptz
   """
+  Google ID (sub claim) of the customer. Copied to credit_transactions on settlement.
+  """
+  customer_google_id: String
+  """
   When this reservation expires if not settled. Expired reservations are automatically released by cleanup jobs.
   """
   expires_at: timestamptz
@@ -2324,6 +2337,10 @@ input credit_reservations_max_order_by {
   """
   created_at: order_by
   """
+  Google ID (sub claim) of the customer. Copied to credit_transactions on settlement.
+  """
+  customer_google_id: order_by
+  """
   When this reservation expires if not settled. Expired reservations are automatically released by cleanup jobs.
   """
   expires_at: order_by
@@ -2391,6 +2408,10 @@ type credit_reservations_min_fields {
   Timestamp when this reservation was first created. Set automatically, never modified.
   """
   created_at: timestamptz
+  """
+  Google ID (sub claim) of the customer. Copied to credit_transactions on settlement.
+  """
+  customer_google_id: String
   """
   When this reservation expires if not settled. Expired reservations are automatically released by cleanup jobs.
   """
@@ -2461,6 +2482,10 @@ input credit_reservations_min_order_by {
   Timestamp when this reservation was first created. Set automatically, never modified.
   """
   created_at: order_by
+  """
+  Google ID (sub claim) of the customer. Copied to credit_transactions on settlement.
+  """
+  customer_google_id: order_by
   """
   When this reservation expires if not settled. Expired reservations are automatically released by cleanup jobs.
   """
@@ -2543,6 +2568,7 @@ input credit_reservations_order_by {
   ai_capability: ai_capabilities_order_by
   ai_capability_id: order_by
   created_at: order_by
+  customer_google_id: order_by
   expires_at: order_by
   form_id: order_by
   form_name: order_by
@@ -2577,6 +2603,8 @@ enum credit_reservations_select_column {
   ai_capability_id
   """column name"""
   created_at
+  """column name"""
+  customer_google_id
   """column name"""
   expires_at
   """column name"""
@@ -2619,6 +2647,10 @@ input credit_reservations_set_input {
   Timestamp when this reservation was first created. Set automatically, never modified.
   """
   created_at: timestamptz
+  """
+  Google ID (sub claim) of the customer. Copied to credit_transactions on settlement.
+  """
+  customer_google_id: String
   """
   When this reservation expires if not settled. Expired reservations are automatically released by cleanup jobs.
   """
@@ -2776,6 +2808,10 @@ input credit_reservations_stream_cursor_value_input {
   """
   created_at: timestamptz
   """
+  Google ID (sub claim) of the customer. Copied to credit_transactions on settlement.
+  """
+  customer_google_id: String
+  """
   When this reservation expires if not settled. Expired reservations are automatically released by cleanup jobs.
   """
   expires_at: timestamptz
@@ -2867,6 +2903,8 @@ enum credit_reservations_update_column {
   ai_capability_id
   """column name"""
   created_at
+  """column name"""
+  customer_google_id
   """column name"""
   expires_at
   """column name"""
@@ -3607,6 +3645,10 @@ type credit_transactions {
   """
   credits_amount: numeric!
   """
+  Google ID (sub claim) of the customer who triggered this AI operation. NULL for authenticated user or anonymous operations.
+  """
+  customer_google_id: String
+  """
   Human-readable description. Examples: AI question generation, Monthly credit allocation, Credit pack purchase.
   """
   description: String
@@ -3795,6 +3837,7 @@ input credit_transactions_bool_exp {
   balance_after: numeric_comparison_exp
   created_at: timestamptz_comparison_exp
   credits_amount: numeric_comparison_exp
+  customer_google_id: String_comparison_exp
   description: String_comparison_exp
   estimated_credits: numeric_comparison_exp
   estimation_variance: numeric_comparison_exp
@@ -3897,6 +3940,10 @@ input credit_transactions_insert_input {
   """
   credits_amount: numeric
   """
+  Google ID (sub claim) of the customer who triggered this AI operation. NULL for authenticated user or anonymous operations.
+  """
+  customer_google_id: String
+  """
   Human-readable description. Examples: AI question generation, Monthly credit allocation, Credit pack purchase.
   """
   description: String
@@ -3970,6 +4017,10 @@ type credit_transactions_max_fields {
   Actual credits amount. Positive for additions (allocations, purchases). Negative for consumption/expiration. admin_adjustment can be either.
   """
   credits_amount: numeric
+  """
+  Google ID (sub claim) of the customer who triggered this AI operation. NULL for authenticated user or anonymous operations.
+  """
+  customer_google_id: String
   """
   Human-readable description. Examples: AI question generation, Monthly credit allocation, Credit pack purchase.
   """
@@ -4045,6 +4096,10 @@ input credit_transactions_max_order_by {
   """
   credits_amount: order_by
   """
+  Google ID (sub claim) of the customer who triggered this AI operation. NULL for authenticated user or anonymous operations.
+  """
+  customer_google_id: order_by
+  """
   Human-readable description. Examples: AI question generation, Monthly credit allocation, Credit pack purchase.
   """
   description: order_by
@@ -4116,6 +4171,10 @@ type credit_transactions_min_fields {
   Actual credits amount. Positive for additions (allocations, purchases). Negative for consumption/expiration. admin_adjustment can be either.
   """
   credits_amount: numeric
+  """
+  Google ID (sub claim) of the customer who triggered this AI operation. NULL for authenticated user or anonymous operations.
+  """
+  customer_google_id: String
   """
   Human-readable description. Examples: AI question generation, Monthly credit allocation, Credit pack purchase.
   """
@@ -4190,6 +4249,10 @@ input credit_transactions_min_order_by {
   Actual credits amount. Positive for additions (allocations, purchases). Negative for consumption/expiration. admin_adjustment can be either.
   """
   credits_amount: order_by
+  """
+  Google ID (sub claim) of the customer who triggered this AI operation. NULL for authenticated user or anonymous operations.
+  """
+  customer_google_id: order_by
   """
   Human-readable description. Examples: AI question generation, Monthly credit allocation, Credit pack purchase.
   """
@@ -4270,6 +4333,7 @@ input credit_transactions_order_by {
   balance_after: order_by
   created_at: order_by
   credits_amount: order_by
+  customer_google_id: order_by
   description: order_by
   estimated_credits: order_by
   estimation_variance: order_by
@@ -4316,6 +4380,8 @@ enum credit_transactions_select_column {
   created_at
   """column name"""
   credits_amount
+  """column name"""
+  customer_google_id
   """column name"""
   description
   """column name"""
@@ -4366,6 +4432,10 @@ input credit_transactions_set_input {
   Actual credits amount. Positive for additions (allocations, purchases). Negative for consumption/expiration. admin_adjustment can be either.
   """
   credits_amount: numeric
+  """
+  Google ID (sub claim) of the customer who triggered this AI operation. NULL for authenticated user or anonymous operations.
+  """
+  customer_google_id: String
   """
   Human-readable description. Examples: AI question generation, Monthly credit allocation, Credit pack purchase.
   """
@@ -4575,6 +4645,10 @@ input credit_transactions_stream_cursor_value_input {
   """
   credits_amount: numeric
   """
+  Google ID (sub claim) of the customer who triggered this AI operation. NULL for authenticated user or anonymous operations.
+  """
+  customer_google_id: String
+  """
   Human-readable description. Examples: AI question generation, Monthly credit allocation, Credit pack purchase.
   """
   description: String
@@ -4686,6 +4760,8 @@ enum credit_transactions_update_column {
   created_at
   """column name"""
   credits_amount
+  """column name"""
+  customer_google_id
   """column name"""
   description
   """column name"""
@@ -30594,6 +30670,12 @@ type widgets {
   created_by: String!
   """An object relationship"""
   creator: users!
+  """An object relationship"""
+  form: forms
+  """
+  Optional FK to forms table. When set, widget is scoped to testimonials from this form (free tier default). NULL = org-wide widget with manual testimonial selection via widget_testimonials junction table.
+  """
+  form_id: String
   """Primary key - NanoID 12-char unique identifier. Used in embed code"""
   id: String!
   """Soft delete flag. False = embed script returns empty widget"""
@@ -30771,6 +30853,8 @@ input widgets_bool_exp {
   created_at: timestamptz_comparison_exp
   created_by: String_comparison_exp
   creator: users_bool_exp
+  form: forms_bool_exp
+  form_id: String_comparison_exp
   id: String_comparison_exp
   is_active: Boolean_comparison_exp
   max_display: smallint_comparison_exp
@@ -30848,6 +30932,11 @@ input widgets_insert_input {
   """FK to users - user who created this widget"""
   created_by: String
   creator: users_obj_rel_insert_input
+  form: forms_obj_rel_insert_input
+  """
+  Optional FK to forms table. When set, widget is scoped to testimonials from this form (free tier default). NULL = org-wide widget with manual testimonial selection via widget_testimonials junction table.
+  """
+  form_id: String
   """Primary key - NanoID 12-char unique identifier. Used in embed code"""
   id: String
   """Soft delete flag. False = embed script returns empty widget"""
@@ -30891,6 +30980,10 @@ type widgets_max_fields {
   created_at: timestamptz
   """FK to users - user who created this widget"""
   created_by: String
+  """
+  Optional FK to forms table. When set, widget is scoped to testimonials from this form (free tier default). NULL = org-wide widget with manual testimonial selection via widget_testimonials junction table.
+  """
+  form_id: String
   """Primary key - NanoID 12-char unique identifier. Used in embed code"""
   id: String
   """Maximum testimonials to display. NULL = show all selected"""
@@ -30919,6 +31012,10 @@ input widgets_max_order_by {
   created_at: order_by
   """FK to users - user who created this widget"""
   created_by: order_by
+  """
+  Optional FK to forms table. When set, widget is scoped to testimonials from this form (free tier default). NULL = org-wide widget with manual testimonial selection via widget_testimonials junction table.
+  """
+  form_id: order_by
   """Primary key - NanoID 12-char unique identifier. Used in embed code"""
   id: order_by
   """Maximum testimonials to display. NULL = show all selected"""
@@ -30945,6 +31042,10 @@ type widgets_min_fields {
   created_at: timestamptz
   """FK to users - user who created this widget"""
   created_by: String
+  """
+  Optional FK to forms table. When set, widget is scoped to testimonials from this form (free tier default). NULL = org-wide widget with manual testimonial selection via widget_testimonials junction table.
+  """
+  form_id: String
   """Primary key - NanoID 12-char unique identifier. Used in embed code"""
   id: String
   """Maximum testimonials to display. NULL = show all selected"""
@@ -30973,6 +31074,10 @@ input widgets_min_order_by {
   created_at: order_by
   """FK to users - user who created this widget"""
   created_by: order_by
+  """
+  Optional FK to forms table. When set, widget is scoped to testimonials from this form (free tier default). NULL = org-wide widget with manual testimonial selection via widget_testimonials junction table.
+  """
+  form_id: order_by
   """Primary key - NanoID 12-char unique identifier. Used in embed code"""
   id: order_by
   """Maximum testimonials to display. NULL = show all selected"""
@@ -31026,6 +31131,8 @@ input widgets_order_by {
   created_at: order_by
   created_by: order_by
   creator: users_order_by
+  form: forms_order_by
+  form_id: order_by
   id: order_by
   is_active: order_by
   max_display: order_by
@@ -31067,6 +31174,8 @@ enum widgets_select_column {
   created_at
   """column name"""
   created_by
+  """column name"""
+  form_id
   """column name"""
   id
   """column name"""
@@ -31137,6 +31246,10 @@ input widgets_set_input {
   created_at: timestamptz
   """FK to users - user who created this widget"""
   created_by: String
+  """
+  Optional FK to forms table. When set, widget is scoped to testimonials from this form (free tier default). NULL = org-wide widget with manual testimonial selection via widget_testimonials junction table.
+  """
+  form_id: String
   """Primary key - NanoID 12-char unique identifier. Used in embed code"""
   id: String
   """Soft delete flag. False = embed script returns empty widget"""
@@ -31229,6 +31342,10 @@ input widgets_stream_cursor_value_input {
   created_at: timestamptz
   """FK to users - user who created this widget"""
   created_by: String
+  """
+  Optional FK to forms table. When set, widget is scoped to testimonials from this form (free tier default). NULL = org-wide widget with manual testimonial selection via widget_testimonials junction table.
+  """
+  form_id: String
   """Primary key - NanoID 12-char unique identifier. Used in embed code"""
   id: String
   """Soft delete flag. False = embed script returns empty widget"""
@@ -31285,6 +31402,8 @@ enum widgets_update_column {
   created_at
   """column name"""
   created_by
+  """column name"""
+  form_id
   """column name"""
   id
   """column name"""

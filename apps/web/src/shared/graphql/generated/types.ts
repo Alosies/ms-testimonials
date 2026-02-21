@@ -1385,6 +1385,8 @@ export interface Credit_Reservations {
   ai_capability_id: Scalars['String']['output'];
   /** Timestamp when this reservation was first created. Set automatically, never modified. */
   created_at: Scalars['timestamptz']['output'];
+  /** Google ID (sub claim) of the customer. Copied to credit_transactions on settlement. */
+  customer_google_id?: Maybe<Scalars['String']['output']>;
   /** When this reservation expires if not settled. Expired reservations are automatically released by cleanup jobs. */
   expires_at: Scalars['timestamptz']['output'];
   /** FK to forms table. Which form this operation relates to. SET NULL on delete preserves history. */
@@ -1507,6 +1509,7 @@ export interface Credit_Reservations_Bool_Exp {
   ai_capability?: InputMaybe<Ai_Capabilities_Bool_Exp>;
   ai_capability_id?: InputMaybe<String_Comparison_Exp>;
   created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  customer_google_id?: InputMaybe<String_Comparison_Exp>;
   expires_at?: InputMaybe<Timestamptz_Comparison_Exp>;
   form_id?: InputMaybe<String_Comparison_Exp>;
   form_name?: InputMaybe<String_Comparison_Exp>;
@@ -1549,6 +1552,8 @@ export interface Credit_Reservations_Insert_Input {
   ai_capability_id?: InputMaybe<Scalars['String']['input']>;
   /** Timestamp when this reservation was first created. Set automatically, never modified. */
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Google ID (sub claim) of the customer. Copied to credit_transactions on settlement. */
+  customer_google_id?: InputMaybe<Scalars['String']['input']>;
   /** When this reservation expires if not settled. Expired reservations are automatically released by cleanup jobs. */
   expires_at?: InputMaybe<Scalars['timestamptz']['input']>;
   /** FK to forms table. Which form this operation relates to. SET NULL on delete preserves history. */
@@ -1588,6 +1593,8 @@ export interface Credit_Reservations_Max_Fields {
   ai_capability_id?: Maybe<Scalars['String']['output']>;
   /** Timestamp when this reservation was first created. Set automatically, never modified. */
   created_at?: Maybe<Scalars['timestamptz']['output']>;
+  /** Google ID (sub claim) of the customer. Copied to credit_transactions on settlement. */
+  customer_google_id?: Maybe<Scalars['String']['output']>;
   /** When this reservation expires if not settled. Expired reservations are automatically released by cleanup jobs. */
   expires_at?: Maybe<Scalars['timestamptz']['output']>;
   /** FK to forms table. Which form this operation relates to. SET NULL on delete preserves history. */
@@ -1624,6 +1631,8 @@ export interface Credit_Reservations_Max_Order_By {
   ai_capability_id?: InputMaybe<Order_By>;
   /** Timestamp when this reservation was first created. Set automatically, never modified. */
   created_at?: InputMaybe<Order_By>;
+  /** Google ID (sub claim) of the customer. Copied to credit_transactions on settlement. */
+  customer_google_id?: InputMaybe<Order_By>;
   /** When this reservation expires if not settled. Expired reservations are automatically released by cleanup jobs. */
   expires_at?: InputMaybe<Order_By>;
   /** FK to forms table. Which form this operation relates to. SET NULL on delete preserves history. */
@@ -1661,6 +1670,8 @@ export interface Credit_Reservations_Min_Fields {
   ai_capability_id?: Maybe<Scalars['String']['output']>;
   /** Timestamp when this reservation was first created. Set automatically, never modified. */
   created_at?: Maybe<Scalars['timestamptz']['output']>;
+  /** Google ID (sub claim) of the customer. Copied to credit_transactions on settlement. */
+  customer_google_id?: Maybe<Scalars['String']['output']>;
   /** When this reservation expires if not settled. Expired reservations are automatically released by cleanup jobs. */
   expires_at?: Maybe<Scalars['timestamptz']['output']>;
   /** FK to forms table. Which form this operation relates to. SET NULL on delete preserves history. */
@@ -1697,6 +1708,8 @@ export interface Credit_Reservations_Min_Order_By {
   ai_capability_id?: InputMaybe<Order_By>;
   /** Timestamp when this reservation was first created. Set automatically, never modified. */
   created_at?: InputMaybe<Order_By>;
+  /** Google ID (sub claim) of the customer. Copied to credit_transactions on settlement. */
+  customer_google_id?: InputMaybe<Order_By>;
   /** When this reservation expires if not settled. Expired reservations are automatically released by cleanup jobs. */
   expires_at?: InputMaybe<Order_By>;
   /** FK to forms table. Which form this operation relates to. SET NULL on delete preserves history. */
@@ -1748,6 +1761,7 @@ export interface Credit_Reservations_Order_By {
   ai_capability?: InputMaybe<Ai_Capabilities_Order_By>;
   ai_capability_id?: InputMaybe<Order_By>;
   created_at?: InputMaybe<Order_By>;
+  customer_google_id?: InputMaybe<Order_By>;
   expires_at?: InputMaybe<Order_By>;
   form_id?: InputMaybe<Order_By>;
   form_name?: InputMaybe<Order_By>;
@@ -1778,6 +1792,8 @@ export const Credit_Reservations_Select_Column = {
   AiCapabilityId: 'ai_capability_id',
   /** column name */
   CreatedAt: 'created_at',
+  /** column name */
+  CustomerGoogleId: 'customer_google_id',
   /** column name */
   ExpiresAt: 'expires_at',
   /** column name */
@@ -1815,6 +1831,8 @@ export interface Credit_Reservations_Set_Input {
   ai_capability_id?: InputMaybe<Scalars['String']['input']>;
   /** Timestamp when this reservation was first created. Set automatically, never modified. */
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Google ID (sub claim) of the customer. Copied to credit_transactions on settlement. */
+  customer_google_id?: InputMaybe<Scalars['String']['input']>;
   /** When this reservation expires if not settled. Expired reservations are automatically released by cleanup jobs. */
   expires_at?: InputMaybe<Scalars['timestamptz']['input']>;
   /** FK to forms table. Which form this operation relates to. SET NULL on delete preserves history. */
@@ -1910,6 +1928,8 @@ export interface Credit_Reservations_Stream_Cursor_Value_Input {
   ai_capability_id?: InputMaybe<Scalars['String']['input']>;
   /** Timestamp when this reservation was first created. Set automatically, never modified. */
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Google ID (sub claim) of the customer. Copied to credit_transactions on settlement. */
+  customer_google_id?: InputMaybe<Scalars['String']['input']>;
   /** When this reservation expires if not settled. Expired reservations are automatically released by cleanup jobs. */
   expires_at?: InputMaybe<Scalars['timestamptz']['input']>;
   /** FK to forms table. Which form this operation relates to. SET NULL on delete preserves history. */
@@ -1963,6 +1983,8 @@ export const Credit_Reservations_Update_Column = {
   AiCapabilityId: 'ai_capability_id',
   /** column name */
   CreatedAt: 'created_at',
+  /** column name */
+  CustomerGoogleId: 'customer_google_id',
   /** column name */
   ExpiresAt: 'expires_at',
   /** column name */
@@ -2477,6 +2499,8 @@ export interface Credit_Transactions {
   created_at: Scalars['timestamptz']['output'];
   /** Actual credits amount. Positive for additions (allocations, purchases). Negative for consumption/expiration. admin_adjustment can be either. */
   credits_amount: Scalars['numeric']['output'];
+  /** Google ID (sub claim) of the customer who triggered this AI operation. NULL for authenticated user or anonymous operations. */
+  customer_google_id?: Maybe<Scalars['String']['output']>;
   /** Human-readable description. Examples: AI question generation, Monthly credit allocation, Credit pack purchase. */
   description?: Maybe<Scalars['String']['output']>;
   /** Estimated credits before AI execution. Used to track estimation accuracy. NULL for non-AI transactions. */
@@ -2621,6 +2645,7 @@ export interface Credit_Transactions_Bool_Exp {
   balance_after?: InputMaybe<Numeric_Comparison_Exp>;
   created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
   credits_amount?: InputMaybe<Numeric_Comparison_Exp>;
+  customer_google_id?: InputMaybe<String_Comparison_Exp>;
   description?: InputMaybe<String_Comparison_Exp>;
   estimated_credits?: InputMaybe<Numeric_Comparison_Exp>;
   estimation_variance?: InputMaybe<Numeric_Comparison_Exp>;
@@ -2687,6 +2712,8 @@ export interface Credit_Transactions_Insert_Input {
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
   /** Actual credits amount. Positive for additions (allocations, purchases). Negative for consumption/expiration. admin_adjustment can be either. */
   credits_amount?: InputMaybe<Scalars['numeric']['input']>;
+  /** Google ID (sub claim) of the customer who triggered this AI operation. NULL for authenticated user or anonymous operations. */
+  customer_google_id?: InputMaybe<Scalars['String']['input']>;
   /** Human-readable description. Examples: AI question generation, Monthly credit allocation, Credit pack purchase. */
   description?: InputMaybe<Scalars['String']['input']>;
   /** Estimated credits before AI execution. Used to track estimation accuracy. NULL for non-AI transactions. */
@@ -2728,6 +2755,8 @@ export interface Credit_Transactions_Max_Fields {
   created_at?: Maybe<Scalars['timestamptz']['output']>;
   /** Actual credits amount. Positive for additions (allocations, purchases). Negative for consumption/expiration. admin_adjustment can be either. */
   credits_amount?: Maybe<Scalars['numeric']['output']>;
+  /** Google ID (sub claim) of the customer who triggered this AI operation. NULL for authenticated user or anonymous operations. */
+  customer_google_id?: Maybe<Scalars['String']['output']>;
   /** Human-readable description. Examples: AI question generation, Monthly credit allocation, Credit pack purchase. */
   description?: Maybe<Scalars['String']['output']>;
   /** Estimated credits before AI execution. Used to track estimation accuracy. NULL for non-AI transactions. */
@@ -2766,6 +2795,8 @@ export interface Credit_Transactions_Max_Order_By {
   created_at?: InputMaybe<Order_By>;
   /** Actual credits amount. Positive for additions (allocations, purchases). Negative for consumption/expiration. admin_adjustment can be either. */
   credits_amount?: InputMaybe<Order_By>;
+  /** Google ID (sub claim) of the customer who triggered this AI operation. NULL for authenticated user or anonymous operations. */
+  customer_google_id?: InputMaybe<Order_By>;
   /** Human-readable description. Examples: AI question generation, Monthly credit allocation, Credit pack purchase. */
   description?: InputMaybe<Order_By>;
   /** Estimated credits before AI execution. Used to track estimation accuracy. NULL for non-AI transactions. */
@@ -2805,6 +2836,8 @@ export interface Credit_Transactions_Min_Fields {
   created_at?: Maybe<Scalars['timestamptz']['output']>;
   /** Actual credits amount. Positive for additions (allocations, purchases). Negative for consumption/expiration. admin_adjustment can be either. */
   credits_amount?: Maybe<Scalars['numeric']['output']>;
+  /** Google ID (sub claim) of the customer who triggered this AI operation. NULL for authenticated user or anonymous operations. */
+  customer_google_id?: Maybe<Scalars['String']['output']>;
   /** Human-readable description. Examples: AI question generation, Monthly credit allocation, Credit pack purchase. */
   description?: Maybe<Scalars['String']['output']>;
   /** Estimated credits before AI execution. Used to track estimation accuracy. NULL for non-AI transactions. */
@@ -2843,6 +2876,8 @@ export interface Credit_Transactions_Min_Order_By {
   created_at?: InputMaybe<Order_By>;
   /** Actual credits amount. Positive for additions (allocations, purchases). Negative for consumption/expiration. admin_adjustment can be either. */
   credits_amount?: InputMaybe<Order_By>;
+  /** Google ID (sub claim) of the customer who triggered this AI operation. NULL for authenticated user or anonymous operations. */
+  customer_google_id?: InputMaybe<Order_By>;
   /** Human-readable description. Examples: AI question generation, Monthly credit allocation, Credit pack purchase. */
   description?: InputMaybe<Order_By>;
   /** Estimated credits before AI execution. Used to track estimation accuracy. NULL for non-AI transactions. */
@@ -2894,6 +2929,7 @@ export interface Credit_Transactions_Order_By {
   balance_after?: InputMaybe<Order_By>;
   created_at?: InputMaybe<Order_By>;
   credits_amount?: InputMaybe<Order_By>;
+  customer_google_id?: InputMaybe<Order_By>;
   description?: InputMaybe<Order_By>;
   estimated_credits?: InputMaybe<Order_By>;
   estimation_variance?: InputMaybe<Order_By>;
@@ -2935,6 +2971,8 @@ export const Credit_Transactions_Select_Column = {
   /** column name */
   CreditsAmount: 'credits_amount',
   /** column name */
+  CustomerGoogleId: 'customer_google_id',
+  /** column name */
   Description: 'description',
   /** column name */
   EstimatedCredits: 'estimated_credits',
@@ -2975,6 +3013,8 @@ export interface Credit_Transactions_Set_Input {
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
   /** Actual credits amount. Positive for additions (allocations, purchases). Negative for consumption/expiration. admin_adjustment can be either. */
   credits_amount?: InputMaybe<Scalars['numeric']['input']>;
+  /** Google ID (sub claim) of the customer who triggered this AI operation. NULL for authenticated user or anonymous operations. */
+  customer_google_id?: InputMaybe<Scalars['String']['input']>;
   /** Human-readable description. Examples: AI question generation, Monthly credit allocation, Credit pack purchase. */
   description?: InputMaybe<Scalars['String']['input']>;
   /** Estimated credits before AI execution. Used to track estimation accuracy. NULL for non-AI transactions. */
@@ -3096,6 +3136,8 @@ export interface Credit_Transactions_Stream_Cursor_Value_Input {
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
   /** Actual credits amount. Positive for additions (allocations, purchases). Negative for consumption/expiration. admin_adjustment can be either. */
   credits_amount?: InputMaybe<Scalars['numeric']['input']>;
+  /** Google ID (sub claim) of the customer who triggered this AI operation. NULL for authenticated user or anonymous operations. */
+  customer_google_id?: InputMaybe<Scalars['String']['input']>;
   /** Human-readable description. Examples: AI question generation, Monthly credit allocation, Credit pack purchase. */
   description?: InputMaybe<Scalars['String']['input']>;
   /** Estimated credits before AI execution. Used to track estimation accuracy. NULL for non-AI transactions. */
@@ -3161,6 +3203,8 @@ export const Credit_Transactions_Update_Column = {
   CreatedAt: 'created_at',
   /** column name */
   CreditsAmount: 'credits_amount',
+  /** column name */
+  CustomerGoogleId: 'customer_google_id',
   /** column name */
   Description: 'description',
   /** column name */
@@ -25301,6 +25345,10 @@ export interface Widgets {
   created_by: Scalars['String']['output'];
   /** An object relationship */
   creator: Users;
+  /** An object relationship */
+  form?: Maybe<Forms>;
+  /** Optional FK to forms table. When set, widget is scoped to testimonials from this form (free tier default). NULL = org-wide widget with manual testimonial selection via widget_testimonials junction table. */
+  form_id?: Maybe<Scalars['String']['output']>;
   /** Primary key - NanoID 12-char unique identifier. Used in embed code */
   id: Scalars['String']['output'];
   /** Soft delete flag. False = embed script returns empty widget */
@@ -25471,6 +25519,8 @@ export interface Widgets_Bool_Exp {
   created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
   created_by?: InputMaybe<String_Comparison_Exp>;
   creator?: InputMaybe<Users_Bool_Exp>;
+  form?: InputMaybe<Forms_Bool_Exp>;
+  form_id?: InputMaybe<String_Comparison_Exp>;
   id?: InputMaybe<String_Comparison_Exp>;
   is_active?: InputMaybe<Boolean_Comparison_Exp>;
   max_display?: InputMaybe<Smallint_Comparison_Exp>;
@@ -25529,6 +25579,9 @@ export interface Widgets_Insert_Input {
   /** FK to users - user who created this widget */
   created_by?: InputMaybe<Scalars['String']['input']>;
   creator?: InputMaybe<Users_Obj_Rel_Insert_Input>;
+  form?: InputMaybe<Forms_Obj_Rel_Insert_Input>;
+  /** Optional FK to forms table. When set, widget is scoped to testimonials from this form (free tier default). NULL = org-wide widget with manual testimonial selection via widget_testimonials junction table. */
+  form_id?: InputMaybe<Scalars['String']['input']>;
   /** Primary key - NanoID 12-char unique identifier. Used in embed code */
   id?: InputMaybe<Scalars['String']['input']>;
   /** Soft delete flag. False = embed script returns empty widget */
@@ -25569,6 +25622,8 @@ export interface Widgets_Max_Fields {
   created_at?: Maybe<Scalars['timestamptz']['output']>;
   /** FK to users - user who created this widget */
   created_by?: Maybe<Scalars['String']['output']>;
+  /** Optional FK to forms table. When set, widget is scoped to testimonials from this form (free tier default). NULL = org-wide widget with manual testimonial selection via widget_testimonials junction table. */
+  form_id?: Maybe<Scalars['String']['output']>;
   /** Primary key - NanoID 12-char unique identifier. Used in embed code */
   id?: Maybe<Scalars['String']['output']>;
   /** Maximum testimonials to display. NULL = show all selected */
@@ -25593,6 +25648,8 @@ export interface Widgets_Max_Order_By {
   created_at?: InputMaybe<Order_By>;
   /** FK to users - user who created this widget */
   created_by?: InputMaybe<Order_By>;
+  /** Optional FK to forms table. When set, widget is scoped to testimonials from this form (free tier default). NULL = org-wide widget with manual testimonial selection via widget_testimonials junction table. */
+  form_id?: InputMaybe<Order_By>;
   /** Primary key - NanoID 12-char unique identifier. Used in embed code */
   id?: InputMaybe<Order_By>;
   /** Maximum testimonials to display. NULL = show all selected */
@@ -25618,6 +25675,8 @@ export interface Widgets_Min_Fields {
   created_at?: Maybe<Scalars['timestamptz']['output']>;
   /** FK to users - user who created this widget */
   created_by?: Maybe<Scalars['String']['output']>;
+  /** Optional FK to forms table. When set, widget is scoped to testimonials from this form (free tier default). NULL = org-wide widget with manual testimonial selection via widget_testimonials junction table. */
+  form_id?: Maybe<Scalars['String']['output']>;
   /** Primary key - NanoID 12-char unique identifier. Used in embed code */
   id?: Maybe<Scalars['String']['output']>;
   /** Maximum testimonials to display. NULL = show all selected */
@@ -25642,6 +25701,8 @@ export interface Widgets_Min_Order_By {
   created_at?: InputMaybe<Order_By>;
   /** FK to users - user who created this widget */
   created_by?: InputMaybe<Order_By>;
+  /** Optional FK to forms table. When set, widget is scoped to testimonials from this form (free tier default). NULL = org-wide widget with manual testimonial selection via widget_testimonials junction table. */
+  form_id?: InputMaybe<Order_By>;
   /** Primary key - NanoID 12-char unique identifier. Used in embed code */
   id?: InputMaybe<Order_By>;
   /** Maximum testimonials to display. NULL = show all selected */
@@ -25688,6 +25749,8 @@ export interface Widgets_Order_By {
   created_at?: InputMaybe<Order_By>;
   created_by?: InputMaybe<Order_By>;
   creator?: InputMaybe<Users_Order_By>;
+  form?: InputMaybe<Forms_Order_By>;
+  form_id?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
   is_active?: InputMaybe<Order_By>;
   max_display?: InputMaybe<Order_By>;
@@ -25725,6 +25788,8 @@ export const Widgets_Select_Column = {
   CreatedAt: 'created_at',
   /** column name */
   CreatedBy: 'created_by',
+  /** column name */
+  FormId: 'form_id',
   /** column name */
   Id: 'id',
   /** column name */
@@ -25792,6 +25857,8 @@ export interface Widgets_Set_Input {
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
   /** FK to users - user who created this widget */
   created_by?: InputMaybe<Scalars['String']['input']>;
+  /** Optional FK to forms table. When set, widget is scoped to testimonials from this form (free tier default). NULL = org-wide widget with manual testimonial selection via widget_testimonials junction table. */
+  form_id?: InputMaybe<Scalars['String']['input']>;
   /** Primary key - NanoID 12-char unique identifier. Used in embed code */
   id?: InputMaybe<Scalars['String']['input']>;
   /** Soft delete flag. False = embed script returns empty widget */
@@ -25875,6 +25942,8 @@ export interface Widgets_Stream_Cursor_Value_Input {
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
   /** FK to users - user who created this widget */
   created_by?: InputMaybe<Scalars['String']['input']>;
+  /** Optional FK to forms table. When set, widget is scoped to testimonials from this form (free tier default). NULL = org-wide widget with manual testimonial selection via widget_testimonials junction table. */
+  form_id?: InputMaybe<Scalars['String']['input']>;
   /** Primary key - NanoID 12-char unique identifier. Used in embed code */
   id?: InputMaybe<Scalars['String']['input']>;
   /** Soft delete flag. False = embed script returns empty widget */
@@ -25924,6 +25993,8 @@ export const Widgets_Update_Column = {
   CreatedAt: 'created_at',
   /** column name */
   CreatedBy: 'created_by',
+  /** column name */
+  FormId: 'form_id',
   /** column name */
   Id: 'id',
   /** column name */
