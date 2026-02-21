@@ -5,8 +5,9 @@ import { Button, Separator } from '@testimonials/ui';
 import { Skeleton } from '@testimonials/ui';
 import { useCurrentContextStore } from '@/shared/currentContext';
 import { useRouting } from '@/shared/routing';
+import { useGetTestimonials } from '@/entities/testimonial';
 import { useWidgetBuilder } from '../composables/useWidgetBuilder';
-import type { WidgetFormState, TestimonialForSelector } from '../models';
+import type { WidgetFormState } from '../models';
 import WidgetTypeSelector from './WidgetTypeSelector.vue';
 import WidgetFormSelector from './WidgetFormSelector.vue';
 import WidgetSettingsPanel from './WidgetSettingsPanel.vue';
@@ -27,13 +28,28 @@ const widgetIdRef = computed(() => props.widgetId ?? null);
 const { state, isEditMode, isLoading, isSaving, savedWidgetId, save } =
   useWidgetBuilder(widgetIdRef);
 
+// Fetch approved testimonials for preview (Apollo cache deduplicates with selector query)
+const testimonialVars = computed(() => ({
+  organizationId: currentOrganizationId.value ?? '',
+}));
+const { testimonials: allTestimonials } = useGetTestimonials(testimonialVars);
+
 const selectedTestimonialIds = ref<string[]>([]);
 const showEmbedModal = ref(false);
 
-const previewTestimonials = computed<TestimonialForSelector[]>(() => {
-  // In a full implementation, this would filter from the testimonial selector
-  // For now, return empty — the preview will show the placeholder
-  return [];
+const previewTestimonials = computed(() => {
+  if (selectedTestimonialIds.value.length === 0) return [];
+  return allTestimonials.value
+    .filter((t) => t.status === 'approved' && selectedTestimonialIds.value.includes(t.id))
+    .map((t) => ({
+      id: t.id,
+      content: t.content ?? null,
+      customer_name: t.customer_name ?? null,
+      customer_company: t.customer_company ?? null,
+      customer_avatar_url: t.customer_avatar_url ?? null,
+      rating: t.rating ?? null,
+      status: t.status,
+    }));
 });
 
 const canSave = computed(() => {

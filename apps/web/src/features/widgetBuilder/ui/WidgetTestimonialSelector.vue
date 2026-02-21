@@ -83,16 +83,17 @@ function getInitials(name: string | null): string {
     </p>
 
     <div v-else class="space-y-2 max-h-64 overflow-y-auto pr-1">
-      <label
+      <div
         v-for="t in approvedTestimonials"
         :key="t.id"
+        role="button"
         class="flex items-start gap-3 rounded-md border border-border p-3 cursor-pointer transition-colors hover:bg-muted/30"
         :class="selectedIds.includes(t.id) ? 'bg-muted/30 border-primary/30' : ''"
+        @click="toggleTestimonial(t.id)"
       >
         <Checkbox
           :checked="selectedIds.includes(t.id)"
-          @update:checked="toggleTestimonial(t.id)"
-          class="mt-0.5"
+          class="mt-0.5 pointer-events-none"
         />
         <Avatar class="h-8 w-8 shrink-0">
           <AvatarImage v-if="t.customer_avatar_url" :src="t.customer_avatar_url" />
@@ -115,7 +116,7 @@ function getInitials(name: string | null): string {
             />
           </div>
         </div>
-      </label>
+      </div>
     </div>
 
     <p class="text-xs text-muted-foreground mt-2">
