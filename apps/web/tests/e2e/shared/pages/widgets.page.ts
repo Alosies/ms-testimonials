@@ -136,6 +136,16 @@ export function createWidgetsPage(page: Page) {
       await expect(widgetCards).toHaveCount(count);
     },
 
+    /** Switch to the Design tab in the widget builder */
+    async switchToDesignTab() {
+      await page.getByRole('tab', { name: 'Design' }).click();
+    },
+
+    /** Switch to the Content tab in the widget builder */
+    async switchToContentTab() {
+      await page.getByRole('tab', { name: /Content/ }).click();
+    },
+
     /** Assert builder title */
     async expectBuilderTitle(text: string) {
       await expect(builderTitle).toContainText(text);

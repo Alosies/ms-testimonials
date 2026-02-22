@@ -37,7 +37,8 @@ test.describe('Widgets', () => {
       // Fill name
       await widgets.fillName(uniqueName);
 
-      // Select dark theme
+      // Switch to Design tab and select dark theme
+      await widgets.switchToDesignTab();
       await authedPage.getByTestId(widgetsTestIds.themeDark).click();
     });
 
@@ -94,7 +95,8 @@ test.describe('Widgets', () => {
       // Name should be loaded
       await expect(widgets.nameInput).toHaveValue(uniqueName);
 
-      // Dark theme should be selected (has ring class)
+      // Switch to Design tab and verify dark theme is selected (has ring class)
+      await widgets.switchToDesignTab();
       await expect(authedPage.getByTestId(widgetsTestIds.themeDark)).toHaveClass(/ring-2/);
     });
 
