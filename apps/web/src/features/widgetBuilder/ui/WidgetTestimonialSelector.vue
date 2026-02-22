@@ -92,7 +92,7 @@ function getInitials(name: string | null): string {
         @click="toggleTestimonial(t.id)"
       >
         <Checkbox
-          :checked="selectedIds.includes(t.id)"
+          :model-value="selectedIds.includes(t.id)"
           class="mt-0.5 pointer-events-none"
         />
         <Avatar class="h-8 w-8 shrink-0">
