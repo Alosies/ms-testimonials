@@ -18,6 +18,7 @@ import { widgetsTestIds } from '@/shared/constants/testIds';
 
 const props = defineProps<{
   widgetId?: string | null;
+  lockedFormId?: string | null;
 }>();
 
 const contextStore = useCurrentContextStore();
@@ -33,6 +34,11 @@ const testimonialVars = computed(() => ({
   organizationId: currentOrganizationId.value ?? '',
 }));
 const { testimonials: allTestimonials } = useGetTestimonials(testimonialVars);
+
+// When creating from a form context, lock the form_id
+if (props.lockedFormId && !props.widgetId) {
+  state.value.form_id = props.lockedFormId;
+}
 
 const showEmbedModal = ref(false);
 
@@ -127,7 +133,7 @@ function handleUpdateState(newState: WidgetFormState) {
           <Separator />
           <WidgetSettingsPanel :state="state" @update:state="handleUpdateState" />
           <Separator />
-          <WidgetFormSelector v-model="state.form_id" />
+          <WidgetFormSelector v-model="state.form_id" :locked-form-id="lockedFormId" />
           <Separator />
           <WidgetTestimonialSelector v-model:selected-ids="selectedTestimonialIds" />
         </div>

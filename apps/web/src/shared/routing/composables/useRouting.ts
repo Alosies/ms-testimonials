@@ -161,7 +161,8 @@ function useRoutingCore(): RoutingUtilities {
 
   // Widgets
   const goToWidgets = () => navigate(widgetsPath.value)
-  const goToNewWidget = () => navigate(newWidgetPath.value)
+  const goToNewWidget = (options?: { formId?: string }) =>
+    navigate(newWidgetPath.value, options?.formId ? { query: { formId: options.formId } } : undefined)
   const goToWidget = (widget: WidgetRef, options?: NavigationOptions) =>
     navigate(getWidgetPath(widget), options)
 

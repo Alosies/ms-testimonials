@@ -47,7 +47,7 @@ const formRef = computed(() => ({
             subtitle="Embed testimonials from this form on your website"
           >
             <template #actions>
-              <Button @click="goToNewWidget" class="gap-1.5">
+              <Button @click="goToNewWidget({ formId: formId ?? undefined })" class="gap-1.5">
                 <Icon icon="heroicons:plus" class="h-4 w-4" />
                 Create Widget
               </Button>
@@ -66,7 +66,7 @@ const formRef = computed(() => ({
               Create a widget to display testimonials from this form on your website.
               Choose from Wall of Love, Carousel, or Single Quote styles.
             </p>
-            <Button @click="goToNewWidget" variant="outline" class="mt-6 gap-1.5">
+            <Button @click="goToNewWidget({ formId: formId ?? undefined })" variant="outline" class="mt-6 gap-1.5">
               <Icon icon="heroicons:plus" class="h-4 w-4" />
               Create Your First Widget
             </Button>

@@ -77,7 +77,7 @@ export interface RoutingUtilities {
   goToTestimonials: () => void
   goToTestimonial: (testimonial: TestimonialRef, options?: NavigationOptions) => void
   goToWidgets: () => void
-  goToNewWidget: () => void
+  goToNewWidget: (options?: { formId?: string }) => void
   goToWidget: (widget: WidgetRef, options?: NavigationOptions) => void
   goToSettings: () => void
   goToSettingsProfile: () => void
