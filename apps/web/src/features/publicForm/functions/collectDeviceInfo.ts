@@ -32,14 +32,10 @@ function getConnectionInfo(): Pick<
 > {
   const connection = (navigator as Navigator & { connection?: NetworkInformation }).connection;
 
-  if (!connection) {
-    return {};
-  }
-
   return {
-    connectionType: connection.type,
-    connectionEffectiveType: connection.effectiveType,
-    connectionDownlink: connection.downlink,
+    connectionType: connection?.type,
+    connectionEffectiveType: connection?.effectiveType,
+    connectionDownlink: connection?.downlink,
   };
 }
 
