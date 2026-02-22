@@ -88,65 +88,42 @@ Build a **single reusable `TestimonialsList` feature** that powers both display 
 
 The feature component receives an optional `formId` prop. When provided, it filters testimonials to that form only.
 
-### Layout: Card-Based List with Detail Panel
+### Layout: Table with Detail Panel
 
-Use a **responsive card list with slide-out detail panel**, following the same 2:1 split pattern established by the Form Responses page (`responses.vue`):
+Use a **sortable table with sticky detail panel**, following the same pattern established by the Forms list page (`FormsTable.vue`). The detail panel on the right provides full testimonial information, making card-based layouts redundant visual weight. Tables are more space-efficient, support column sorting, and are consistent with the forms list.
 
 ```
 ┌──────────────────────────────────────────────────────────────────────┐
 │  Testimonials                                                        │
 │  Manage and approve customer testimonials                            │
-│                                                        [Refresh]     │
 ├──────────────────────────────────────────────────────────────────────┤
 │                                                                      │
-│  Stats Bar                                                           │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐            │
-│  │ Total    │  │ Pending  │  │ Approved │  │ Rejected │            │
-│  │   24     │  │    5     │  │   16     │  │    3     │            │
-│  └──────────┘  └──────────┘  └──────────┘  └──────────┘            │
-│                                                                      │
-│  ┌─ All ─┬─ Pending ─┬─ Approved ─┬─ Rejected ─┐    🔍 Search     │
-│  └───────┴────────────┴────────────┴────────────┘                    │
+│  ┌─ All 24 ─┬─ Pending 5 ─┬─ Approved 16 ─┬─ Rejected 3 ─┐  🔍    │
+│  └──────────┴─────────────┴───────────────┴──────────────┘          │
 │                                                                      │
 ├──────────────────────────────────────┬───────────────────────────────┤
-│  Card List (2/3)                     │  Detail Panel (1/3)           │
+│  Table (2/3)                         │  Detail Panel (1/3)           │
 │                                      │  (sticky, lg+ screens)       │
-│  ┌──────────────────────────────┐   │                               │
-│  │ ★★★★★  ● Pending             │   │  ┌───────────────────────┐   │
-│  │                               │   │  │ [Avatar]              │   │
-│  │ "This product changed how    │   │  │ John Doe              │   │
-│  │  we do business. The support │   │  │ CEO, Acme Corp        │   │
-│  │  team is incredible..."      │   │  │ john@acme.com         │   │
-│  │                               │   │  │ 🔗 LinkedIn  𝕏 Twitter│   │
-│  │ [Avatar] John Doe             │   │  ├───────────────────────┤   │
-│  │ CEO, Acme Corp                │   │  │                       │   │
-│  │ via Product Feedback Form     │   │  │ ★★★★★                 │   │
-│  │ 2 days ago                    │   │  │                       │   │
-│  │                               │   │  │ "This product changed │   │
-│  │          [Approve] [Reject]   │   │  │  how we do business.  │   │
-│  └──────────────────────────────┘   │  │  The support team is  │   │
-│                                      │  │  incredible and..."   │   │
-│  ┌──────────────────────────────┐   │  │                       │   │
-│  │ ★★★★☆  ✓ Approved            │   │  ├───────────────────────┤   │
-│  │                               │   │  │ Source: Form          │   │
-│  │ "Best investment we made     │   │  │ Form: Product Feedback│   │
-│  │  this year. ROI was..."      │   │  │ Submitted: Feb 19     │   │
-│  │                               │   │  │ Status: Pending       │   │
-│  │ [Avatar] Jane Smith           │   │  │                       │   │
-│  │ VP Marketing, TechCorp        │   │  │ [✓ Approve] [✗ Reject]│   │
-│  │ via Customer Survey           │   │  │ [Edit] [Delete]       │   │
-│  │ 5 days ago                    │   │  └───────────────────────┘   │
-│  └──────────────────────────────┘   │                               │
-│                                      │                               │
-│  ┌──────────────────────────────┐   │                               │
-│  │ (no rating)  ✗ Rejected      │   │                               │
-│  │ ...                           │   │                               │
-│  └──────────────────────────────┘   │                               │
+│  CUSTOMER ↕  CONTENT   RATING STATUS │                               │
+│  ─────────────────────────────────── │  ┌───────────────────────┐   │
+│  [A] John    "This pro… ★★★★★ ●Pend │  │ [Avatar]              │   │
+│      Acme Co                         │  │ John Doe              │   │
+│  ─────────────────────────────────── │  │ CEO, Acme Corp        │   │
+│  [J] Jane    "Best inv… ★★★★☆ ✓Appr │  │ john@acme.com         │   │
+│      TechCo                          │  ├───────────────────────┤   │
+│  ─────────────────────────────────── │  │ ★★★★★                 │   │
+│  [M] Mike    "Good ser… —     ✗Reje  │  │ "This product changed │   │
+│      StartUp                         │  │  how we do business…" │   │
+│                                      │  ├───────────────────────┤   │
+│                                      │  │ Source: Form          │   │
+│                                      │  │ Status: Pending       │   │
+│                                      │  │ [✓ Approve] [✗ Reject]│   │
+│                                      │  └───────────────────────┘   │
 │                                      │                               │
 └──────────────────────────────────────┴───────────────────────────────┘
 ```
 
-**On mobile (< lg):** The detail panel is hidden. Clicking a card navigates to the testimonial detail page (`/:org/testimonials/:urlSlug`).
+**On mobile (< lg):** The detail panel is hidden. Clicking a row navigates to the testimonial detail page (`/:org/testimonials/:urlSlug`).
 
 ---
 
@@ -251,25 +228,25 @@ mutation RejectTestimonial($id: String!, $rejectedBy: String!, $reason: String) 
 
 ---
 
-### Testimonial Card Component
+### Table Columns
 
-Each testimonial in the list renders as a card with:
+Each testimonial row in the table shows:
 
-| Element | Source Field | Notes |
-|---------|-------------|-------|
-| **Rating stars** | `rating` | 1-5 stars, hidden if null |
-| **Status badge** | `status` | Color-coded: amber=pending, green=approved, red=rejected |
-| **Content excerpt** | `content` | Truncated to ~150 chars with ellipsis |
-| **Customer avatar** | `customer_avatar_url` | Fallback to initials |
-| **Customer name** | `customer_name` | Always shown |
-| **Customer title & company** | `customer_title`, `customer_company` | "CEO, Acme Corp" format |
-| **Form attribution** | `submission.form.name` | "via Product Feedback Form" (org-level only) |
-| **Relative time** | `created_at` | "2 days ago" format |
-| **Quick actions** | — | Approve/Reject buttons for pending testimonials |
+| Column | Content | Responsive |
+|--------|---------|------------|
+| **Customer** | Avatar/initials + name + "at Company" subtitle | Always visible |
+| **Content** | Truncated single-line text | Hidden on sm |
+| **Rating** | Filled/empty star icons (3.5 size) | Hidden on md |
+| **Status** | Colored dot + label (amber=pending, green=approved, red=rejected) | Always visible |
+| **Date** | Relative time (Today, Yesterday, X days ago) | Hidden on lg |
+
+- Column headers are sortable (Customer, Rating, Status, Date); Content is not sortable
+- Selected row gets `bg-primary/5` highlight + left border accent
+- Approve/reject actions are handled via the detail panel (no inline actions)
 
 ### Detail Panel Component
 
-The sticky side panel shows full testimonial details when a card is selected:
+The sticky side panel shows full testimonial details when a row is selected:
 
 | Section | Content |
 |---------|---------|
@@ -365,7 +342,7 @@ The rejection reason is stored in `rejection_reason` for internal reference.
 | **Layout** | `AuthLayout` (full page) | `FormSubpageLayout` (sub-page with header) |
 | **Header** | Page title "Testimonials" | `FormSubpageHeader` with back button |
 | **Query** | `GetTestimonials` (all org) | `GetFormTestimonials` (filtered by form_id) |
-| **Form attribution** | Shown on each card ("via Form Name") | Hidden (redundant — already scoped) |
+| **Form attribution** | Shown on each row ("via Form Name") | Hidden (redundant — already scoped) |
 | **Stats** | Org-wide counts | Form-specific counts |
 | **Empty state CTA** | Link to Forms list | Copy form share link |
 
@@ -373,15 +350,15 @@ The rejection reason is stored in `rejection_reason` for internal reference.
 
 ## Alternatives Considered
 
-### Alternative 1: Table-Based Layout (Like Forms List)
+### Alternative 1: Card-Based Layout
 
-**Approach:** Display testimonials in a sortable data table similar to the Forms list page.
+**Approach:** Display testimonials as vertical cards in a list, similar to the Form Responses page.
 
 **Rejected because:**
-- Testimonial content is too long for table cells — requires awkward truncation or multi-line rows
-- Rating stars, avatars, and status badges fit better in cards
-- Customer info (name, title, company, social links) is secondary to content — cards allow natural visual hierarchy
-- The Form Responses page already established the card/panel pattern for content-heavy data
+- The detail panel already shows full testimonial content, making cards redundant visual weight
+- Cards are tall, showing only a few testimonials at once — poor scannability
+- No support for column sorting without additional UI
+- Tables are consistent with the Forms list page pattern and more space-efficient
 
 ### Alternative 2: Masonry Grid (Like Wall of Love Widget)
 
@@ -404,7 +381,7 @@ The rejection reason is stored in `rejection_reason` for internal reference.
 - Side panel allows quick scanning without losing list context
 - The Form Responses page proves this pattern works well for sequential review
 
-### Alternative 4: Full-Page Detail Panel (No Card List)
+### Alternative 4: Full-Page Detail Panel (No List)
 
 **Approach:** Show one testimonial at a time with prev/next navigation.
 
@@ -443,21 +420,21 @@ The rejection reason is stored in `rejection_reason` for internal reference.
 ### Phase 2: Shared Feature Components
 
 1. Create `features/testimonialsList/` feature directory
-2. Build `TestimonialCard.vue` — card component with all fields, status badge, quick actions
-3. Build `TestimonialDetailPanel.vue` — sticky side panel with full details and actions
-4. Build `TestimonialsStatsBar.vue` — 4 stat cards (total, pending, approved, rejected)
-5. Build `TestimonialsListFeature.vue` — main feature composing cards + panel + filters + search
+2. Build `TestimonialsTable.vue` — sortable table shell with column headers
+3. Build `TestimonialsTableRow.vue` — individual table row with avatar, content, rating, status, date
+4. Build `TestimonialDetailPanel.vue` — sticky side panel with full details and actions
+5. Build `TestimonialsListFeature.vue` — main feature composing table + panel + filters + search
 6. Build `TestimonialsEmptyState.vue` — empty state with contextual messaging
-7. Build `TestimonialsCardSkeleton.vue` — loading skeleton for cards
+7. Build `TestimonialsTableSkeleton.vue` — loading skeleton matching table columns
 8. Build `RejectTestimonialModal.vue` — rejection reason dialog
-9. Create `useTestimonialsListState.ts` — composable for filter/sort/search/selection state
+9. Create `useTestimonialsTableState.ts` — composable for filter/sort/search/selection state
 
 ### Phase 3: Page Integration
 
 1. Update `[org]/testimonials/index.vue` — wire up `TestimonialsListFeature` with org-level data
 2. Update `[org]/forms/[urlSlug]/testimonials.vue` — wire up with form-scoped data
 3. Implement `[org]/testimonials/[urlSlug].vue` — full-page testimonial detail
-4. Add mobile-responsive behavior (hide panel < lg, card click navigates to detail page)
+4. Add mobile-responsive behavior (hide panel < lg, row click navigates to detail page)
 
 ### Phase 4: Polish
 
@@ -475,8 +452,8 @@ The rejection reason is stored in `rejection_reason` for internal reference.
 | Benefit | Description |
 |---------|-------------|
 | **Core workflow complete** | Users can review, approve, and reject testimonials end-to-end |
-| **Consistent UX** | Follows established 2:1 split panel pattern from Form Responses |
-| **Reusable components** | `TestimonialCard` reusable in dashboard, widget builder testimonial picker |
+| **Consistent UX** | Follows established table pattern from Forms list and 2:1 split panel layout |
+| **Reusable components** | `TestimonialsTable` pattern consistent with `FormsTable`; detail panel reusable in dashboard |
 | **Minimal new infrastructure** | Leverages existing GraphQL queries, Hasura permissions, and routing |
 
 ### Negative
@@ -541,14 +518,16 @@ apps/web/src/entities/testimonial/composables/
 apps/web/src/features/testimonialsList/
 ├── ui/
 │   ├── TestimonialsListFeature.vue       # Main feature component
-│   ├── TestimonialCard.vue               # Individual card
+│   ├── TestimonialsTable.vue             # Sortable table shell
+│   ├── TestimonialsTableRow.vue          # Individual table row
+│   ├── TestimonialsTableSkeleton.vue     # Loading skeleton
 │   ├── TestimonialDetailPanel.vue        # Side panel
-│   ├── TestimonialsStatsBar.vue          # Stats counters
 │   ├── TestimonialsEmptyState.vue        # Empty states
-│   ├── TestimonialsCardSkeleton.vue      # Loading skeleton
 │   └── RejectTestimonialModal.vue        # Rejection dialog
 ├── composables/
-│   └── useTestimonialsListState.ts       # Filter/sort/search state
+│   └── useTestimonialsTableState.ts      # Filter/sort/search state
+├── models/
+│   └── index.ts                          # SortColumn, SortDirection types
 └── index.ts                              # Public exports
 ```
 
