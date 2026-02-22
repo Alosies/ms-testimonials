@@ -14,7 +14,6 @@ import {
   useRejectTestimonial,
 } from '@/entities/testimonial';
 import { useTestimonialsListState, STATUS_OPTIONS } from '../composables/useTestimonialsListState';
-import TestimonialsStatsBar from './TestimonialsStatsBar.vue';
 import TestimonialCard from './TestimonialCard.vue';
 import TestimonialDetailPanel from './TestimonialDetailPanel.vue';
 import TestimonialsEmptyState from './TestimonialsEmptyState.vue';
@@ -137,20 +136,28 @@ async function handleReject(id: string, reason: string) {
 }
 
 const statusOptions = STATUS_OPTIONS;
+
+function getStatusCount(value: string): number | null {
+  if (statsLoading.value || !stats.value) return null;
+  switch (value) {
+    case 'all': return stats.value.total;
+    case 'pending': return stats.value.pending;
+    case 'approved': return stats.value.approved;
+    case 'rejected': return stats.value.rejected;
+    default: return null;
+  }
+}
 </script>
 
 <template>
-  <!-- Stats Bar -->
-  <TestimonialsStatsBar :stats="stats" :loading="statsLoading" />
-
   <!-- Filters row -->
   <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-4">
-    <!-- Status filter tabs -->
+    <!-- Status filter tabs with counts -->
     <div class="flex gap-1 p-1 bg-muted rounded-lg overflow-x-auto">
       <button
         v-for="option in statusOptions"
         :key="option.value"
-        class="px-3 py-1.5 text-sm font-medium rounded-md transition-colors whitespace-nowrap"
+        class="px-3 py-1.5 text-sm font-medium rounded-md transition-colors whitespace-nowrap flex items-center gap-1.5"
         :class="[
           statusFilter === option.value
             ? 'bg-background text-foreground shadow-sm'
@@ -159,6 +166,17 @@ const statusOptions = STATUS_OPTIONS;
         @click="setStatusFilter(option.value)"
       >
         {{ option.label }}
+        <span
+          v-if="getStatusCount(option.value) !== null"
+          class="text-xs tabular-nums rounded-full px-1.5 py-0.5 min-w-[1.25rem] text-center"
+          :class="[
+            statusFilter === option.value
+              ? 'bg-muted text-muted-foreground'
+              : 'bg-background/60 text-muted-foreground',
+          ]"
+        >
+          {{ getStatusCount(option.value) }}
+        </span>
       </button>
     </div>
 
