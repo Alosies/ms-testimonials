@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import { Icon } from '@testimonials/icons';
 import { Button } from '@testimonials/ui';
+import { testimonialsTestIds } from '@/shared/constants/testIds';
 import type { TestimonialWithFormItem, Testimonial } from '@/entities/testimonial';
 
 interface Props {
@@ -108,7 +109,7 @@ const formattedRejectedAt = computed(() => {
         {{ initials }}
       </div>
       <div class="min-w-0">
-        <h3 class="text-base font-semibold text-foreground">{{ testimonial.customer_name }}</h3>
+        <h3 :data-testid="testimonialsTestIds.detailCustomerName" class="text-base font-semibold text-foreground">{{ testimonial.customer_name }}</h3>
         <p
           v-if="testimonial.customer_title || testimonial.customer_company"
           class="text-sm text-muted-foreground"
@@ -160,7 +161,7 @@ const formattedRejectedAt = computed(() => {
     <!-- Content -->
     <div>
       <h4 class="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">Testimonial</h4>
-      <p class="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
+      <p :data-testid="testimonialsTestIds.detailContent" class="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
         {{ testimonial.content || 'No content provided.' }}
       </p>
     </div>
@@ -185,6 +186,7 @@ const formattedRejectedAt = computed(() => {
     <div class="space-y-2">
       <h4 class="text-xs font-medium text-muted-foreground uppercase tracking-wider">Status</h4>
       <span
+        :data-testid="testimonialsTestIds.detailStatus"
         class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium"
         :class="statusConfig.classes"
       >
@@ -206,6 +208,7 @@ const formattedRejectedAt = computed(() => {
     <!-- Actions -->
     <div v-if="testimonial.status === 'pending'" class="flex items-center gap-2 pt-2 border-t border-border">
       <Button
+        :data-testid="testimonialsTestIds.approveButton"
         class="flex-1 gap-1.5"
         variant="outline"
         @click="emit('approve', testimonial.id)"
@@ -214,6 +217,7 @@ const formattedRejectedAt = computed(() => {
         <span class="text-green-600">Approve</span>
       </Button>
       <Button
+        :data-testid="testimonialsTestIds.rejectButton"
         class="flex-1 gap-1.5"
         variant="outline"
         @click="emit('reject', testimonial.id)"
@@ -227,6 +231,7 @@ const formattedRejectedAt = computed(() => {
     <div v-else class="flex items-center gap-2 pt-2 border-t border-border">
       <Button
         v-if="testimonial.status === 'rejected'"
+        :data-testid="testimonialsTestIds.approveButton"
         class="flex-1 gap-1.5"
         variant="outline"
         @click="emit('approve', testimonial.id)"
@@ -236,6 +241,7 @@ const formattedRejectedAt = computed(() => {
       </Button>
       <Button
         v-if="testimonial.status === 'approved'"
+        :data-testid="testimonialsTestIds.rejectButton"
         class="flex-1 gap-1.5"
         variant="outline"
         @click="emit('reject', testimonial.id)"

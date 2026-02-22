@@ -13,11 +13,12 @@ import {
   useApproveTestimonial,
   useRejectTestimonial,
 } from '@/entities/testimonial';
-import { useTestimonialsListState, STATUS_OPTIONS } from '../composables/useTestimonialsListState';
-import TestimonialCard from './TestimonialCard.vue';
+import { testimonialsTestIds } from '@/shared/constants/testIds';
+import { useTestimonialsTableState, STATUS_OPTIONS } from '../composables/useTestimonialsTableState';
+import TestimonialsTable from './TestimonialsTable.vue';
 import TestimonialDetailPanel from './TestimonialDetailPanel.vue';
 import TestimonialsEmptyState from './TestimonialsEmptyState.vue';
-import TestimonialsCardSkeleton from './TestimonialsCardSkeleton.vue';
+import TestimonialsTableSkeleton from './TestimonialsTableSkeleton.vue';
 import RejectTestimonialModal from './RejectTestimonialModal.vue';
 
 interface Props {
@@ -74,14 +75,16 @@ const statsLoading = computed(() =>
 const {
   statusFilter,
   searchQuery,
-  sortOption,
+  sortColumn,
+  sortDirection,
   selectedTestimonialId,
   filteredTestimonials,
   selectedTestimonial,
   hasFilteredResults,
+  toggleSort,
   setStatusFilter,
   selectTestimonial,
-} = useTestimonialsListState(testimonials);
+} = useTestimonialsTableState(testimonials);
 
 // Auto-select first testimonial
 watch(
@@ -147,16 +150,19 @@ function getStatusCount(value: string): number | null {
     default: return null;
   }
 }
+
 </script>
 
 <template>
   <!-- Filters row -->
   <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-4">
     <!-- Status filter tabs with counts -->
-    <div class="flex gap-1 p-1 bg-muted rounded-lg overflow-x-auto">
+    <div :data-testid="testimonialsTestIds.filterTabs" class="flex gap-1 p-1 bg-muted rounded-lg overflow-x-auto">
       <button
         v-for="option in statusOptions"
         :key="option.value"
+        :data-testid="testimonialsTestIds.filterTab"
+        :data-filter-value="option.value"
         class="px-3 py-1.5 text-sm font-medium rounded-md transition-colors whitespace-nowrap flex items-center gap-1.5"
         :class="[
           statusFilter === option.value
@@ -180,52 +186,45 @@ function getStatusCount(value: string): number | null {
       </button>
     </div>
 
-    <!-- Search + sort -->
+    <!-- Search -->
     <div class="flex items-center gap-2">
       <div class="relative">
         <Icon icon="heroicons:magnifying-glass" class="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
           v-model="searchQuery"
+          :data-testid="testimonialsTestIds.searchInput"
           placeholder="Search testimonials..."
           class="pl-8 w-48"
         />
       </div>
-      <select
-        v-model="sortOption"
-        class="h-9 rounded-md border border-input bg-background px-3 text-sm"
-      >
-        <option value="newest">Newest</option>
-        <option value="oldest">Oldest</option>
-        <option value="highest_rated">Highest Rated</option>
-      </select>
     </div>
   </div>
 
   <!-- Loading state -->
-  <TestimonialsCardSkeleton v-if="isLoading" />
+  <TestimonialsTableSkeleton v-if="isLoading" :data-testid="testimonialsTestIds.tableSkeleton" />
 
   <!-- Empty state -->
   <TestimonialsEmptyState
     v-else-if="testimonials.length === 0"
+    :data-testid="testimonialsTestIds.testimonialsEmptyState"
     :context="formId ? 'form' : 'org'"
     @navigate-to-forms="goToForms()"
   />
 
-  <!-- Content: 2:1 split -->
+  <!-- Content: table + detail panel -->
   <template v-else>
     <div class="flex gap-6">
-      <!-- Card list (2/3) -->
-      <div class="flex-[2] min-w-0 space-y-3">
+      <!-- Table (2/3) -->
+      <div class="flex-[2] min-w-0">
         <template v-if="hasFilteredResults">
-          <TestimonialCard
-            v-for="t in filteredTestimonials"
-            :key="t.id"
-            :testimonial="t"
-            :is-selected="t.id === selectedTestimonialId"
+          <TestimonialsTable
+            :testimonials="filteredTestimonials"
+            :sort-column="sortColumn"
+            :sort-direction="sortDirection"
+            :selected-id="selectedTestimonialId"
             :show-form-attribution="!formId"
+            @sort="toggleSort"
             @select="selectTestimonial"
-            @approve="handleApprove"
-            @reject="openRejectModal"
           />
         </template>
 
@@ -250,6 +249,7 @@ function getStatusCount(value: string): number | null {
       <div class="flex-1 min-w-0 hidden lg:block">
         <div class="sticky top-0 max-h-[calc(100vh-12rem)] rounded-xl border border-border bg-card p-4">
           <TestimonialDetailPanel
+            :data-testid="testimonialsTestIds.detailPanel"
             :testimonial="selectedTestimonial"
             @approve="handleApprove"
             @reject="openRejectModal"

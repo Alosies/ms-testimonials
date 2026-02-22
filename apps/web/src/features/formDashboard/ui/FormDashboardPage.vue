@@ -34,7 +34,7 @@ const formUrl = computed(() => {
 
 <template>
   <div class="min-h-full bg-background">
-    <div class="mx-auto max-w-6xl px-6 py-8">
+    <div class="mx-auto max-w-7xl px-6 py-8">
       <!-- Page Header -->
       <header class="mb-8">
         <h1 class="text-2xl font-semibold tracking-tight text-foreground">

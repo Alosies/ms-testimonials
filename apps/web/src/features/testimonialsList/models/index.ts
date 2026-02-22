@@ -1,1 +1,2 @@
-export type SortOption = 'newest' | 'oldest' | 'highest_rated';
+export type SortColumn = 'customer' | 'rating' | 'status' | 'date';
+export type SortDirection = 'asc' | 'desc';
