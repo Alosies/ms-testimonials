@@ -23,8 +23,10 @@ const emit = defineEmits<{
 
 const copied = ref(false);
 
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || window.location.origin;
+
 const embedCode = computed(() => {
-  return `<div data-testimonials-widget="${props.widgetType}" data-widget-id="${props.widgetId}"></div>
+  return `<div data-testimonials-widget="${props.widgetType}" data-widget-id="${props.widgetId}" data-api-url="${apiBaseUrl}"></div>
 <script src="${window.location.origin}/embed/widgets.js" async><\/script>`;
 });
 
