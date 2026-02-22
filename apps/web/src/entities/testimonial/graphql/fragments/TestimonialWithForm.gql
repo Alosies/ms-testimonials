@@ -1,0 +1,13 @@
+#import "./TestimonialBasic.gql"
+
+fragment TestimonialWithForm on testimonials {
+  ...TestimonialBasic
+  submission {
+    id
+    form_id
+    form {
+      id
+      name
+    }
+  }
+}

@@ -1,0 +1,45 @@
+query GetFormTestimonialsStats($organizationId: String!, $formId: String!) {
+  total: testimonials_aggregate(
+    where: {
+      organization_id: { _eq: $organizationId }
+      submission: { form_id: { _eq: $formId } }
+    }
+  ) {
+    aggregate {
+      count
+    }
+  }
+  pending: testimonials_aggregate(
+    where: {
+      organization_id: { _eq: $organizationId }
+      submission: { form_id: { _eq: $formId } }
+      status: { _eq: "pending" }
+    }
+  ) {
+    aggregate {
+      count
+    }
+  }
+  approved: testimonials_aggregate(
+    where: {
+      organization_id: { _eq: $organizationId }
+      submission: { form_id: { _eq: $formId } }
+      status: { _eq: "approved" }
+    }
+  ) {
+    aggregate {
+      count
+    }
+  }
+  rejected: testimonials_aggregate(
+    where: {
+      organization_id: { _eq: $organizationId }
+      submission: { form_id: { _eq: $formId } }
+      status: { _eq: "rejected" }
+    }
+  ) {
+    aggregate {
+      count
+    }
+  }
+}

@@ -26270,6 +26270,42 @@ export type GetQuestionTypesQuery = { __typename?: 'query_root', question_types:
 
 export type TestimonialBasicFragment = { __typename?: 'testimonials', id: string, organization_id: string, submission_id?: string | null, status: string, content?: string | null, rating?: number | null, customer_name: string, customer_email: string, customer_title?: string | null, customer_company?: string | null, customer_avatar_url?: string | null, customer_linkedin_url?: string | null, customer_twitter_url?: string | null, source: string, approved_by?: string | null, approved_at?: string | null, rejected_by?: string | null, rejected_at?: string | null, rejection_reason?: string | null, created_at: string, updated_at: string };
 
+export type TestimonialWithFormFragment = { __typename?: 'testimonials', id: string, organization_id: string, submission_id?: string | null, status: string, content?: string | null, rating?: number | null, customer_name: string, customer_email: string, customer_title?: string | null, customer_company?: string | null, customer_avatar_url?: string | null, customer_linkedin_url?: string | null, customer_twitter_url?: string | null, source: string, approved_by?: string | null, approved_at?: string | null, rejected_by?: string | null, rejected_at?: string | null, rejection_reason?: string | null, created_at: string, updated_at: string, submission?: { __typename?: 'form_submissions', id: string, form_id: string, form: { __typename?: 'forms', id: string, name: string } } | null };
+
+export type ApproveTestimonialMutationVariables = Exact<{
+  id: Scalars['String']['input'];
+  approvedBy: Scalars['String']['input'];
+}>;
+
+
+export type ApproveTestimonialMutation = { __typename?: 'mutation_root', update_testimonials_by_pk?: { __typename?: 'testimonials', id: string, organization_id: string, submission_id?: string | null, status: string, content?: string | null, rating?: number | null, customer_name: string, customer_email: string, customer_title?: string | null, customer_company?: string | null, customer_avatar_url?: string | null, customer_linkedin_url?: string | null, customer_twitter_url?: string | null, source: string, approved_by?: string | null, approved_at?: string | null, rejected_by?: string | null, rejected_at?: string | null, rejection_reason?: string | null, created_at: string, updated_at: string } | null };
+
+export type RejectTestimonialMutationVariables = Exact<{
+  id: Scalars['String']['input'];
+  rejectedBy: Scalars['String']['input'];
+  rejectionReason?: InputMaybe<Scalars['String']['input']>;
+}>;
+
+
+export type RejectTestimonialMutation = { __typename?: 'mutation_root', update_testimonials_by_pk?: { __typename?: 'testimonials', id: string, organization_id: string, submission_id?: string | null, status: string, content?: string | null, rating?: number | null, customer_name: string, customer_email: string, customer_title?: string | null, customer_company?: string | null, customer_avatar_url?: string | null, customer_linkedin_url?: string | null, customer_twitter_url?: string | null, source: string, approved_by?: string | null, approved_at?: string | null, rejected_by?: string | null, rejected_at?: string | null, rejection_reason?: string | null, created_at: string, updated_at: string } | null };
+
+export type GetFormTestimonialsQueryVariables = Exact<{
+  organizationId: Scalars['String']['input'];
+  formId: Scalars['String']['input'];
+  limit?: InputMaybe<Scalars['Int']['input']>;
+}>;
+
+
+export type GetFormTestimonialsQuery = { __typename?: 'query_root', testimonials: Array<{ __typename?: 'testimonials', id: string, organization_id: string, submission_id?: string | null, status: string, content?: string | null, rating?: number | null, customer_name: string, customer_email: string, customer_title?: string | null, customer_company?: string | null, customer_avatar_url?: string | null, customer_linkedin_url?: string | null, customer_twitter_url?: string | null, source: string, approved_by?: string | null, approved_at?: string | null, rejected_by?: string | null, rejected_at?: string | null, rejection_reason?: string | null, created_at: string, updated_at: string, submission?: { __typename?: 'form_submissions', id: string, form_id: string, form: { __typename?: 'forms', id: string, name: string } } | null }> };
+
+export type GetFormTestimonialsStatsQueryVariables = Exact<{
+  organizationId: Scalars['String']['input'];
+  formId: Scalars['String']['input'];
+}>;
+
+
+export type GetFormTestimonialsStatsQuery = { __typename?: 'query_root', total: { __typename?: 'testimonials_aggregate', aggregate?: { __typename?: 'testimonials_aggregate_fields', count: number } | null }, pending: { __typename?: 'testimonials_aggregate', aggregate?: { __typename?: 'testimonials_aggregate_fields', count: number } | null }, approved: { __typename?: 'testimonials_aggregate', aggregate?: { __typename?: 'testimonials_aggregate_fields', count: number } | null }, rejected: { __typename?: 'testimonials_aggregate', aggregate?: { __typename?: 'testimonials_aggregate_fields', count: number } | null } };
+
 export type GetTestimonialQueryVariables = Exact<{
   testimonialId: Scalars['String']['input'];
 }>;
@@ -26291,6 +26327,14 @@ export type GetTestimonialsStatsQueryVariables = Exact<{
 
 
 export type GetTestimonialsStatsQuery = { __typename?: 'query_root', total: { __typename?: 'testimonials_aggregate', aggregate?: { __typename?: 'testimonials_aggregate_fields', count: number } | null }, pending: { __typename?: 'testimonials_aggregate', aggregate?: { __typename?: 'testimonials_aggregate_fields', count: number } | null }, approved: { __typename?: 'testimonials_aggregate', aggregate?: { __typename?: 'testimonials_aggregate_fields', count: number } | null }, rejected: { __typename?: 'testimonials_aggregate', aggregate?: { __typename?: 'testimonials_aggregate_fields', count: number } | null } };
+
+export type GetTestimonialsWithFormQueryVariables = Exact<{
+  organizationId: Scalars['String']['input'];
+  limit?: InputMaybe<Scalars['Int']['input']>;
+}>;
+
+
+export type GetTestimonialsWithFormQuery = { __typename?: 'query_root', testimonials: Array<{ __typename?: 'testimonials', id: string, organization_id: string, submission_id?: string | null, status: string, content?: string | null, rating?: number | null, customer_name: string, customer_email: string, customer_title?: string | null, customer_company?: string | null, customer_avatar_url?: string | null, customer_linkedin_url?: string | null, customer_twitter_url?: string | null, source: string, approved_by?: string | null, approved_at?: string | null, rejected_by?: string | null, rejected_at?: string | null, rejection_reason?: string | null, created_at: string, updated_at: string, submission?: { __typename?: 'form_submissions', id: string, form_id: string, form: { __typename?: 'forms', id: string, name: string } } | null }> };
 
 export type UserBasicFragment = { __typename?: 'users', id: string, email: string, display_name?: string | null, avatar_url?: string | null, email_verified: boolean, locale: string, timezone: string, is_active: boolean, last_login_at?: string | null, created_at: string, updated_at: string };
 
@@ -26644,6 +26688,19 @@ export const TestimonialBasicFragmentDoc = gql`
   updated_at
 }
     `;
+export const TestimonialWithFormFragmentDoc = gql`
+    fragment TestimonialWithForm on testimonials {
+  ...TestimonialBasic
+  submission {
+    id
+    form_id
+    form {
+      id
+      name
+    }
+  }
+}
+    ${TestimonialBasicFragmentDoc}`;
 export const UserBasicFragmentDoc = gql`
     fragment UserBasic on users {
   id
@@ -27998,6 +28055,165 @@ export function useGetQuestionTypesLazyQuery(options: VueApolloComposable.UseQue
   return VueApolloComposable.useLazyQuery<GetQuestionTypesQuery, GetQuestionTypesQueryVariables>(GetQuestionTypesDocument, {}, options);
 }
 export type GetQuestionTypesQueryCompositionFunctionResult = VueApolloComposable.UseQueryReturn<GetQuestionTypesQuery, GetQuestionTypesQueryVariables>;
+export const ApproveTestimonialDocument = gql`
+    mutation ApproveTestimonial($id: String!, $approvedBy: String!) {
+  update_testimonials_by_pk(
+    pk_columns: {id: $id}
+    _set: {status: "approved", approved_by: $approvedBy, approved_at: "now()", rejected_by: null, rejected_at: null, rejection_reason: null}
+  ) {
+    ...TestimonialBasic
+  }
+}
+    ${TestimonialBasicFragmentDoc}`;
+
+/**
+ * __useApproveTestimonialMutation__
+ *
+ * To run a mutation, you first call `useApproveTestimonialMutation` within a Vue component and pass it any options that fit your needs.
+ * When your component renders, `useApproveTestimonialMutation` returns an object that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - Several other properties: https://v4.apollo.vuejs.org/api/use-mutation.html#return
+ *
+ * @param options that will be passed into the mutation, supported options are listed on: https://v4.apollo.vuejs.org/guide-composable/mutation.html#options;
+ *
+ * @example
+ * const { mutate, loading, error, onDone } = useApproveTestimonialMutation({
+ *   variables: {
+ *     id: // value for 'id'
+ *     approvedBy: // value for 'approvedBy'
+ *   },
+ * });
+ */
+export function useApproveTestimonialMutation(options: VueApolloComposable.UseMutationOptions<ApproveTestimonialMutation, ApproveTestimonialMutationVariables> | ReactiveFunction<VueApolloComposable.UseMutationOptions<ApproveTestimonialMutation, ApproveTestimonialMutationVariables>> = {}) {
+  return VueApolloComposable.useMutation<ApproveTestimonialMutation, ApproveTestimonialMutationVariables>(ApproveTestimonialDocument, options);
+}
+export type ApproveTestimonialMutationCompositionFunctionResult = VueApolloComposable.UseMutationReturn<ApproveTestimonialMutation, ApproveTestimonialMutationVariables>;
+export const RejectTestimonialDocument = gql`
+    mutation RejectTestimonial($id: String!, $rejectedBy: String!, $rejectionReason: String) {
+  update_testimonials_by_pk(
+    pk_columns: {id: $id}
+    _set: {status: "rejected", rejected_by: $rejectedBy, rejected_at: "now()", rejection_reason: $rejectionReason, approved_by: null, approved_at: null}
+  ) {
+    ...TestimonialBasic
+  }
+}
+    ${TestimonialBasicFragmentDoc}`;
+
+/**
+ * __useRejectTestimonialMutation__
+ *
+ * To run a mutation, you first call `useRejectTestimonialMutation` within a Vue component and pass it any options that fit your needs.
+ * When your component renders, `useRejectTestimonialMutation` returns an object that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - Several other properties: https://v4.apollo.vuejs.org/api/use-mutation.html#return
+ *
+ * @param options that will be passed into the mutation, supported options are listed on: https://v4.apollo.vuejs.org/guide-composable/mutation.html#options;
+ *
+ * @example
+ * const { mutate, loading, error, onDone } = useRejectTestimonialMutation({
+ *   variables: {
+ *     id: // value for 'id'
+ *     rejectedBy: // value for 'rejectedBy'
+ *     rejectionReason: // value for 'rejectionReason'
+ *   },
+ * });
+ */
+export function useRejectTestimonialMutation(options: VueApolloComposable.UseMutationOptions<RejectTestimonialMutation, RejectTestimonialMutationVariables> | ReactiveFunction<VueApolloComposable.UseMutationOptions<RejectTestimonialMutation, RejectTestimonialMutationVariables>> = {}) {
+  return VueApolloComposable.useMutation<RejectTestimonialMutation, RejectTestimonialMutationVariables>(RejectTestimonialDocument, options);
+}
+export type RejectTestimonialMutationCompositionFunctionResult = VueApolloComposable.UseMutationReturn<RejectTestimonialMutation, RejectTestimonialMutationVariables>;
+export const GetFormTestimonialsDocument = gql`
+    query GetFormTestimonials($organizationId: String!, $formId: String!, $limit: Int) {
+  testimonials(
+    where: {organization_id: {_eq: $organizationId}, submission: {form_id: {_eq: $formId}}}
+    order_by: {created_at: desc}
+    limit: $limit
+  ) {
+    ...TestimonialWithForm
+  }
+}
+    ${TestimonialWithFormFragmentDoc}`;
+
+/**
+ * __useGetFormTestimonialsQuery__
+ *
+ * To run a query within a Vue component, call `useGetFormTestimonialsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetFormTestimonialsQuery` returns an object from Apollo Client that contains result, loading and error properties
+ * you can use to render your UI.
+ *
+ * @param variables that will be passed into the query
+ * @param options that will be passed into the query, supported options are listed on: https://v4.apollo.vuejs.org/guide-composable/query.html#options;
+ *
+ * @example
+ * const { result, loading, error } = useGetFormTestimonialsQuery({
+ *   organizationId: // value for 'organizationId'
+ *   formId: // value for 'formId'
+ *   limit: // value for 'limit'
+ * });
+ */
+export function useGetFormTestimonialsQuery(variables: GetFormTestimonialsQueryVariables | VueCompositionApi.Ref<GetFormTestimonialsQueryVariables> | ReactiveFunction<GetFormTestimonialsQueryVariables>, options: VueApolloComposable.UseQueryOptions<GetFormTestimonialsQuery, GetFormTestimonialsQueryVariables> | VueCompositionApi.Ref<VueApolloComposable.UseQueryOptions<GetFormTestimonialsQuery, GetFormTestimonialsQueryVariables>> | ReactiveFunction<VueApolloComposable.UseQueryOptions<GetFormTestimonialsQuery, GetFormTestimonialsQueryVariables>> = {}) {
+  return VueApolloComposable.useQuery<GetFormTestimonialsQuery, GetFormTestimonialsQueryVariables>(GetFormTestimonialsDocument, variables, options);
+}
+export function useGetFormTestimonialsLazyQuery(variables?: GetFormTestimonialsQueryVariables | VueCompositionApi.Ref<GetFormTestimonialsQueryVariables> | ReactiveFunction<GetFormTestimonialsQueryVariables>, options: VueApolloComposable.UseQueryOptions<GetFormTestimonialsQuery, GetFormTestimonialsQueryVariables> | VueCompositionApi.Ref<VueApolloComposable.UseQueryOptions<GetFormTestimonialsQuery, GetFormTestimonialsQueryVariables>> | ReactiveFunction<VueApolloComposable.UseQueryOptions<GetFormTestimonialsQuery, GetFormTestimonialsQueryVariables>> = {}) {
+  return VueApolloComposable.useLazyQuery<GetFormTestimonialsQuery, GetFormTestimonialsQueryVariables>(GetFormTestimonialsDocument, variables, options);
+}
+export type GetFormTestimonialsQueryCompositionFunctionResult = VueApolloComposable.UseQueryReturn<GetFormTestimonialsQuery, GetFormTestimonialsQueryVariables>;
+export const GetFormTestimonialsStatsDocument = gql`
+    query GetFormTestimonialsStats($organizationId: String!, $formId: String!) {
+  total: testimonials_aggregate(
+    where: {organization_id: {_eq: $organizationId}, submission: {form_id: {_eq: $formId}}}
+  ) {
+    aggregate {
+      count
+    }
+  }
+  pending: testimonials_aggregate(
+    where: {organization_id: {_eq: $organizationId}, submission: {form_id: {_eq: $formId}}, status: {_eq: "pending"}}
+  ) {
+    aggregate {
+      count
+    }
+  }
+  approved: testimonials_aggregate(
+    where: {organization_id: {_eq: $organizationId}, submission: {form_id: {_eq: $formId}}, status: {_eq: "approved"}}
+  ) {
+    aggregate {
+      count
+    }
+  }
+  rejected: testimonials_aggregate(
+    where: {organization_id: {_eq: $organizationId}, submission: {form_id: {_eq: $formId}}, status: {_eq: "rejected"}}
+  ) {
+    aggregate {
+      count
+    }
+  }
+}
+    `;
+
+/**
+ * __useGetFormTestimonialsStatsQuery__
+ *
+ * To run a query within a Vue component, call `useGetFormTestimonialsStatsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetFormTestimonialsStatsQuery` returns an object from Apollo Client that contains result, loading and error properties
+ * you can use to render your UI.
+ *
+ * @param variables that will be passed into the query
+ * @param options that will be passed into the query, supported options are listed on: https://v4.apollo.vuejs.org/guide-composable/query.html#options;
+ *
+ * @example
+ * const { result, loading, error } = useGetFormTestimonialsStatsQuery({
+ *   organizationId: // value for 'organizationId'
+ *   formId: // value for 'formId'
+ * });
+ */
+export function useGetFormTestimonialsStatsQuery(variables: GetFormTestimonialsStatsQueryVariables | VueCompositionApi.Ref<GetFormTestimonialsStatsQueryVariables> | ReactiveFunction<GetFormTestimonialsStatsQueryVariables>, options: VueApolloComposable.UseQueryOptions<GetFormTestimonialsStatsQuery, GetFormTestimonialsStatsQueryVariables> | VueCompositionApi.Ref<VueApolloComposable.UseQueryOptions<GetFormTestimonialsStatsQuery, GetFormTestimonialsStatsQueryVariables>> | ReactiveFunction<VueApolloComposable.UseQueryOptions<GetFormTestimonialsStatsQuery, GetFormTestimonialsStatsQueryVariables>> = {}) {
+  return VueApolloComposable.useQuery<GetFormTestimonialsStatsQuery, GetFormTestimonialsStatsQueryVariables>(GetFormTestimonialsStatsDocument, variables, options);
+}
+export function useGetFormTestimonialsStatsLazyQuery(variables?: GetFormTestimonialsStatsQueryVariables | VueCompositionApi.Ref<GetFormTestimonialsStatsQueryVariables> | ReactiveFunction<GetFormTestimonialsStatsQueryVariables>, options: VueApolloComposable.UseQueryOptions<GetFormTestimonialsStatsQuery, GetFormTestimonialsStatsQueryVariables> | VueCompositionApi.Ref<VueApolloComposable.UseQueryOptions<GetFormTestimonialsStatsQuery, GetFormTestimonialsStatsQueryVariables>> | ReactiveFunction<VueApolloComposable.UseQueryOptions<GetFormTestimonialsStatsQuery, GetFormTestimonialsStatsQueryVariables>> = {}) {
+  return VueApolloComposable.useLazyQuery<GetFormTestimonialsStatsQuery, GetFormTestimonialsStatsQueryVariables>(GetFormTestimonialsStatsDocument, variables, options);
+}
+export type GetFormTestimonialsStatsQueryCompositionFunctionResult = VueApolloComposable.UseQueryReturn<GetFormTestimonialsStatsQuery, GetFormTestimonialsStatsQueryVariables>;
 export const GetTestimonialDocument = gql`
     query GetTestimonial($testimonialId: String!) {
   testimonials_by_pk(id: $testimonialId) {
@@ -28116,6 +28332,41 @@ export function useGetTestimonialsStatsLazyQuery(variables?: GetTestimonialsStat
   return VueApolloComposable.useLazyQuery<GetTestimonialsStatsQuery, GetTestimonialsStatsQueryVariables>(GetTestimonialsStatsDocument, variables, options);
 }
 export type GetTestimonialsStatsQueryCompositionFunctionResult = VueApolloComposable.UseQueryReturn<GetTestimonialsStatsQuery, GetTestimonialsStatsQueryVariables>;
+export const GetTestimonialsWithFormDocument = gql`
+    query GetTestimonialsWithForm($organizationId: String!, $limit: Int) {
+  testimonials(
+    where: {organization_id: {_eq: $organizationId}}
+    order_by: {created_at: desc}
+    limit: $limit
+  ) {
+    ...TestimonialWithForm
+  }
+}
+    ${TestimonialWithFormFragmentDoc}`;
+
+/**
+ * __useGetTestimonialsWithFormQuery__
+ *
+ * To run a query within a Vue component, call `useGetTestimonialsWithFormQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetTestimonialsWithFormQuery` returns an object from Apollo Client that contains result, loading and error properties
+ * you can use to render your UI.
+ *
+ * @param variables that will be passed into the query
+ * @param options that will be passed into the query, supported options are listed on: https://v4.apollo.vuejs.org/guide-composable/query.html#options;
+ *
+ * @example
+ * const { result, loading, error } = useGetTestimonialsWithFormQuery({
+ *   organizationId: // value for 'organizationId'
+ *   limit: // value for 'limit'
+ * });
+ */
+export function useGetTestimonialsWithFormQuery(variables: GetTestimonialsWithFormQueryVariables | VueCompositionApi.Ref<GetTestimonialsWithFormQueryVariables> | ReactiveFunction<GetTestimonialsWithFormQueryVariables>, options: VueApolloComposable.UseQueryOptions<GetTestimonialsWithFormQuery, GetTestimonialsWithFormQueryVariables> | VueCompositionApi.Ref<VueApolloComposable.UseQueryOptions<GetTestimonialsWithFormQuery, GetTestimonialsWithFormQueryVariables>> | ReactiveFunction<VueApolloComposable.UseQueryOptions<GetTestimonialsWithFormQuery, GetTestimonialsWithFormQueryVariables>> = {}) {
+  return VueApolloComposable.useQuery<GetTestimonialsWithFormQuery, GetTestimonialsWithFormQueryVariables>(GetTestimonialsWithFormDocument, variables, options);
+}
+export function useGetTestimonialsWithFormLazyQuery(variables?: GetTestimonialsWithFormQueryVariables | VueCompositionApi.Ref<GetTestimonialsWithFormQueryVariables> | ReactiveFunction<GetTestimonialsWithFormQueryVariables>, options: VueApolloComposable.UseQueryOptions<GetTestimonialsWithFormQuery, GetTestimonialsWithFormQueryVariables> | VueCompositionApi.Ref<VueApolloComposable.UseQueryOptions<GetTestimonialsWithFormQuery, GetTestimonialsWithFormQueryVariables>> | ReactiveFunction<VueApolloComposable.UseQueryOptions<GetTestimonialsWithFormQuery, GetTestimonialsWithFormQueryVariables>> = {}) {
+  return VueApolloComposable.useLazyQuery<GetTestimonialsWithFormQuery, GetTestimonialsWithFormQueryVariables>(GetTestimonialsWithFormDocument, variables, options);
+}
+export type GetTestimonialsWithFormQueryCompositionFunctionResult = VueApolloComposable.UseQueryReturn<GetTestimonialsWithFormQuery, GetTestimonialsWithFormQueryVariables>;
 export const UpdateUserDocument = gql`
     mutation UpdateUser($id: String!, $changes: users_set_input!) {
   update_users_by_pk(pk_columns: {id: $id}, _set: $changes) {

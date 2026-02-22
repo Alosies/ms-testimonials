@@ -1,0 +1,17 @@
+#import "../fragments/TestimonialBasic.gql"
+
+mutation RejectTestimonial($id: String!, $rejectedBy: String!, $rejectionReason: String) {
+  update_testimonials_by_pk(
+    pk_columns: { id: $id }
+    _set: {
+      status: "rejected"
+      rejected_by: $rejectedBy
+      rejected_at: "now()"
+      rejection_reason: $rejectionReason
+      approved_by: null
+      approved_at: null
+    }
+  ) {
+    ...TestimonialBasic
+  }
+}

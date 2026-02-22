@@ -1,0 +1,14 @@
+#import "../fragments/TestimonialWithForm.gql"
+
+query GetFormTestimonials($organizationId: String!, $formId: String!, $limit: Int) {
+  testimonials(
+    where: {
+      organization_id: { _eq: $organizationId }
+      submission: { form_id: { _eq: $formId } }
+    }
+    order_by: { created_at: desc }
+    limit: $limit
+  ) {
+    ...TestimonialWithForm
+  }
+}
