@@ -3,9 +3,11 @@
   "git": {
     "deploymentEnabled": {
       "dev": true,
-      "main": true
+      "qa": true,
+      "prod": true
     }
   },
+  "ignoreCommand": "bash -c '[[ \"$VERCEL_GIT_COMMIT_REF\" == \"dev\" || \"$VERCEL_GIT_COMMIT_REF\" == \"qa\" || \"$VERCEL_GIT_COMMIT_REF\" == \"prod\" ]]'",
   "framework": "vite",
   "installCommand": "pnpm install",
   "buildCommand": "pnpm --filter @testimonials/icons build && cd apps/web && npx vite build",
