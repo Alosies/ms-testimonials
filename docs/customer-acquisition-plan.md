@@ -249,11 +249,19 @@ This is NOT mass email spam. This is 5-10 highly personalized messages per day.
 - Body: Keep under 80 words. Reference something specific about their product. Offer free access. No hard sell.
 - Follow up once after 3 days. Stop if no response.
 
+**Specific outreach angles that convert:**
+
+1. **The "Empty Wall" angle:** Find SaaS companies with no testimonials on their website. "I noticed [company] doesn't have customer testimonials on your site yet. Products with 5+ reviews are 270% more likely to be purchased..."
+2. **The "Stale Testimonials" angle:** Find companies with obviously outdated or stock-photo testimonials. "I was checking out [company]'s site and noticed your testimonials section could use a refresh..."
+3. **The "Just Raised" angle:** Target recently funded startups who need to build credibility quickly for their new marketing push.
+4. **The "Just Launched" angle:** Target products that just launched on Product Hunt or shipped a new feature and need fresh social proof.
+
 **Tools to find prospects:**
 - Twitter Advanced Search: "need testimonials" OR "collecting testimonials" OR "social proof"
 - LinkedIn Sales Navigator: filter by founder/CEO, company size 1-10, SaaS industry
 - BuiltWith / Wappalyzer: find sites using competitor testimonial scripts
 - Reddit search: r/SaaS + r/startups for "testimonials" or "social proof" mentions
+- Crunchbase / PitchBook: recently funded startups (Series A sweet spot)
 
 ### 3.4 Community Seeding (Ongoing)
 
@@ -357,6 +365,64 @@ Several Facebook groups with 100K+ members specialize in software lifetime deals
 - Dealify Marketplace
 
 These communities can drive significant LTD sales if your product solves a real problem.
+
+### 4.5 Integration & Partnership Strategy (Months 2-6)
+
+Partnerships are becoming a primary growth engine for B2B SaaS. Build integrations that put your product where your customers already are.
+
+**Tier 1: Must-Have Integrations (Month 2-3)**
+
+| Platform | Why | Effort |
+|---|---|---|
+| WordPress plugin | Largest CMS, massive distribution | Medium |
+| Webflow embed | Design-forward audience values beautiful testimonials | Low |
+| Zapier connector | Connects to 5,000+ tools, enables automation | Medium |
+
+**Tier 2: High-Value Integrations (Month 3-6)**
+
+| Platform | Why | Effort |
+|---|---|---|
+| Shopify App Store | Massive e-commerce market needs product testimonials | High |
+| HubSpot Marketplace | B2B SaaS audience, CRM integration | Medium |
+| Framer | Growing platform, design-conscious users | Low |
+| Slack notifications | Alert when new testimonials arrive | Low |
+
+**Co-Marketing Opportunities:**
+- Partner with landing page builders (Unbounce, Leadpages): joint "How to increase conversions with social proof" content
+- Partner with email tools (ConvertKit, Mailchimp): "The perfect post-purchase testimonial request sequence" guide
+- Partner with website template creators: include testimonial sections powered by your tool in templates
+
+**Marketplace Listings (free distribution):**
+- WordPress Plugin Directory
+- Webflow Apps
+- Shopify App Store
+- HubSpot Marketplace
+- AlternativeTo, SaaSHub, G2, Capterra
+
+### 4.6 Optimize the "Powered By" Viral Loop (Advanced)
+
+The research shows this is the single highest-leverage long-term growth tactic. Here's how top companies optimize it:
+
+**Honeypot landing pages:**
+When someone clicks "Powered by [Product]," do NOT send them to your homepage. Send them to a dedicated landing page that mirrors what they just experienced: "Want a beautiful testimonial wall like this? Create yours free in 2 minutes."
+
+**CTA A/B testing on the widget badge:**
+- Variant A: "Powered by [Product]"
+- Variant B: "Create your own testimonial wall"
+- Variant C: "Collect testimonials free"
+- Typeform found dramatically different conversion rates between CTA variants
+
+**Track the viral coefficient:**
+```
+Viral Coefficient = (avg widgets embedded per user) x (avg clicks per widget/month) x (click-to-signup rate) x (signup-to-embed rate)
+```
+If this number exceeds 1.0, you have organic viral growth. Even at 0.3-0.5, it meaningfully reduces CAC.
+
+**Network effect in testimonial requests:**
+Every testimonial request a business sends to a customer is product marketing. The customer experiences the AI-guided flow. If impressed, they may want testimonials for their own business. Design for this: add a subtle "Collect your own testimonials" link on the thank-you page after a customer submits a testimonial.
+
+**Referral credit loop (from Gamma's playbook):**
+When free users hit their 50-testimonial limit: "Invite a friend to unlock 10 more testimonials, or upgrade for unlimited." This turns the credit/limit system into a viral loop.
 
 ---
 
@@ -481,7 +547,11 @@ Set up tracking for each step (PostHog or Segment, per Senja's recommendation).
 ### Month 3: Compound
 - [ ] Publish 5 more blog posts
 - [ ] Hit 100 LTD sales
-- [ ] Analyze widget viral loop metrics
+- [ ] Analyze widget viral loop metrics (track viral coefficient)
+- [ ] Build WordPress plugin or Webflow embed integration
+- [ ] Set up Zapier connector for testimonial automation
+- [ ] A/B test "Powered by" CTA wording on widgets
+- [ ] Add "Collect your own testimonials" link on submission thank-you page
 - [ ] Begin planning transition from LTD to subscription model
 - [ ] Evaluate Facebook LTD group campaigns
 - [ ] Plan price increase ($49 -> $79) based on milestone
@@ -514,3 +584,9 @@ Set up tracking for each step (PostHog or Segment, per Senja's recommendation).
 - [SaaS Marketing Strategy 2026 Playbook](https://www.factors.ai/blog/saas-marketing-strategy)
 - [Cold LinkedIn Outreach Strategies](https://www.salescaptain.io/blog/cold-linkedin-outreach)
 - [Is Launching a Lifetime Deal Worth It? (AppSumo)](https://appsumo.com/blog/is-launching-a-lifetime-deal-worth-it)
+- [From Zero to $50K MRR: The Story of Senja's Growth](https://indiemerger.com/success-stories/senja-growth-story)
+- [Damon Chen: 3 Indie Hacking Tips (IndieHackers)](https://www.indiehackers.com/post/3-indie-hacking-tips-from-damon-chen-the-maker-behind-testimonial-100arr-1a01e817ec)
+- [The State of Product-Led Growth in SaaS 2026](https://userguiding.com/blog/state-of-plg-in-saas)
+- [Viral Loops in SaaS (OpenView)](https://openviewpartners.com/blog/saas-product-viral-loop/)
+- [B2B SaaS Companies Doubling Down on Partnerships (PartnerStack)](https://partnerstack.com/resources/research-lab/charts/b2b-saas-companies-are-doubling-down-on-partnerships-as-a-top-strategic-priority-in-2026)
+- [How to Launch a SaaS Product on AppSumo (IndieHackers)](https://www.indiehackers.com/article/how-to-launch-a-saas-product-on-appsumo-our-best-and-worst-moments-50e7a521bb)
