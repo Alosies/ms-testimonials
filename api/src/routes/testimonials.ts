@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { SubmitFormRequestSchema, submitForm } from '@/features/submissions';
 
 const testimonials = new Hono();
 
@@ -14,10 +15,42 @@ testimonials.get('/', async (c) => {
 /**
  * POST /testimonials
  * Submit a new testimonial (public endpoint for customers)
+ *
+ * ADR-025: Form submission persistence via Drizzle transaction.
+ * Creates contact, form_submission, question_responses, and testimonial atomically.
  */
 testimonials.post('/', async (c) => {
-  // TODO: Implement testimonial submission
-  return c.json({ message: 'Testimonial submitted' });
+  let body: unknown;
+  try {
+    body = await c.req.json();
+  } catch {
+    return c.json({ success: false, message: 'Invalid JSON body' }, 400);
+  }
+
+  const parsed = SubmitFormRequestSchema.safeParse(body);
+
+  if (!parsed.success) {
+    return c.json(
+      { success: false, message: 'Invalid request', errors: parsed.error.flatten().fieldErrors },
+      400,
+    );
+  }
+
+  try {
+    const result = await submitForm(parsed.data);
+
+    return c.json({
+      success: true,
+      submissionId: result.submissionId,
+      testimonialId: result.testimonialId,
+    });
+  } catch (error) {
+    console.error('Form submission failed:', error);
+    return c.json(
+      { success: false, message: 'Submission failed. Please try again.' },
+      500,
+    );
+  }
 });
 
 /**
