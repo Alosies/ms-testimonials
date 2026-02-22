@@ -33,6 +33,9 @@ export const widgetsTestIds = {
   switchIsActive: 'widget-switch-is-active',
   maxDisplayInput: 'widget-max-display-input',
 
+  // Testimonial Selector
+  testimonialRow: 'widget-testimonial-row',
+
   // Preview
   preview: 'widget-preview',
 
