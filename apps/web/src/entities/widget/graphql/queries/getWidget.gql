@@ -3,5 +3,11 @@
 query GetWidget($widgetId: String!) {
   widgets_by_pk(id: $widgetId) {
     ...WidgetBasic
+    testimonial_placements(order_by: { display_order: asc }) {
+      id
+      testimonial_id
+      display_order
+      is_featured
+    }
   }
 }

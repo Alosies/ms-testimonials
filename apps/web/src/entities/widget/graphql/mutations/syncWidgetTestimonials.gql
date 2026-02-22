@@ -1,0 +1,17 @@
+mutation SyncWidgetTestimonials(
+  $widgetId: String!
+  $objects: [widget_testimonials_insert_input!]!
+) {
+  delete_widget_testimonials(where: { widget_id: { _eq: $widgetId } }) {
+    affected_rows
+  }
+  insert_widget_testimonials(objects: $objects) {
+    affected_rows
+    returning {
+      id
+      testimonial_id
+      display_order
+      is_featured
+    }
+  }
+}

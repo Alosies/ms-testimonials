@@ -1,5 +1,5 @@
 import { ref, computed, watch, type Ref } from 'vue';
-import { useGetWidget, useCreateWidget, useUpdateWidget } from '@/entities/widget';
+import { useGetWidget, useCreateWidget, useUpdateWidget, useSyncWidgetTestimonials } from '@/entities/widget';
 import type { WidgetFormState } from '../models';
 import { DEFAULT_WIDGET_STATE } from '../models';
 
@@ -7,6 +7,7 @@ export function useWidgetBuilder(widgetId: Ref<string | null>) {
   const state = ref<WidgetFormState>({ ...DEFAULT_WIDGET_STATE });
   const isSaving = ref(false);
   const savedWidgetId = ref<string | null>(widgetId.value);
+  const selectedTestimonialIds = ref<string[]>([]);
 
   const isEditMode = computed(() => !!widgetId.value);
 
@@ -17,6 +18,7 @@ export function useWidgetBuilder(widgetId: Ref<string | null>) {
   const { widget, isLoading } = useGetWidget(queryVariables);
   const { createWidget } = useCreateWidget();
   const { updateWidget } = useUpdateWidget();
+  const { syncWidgetTestimonials } = useSyncWidgetTestimonials();
 
   // Sync loaded widget to form state
   watch(widget, (w) => {
@@ -35,11 +37,17 @@ export function useWidgetBuilder(widgetId: Ref<string | null>) {
       is_active: w.is_active,
     };
     savedWidgetId.value = w.id;
+
+    // Load selected testimonials from placements
+    const placements = w.testimonial_placements ?? [];
+    selectedTestimonialIds.value = placements.map((p) => p.testimonial_id);
   });
 
   async function save(organizationId: string, userId: string) {
     isSaving.value = true;
     try {
+      let resultWidgetId: string | null = null;
+
       if (isEditMode.value && widgetId.value) {
         const result = await updateWidget({
           widgetId: widgetId.value,
@@ -58,6 +66,16 @@ export function useWidgetBuilder(widgetId: Ref<string | null>) {
             updated_by: userId,
           },
         });
+        resultWidgetId = widgetId.value;
+
+        // Sync testimonial selections
+        await syncWidgetTestimonials(
+          widgetId.value,
+          selectedTestimonialIds.value,
+          organizationId,
+          userId,
+        );
+
         return result;
       } else {
         const result = await createWidget({
@@ -79,7 +97,19 @@ export function useWidgetBuilder(widgetId: Ref<string | null>) {
         });
         if (result) {
           savedWidgetId.value = result.id;
+          resultWidgetId = result.id;
         }
+
+        // Sync testimonial selections for new widget
+        if (resultWidgetId && selectedTestimonialIds.value.length > 0) {
+          await syncWidgetTestimonials(
+            resultWidgetId,
+            selectedTestimonialIds.value,
+            organizationId,
+            userId,
+          );
+        }
+
         return result;
       }
     } finally {
@@ -89,6 +119,7 @@ export function useWidgetBuilder(widgetId: Ref<string | null>) {
 
   return {
     state,
+    selectedTestimonialIds,
     isEditMode,
     isLoading,
     isSaving,

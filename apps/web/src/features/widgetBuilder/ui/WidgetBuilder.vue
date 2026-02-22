@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, toRefs } from 'vue';
+import { computed, ref, toRefs } from 'vue';
 import { Icon } from '@testimonials/icons';
 import { Button, Separator } from '@testimonials/ui';
 import { Skeleton } from '@testimonials/ui';
@@ -25,7 +25,7 @@ const { currentOrganizationId, currentUserId } = toRefs(contextStore);
 const { goToWidgets, goToWidget } = useRouting();
 
 const widgetIdRef = computed(() => props.widgetId ?? null);
-const { state, isEditMode, isLoading, isSaving, savedWidgetId, save } =
+const { state, selectedTestimonialIds, isEditMode, isLoading, isSaving, savedWidgetId, save } =
   useWidgetBuilder(widgetIdRef);
 
 // Fetch approved testimonials for preview (Apollo cache deduplicates with selector query)
@@ -34,7 +34,6 @@ const testimonialVars = computed(() => ({
 }));
 const { testimonials: allTestimonials } = useGetTestimonials(testimonialVars);
 
-const selectedTestimonialIds = ref<string[]>([]);
 const showEmbedModal = ref(false);
 
 const previewTestimonials = computed(() => {

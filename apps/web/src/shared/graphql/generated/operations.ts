@@ -26325,6 +26325,14 @@ export type DeleteWidgetMutationVariables = Exact<{
 
 export type DeleteWidgetMutation = { __typename?: 'mutation_root', delete_widgets_by_pk?: { __typename?: 'widgets', id: string } | null };
 
+export type SyncWidgetTestimonialsMutationVariables = Exact<{
+  widgetId: Scalars['String']['input'];
+  objects: Array<Widget_Testimonials_Insert_Input> | Widget_Testimonials_Insert_Input;
+}>;
+
+
+export type SyncWidgetTestimonialsMutation = { __typename?: 'mutation_root', delete_widget_testimonials?: { __typename?: 'widget_testimonials_mutation_response', affected_rows: number } | null, insert_widget_testimonials?: { __typename?: 'widget_testimonials_mutation_response', affected_rows: number, returning: Array<{ __typename?: 'widget_testimonials', id: string, testimonial_id: string, display_order: number, is_featured: boolean }> } | null };
+
 export type UpdateWidgetMutationVariables = Exact<{
   widgetId: Scalars['String']['input'];
   set: Widgets_Set_Input;
@@ -26338,7 +26346,7 @@ export type GetWidgetQueryVariables = Exact<{
 }>;
 
 
-export type GetWidgetQuery = { __typename?: 'query_root', widgets_by_pk?: { __typename?: 'widgets', id: string, organization_id: string, created_by: string, name: string, type: string, theme: string, show_ratings: boolean, show_dates: boolean, show_company: boolean, show_avatar: boolean, max_display?: number | null, settings: any, form_id?: string | null, is_active: boolean, created_at: string, updated_at: string, updated_by?: string | null } | null };
+export type GetWidgetQuery = { __typename?: 'query_root', widgets_by_pk?: { __typename?: 'widgets', id: string, organization_id: string, created_by: string, name: string, type: string, theme: string, show_ratings: boolean, show_dates: boolean, show_company: boolean, show_avatar: boolean, max_display?: number | null, settings: any, form_id?: string | null, is_active: boolean, created_at: string, updated_at: string, updated_by?: string | null, testimonial_placements: Array<{ __typename?: 'widget_testimonials', id: string, testimonial_id: string, display_order: number, is_featured: boolean }> } | null };
 
 export type GetWidgetsQueryVariables = Exact<{
   organizationId: Scalars['String']['input'];
@@ -28232,6 +28240,45 @@ export function useDeleteWidgetMutation(options: VueApolloComposable.UseMutation
   return VueApolloComposable.useMutation<DeleteWidgetMutation, DeleteWidgetMutationVariables>(DeleteWidgetDocument, options);
 }
 export type DeleteWidgetMutationCompositionFunctionResult = VueApolloComposable.UseMutationReturn<DeleteWidgetMutation, DeleteWidgetMutationVariables>;
+export const SyncWidgetTestimonialsDocument = gql`
+    mutation SyncWidgetTestimonials($widgetId: String!, $objects: [widget_testimonials_insert_input!]!) {
+  delete_widget_testimonials(where: {widget_id: {_eq: $widgetId}}) {
+    affected_rows
+  }
+  insert_widget_testimonials(objects: $objects) {
+    affected_rows
+    returning {
+      id
+      testimonial_id
+      display_order
+      is_featured
+    }
+  }
+}
+    `;
+
+/**
+ * __useSyncWidgetTestimonialsMutation__
+ *
+ * To run a mutation, you first call `useSyncWidgetTestimonialsMutation` within a Vue component and pass it any options that fit your needs.
+ * When your component renders, `useSyncWidgetTestimonialsMutation` returns an object that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - Several other properties: https://v4.apollo.vuejs.org/api/use-mutation.html#return
+ *
+ * @param options that will be passed into the mutation, supported options are listed on: https://v4.apollo.vuejs.org/guide-composable/mutation.html#options;
+ *
+ * @example
+ * const { mutate, loading, error, onDone } = useSyncWidgetTestimonialsMutation({
+ *   variables: {
+ *     widgetId: // value for 'widgetId'
+ *     objects: // value for 'objects'
+ *   },
+ * });
+ */
+export function useSyncWidgetTestimonialsMutation(options: VueApolloComposable.UseMutationOptions<SyncWidgetTestimonialsMutation, SyncWidgetTestimonialsMutationVariables> | ReactiveFunction<VueApolloComposable.UseMutationOptions<SyncWidgetTestimonialsMutation, SyncWidgetTestimonialsMutationVariables>> = {}) {
+  return VueApolloComposable.useMutation<SyncWidgetTestimonialsMutation, SyncWidgetTestimonialsMutationVariables>(SyncWidgetTestimonialsDocument, options);
+}
+export type SyncWidgetTestimonialsMutationCompositionFunctionResult = VueApolloComposable.UseMutationReturn<SyncWidgetTestimonialsMutation, SyncWidgetTestimonialsMutationVariables>;
 export const UpdateWidgetDocument = gql`
     mutation UpdateWidget($widgetId: String!, $set: widgets_set_input!) {
   update_widgets_by_pk(pk_columns: {id: $widgetId}, _set: $set) {
@@ -28266,6 +28313,12 @@ export const GetWidgetDocument = gql`
     query GetWidget($widgetId: String!) {
   widgets_by_pk(id: $widgetId) {
     ...WidgetBasic
+    testimonial_placements(order_by: {display_order: asc}) {
+      id
+      testimonial_id
+      display_order
+      is_featured
+    }
   }
 }
     ${WidgetBasicFragmentDoc}`;
