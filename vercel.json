@@ -10,7 +10,7 @@
   "ignoreCommand": "bash -c '[[ \"$VERCEL_GIT_COMMIT_REF\" != \"dev\" && \"$VERCEL_GIT_COMMIT_REF\" != \"qa\" && \"$VERCEL_GIT_COMMIT_REF\" != \"prod\" ]]'",
   "framework": "vite",
   "installCommand": "pnpm install",
-  "buildCommand": "pnpm --filter @testimonials/icons build && cd apps/web && npx vite build",
+  "buildCommand": "pnpm --filter @testimonials/icons build && pnpm --filter @testimonials/widget-embed build && cp packages/widget-embed/dist/widgets.js apps/web/public/embed/widgets.js && cd apps/web && npx vite build",
   "outputDirectory": "apps/web/dist",
   "rewrites": [
     {
