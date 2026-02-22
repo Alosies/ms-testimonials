@@ -11,6 +11,7 @@
     "dev:web:green": "VITE_PORT=3002 pnpm --filter @testimonials/web dev",
     "dev:web:blue": "VITE_PORT=3003 pnpm --filter @testimonials/web dev",
     "build": "pnpm -r build",
+    "vercel-build": "pnpm --filter @testimonials/icons build && pnpm --filter @testimonials/web build",
     "build:web": "pnpm --filter @testimonials/web build",
     "build:api": "pnpm --filter @testimonials/api build",
     "lint": "pnpm -r lint",

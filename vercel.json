@@ -6,10 +6,16 @@
       "main": true
     }
   },
-  "framework": "vite",
   "installCommand": "pnpm install",
-  "buildCommand": "pnpm --filter @testimonials/icons build && pnpm --filter @testimonials/web build",
-  "outputDirectory": "apps/web/dist",
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "apps/web/dist"
+      }
+    }
+  ],
   "rewrites": [
     {
       "source": "/(.*)",
