@@ -1,8 +1,8 @@
-api/
-db/
-packages/libs/media-service/
-docs/
-scripts/
-tests/
+/api/
+/db/
+/packages/libs/media-service/
+/docs/
+/scripts/
+/tests/
 *.md
-.agent-browser-states/
+/.agent-browser-states/
