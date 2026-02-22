@@ -8,6 +8,7 @@ export function useWidgetBuilder(widgetId: Ref<string | null>) {
   const isSaving = ref(false);
   const savedWidgetId = ref<string | null>(widgetId.value);
   const selectedTestimonialIds = ref<string[]>([]);
+  const _skipWatchDuringSave = ref(false);
 
   const isEditMode = computed(() => !!widgetId.value);
 
@@ -20,9 +21,9 @@ export function useWidgetBuilder(widgetId: Ref<string | null>) {
   const { updateWidget } = useUpdateWidget();
   const { syncWidgetTestimonials } = useSyncWidgetTestimonials();
 
-  // Sync loaded widget to form state
+  // Sync loaded widget to form state (skip during save to avoid race condition)
   watch(widget, (w) => {
-    if (!w) return;
+    if (!w || _skipWatchDuringSave.value) return;
     state.value = {
       name: w.name,
       type: w.type as WidgetFormState['type'],
@@ -45,6 +46,11 @@ export function useWidgetBuilder(widgetId: Ref<string | null>) {
 
   async function save(organizationId: string, userId: string) {
     isSaving.value = true;
+    _skipWatchDuringSave.value = true;
+
+    // Snapshot selections before mutations trigger Apollo cache updates
+    const testimonialIdsSnapshot = [...selectedTestimonialIds.value];
+
     try {
       let resultWidgetId: string | null = null;
 
@@ -68,10 +74,10 @@ export function useWidgetBuilder(widgetId: Ref<string | null>) {
         });
         resultWidgetId = widgetId.value;
 
-        // Sync testimonial selections
+        // Sync testimonial selections (using snapshot to avoid race condition)
         await syncWidgetTestimonials(
           widgetId.value,
-          selectedTestimonialIds.value,
+          testimonialIdsSnapshot,
           organizationId,
           userId,
         );
@@ -101,10 +107,10 @@ export function useWidgetBuilder(widgetId: Ref<string | null>) {
         }
 
         // Sync testimonial selections for new widget
-        if (resultWidgetId && selectedTestimonialIds.value.length > 0) {
+        if (resultWidgetId && testimonialIdsSnapshot.length > 0) {
           await syncWidgetTestimonials(
             resultWidgetId,
-            selectedTestimonialIds.value,
+            testimonialIdsSnapshot,
             organizationId,
             userId,
           );
@@ -113,6 +119,7 @@ export function useWidgetBuilder(widgetId: Ref<string | null>) {
         return result;
       }
     } finally {
+      _skipWatchDuringSave.value = false;
       isSaving.value = false;
     }
   }
