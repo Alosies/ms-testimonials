@@ -1,6 +1,8 @@
 import { ref, computed, onMounted, type Ref } from 'vue';
 import type { FormStep, FlowMembership } from '@/shared/stepCards';
 import type { BranchingConfig } from '@/entities/form';
+import type { SubmitFormRequest } from '@/shared/api/submissions';
+import { buildSubmissionPayload } from '../functions/buildSubmissionPayload';
 import { useFormPersistence } from './useFormPersistence';
 import { useFormAnalytics } from './useFormAnalytics';
 
@@ -14,6 +16,8 @@ export interface UsePublicFormFlowOptions {
   formId?: Ref<string>;
   /** Organization ID for analytics */
   organizationId?: Ref<string>;
+  /** Callback to submit form data to the API */
+  onSubmit?: (payload: SubmitFormRequest) => Promise<void>;
 }
 
 /**
@@ -24,7 +28,7 @@ export interface UsePublicFormFlowOptions {
  * @param options - Configuration including steps, branching config, formId, organizationId
  */
 export function usePublicFormFlow(options: UsePublicFormFlowOptions) {
-  const { steps, branchingConfig, formId, organizationId } = options;
+  const { steps, branchingConfig, formId, organizationId, onSubmit } = options;
 
   const currentStepIndex = ref(0);
   const responses = ref<Record<string, unknown>>({});
@@ -205,8 +209,17 @@ export function usePublicFormFlow(options: UsePublicFormFlowOptions) {
     return responses.value[stepId];
   }
 
-  /** Handle form submission - tracks event, prevents abandonment, clears state */
+  /** Handle form submission - builds payload, calls onSubmit, tracks event, clears state */
   async function handleSubmission() {
+    if (onSubmit) {
+      const payload = buildSubmissionPayload(
+        visibleSteps.value,
+        responses.value,
+        formId?.value ?? '',
+        organizationId?.value ?? '',
+      );
+      await onSubmit(payload);
+    }
     await analytics.trackFormSubmitted();
     analytics.markAsSubmitted();
     persistence.clearState();

@@ -54,6 +54,15 @@ export type {
   AssembleTestimonialResponse,
 } from './ai';
 
+// Submissions domain exports (convenience re-exports)
+export { useApiForSubmissions } from './submissions';
+export type {
+  SubmitFormRequest,
+  SubmitFormResponse,
+  SubmitFormContact,
+  SubmitFormQuestionResponse,
+} from './submissions';
+
 // Domain exports are also available via:
 // - import { useApiForAI } from '@/shared/api/ai';
 // This ensures tree-shaking and code-splitting work optimally

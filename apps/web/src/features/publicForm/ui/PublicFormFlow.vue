@@ -13,11 +13,13 @@ import {
   RatingStepCard,
   ConsentStepCard,
   ContactInfoStepCard,
+  ContactInfoInputCard,
   RewardStepCard,
   ThankYouStepCard,
   TestimonialWriteStepCard,
 } from '@/shared/stepCards';
 import { OrganizationLogo } from '@/entities/organization';
+import { useApiForSubmissions } from '@/shared/api/submissions';
 import { publicFormTestIds } from '@/shared/constants/testIds';
 import {
   usePublicFormFlow,
@@ -49,6 +51,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 // Composables (called at setup root)
 const googleAuth = useCustomerGoogleAuth();
+const { submitForm } = useApiForSubmissions();
 
 const stepsRef = toRef(props, 'steps');
 const branchingConfigRef = toRef(props, 'branchingConfig');
@@ -64,11 +67,18 @@ const {
   branchingConfig: branchingConfigRef,
   formId: formIdRef,
   organizationId: organizationIdRef,
+  onSubmit: async (payload) => {
+    try {
+      await submitForm(payload);
+    } catch (error) {
+      console.error('Form submission failed:', error);
+    }
+  },
 });
 
 const { isAIAvailable } = usePublicAIAvailability(formIdRef);
 
-const { ratingResponse, questionResponse, testimonialResponse } = useStepResponseBindings({
+const { ratingResponse, questionResponse, testimonialResponse, contactInfoResponse, consentResponse } = useStepResponseBindings({
   currentStep,
   getResponse,
   setResponse,
@@ -112,6 +122,8 @@ const isWelcomeStep = computed(() => currentStep.value?.stepType === 'welcome');
 const isThankYouStep = computed(() => currentStep.value?.stepType === 'thank_you');
 const isQuestionStep = computed(() => currentStep.value?.stepType === 'question');
 const isRatingStep = computed(() => currentStep.value?.stepType === 'rating');
+const isContactInfoStep = computed(() => currentStep.value?.stepType === 'contact_info');
+const isConsentStep = computed(() => currentStep.value?.stepType === 'consent');
 
 // Navigation visibility
 const showNavigation = computed(() => {
@@ -220,6 +232,20 @@ function handleBack() {
             @accept="handleAcceptTestimonial"
             @regenerate="handleRegenerate"
             @apply-suggestion="handleApplySuggestion"
+          />
+
+          <ContactInfoInputCard
+            v-else-if="isContactInfoStep"
+            v-model="contactInfoResponse"
+            :step="currentStep"
+            mode="preview"
+          />
+
+          <ConsentStepCard
+            v-else-if="isConsentStep"
+            v-model="consentResponse"
+            :step="currentStep"
+            mode="preview"
           />
 
           <component

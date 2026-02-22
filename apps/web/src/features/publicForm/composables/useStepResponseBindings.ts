@@ -63,5 +63,35 @@ export function useStepResponseBindings({
     },
   });
 
-  return { ratingResponse, questionResponse, testimonialResponse };
+  const contactInfoResponse = computed({
+    get: () => {
+      const stepId = currentStep.value?.id;
+      if (!stepId) return {};
+      const value = getResponse(stepId);
+      return (typeof value === 'object' && value !== null) ? value as Record<string, string> : {};
+    },
+    set: (value: Record<string, string>) => {
+      const stepId = currentStep.value?.id;
+      if (stepId) {
+        setResponse(stepId, value);
+      }
+    },
+  });
+
+  const consentResponse = computed({
+    get: () => {
+      const stepId = currentStep.value?.id;
+      if (!stepId) return 'public';
+      const value = getResponse(stepId);
+      return typeof value === 'string' ? value : 'public';
+    },
+    set: (value: string) => {
+      const stepId = currentStep.value?.id;
+      if (stepId) {
+        setResponse(stepId, value);
+      }
+    },
+  });
+
+  return { ratingResponse, questionResponse, testimonialResponse, contactInfoResponse, consentResponse };
 }
