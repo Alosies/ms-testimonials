@@ -5,6 +5,7 @@ export { wizardTestIds } from './wizard';
 export { widgetsTestIds } from './widgets';
 export { publicFormTestIds } from './publicForm';
 export { creditTestIds } from './credits';
+export { testimonialsTestIds } from './testimonials';
 
 export type { StudioTestId } from './studio';
 export type { AuthTestId } from './auth';
@@ -13,3 +14,4 @@ export type { WizardTestId } from './wizard';
 export type { WidgetsTestId } from './widgets';
 export type { PublicFormTestId } from './publicForm';
 export type { CreditTestId } from './credits';
+export type { TestimonialsTestId } from './testimonials';
