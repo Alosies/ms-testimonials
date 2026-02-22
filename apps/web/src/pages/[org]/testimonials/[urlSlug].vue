@@ -2,37 +2,48 @@
 /**
  * Testimonial detail page
  * Route: /:org/testimonials/:urlSlug
+ *
+ * Thin wrapper — delegates to TestimonialDetailView feature component.
+ * ADR-025 Phase 4.3
  */
-import { definePage } from 'unplugin-vue-router/runtime'
-import { useRoute } from 'vue-router'
-import { computed } from 'vue'
-import AuthLayout from '@/layouts/AuthLayout.vue'
-import { extractEntityIdFromSlug } from '@/shared/urls'
+import { definePage } from 'unplugin-vue-router/runtime';
+import { useRoute } from 'vue-router';
+import { computed } from 'vue';
+import { Icon } from '@testimonials/icons';
+import { Button } from '@testimonials/ui';
+import AuthLayout from '@/layouts/AuthLayout.vue';
+import { extractEntityIdFromSlug } from '@/shared/urls';
+import { useRouting } from '@/shared/routing';
+import { TestimonialDetailView } from '@/features/testimonialsList';
 
 definePage({
-  meta: {
-    requiresAuth: true,
-  },
-})
+  meta: { requiresAuth: true },
+});
 
-const route = useRoute()
+const route = useRoute();
+const { goToTestimonials } = useRouting();
 
-const urlSlug = computed(() => route.params.urlSlug as string)
-const entityInfo = computed(() => extractEntityIdFromSlug(urlSlug.value))
-const testimonialId = computed(() => entityInfo.value?.entityId ?? null)
+const urlSlug = computed(() => route.params.urlSlug as string);
+const entityInfo = computed(() => extractEntityIdFromSlug(urlSlug.value));
+const testimonialId = computed(() => entityInfo.value?.entityId ?? '');
 </script>
 
 <template>
   <AuthLayout>
-    <div class="p-6">
-      <div v-if="!entityInfo?.isValid" class="text-red-600">
+    <div class="p-6 max-w-3xl mx-auto">
+      <Button variant="ghost" size="sm" class="mb-4" @click="goToTestimonials()">
+        <Icon icon="heroicons:arrow-left" class="h-4 w-4 mr-2" />
+        Back to Testimonials
+      </Button>
+
+      <div v-if="!entityInfo?.isValid" class="text-destructive">
         Invalid testimonial URL
       </div>
-      <div v-else>
-        <h1 class="text-2xl font-semibold text-gray-900">Testimonial Details</h1>
-        <p class="mt-2 text-gray-600">Testimonial ID: {{ testimonialId }}</p>
-        <!-- TODO: Add TestimonialDetailFeature component -->
-      </div>
+
+      <TestimonialDetailView
+        v-else
+        :testimonial-id="testimonialId"
+      />
     </div>
   </AuthLayout>
 </template>
