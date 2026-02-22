@@ -338,53 +338,41 @@ Located at `/:org/widgets/new` and `/:org/widgets/:id/edit`:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  ← Back to Widgets                                          │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│  Widget Name: [My Wall of Love_________]                    │
-│                                                             │
-│  Form:                                                      │
-│  [Product Feedback Form ▼]                                  │
-│    ├── Product Feedback Form                                │
-│    ├── Customer Satisfaction                                │
-│    └── 🔒 All forms (Premium)                              │
-│                                                             │
-│  Widget Type:                                               │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐                  │
-│  │ ▦▦▦▦     │  │ ← ▢ →    │  │   ▢      │                  │
-│  │ Wall of  │  │ Carousel │  │  Single  │                  │
-│  │ Love ✓   │  │          │  │  Quote   │                  │
-│  └──────────┘  └──────────┘  └──────────┘                  │
-│                                                             │
-├───────────────────────┬─────────────────────────────────────┤
-│  Settings             │                                     │
-│                       │     LIVE PREVIEW                    │
-│  Theme                │                                     │
-│  [Light ▼]            │  ┌─────────┐ ┌─────────┐           │
-│                       │  │ ★★★★★   │ │ ★★★★☆   │           │
-│  Background           │  │ "Great!"│ │ "Nice"  │           │
-│  [#ffffff ■]          │  │ John D. │ │ Jane S. │           │
-│                       │  └─────────┘ └─────────┘           │
-│  Show Ratings  [✓]    │  ┌─────────┐                       │
-│  Show Avatar   [✓]    │  │ ★★★★★   │                       │
-│  Show Date     [ ]    │  │ "Wow!"  │                       │
-│  Show Company  [✓]    │  │ Bob K.  │                       │
-│                       │  └─────────┘                       │
-│  Max Display   [12]   │                                     │
-│  Columns       [3 ▼]  │                                     │
-│                       │                                     │
-├───────────────────────┴─────────────────────────────────────┤
-│  Testimonials                                               │
-│  ○ All approved testimonials (from selected form)           │
-│  ● Select specific testimonials                             │
-│    [✓] "Great product!" - John D.                          │
-│    [✓] "Changed my life" - Jane S.                         │
-│    [ ] "Good service" - Bob K.                             │
-│                                                             │
-├─────────────────────────────────────────────────────────────┤
-│                               [Cancel]  [Save & Get Code]   │
+│  ← Back to Widgets                           [Save]        │
+├─────────────────────────────┬───────────────────────────────┤
+│  ALWAYS VISIBLE             │                               │
+│                             │                               │
+│  Widget Type:               │                               │
+│  ┌──────────┐ ┌──────────┐  │                               │
+│  │ Wall of  │ │ Carousel │  │                               │
+│  │ Love ✓   │ │          │  │                               │
+│  └──────────┘ └──────────┘  │                               │
+│                             │                               │
+│  Widget Name:               │                               │
+│  [My Wall of Love_________] │                               │
+│                             │       LIVE PREVIEW            │
+│  ┌──────────────────────┐   │                               │
+│  │ Content (2) │ Design │   │  ┌─────────┐ ┌─────────┐     │
+│  ├──────────────────────┤   │  │ ★★★★★   │ │ ★★★★☆   │     │
+│  │                      │   │  │ "Great!"│ │ "Nice"  │     │
+│  │  Form:               │   │  │ John D. │ │ Jane S. │     │
+│  │  [All forms ▼]       │   │  └─────────┘ └─────────┘     │
+│  │                      │   │  ┌─────────┐                 │
+│  │  Testimonials:       │   │  │ ★★★★★   │                 │
+│  │  [✓] "Great!" - John │   │  │ "Wow!"  │                 │
+│  │  [✓] "Nice" - Jane   │   │  │ Bob K.  │                 │
+│  │  [ ] "Good" - Bob    │   │  └─────────┘                 │
+│  │                      │   │                               │
+│  │  2 of 3 selected     │   │                               │
+│  └──────────────────────┘   │                               │
+├─────────────────────────────┴───────────────────────────────┤
+│                                              [Embed Code]   │
 └─────────────────────────────────────────────────────────────┘
 ```
+
+> Content tab (default) surfaces testimonial selection — the primary user action.
+> Design tab contains theme, display toggles, max display, and active toggle.
+> Widget type and name remain above tabs as foundational, always-visible controls.
 
 ---
 
@@ -522,6 +510,126 @@ After saving widget:
 2. Caching headers for public endpoint and embed script
 3. Widget analytics (impressions, optional)
 4. Integration guides documentation
+
+---
+
+## E2E Test Data Seeding Plan
+
+### Context
+
+The widget builder E2E tests (`builder-tabs.spec.ts`) rely on pre-existing testimonials in the E2E account. This is fragile — tests break if data changes. We need to seed test testimonials via the API, following the established 3-layer pattern used by forms.
+
+**Goal:** Tests that need testimonials get seeded data; tests that don't (empty state, save button validation) use the base fixture.
+
+### Architecture: 3-Layer Seeding Pattern
+
+Matches the existing form seeding infrastructure:
+
+```
+Layer 1: .gql files (api/src/entities/testimonial/graphql/)
+         → pnpm codegen → typed documents in operations.ts
+
+Layer 2: API e2e-support feature (api/src/features/e2e-support/testimonials/)
+         → routes.ts (thin HTTP handlers) + crud.ts (executeGraphQLAsAdmin)
+
+Layer 3: Client fixtures (apps/web/tests/e2e/entities/testimonial/)
+         → API functions + Playwright fixture extension with setup/cleanup
+```
+
+### Layer 1: GraphQL Operations
+
+**Create** `api/src/entities/testimonial/graphql/createTestTestimonial.gql`
+- `insert_testimonials_one` mutation
+- Variables: `organization_id`, `content`, `customer_name`, `customer_email`, `customer_company`, `rating` (smallint), `status`, `source`, `form_id`
+- Returns: `id`, `content`, `customer_name`, `status`
+
+**Create** `api/src/entities/testimonial/graphql/deleteTestTestimonial.gql`
+- `delete_testimonials_by_pk` mutation
+- Variable: `id`
+- Returns: `id`
+
+Then run `pnpm codegen` in `api/` to generate typed documents.
+
+### Layer 2: API E2E Support
+
+**Create** `api/src/features/e2e-support/testimonials/types.ts`
+- `TestTestimonialInput` — content, customer_name, customer_email?, customer_company?, rating?, status?
+- `TestTestimonialResult` — id, content, customer_name, status
+
+**Create** `api/src/features/e2e-support/testimonials/crud.ts`
+- `createTestTestimonial(orgId, input)` — calls `executeGraphQLAsAdmin(CreateTestTestimonialDocument, ...)`
+- `deleteTestTestimonial(id)` — calls `executeGraphQLAsAdmin(DeleteTestTestimonialDocument, ...)`
+- Defaults: `status: 'approved'`, `source: 'e2e_test'`
+
+**Create** `api/src/features/e2e-support/testimonials/routes.ts`
+- `createTestimonials(c: Context)` — POST handler, accepts `{ testimonials: TestTestimonialInput[] }`, creates all via `crud.ts`, returns array of results
+- `deleteTestimonial(c: Context)` — DELETE handler by `:id` param
+- Uses `env.E2E_ORGANIZATION_ID` (same as forms pattern)
+
+**Create** `api/src/features/e2e-support/testimonials/index.ts` — barrel export
+
+**Modify** `api/src/features/e2e-support/index.ts` — add testimonial exports
+
+**Modify** `api/src/routes/e2e.ts` — register `POST /testimonials` and `DELETE /testimonials/:id`
+
+### Layer 3: Client-Side Fixtures
+
+**Create** `apps/web/tests/e2e/entities/testimonial/types.ts`
+- `TestTestimonialData` — id, content, customer_name, customer_email, customer_company, rating, status
+- `CreateTestimonialsResponse` — `{ testimonials: TestTestimonialData[] }`
+
+**Create** `apps/web/tests/e2e/entities/testimonial/fixtures/testimonial-api.ts`
+- `createTestTestimonials(overrides?)` — POST to `/testimonials` with default data
+- `deleteTestTestimonial(id)` — DELETE to `/testimonials/:id`
+- Default factory: 3 approved testimonials with distinct names
+
+**Create** `apps/web/tests/e2e/entities/testimonial/fixtures/testimonial-fixtures.ts`
+- Extends `appTest` with `testimonialsViaApi` fixture
+- Setup: creates 3 testimonials → `await use(data)`
+- Cleanup: deletes all created testimonials (try/catch per form pattern)
+
+**Create** `apps/web/tests/e2e/entities/testimonial/index.ts` — barrel exports
+
+**Modify** `apps/web/tests/e2e/entities/index.ts` — add testimonial entity exports
+
+### Layer 4: Update Tests
+
+**Modify** `apps/web/tests/e2e/features/widgets/focused-tests/builder-tabs.spec.ts`
+- Import from testimonial fixtures instead of app fixtures
+- Tests needing testimonials (badge, selection) use `testimonialsViaApi` fixture param
+- Tests not needing testimonials (save button, design tab) use base `authedPage` only
+- Use `testimonialsViaApi` data for assertions — no hardcoded names
+
+### Default Seeded Data
+
+3 testimonials with varied data for meaningful test coverage:
+
+| # | customer_name | rating | content | status |
+|---|--------------|--------|---------|--------|
+| 1 | Alice Test | 5 | "Great product, highly recommend!" | approved |
+| 2 | Bob Test | 4 | "Good experience overall." | approved |
+| 3 | Carol Test | 5 | "Solid tool for our team." | approved |
+
+All created with `source: 'e2e_test'` for easy identification and cleanup.
+
+### Key Files Referenced
+
+| File | Role |
+|------|------|
+| `api/src/features/e2e-support/forms/routes.ts` | Pattern source (thin route handlers) |
+| `api/src/features/e2e-support/forms/crud/shared/primitives.ts` | Pattern source (executeGraphQLAsAdmin) |
+| `api/codegen.ts` | Scans `src/**/*.gql` for codegen |
+| `apps/web/tests/e2e/shared/api/test-api-client.ts` | `testApiRequest()` client |
+| `apps/web/tests/e2e/entities/form/fixtures/form-fixtures.ts` | Playwright fixture pattern |
+| `api/src/routes/e2e.ts` | Route registration |
+| `api/src/features/e2e-support/index.ts` | E2E support barrel |
+
+### Verification
+
+1. `pnpm codegen` in `api/` — generates typed documents for new `.gql` files
+2. `pnpm typecheck` — no type errors across api and web
+3. Run `builder-tabs.spec.ts` — all 4 tests pass with seeded data, no hardcoded names
+4. Verify cleanup: no leftover test testimonials after run
 
 ---
 

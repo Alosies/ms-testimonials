@@ -4,6 +4,7 @@ import { Icon } from '@testimonials/icons';
 import { Avatar, AvatarFallback, AvatarImage, Checkbox } from '@testimonials/ui';
 import { useGetTestimonials } from '@/entities/testimonial';
 import { useCurrentContextStore } from '@/shared/currentContext';
+import { widgetsTestIds } from '@/shared/constants/testIds';
 
 const props = defineProps<{
   selectedIds: string[];
@@ -82,10 +83,11 @@ function getInitials(name: string | null): string {
       No approved testimonials available.
     </p>
 
-    <div v-else class="space-y-2 max-h-64 overflow-y-auto pr-1">
+    <div v-else class="space-y-2 max-h-96 overflow-y-auto pr-1">
       <div
         v-for="t in approvedTestimonials"
         :key="t.id"
+        :data-testid="widgetsTestIds.testimonialRow"
         role="button"
         class="flex items-start gap-3 rounded-md border border-border p-3 cursor-pointer transition-colors hover:bg-muted/30"
         :class="selectedIds.includes(t.id) ? 'bg-muted/30 border-primary/30' : ''"

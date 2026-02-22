@@ -19,18 +19,6 @@ function update(patch: Partial<WidgetFormState>) {
 <template>
   <div class="space-y-5">
     <div>
-      <Label for="widget-name" class="text-sm font-medium">Widget Name</Label>
-      <Input
-        id="widget-name"
-        :data-testid="widgetsTestIds.nameInput"
-        :model-value="state.name"
-        @update:model-value="update({ name: $event as string })"
-        placeholder="e.g., Homepage Wall of Love"
-        class="mt-1.5"
-      />
-    </div>
-
-    <div>
       <Label class="text-sm font-medium mb-3 block">Theme</Label>
       <div class="flex gap-3">
         <button

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, toRefs } from 'vue';
 import { Icon } from '@testimonials/icons';
-import { Button, Separator } from '@testimonials/ui';
+import { Button, Input, Label, Tabs, TabsContent, TabsList, TabsTrigger } from '@testimonials/ui';
 import { Skeleton } from '@testimonials/ui';
 import { useCurrentContextStore } from '@/shared/currentContext';
 import { useRouting } from '@/shared/routing';
@@ -129,13 +129,42 @@ function handleUpdateState(newState: WidgetFormState) {
       <div v-else class="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <!-- Left: Settings -->
         <div class="space-y-6">
+          <!-- Always visible: type + name -->
           <WidgetTypeSelector v-model="state.type" />
-          <Separator />
-          <WidgetSettingsPanel :state="state" @update:state="handleUpdateState" />
-          <Separator />
-          <WidgetFormSelector v-model="state.form_id" :locked-form-id="lockedFormId" />
-          <Separator />
-          <WidgetTestimonialSelector v-model:selected-ids="selectedTestimonialIds" />
+          <div>
+            <Label for="widget-name" class="text-sm font-medium">Widget Name</Label>
+            <Input
+              id="widget-name"
+              :data-testid="widgetsTestIds.nameInput"
+              :model-value="state.name"
+              @update:model-value="state.name = ($event as string)"
+              placeholder="e.g., Homepage Wall of Love"
+              class="mt-1.5"
+            />
+          </div>
+
+          <!-- Tabbed sections -->
+          <Tabs default-value="content">
+            <TabsList class="w-full">
+              <TabsTrigger value="content" class="flex-1 gap-1.5">
+                Content
+                <span
+                  v-if="selectedTestimonialIds.length > 0"
+                  class="inline-flex items-center justify-center rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-medium text-primary-foreground leading-none"
+                >
+                  {{ selectedTestimonialIds.length }}
+                </span>
+              </TabsTrigger>
+              <TabsTrigger value="design" class="flex-1">Design</TabsTrigger>
+            </TabsList>
+            <TabsContent value="content" class="space-y-6 mt-4">
+              <WidgetFormSelector v-model="state.form_id" :locked-form-id="lockedFormId" />
+              <WidgetTestimonialSelector v-model:selected-ids="selectedTestimonialIds" />
+            </TabsContent>
+            <TabsContent value="design" class="mt-4">
+              <WidgetSettingsPanel :state="state" @update:state="handleUpdateState" />
+            </TabsContent>
+          </Tabs>
         </div>
 
         <!-- Right: Preview -->
