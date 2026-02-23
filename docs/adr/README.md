@@ -52,3 +52,7 @@ Each ADR follows this structure:
 | [ADR-021](./021-api-service-data-layer-architecture/adr.md) | API Service Data Layer Architecture | Accepted | 2026-01-25 |
 | [ADR-022](./022-form-dashboard/adr.md) | Form Dashboard and Subpages | Accepted | 2026-01-26 |
 | [ADR-023](./023-ai-capabilities-plan-integration/adr.md) | AI Capabilities Plan Integration | Proposed | 2026-01-26 |
+| [ADR-024](./024-widgets-v1/adr.md) | Widgets v1 | Proposed | 2026-02-02 |
+| [ADR-025](./025-testimonials-display/adr.md) | Testimonials Display | Proposed | 2026-02-21 |
+| ADR-026 | *(Reserved)* | | |
+| [ADR-027](./027-widget-types-expansion/adr.md) | Widget Types Expansion | Proposed | 2026-02-23 |
