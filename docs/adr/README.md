@@ -54,5 +54,5 @@ Each ADR follows this structure:
 | [ADR-023](./023-ai-capabilities-plan-integration/adr.md) | AI Capabilities Plan Integration | Proposed | 2026-01-26 |
 | [ADR-024](./024-widgets-v1/adr.md) | Widgets v1 | Proposed | 2026-02-02 |
 | [ADR-025](./025-testimonials-display/adr.md) | Testimonials Display | Proposed | 2026-02-21 |
-| ADR-026 | *(Reserved)* | | |
+| [ADR-026](./026-video-testimonials-mvp/adr.md) | Video Testimonials (Upload-Only MVP) | Proposed | 2026-02-23 |
 | [ADR-027](./027-widget-types-expansion/adr.md) | Widget Types Expansion | Proposed | 2026-02-23 |
