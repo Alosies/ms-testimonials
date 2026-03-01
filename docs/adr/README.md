@@ -56,3 +56,4 @@ Each ADR follows this structure:
 | [ADR-025](./025-testimonials-display/adr.md) | Testimonials Display | Proposed | 2026-02-21 |
 | [ADR-026](./026-video-testimonials-mvp/adr.md) | Video Testimonials (Upload-Only MVP) | Proposed | 2026-02-23 |
 | [ADR-027](./027-widget-types-expansion/adr.md) | Widget Types Expansion | Proposed | 2026-02-23 |
+| [ADR-028](./028-auth-provider-redundancy/adr.md) | Auth Provider Redundancy & Abstraction Layer | Proposed | 2026-02-27 |
