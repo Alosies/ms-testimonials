@@ -47,12 +47,13 @@ export default {
       });
     }
 
-    // Forward the request
+    // Forward the request — use 'manual' redirect so 302s (e.g. OAuth redirects
+    // to Google) are passed back to the browser instead of being followed by the Worker.
     const response = await fetch(requestUrl.toString(), {
       method: request.method,
       headers,
       body: request.body,
-      redirect: 'follow',
+      redirect: 'manual',
     });
 
     // Add CORS headers to response
