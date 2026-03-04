@@ -16,6 +16,8 @@ This document details the step-by-step implementation of auth provider redundanc
 
 **Estimated total effort:** 5-8 days across 5 phases (Phase 0 can be done immediately, independent of Phases 1-4)
 
+> **Status (2026-03-04):** Phase 0 is deployed and active. **Phases 1-4 are deferred** until post-MVP. Better Auth was attempted but abandoned due to opaque token issues and operational overhead. See the [ADR's Research & Deferral Notes](./adr.md#research--deferral-notes-2026-03-04) for full details. The implementation details below are preserved for reference when this work is revisited.
+
 ---
 
 ## Phase 0: Immediate Mitigation — Self-Hosted Cloudflare Worker Proxy
@@ -157,8 +159,8 @@ if (request.headers.get('Upgrade') === 'websocket') {
 
 ### Phase 0 Checklist
 
-- [ ] Create Cloudflare Worker project in `infra/cloudflare-worker/`
-- [ ] Deploy Worker to Cloudflare (`wrangler deploy`)
+- [x] Create Cloudflare Worker project in `infra/cloudflare-worker/`
+- [x] Deploy Worker to Cloudflare (`wrangler deploy`)
 - [ ] Configure custom domain (e.g., `api-auth.ourdomain.com`)
 - [ ] Update `VITE_SUPABASE_URL` in production env
 - [ ] Verify auth flow works through proxy (signup, login, OAuth, token refresh)
@@ -395,26 +397,47 @@ Better Auth can run as a standalone Hono server (matching our existing API frame
 - `db/better-auth/src/index.ts` — Hono + Better Auth server
 - `db/better-auth/Dockerfile` — Production Docker image
 
-**Server setup:**
-```typescript
-import { Hono } from 'hono';
-import { betterAuth } from 'better-auth';
+**Server setup includes:**
+- Hono.js HTTP server on port 3100
+- PostgreSQL connection with `search_path=better_auth` for schema isolation
+- Email/password auth with password reset via Resend
+- Email verification on signup (auto-sign-in after verification)
+- Google OAuth
+- Rate limiting (see below)
 
-const auth = betterAuth({
-  database: { url: process.env.DATABASE_URL },
-  emailAndPassword: { enabled: true },
-  socialProviders: {
-    google: {
-      clientId: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    },
-  },
-});
+**Note:** The `better_auth` schema must be created before first run. This is handled by a DB migration (`CREATE SCHEMA IF NOT EXISTS better_auth;`).
 
-const app = new Hono();
-app.on(['GET', 'POST'], '/api/auth/**', (c) => auth.handler(c.req.raw));
-export default { port: 3100, fetch: app.fetch };
-```
+#### Email Provider: Resend (Configured 2026-03-04)
+
+- **Provider:** Resend (resend.com)
+- **Domain:** `testimonial.brownforge.com` — verified with DKIM
+- **Region:** Tokyo (ap-northeast-1)
+- **From address:** `Testimonials <noreply@testimonial.brownforge.com>`
+- **Free tier:** 3,000 emails/month
+- **Env var:** `RESEND_API_KEY` in `db/better-auth/.env`
+- **File:** `db/better-auth/src/email.ts` — Resend client wrapper
+
+Emails sent:
+- **Verification email** — on signup, with auto-sign-in after verification
+- **Password reset email** — on forgot password request
+
+Both use fire-and-forget (`void sendEmail(...)`) per Better Auth docs to prevent timing attacks.
+
+#### Rate Limiting (Configured 2026-03-04)
+
+Better Auth's built-in rate limiting is enabled with named constants in `db/better-auth/src/index.ts`:
+
+| Endpoint | Window | Max Requests |
+|----------|--------|-------------|
+| Global (all routes) | 60s | 30 |
+| `/sign-in/email` | 10s | 3 |
+| `/sign-up/email` | 60s | 5 |
+| `/forget-password` | 60s | 3 |
+| `/reset-password` | 60s | 5 |
+| `/verify-email` | 60s | 5 |
+| `/get-session` | unlimited | — |
+
+Rate-limited requests receive HTTP 429 with `X-Retry-After` header.
 
 > **Skill:** `/api-creator` — For endpoint structure if needed
 
@@ -431,7 +454,7 @@ better-auth:
   container_name: better-auth
   restart: always
   environment:
-    DATABASE_URL: postgres://${POSTGRES_USER:-testimonials_admin}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-testimonials}
+    DATABASE_URL: postgres://${POSTGRES_USER:-testimonials_admin}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-testimonials}?options=-c%20search_path%3Dbetter_auth
     BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
     BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:3100}
     GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
@@ -447,8 +470,10 @@ better-auth:
 
 **Key decisions:**
 - Uses Docker `profiles` — only starts when explicitly activated: `docker compose --profile with-better-auth up -d`
-- Shares the same PostgreSQL instance (Better Auth creates its own tables)
+- Shares the same PostgreSQL instance but uses a **separate `better_auth` schema** (not `public`) to avoid table naming conflicts with our app tables
 - Port 3100 to avoid conflicts with existing services (3000 web, 4000 API, 8080 Hasura)
+
+**Schema isolation:** Better Auth creates 4 internal tables (`user`, `session`, `account`, `verification`). These live in the `better_auth` schema, separate from our app's `public` schema (`users`, `user_identities`, etc.). This is achieved by setting `search_path=better_auth` on the database connection pool and creating the schema via migration.
 
 > **Skill:** N/A (Docker/infra configuration)
 
@@ -580,13 +605,13 @@ ssh hetzner "docker stop better-auth"
 
 ## Phase Summary & Skill Map
 
-| Phase | Description | Duration | Skills Used |
-|-------|-------------|----------|-------------|
-| **Phase 0** | Cloudflare Worker proxy (immediate fix) | 2-4 hours | N/A (Cloudflare/infra) |
-| **Phase 1** | API-side abstraction layer | 1-2 days | `/api-code-review`, `/api-creator` |
-| **Phase 2** | Frontend-side abstraction layer | 1-2 days | `/code-review` |
-| **Phase 3** | Better Auth deployment on Hetzner | 1 day | `/api-creator` |
-| **Phase 4** | Testing + failover runbook | 2 days | `/e2e-tests-creator`, `/e2e-tests-runner`, `/e2e-test-ids`, `/api-code-review`, `/hasura-migrations`, `/hasura-permissions` |
+| Phase | Description | Duration | Status | Skills Used |
+|-------|-------------|----------|--------|-------------|
+| **Phase 0** | Cloudflare Worker proxy (immediate fix) | 2-4 hours | **DONE** | N/A (Cloudflare/infra) |
+| **Phase 1** | API-side abstraction layer | 1-2 days | **DEFERRED** (attempted, reverted) | `/api-code-review`, `/api-creator` |
+| **Phase 2** | Frontend-side abstraction layer | 1-2 days | **DEFERRED** (attempted, reverted) | `/code-review` |
+| **Phase 3** | Better Auth deployment on Hetzner | 1 day | **DEFERRED** (deployed then abandoned) | `/api-creator` |
+| **Phase 4** | Testing + failover runbook | 2 days | **DEFERRED** | `/e2e-tests-creator`, `/e2e-tests-runner` |
 
 ### Skill Reference Quick Guide
 
@@ -606,6 +631,14 @@ ssh hetzner "docker stop better-auth"
 | `/graphql-code` | If GraphQL queries touch auth entities |
 | `/create-commits` | Committing each phase as atomic commits |
 | `/agent-browser` | Manual browser testing of auth flows |
+
+---
+
+## Deployment Details
+
+For server details, SSH access, Docker operations, environment files, and troubleshooting (including gotchas encountered during deployment), see:
+
+**[Hetzner Server Documentation](../../infrastructure/hetzner-server.md)**
 
 ---
 

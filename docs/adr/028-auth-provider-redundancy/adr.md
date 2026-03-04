@@ -16,7 +16,11 @@
 
 ## Status
 
-**Proposed** - 2026-02-27
+**Accepted** - 2026-02-27
+**Implementation started** - 2026-03-01
+**Deferred (Phases 1-4)** - 2026-03-04
+
+> **Phase 0 (Cloudflare Worker proxy) remains active and deployed.** Phases 1-4 (abstraction layer, Better Auth deployment, testing) are deferred until post-MVP. See [Research & Deferral Notes](#research--deferral-notes-2026-03-04) for details.
 
 ## Context
 
@@ -164,6 +168,20 @@ Better Auth runs as a lightweight Node.js process. Add it to the existing Docker
 - Our Hetzner server already runs PostgreSQL — Better Auth uses the same database
 - Reduces operational complexity: one server, one deployment
 - If the Hetzner server itself goes down, both auth providers would be unavailable anyway — but that's a different failure mode than a third-party SaaS outage
+
+### 4. Isolate Better Auth Tables in a Separate PostgreSQL Schema
+
+Better Auth auto-creates 4 tables: `user`, `session`, `account`, and `verification`. These are Better Auth's internal tables for session management and identity storage.
+
+**Decision:** Run Better Auth in a dedicated `better_auth` PostgreSQL schema, not `public`.
+
+**Why:**
+- Our app already has a `users` table (plural) in `public`. Better Auth creates `user` (singular). No direct collision, but sharing `public` risks future naming conflicts as Better Auth adds features/plugins.
+- Clean separation: `public.*` = our app tables, `better_auth.*` = Better Auth internal tables.
+- Better Auth's tables are only used internally by Better Auth for session management. Our `enhance-token` endpoint links Better Auth identities to our own `users` table via `user_identities` — it never queries Better Auth's tables directly.
+- Easier to reason about, backup, and clean up if Better Auth is ever removed.
+
+**Implementation:** Set `search_path=better_auth` on the PostgreSQL connection pool used by Better Auth, and create the schema via a migration before first run.
 
 ### 4. MVP vs Scaling Strategy
 
@@ -330,6 +348,65 @@ docker compose --profile with-better-auth up -d
 
 ### Alternative 7: JioBase (Managed Reverse Proxy)
 - **Rejected**: Third-party managed Cloudflare proxy that routes `*.supabase.co` traffic through `*.jiobase.com`. While open source and free, it routes all auth traffic (including tokens and credentials) through an indie developer's Cloudflare account. No SLA, no guarantee of availability. Adds a third-party dependency rather than removing one. A self-hosted Cloudflare Worker on our own account achieves the same result with full control.
+
+## Research & Deferral Notes (2026-03-04)
+
+### What Was Attempted
+
+Phases 1-3 were implemented over 2026-03-01 to 2026-03-04:
+
+1. **API-side abstraction layer** — `AuthPort`/`TokenDecoder` interfaces, Supabase and Better Auth decoder adapters, generic `decodeProviderToken()` factory
+2. **Frontend-side abstraction layer** — `AuthPort` interface, Supabase adapter, Better Auth adapter using official `better-auth/vue` SDK, adapter factory
+3. **Better Auth server deployment** — Hono.js + Better Auth on Hetzner, Docker Compose with `profiles: [with-better-auth]`, Caddy reverse proxy, Resend email integration, rate limiting, `better_auth` schema isolation
+
+### Issues Encountered with Better Auth
+
+1. **OAuth `state_mismatch` error** — Cross-origin cookie issue. Better Auth stores OAuth state in cookies, but cross-origin requests (frontend on `localhost:3000`, Better Auth on `auth.testimonial.brownforge.com`) caused `SameSite=Lax` cookies to be dropped. Fixed with `defaultCookieAttributes: { sameSite: 'none', secure: true }`.
+
+2. **Opaque session tokens** — Better Auth uses opaque session tokens (not JWTs). Our `TokenDecoder` pattern assumed local JWT decoding. Required a server-to-server call from our API to Better Auth's `get-session` endpoint for every token validation — adding latency, a network dependency, and a single point of failure.
+
+3. **Session validation failures** — The `get-session` endpoint consistently returned `null` despite correct cookie formatting (including `__Secure-` prefix for HTTPS). Root cause was never fully resolved.
+
+4. **Server stability** — Better Auth server returned 500 errors on sign-up attempts (JSON parse errors in request handling). Debugging the self-hosted Better Auth instance consumed significant time.
+
+5. **Operational overhead** — Running a separate auth server (even lightweight) adds monitoring, deployment, and debugging surface area that is disproportionate for an MVP.
+
+### Alternatives Researched
+
+A comprehensive evaluation of 10+ auth providers was conducted:
+
+| Provider | Type | Verdict | Key Reason |
+|----------|------|---------|------------|
+| **Better Auth** | Self-hosted OSS | Attempted, abandoned | Opaque tokens, session validation issues, operational overhead |
+| **Arctic + jose** | Library (DIY) | **Recommended for future** | Lightweight OAuth library + JWT signing. Full control, no server dependency. ~200 lines of code for Google OAuth + email/password |
+| **Auth.js / @hono/auth-js** | Library | Runner-up | Good Hono integration, but session-based by default (needs JWT adapter). Less mature than Arctic for custom flows |
+| **WorkOS** | Managed SaaS | Poor fit | Redirect-based auth (not inline), no `onAuthStateChange` equivalent, Vue.js is second-class citizen, $0 up to 1M MAU but enterprise-focused |
+| **Ory Kratos** | Self-hosted OSS | Too complex | Headless (must build all UI), session-based not JWT-based, Go binary adds infra complexity |
+| **Keycloak** | Self-hosted OSS | Too heavy | Java-based, 1-2GB RAM minimum, enterprise-grade overkill |
+| **Logto** | Self-hosted/Cloud | Decent option | Good UI, but another server to run. Cloud tier has per-MAU pricing |
+| **SuperTokens** | Self-hosted/Cloud | Decent option | React-focused, Vue support via vanilla JS SDK only |
+| **Stack Auth** | Managed | Too new | Small community, unclear long-term viability |
+| **Firebase Auth** | Managed SaaS | Same failure class | Another third-party SaaS — doesn't solve the resilience problem |
+| **Clerk** | Managed SaaS | Too expensive | $0.02/MAU, vendor lock-in, has had its own outages |
+| **Auth0** | Managed SaaS | Too expensive | $2,000-4,000/mo at 100K MAU |
+
+### Why Deferral Is the Right Call
+
+1. **The Cloudflare Worker proxy (Phase 0) already solves the immediate problem** — Indian users can access Supabase through our own domain, bypassing the DNS block.
+
+2. **This is an MVP** — Engineering time is better spent on product features (testimonial collection, widgets, AI assembly) than auth infrastructure redundancy.
+
+3. **The risk is manageable** — Supabase has had one ISP-level block (India) which is solved by the proxy. A full Supabase outage is a different, lower-probability risk that doesn't justify the MVP investment.
+
+4. **The abstraction layer can be added later** — The `user_identities` table already supports multi-provider. When the time comes, Arctic + jose is a 1-2 day implementation that doesn't require running a separate server.
+
+### Future Recommendation
+
+When auth provider redundancy is revisited (post-MVP, likely at 1K+ MAU):
+
+1. **Use Arctic + jose** — Lightweight OAuth library for Google/GitHub OAuth + `jose` for JWT signing. No server dependency. Runs as part of the existing Hono API.
+2. **Skip self-hosted auth servers** — The operational overhead of Better Auth, Keycloak, Ory Kratos, etc. is not justified for a micro-SaaS.
+3. **Keep the Port/Adapter pattern** — The interface design in this ADR is sound. Implement it when there's a concrete second provider to plug in.
 
 ## References
 
