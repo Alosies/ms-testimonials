@@ -86,6 +86,26 @@ export async function getPublicWidgetHandler(c: Context): Promise<Response> {
       ? testimonials.slice(0, widget.max_display)
       : testimonials;
 
+    // Compute aggregates from ALL testimonials (before max_display slicing) —
+    // aggregate metrics should reflect the full dataset, not just displayed items
+    const typesNeedingAggregates = ['rating_badge', 'avatars_bar', 'marquee', 'toast_popup'];
+    let aggregates: { average_rating: number | null; total_count: number; rated_count: number } | undefined;
+
+    if (typesNeedingAggregates.includes(widget.type)) {
+      const ratings = testimonials
+        .map((t) => t.rating)
+        .filter((r): r is number => r !== null && r !== undefined);
+      const averageRating = ratings.length > 0
+        ? Math.round((ratings.reduce((sum, r) => sum + r, 0) / ratings.length) * 10) / 10
+        : null;
+
+      aggregates = {
+        average_rating: averageRating,
+        total_count: testimonials.length,
+        rated_count: ratings.length,
+      };
+    }
+
     return c.json(
       {
         widget: {
@@ -101,6 +121,7 @@ export async function getPublicWidgetHandler(c: Context): Promise<Response> {
           settings: widget.settings,
         },
         testimonials: limited,
+        ...(aggregates && { aggregates }),
       },
       200,
       {
