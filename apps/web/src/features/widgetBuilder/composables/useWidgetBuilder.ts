@@ -1,4 +1,4 @@
-import { ref, computed, watch, type Ref } from 'vue';
+import { ref, computed, watch, nextTick, type Ref } from 'vue';
 import {
   useGetWidget,
   useCreateWidget,
@@ -31,8 +31,10 @@ export function useWidgetBuilder(widgetId: Ref<string | null>) {
   const { syncWidgetTestimonials } = useSyncWidgetTestimonials();
 
   // Sync loaded widget to form state (skip during save to avoid race condition)
+  const _skipTypeResetOnLoad = ref(false);
   watch(widget, (w) => {
     if (!w || _skipWatchDuringSave.value) return;
+    _skipTypeResetOnLoad.value = true;
     state.value = {
       name: w.name,
       type: w.type as WidgetFormState['type'],
@@ -51,12 +53,16 @@ export function useWidgetBuilder(widgetId: Ref<string | null>) {
     // Load selected testimonials from placements
     const placements = w.testimonial_placements ?? [];
     selectedTestimonialIds.value = placements.map((p) => p.testimonial_id);
+    nextTick(() => {
+      _skipTypeResetOnLoad.value = false;
+    });
   });
 
-  // Reset settings to defaults when widget type changes
+  // Reset settings to defaults when widget type changes (user interaction only)
   watch(
     () => state.value.type,
     (newType, oldType) => {
+      if (_skipTypeResetOnLoad.value) return;
       if (oldType && newType !== oldType) {
         state.value.settings = getDefaultSettings(newType);
       }

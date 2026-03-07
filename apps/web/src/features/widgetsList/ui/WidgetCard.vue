@@ -31,6 +31,26 @@ const widgetTypeConfig = computed(() => {
       icon: 'heroicons:chat-bubble-bottom-center-text',
       colorClass: 'bg-emerald-100 text-emerald-600',
     },
+    marquee: {
+      label: 'Marquee Strip',
+      icon: 'heroicons:arrows-right-left',
+      colorClass: 'bg-amber-100 text-amber-600',
+    },
+    rating_badge: {
+      label: 'Rating Badge',
+      icon: 'heroicons:star',
+      colorClass: 'bg-yellow-100 text-yellow-600',
+    },
+    avatars_bar: {
+      label: 'Avatars Bar',
+      icon: 'heroicons:user-group',
+      colorClass: 'bg-pink-100 text-pink-600',
+    },
+    toast_popup: {
+      label: 'Toast Popup',
+      icon: 'heroicons:bell-alert',
+      colorClass: 'bg-indigo-100 text-indigo-600',
+    },
   };
   return configs[props.widget.type] ?? configs.wall_of_love;
 });
