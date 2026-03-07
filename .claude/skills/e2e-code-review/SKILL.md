@@ -17,7 +17,7 @@ git diff --staged -- "*.spec.ts"
 ```
 
 ### Step 2: Review Against Checklist
-Check each test file against the checklist below.
+Check each test file against the checklist below. For detailed patterns, see `procedures/` reference docs.
 
 ### Step 3: Run Tests
 ```bash
@@ -46,27 +46,48 @@ Use the output format at the bottom. Include test execution results.
 - [ ] **Fixture imports** - from `@e2e/entities/{entity}/fixtures`
 - [ ] **Actions used** - reusable operations in actions/, not inline
 
-### Selectors
+### Selectors (see `procedures/selector-anti-patterns.md`)
 - [ ] **data-testid only** - no element/class/id selectors
 - [ ] **Test IDs from constants** - `studioTestIds.xxx` not string literals
 - [ ] **Two-attribute pattern** for entities - `data-testid` + `data-{entity}-id`
+- [ ] **No getByRole** - use `getByTestId` with test ID constants
+- [ ] **No getByText** - use `getByTestId` + `.filter({ hasText })` when needed
+- [ ] **No CSS class assertions** - no `toHaveClass(/ring-2/)`, use `data-selected` attribute
+- [ ] **data-selected for selection state** - `toHaveAttribute('data-selected', 'true')`
 
 ```typescript
 // ✅ Good
-stepCard.getByTestId(studioTestIds.welcomeTitle)
-studio.getCanvasStepCard(stepId)  // uses data-step-id
+page.getByTestId(widgetsTestIds.builderSaveButton).click();
+page.getByTestId(testIds.settingsHeading).filter({ hasText: 'Marquee' });
+await expect(option).toHaveAttribute('data-selected', 'true');
 
 // ❌ Bad
-page.locator('button')
-page.locator('#title')
-page.locator('.step-card')
+page.getByRole('button', { name: 'Save' }).click();
+page.getByText('Marquee Settings');
+await expect(button).toHaveClass(/ring-2/);
+```
+
+### Waits & Guards (see `procedures/wait-patterns.md`)
+- [ ] **Condition-based waits only** - `toBeEnabled()`, `toBeVisible()`, `waitFor()`
+- [ ] **No arbitrary timeouts** - no `waitForTimeout()` unless testing time-dependent behavior
+- [ ] **Data-load guards after navigation** - `not.toHaveValue('')` before interacting with API-loaded data
+- [ ] **Save waits** - `toBeEnabled()` on save button, not `waitForTimeout()`
+
+```typescript
+// ✅ Good: Data-load guard
+await page.goto(widgetUrl);
+await expect(widgets.nameInput).not.toHaveValue('', { timeout: 10000 });
+
+// ❌ Bad: No guard, interact immediately after navigation
+await page.goto(widgetUrl);
+await widgets.selectType('marquee');  // Data not loaded yet!
 ```
 
 ### Test Patterns
 - [ ] **Fixture data for assertions** - not hardcoded values
 - [ ] **Actions verify success** - include basic "did it work?" checks
 - [ ] **Wait after UI changes** - `waitForScrollSettle()` or similar
-- [ ] **No flaky waits** - avoid arbitrary `waitForTimeout()` unless necessary
+- [ ] **Page object helpers used** - not raw locators for common operations
 
 ```typescript
 // ✅ Good: Use fixture data
@@ -81,12 +102,6 @@ await expect(stepCard).toContainText('My Question');
 - [ ] **@smoke on journey tests** - for quick CI validation
 - [ ] **@smoke on combined tests** - tests that cover full flows
 - [ ] **Feature tags** - `@autosave`, `@navigation`, etc. for filtering
-
-```typescript
-// ✅ Good
-test.describe('Feature', { tag: '@smoke' }, () => { ... });
-test('combined test', { tag: '@smoke' }, async () => { ... });
-```
 
 ### Auto-Save Tests
 - [ ] **Batch edits together** - don't close/reload after each field
@@ -107,7 +122,7 @@ test('combined test', { tag: '@smoke' }, async () => { ... });
 ## E2E Code Review Results
 
 ### Test Execution
-- **Status**: ✅ Passed / ❌ Failed
+- **Status**: PASS / FAIL
 - **Tests Run**: {count}
 - **Duration**: {time}
 - **Failed Tests**: {list if any}
@@ -137,7 +152,8 @@ test('combined test', { tag: '@smoke' }, async () => { ... });
 
 ## References
 
-For detailed patterns, see:
+- `procedures/selector-anti-patterns.md` - Selector patterns, data-selected, missing test ID workflow
+- `procedures/wait-patterns.md` - Condition-based waits, data-load guards, save/navigation waits
 - `apps/web/tests/e2e/CLAUDE.md` - E2E directory overview
 - `.claude/skills/e2e-tests-creator/SKILL.md` - Test creation patterns
 - `.claude/skills/e2e-tests-runner/SKILL.md` - Running tests, tags
