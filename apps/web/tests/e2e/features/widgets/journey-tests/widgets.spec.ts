@@ -31,8 +31,8 @@ test.describe('Widgets', () => {
     });
 
     await test.step('3. Configure widget settings', async () => {
-      // Select carousel type
-      await widgets.selectType('carousel');
+      // Select marquee type (covers a new ADR-027 type in smoke suite)
+      await widgets.selectType('marquee');
 
       // Fill name
       await widgets.fillName(uniqueName);
@@ -57,7 +57,7 @@ test.describe('Widgets', () => {
 
       // Embed code should contain the widget type and script tag
       const codeText = await widgets.embedCode.textContent();
-      expect(codeText).toContain('data-testimonials-widget="carousel"');
+      expect(codeText).toContain('data-testimonials-widget="marquee"');
       expect(codeText).toContain('/embed/widgets.js');
 
       await widgets.closeEmbedModal();
@@ -75,8 +75,8 @@ test.describe('Widgets', () => {
       });
       await expect(cardWithName).toBeVisible();
 
-      // Verify type badge shows "Carousel"
-      await expect(cardWithName.getByTestId(widgetsTestIds.widgetCardType)).toContainText('Carousel');
+      // Verify type badge shows "Marquee Strip"
+      await expect(cardWithName.getByTestId(widgetsTestIds.widgetCardType)).toContainText('Marquee Strip');
     });
 
     await test.step('7. Edit widget and verify settings loaded', async () => {
@@ -97,7 +97,7 @@ test.describe('Widgets', () => {
 
       // Switch to Design tab and verify dark theme is selected (has ring class)
       await widgets.switchToDesignTab();
-      await expect(authedPage.getByTestId(widgetsTestIds.themeDark)).toHaveClass(/ring-2/);
+      await expect(authedPage.getByTestId(widgetsTestIds.themeDark)).toHaveAttribute('data-selected', 'true');
     });
 
     await test.step('8. Delete widget', async () => {

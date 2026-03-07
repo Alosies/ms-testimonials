@@ -6,6 +6,7 @@
  */
 import { Page, Locator, expect } from '@playwright/test';
 import { widgetsTestIds } from '@/shared/constants/testIds';
+import type { WidgetType } from '@testimonials/core';
 
 export function createWidgetsPage(page: Page) {
   // List page locators
@@ -68,7 +69,7 @@ export function createWidgetsPage(page: Page) {
 
     /** Navigate to widgets list via sidebar */
     async gotoList() {
-      await page.getByRole('button', { name: 'Widgets' }).click();
+      await page.getByTestId(widgetsTestIds.navWidgets).click();
       await Promise.race([
         listPage.waitFor({ timeout: 10000 }),
         emptyState.waitFor({ timeout: 10000 }),
@@ -83,7 +84,7 @@ export function createWidgetsPage(page: Page) {
     },
 
     /** Select a widget type in the builder */
-    async selectType(type: 'wall_of_love' | 'carousel' | 'single_quote') {
+    async selectType(type: WidgetType) {
       await page.locator(`[data-testid="${widgetsTestIds.typeOption}"][data-widget-type="${type}"]`).click();
     },
 
@@ -96,8 +97,8 @@ export function createWidgetsPage(page: Page) {
     /** Save the widget */
     async save() {
       await builderSaveButton.click();
-      // Wait for save to complete (button text changes or URL changes)
-      await page.waitForTimeout(1000);
+      // Wait for save button to re-enable (disabled during save)
+      await expect(builderSaveButton).toBeEnabled({ timeout: 10000 });
     },
 
     /** Open embed code modal */
@@ -138,17 +139,69 @@ export function createWidgetsPage(page: Page) {
 
     /** Switch to the Design tab in the widget builder */
     async switchToDesignTab() {
-      await page.getByRole('tab', { name: 'Design' }).click();
+      await page.getByTestId(widgetsTestIds.tabDesign).click();
     },
 
     /** Switch to the Content tab in the widget builder */
     async switchToContentTab() {
-      await page.getByRole('tab', { name: /Content/ }).click();
+      await page.getByTestId(widgetsTestIds.tabContent).click();
     },
 
     /** Assert builder title */
     async expectBuilderTitle(text: string) {
       await expect(builderTitle).toContainText(text);
+    },
+
+    /** Assert a type category heading is visible */
+    async expectCategoryVisible(categoryLabel: string) {
+      const category = page.getByTestId(widgetsTestIds.typeCategory).filter({ hasText: categoryLabel });
+      await expect(category).toBeVisible();
+    },
+
+    /** Count type option buttons */
+    async expectTypeOptionCount(count: number) {
+      await expect(page.getByTestId(widgetsTestIds.typeOption)).toHaveCount(count);
+    },
+
+    /** Assert the selected type option is marked as selected */
+    async expectTypeSelected(type: WidgetType) {
+      const option = page.locator(
+        `[data-testid="${widgetsTestIds.typeOption}"][data-widget-type="${type}"]`
+      );
+      await expect(option).toHaveAttribute('data-selected', 'true');
+    },
+
+    /** Assert the type option is NOT selected */
+    async expectTypeNotSelected(type: WidgetType) {
+      const option = page.locator(
+        `[data-testid="${widgetsTestIds.typeOption}"][data-widget-type="${type}"]`
+      );
+      await expect(option).not.toHaveAttribute('data-selected', 'true');
+    },
+
+    /** Get the type-specific settings heading */
+    getTypeSettingsHeading(label: string): Locator {
+      return page.getByTestId(widgetsTestIds.settingsHeading).filter({ hasText: label });
+    },
+
+    /** Get the toast embed note element */
+    get embedToastNote(): Locator {
+      return page.getByTestId(widgetsTestIds.embedToastNote);
+    },
+
+    /** Get a settings option button by testid and value */
+    getSettingsOption(testId: string, value: string): Locator {
+      return page.locator(`[data-testid="${testId}"]`).filter({ hasText: value });
+    },
+
+    /** Click a settings option button by testid and label */
+    async clickSettingsOption(testId: string, label: string) {
+      await this.getSettingsOption(testId, label).click();
+    },
+
+    /** Assert a settings option is selected */
+    async expectSettingsOptionSelected(testId: string, label: string) {
+      await expect(this.getSettingsOption(testId, label)).toHaveAttribute('data-selected', 'true');
     },
   };
 }
