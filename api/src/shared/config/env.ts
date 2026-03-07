@@ -57,6 +57,11 @@ export const env = {
   // AWS Lambda Media Webhook (Lambda uses this secret to authenticate callbacks)
   AWS_LAMBDA_MEDIA_WEBHOOK_SECRET: getEnvVar('AWS_LAMBDA_MEDIA_WEBHOOK_SECRET', 'dev-webhook-secret'),
 
+  // Bunny Stream (Video Transcoding & Delivery - ADR-029)
+  BUNNY_STREAM_API_KEY: getEnvVar('BUNNY_STREAM_API_KEY', ''),
+  BUNNY_STREAM_LIBRARY_ID: getEnvVar('BUNNY_STREAM_LIBRARY_ID', ''),
+  BUNNY_STREAM_CDN_HOSTNAME: getEnvVar('BUNNY_STREAM_CDN_HOSTNAME', ''),
+
   // Stripe
   STRIPE_SECRET_KEY: getEnvVar('STRIPE_SECRET_KEY', ''),
   STRIPE_WEBHOOK_SECRET: getEnvVar('STRIPE_WEBHOOK_SECRET', ''),

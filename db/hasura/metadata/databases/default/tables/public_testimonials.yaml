@@ -17,6 +17,9 @@ object_relationships:
   - name: updater
     using:
       foreign_key_constraint_on: updated_by
+  - name: video_media
+    using:
+      foreign_key_constraint_on: video_media_id
 array_relationships:
   - name: widget_placements
     using:
@@ -49,6 +52,8 @@ select_permissions:
     permission:
       columns:
         - id
+        - type
+        - video_media_id
         - content
         - rating
         - customer_name
