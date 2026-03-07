@@ -23,6 +23,7 @@ Orchestrate E2E testing operations by routing to the appropriate specialized ski
 | `/e2e-tests-runner` | Running E2E tests, debugging test failures, verifying changes |
 | `/e2e-code-review` | Reviewing E2E test code for best practices, before merging test changes |
 | `/e2e-tests-creator` | Creating new E2E tests, journey tests, focused tests, action helpers |
+| `/e2e-planner` | Planning E2E test implementation before writing code, UI audits, fixture planning |
 
 *More skills coming soon: e2e-page-objects, e2e-fixtures, e2e-api*
 
@@ -38,10 +39,17 @@ Orchestrate E2E testing operations by routing to the appropriate specialized ski
 | "playwright test", "test failed", "debug test" | `/e2e-tests-runner` |
 | "review test", "check test code", "e2e review" | `/e2e-code-review` |
 | "create test", "write test", "add e2e test" | `/e2e-tests-creator` |
+| "plan e2e", "test plan", "plan tests" | `/e2e-planner` |
 
 ### Test Infrastructure Setup (Multi-Step)
 
 When user asks to "add E2E tests for a feature", coordinate:
+
+**Phase 0: Planning** → Use `/e2e-planner`
+- Audit UI components for test readiness
+- Plan API fixtures needed
+- Design test structure (journey vs focused)
+- Produce implementation plan
 
 **Phase 1: Test IDs** → Use `/e2e-test-ids`
 - Create test ID constants file (if new domain)
@@ -68,6 +76,8 @@ User Request
     ├─ Review test code? ───────────► /e2e-code-review
     │
     ├─ Create new tests? ───────────► /e2e-tests-creator
+    │
+    ├─ Plan test implementation? ──► /e2e-planner
     │
     ├─ Page object related? ─────────► (handle directly for now)
     │
