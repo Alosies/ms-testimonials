@@ -3,7 +3,7 @@
 | Field | Value |
 |-------|-------|
 | **ADR** | [027-widget-types-expansion](./adr.md) |
-| **Status** | Draft |
+| **Status** | Complete |
 | **Created** | 2026-02-23 |
 | **Prerequisite** | ADR-024 (Widgets v1) must be implemented first |
 | **Scope** | DB migration → entity types → embed components → builder UI → E2E tests |
@@ -14,18 +14,18 @@
 
 | Component | Status | Details |
 |-----------|--------|---------|
-| `widgets` table | EXISTS | `type` CHECK: `wall_of_love`, `carousel`, `single_quote` |
-| `settings` JSONB column | EXISTS | Type-specific config per ADR-024 |
-| Widget entity types | EXISTS | `WidgetType = 'wall_of_love' \| 'carousel' \| 'single_quote'` |
-| Embed renderer | DEPENDS | `renderer.ts` dispatches by type → component |
-| Embed components | PARTIAL | `WallOfLove.ts`, `Carousel.ts`, `SingleQuote.ts` exist |
-| Widget builder type selector | EXISTS | Shows 3 types in flat grid |
-| Widget builder settings panel | EXISTS | Type-specific settings for existing 3 types |
-| Widget builder preview | EXISTS | Preview components for existing 3 types |
-| New type DB support | MISSING | CHECK constraint blocks new types |
-| New type entity models | MISSING | No TS types for new settings interfaces |
-| New type embed components | MISSING | No `Marquee.ts`, `RatingBadge.ts`, `AvatarsBar.ts`, `ToastPopup.ts` |
-| New type builder UI | MISSING | No category grouping, no new settings/previews |
+| `widgets` table | DONE | `type` CHECK: all 7 types |
+| `settings` JSONB column | DONE | Type-specific config for all 7 types |
+| Widget entity types | DONE | `WidgetType` union includes all 7 types |
+| Embed renderer | DONE | `renderer.ts` dispatches all 7 types |
+| Embed components | DONE | All 7 components exist |
+| Widget builder type selector | DONE | 3 categories: Section, Micro, Ambient |
+| Widget builder settings panel | DONE | Type-specific settings for all 7 types |
+| Widget builder preview | DONE | Preview components for all 7 types |
+| New type DB support | DONE | CHECK constraint expanded to 7 types |
+| New type entity models | DONE | Settings interfaces for all 4 new types |
+| New type embed components | DONE | `Marquee.ts`, `RatingBadge.ts`, `AvatarsBar.ts`, `ToastPopup.ts` |
+| New type builder UI | DONE | Category grouping, settings, previews for all new types |
 
 ---
 
@@ -218,13 +218,13 @@ COMMENT ON COLUMN public.widgets.type IS
 
 ### Phase 1 Acceptance Criteria
 
-- [ ] DB migration applied: 7-type CHECK constraint on `widgets.type`
-- [ ] `WidgetType` union in entity models includes all 7 types
-- [ ] Settings interfaces defined for all 4 new types
-- [ ] API Zod schemas validate new widget type settings
-- [ ] Public endpoint returns aggregate data for badge/avatars types
-- [ ] `pnpm typecheck` passes
-- [ ] `pnpm lint` passes
+- [x] DB migration applied: 7-type CHECK constraint on `widgets.type`
+- [x] `WidgetType` union in entity models includes all 7 types
+- [x] Settings interfaces defined for all 4 new types
+- [x] API Zod schemas validate new widget type settings
+- [x] Public endpoint returns aggregate data for badge/avatars types
+- [x] `pnpm typecheck` passes
+- [x] `pnpm lint` passes
 
 ---
 
@@ -337,14 +337,14 @@ COMMENT ON COLUMN public.widgets.type IS
 
 ### Phase 2 Acceptance Criteria
 
-- [ ] Rating Badge renders aggregate stars + count in both `inline` and `card` styles
-- [ ] Avatars Bar renders overlapping avatars with count and label text
-- [ ] Marquee scrolls continuously with pause-on-hover, both directions
-- [ ] All 3 components respect theme (light/dark)
-- [ ] All 3 components render inside Shadow DOM isolation
-- [ ] `renderer.ts` dispatches to new components correctly
-- [ ] Embed bundle size still < 35KB gzipped (allow modest increase from 30KB baseline)
-- [ ] Components work in Chrome, Firefox, Safari, Edge (latest)
+- [x] Rating Badge renders aggregate stars + count in both `inline` and `card` styles
+- [x] Avatars Bar renders overlapping avatars with count and label text
+- [x] Marquee scrolls continuously with pause-on-hover, both directions
+- [x] All 3 components respect theme (light/dark)
+- [x] All 3 components render inside Shadow DOM isolation
+- [x] `renderer.ts` dispatches to new components correctly
+- [x] Embed bundle size still < 35KB gzipped (allow modest increase from 30KB baseline)
+- [x] Components work in Chrome, Firefox, Safari, Edge (latest)
 
 ---
 
@@ -409,15 +409,15 @@ COMMENT ON COLUMN public.widgets.type IS
 
 ### Phase 3 Acceptance Criteria
 
-- [ ] Toast popup appears as fixed-position overlay in configured corner
-- [ ] Testimonials rotate at configured intervals
-- [ ] Session tracking limits toasts per page visit via `sessionStorage`
-- [ ] Dismiss button works (hides current toast)
-- [ ] Slide and fade animations work
-- [ ] `prefers-reduced-motion` disables animations
-- [ ] Toast doesn't block page interaction (click-through on overlay area)
-- [ ] Loader properly handles overlay vs inline rendering split
-- [ ] Cleanup works when target div is removed
+- [x] Toast popup appears as fixed-position overlay in configured corner
+- [x] Testimonials rotate at configured intervals
+- [x] Session tracking limits toasts per page visit via `sessionStorage`
+- [x] Dismiss button works (hides current toast)
+- [x] Slide and fade animations work
+- [x] `prefers-reduced-motion` disables animations
+- [x] Toast doesn't block page interaction (click-through on overlay area)
+- [x] Loader properly handles overlay vs inline rendering split
+- [x] Cleanup works when target div is removed
 
 ---
 
@@ -510,16 +510,16 @@ COMMENT ON COLUMN public.widgets.type IS
 
 ### Phase 4 Acceptance Criteria
 
-- [ ] Type selector shows 7 types organized in 3 categories
-- [ ] Each new type has a complete settings panel section
-- [ ] Display toggle visibility is correct per widget type (toggle matrix)
-- [ ] Live preview works for all 4 new types
-- [ ] Toast popup preview shows simulated overlay within preview pane
-- [ ] Embed code modal generates correct snippet for new types
-- [ ] Toast embed modal includes placement guidance note
-- [ ] No component exceeds 250 lines
-- [ ] `pnpm typecheck` passes
-- [ ] `pnpm lint` passes
+- [x] Type selector shows 7 types organized in 3 categories
+- [x] Each new type has a complete settings panel section
+- [x] Display toggle visibility is correct per widget type (toggle matrix)
+- [x] Live preview works for all 4 new types
+- [x] Toast popup preview shows simulated overlay within preview pane
+- [x] Embed code modal generates correct snippet for new types
+- [x] Toast embed modal includes placement guidance note
+- [x] No component exceeds 250 lines
+- [x] `pnpm typecheck` passes
+- [x] `pnpm lint` passes
 
 ---
 
@@ -622,14 +622,14 @@ COMMENT ON COLUMN public.widgets.type IS
 
 ### Phase 5 Acceptance Criteria
 
-- [ ] Test IDs added for all new widget builder elements
-- [ ] E2E tests pass for creating each new widget type
-- [ ] E2E tests pass for embed rendering of each new type
-- [ ] No regressions in existing widget tests
-- [ ] All code reviewed (Vue, TS, embed components)
-- [ ] E2E test code reviewed for Playwright best practices
-- [ ] Table documentation updated
-- [ ] Final `pnpm typecheck` and `pnpm lint` pass
+- [x] Test IDs added for all new widget builder elements
+- [x] E2E tests pass for creating each new widget type
+- [x] E2E tests pass for embed rendering of each new type
+- [x] No regressions in existing widget tests
+- [x] All code reviewed (Vue, TS, embed components)
+- [x] E2E test code reviewed for Playwright best practices
+- [x] Table documentation updated
+- [x] Final `pnpm typecheck` and `pnpm lint` pass
 
 ---
 

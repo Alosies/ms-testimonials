@@ -16,9 +16,10 @@
 
 ## Status
 
-**Proposed** - 2026-02-23
+**Implemented** - 2026-03-07
 
 - 2026-02-23: Competitive research completed, 4 new widget types proposed
+- 2026-03-07: All 5 phases complete — DB, embed components, builder UI, E2E tests
 
 ---
 
