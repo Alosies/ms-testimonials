@@ -76,6 +76,14 @@ async function copyToClipboard() {
       <p class="text-xs text-muted-foreground">
         The widget will load asynchronously and render inside the div element.
       </p>
+
+      <p
+        v-if="widgetType === 'toast_popup'"
+        class="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-md p-2"
+      >
+        Toast popups render as fixed overlays — place the embed code anywhere on
+        the page (e.g. before &lt;/body&gt;). Position is controlled by the widget settings.
+      </p>
     </DialogContent>
   </Dialog>
 </template>

@@ -2,6 +2,10 @@
 import { Input, Label, Switch } from '@testimonials/ui';
 import type { WidgetFormState } from '../models';
 import { widgetsTestIds } from '@/shared/constants/testIds';
+import MarqueeSettingsSection from './settings/MarqueeSettingsSection.vue';
+import RatingBadgeSettingsSection from './settings/RatingBadgeSettingsSection.vue';
+import AvatarsBarSettingsSection from './settings/AvatarsBarSettingsSection.vue';
+import ToastPopupSettingsSection from './settings/ToastPopupSettingsSection.vue';
 
 const props = defineProps<{
   state: WidgetFormState;
@@ -102,6 +106,28 @@ function update(patch: Partial<WidgetFormState>) {
         min="1"
       />
     </div>
+
+    <!-- Type-specific settings -->
+    <MarqueeSettingsSection
+      v-if="state.type === 'marquee'"
+      :state="state"
+      @update:state="emit('update:state', $event)"
+    />
+    <RatingBadgeSettingsSection
+      v-if="state.type === 'rating_badge'"
+      :state="state"
+      @update:state="emit('update:state', $event)"
+    />
+    <AvatarsBarSettingsSection
+      v-if="state.type === 'avatars_bar'"
+      :state="state"
+      @update:state="emit('update:state', $event)"
+    />
+    <ToastPopupSettingsSection
+      v-if="state.type === 'toast_popup'"
+      :state="state"
+      @update:state="emit('update:state', $event)"
+    />
 
     <div class="flex items-center justify-between">
       <div>
