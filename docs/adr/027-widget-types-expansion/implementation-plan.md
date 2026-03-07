@@ -526,6 +526,8 @@ COMMENT ON COLUMN public.widgets.type IS
 ## Phase 5: E2E Tests & Polish
 
 > **Goal:** Verify everything works end-to-end and add test coverage.
+>
+> **Detailed testing plan:** [testing-plan.md](./testing-plan.md)
 
 ### Step 5.1 — Add test IDs for new widget type elements
 
