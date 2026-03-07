@@ -22,7 +22,7 @@ const displayTestimonials = computed(() => {
 });
 
 // Types that can render without testimonials (aggregate-based)
-const typesWithoutTestimonials = ['rating_badge', 'avatars_bar'] as const;
+const typesWithoutTestimonials: string[] = ['rating_badge', 'avatars_bar'];
 const needsTestimonials = computed(
   () => !typesWithoutTestimonials.includes(props.state.type),
 );
