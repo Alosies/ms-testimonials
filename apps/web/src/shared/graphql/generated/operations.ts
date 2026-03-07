@@ -23056,12 +23056,18 @@ export type Testimonials = {
   submission?: Maybe<Form_Submissions>;
   /** FK to form_submissions - NULL for imports/manual. Access form via submission.form_id */
   submission_id?: Maybe<Scalars['String']['output']>;
+  /** Testimonial format: text (AI-assembled or manual) or video (uploaded file). Defaults to text. */
+  type: Scalars['String']['output'];
   /** Last modification. Auto-updated by trigger */
   updated_at: Scalars['timestamptz']['output'];
   /** FK to users - who last modified. NULL until first update */
   updated_by?: Maybe<Scalars['String']['output']>;
   /** An object relationship */
   updater?: Maybe<Users>;
+  /** An object relationship */
+  video_media?: Maybe<Media>;
+  /** FK to media table for video testimonials. NULL for text testimonials. Set when video is uploaded and linked. */
+  video_media_id?: Maybe<Scalars['String']['output']>;
   /** An array relationship */
   widget_placements: Array<Widget_Testimonials>;
   /** An aggregate relationship */
@@ -23206,9 +23212,12 @@ export type Testimonials_Bool_Exp = {
   status?: InputMaybe<String_Comparison_Exp>;
   submission?: InputMaybe<Form_Submissions_Bool_Exp>;
   submission_id?: InputMaybe<String_Comparison_Exp>;
+  type?: InputMaybe<String_Comparison_Exp>;
   updated_at?: InputMaybe<Timestamptz_Comparison_Exp>;
   updated_by?: InputMaybe<String_Comparison_Exp>;
   updater?: InputMaybe<Users_Bool_Exp>;
+  video_media?: InputMaybe<Media_Bool_Exp>;
+  video_media_id?: InputMaybe<String_Comparison_Exp>;
   widget_placements?: InputMaybe<Widget_Testimonials_Bool_Exp>;
   widget_placements_aggregate?: InputMaybe<Widget_Testimonials_Aggregate_Bool_Exp>;
 };
@@ -23291,11 +23300,16 @@ export type Testimonials_Insert_Input = {
   submission?: InputMaybe<Form_Submissions_Obj_Rel_Insert_Input>;
   /** FK to form_submissions - NULL for imports/manual. Access form via submission.form_id */
   submission_id?: InputMaybe<Scalars['String']['input']>;
+  /** Testimonial format: text (AI-assembled or manual) or video (uploaded file). Defaults to text. */
+  type?: InputMaybe<Scalars['String']['input']>;
   /** Last modification. Auto-updated by trigger */
   updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
   /** FK to users - who last modified. NULL until first update */
   updated_by?: InputMaybe<Scalars['String']['input']>;
   updater?: InputMaybe<Users_Obj_Rel_Insert_Input>;
+  video_media?: InputMaybe<Media_Obj_Rel_Insert_Input>;
+  /** FK to media table for video testimonials. NULL for text testimonials. Set when video is uploaded and linked. */
+  video_media_id?: InputMaybe<Scalars['String']['input']>;
   widget_placements?: InputMaybe<Widget_Testimonials_Arr_Rel_Insert_Input>;
 };
 
@@ -23342,10 +23356,14 @@ export type Testimonials_Max_Fields = {
   status?: Maybe<Scalars['String']['output']>;
   /** FK to form_submissions - NULL for imports/manual. Access form via submission.form_id */
   submission_id?: Maybe<Scalars['String']['output']>;
+  /** Testimonial format: text (AI-assembled or manual) or video (uploaded file). Defaults to text. */
+  type?: Maybe<Scalars['String']['output']>;
   /** Last modification. Auto-updated by trigger */
   updated_at?: Maybe<Scalars['timestamptz']['output']>;
   /** FK to users - who last modified. NULL until first update */
   updated_by?: Maybe<Scalars['String']['output']>;
+  /** FK to media table for video testimonials. NULL for text testimonials. Set when video is uploaded and linked. */
+  video_media_id?: Maybe<Scalars['String']['output']>;
 };
 
 /** order by max() on columns of table "testimonials" */
@@ -23390,10 +23408,14 @@ export type Testimonials_Max_Order_By = {
   status?: InputMaybe<Order_By>;
   /** FK to form_submissions - NULL for imports/manual. Access form via submission.form_id */
   submission_id?: InputMaybe<Order_By>;
+  /** Testimonial format: text (AI-assembled or manual) or video (uploaded file). Defaults to text. */
+  type?: InputMaybe<Order_By>;
   /** Last modification. Auto-updated by trigger */
   updated_at?: InputMaybe<Order_By>;
   /** FK to users - who last modified. NULL until first update */
   updated_by?: InputMaybe<Order_By>;
+  /** FK to media table for video testimonials. NULL for text testimonials. Set when video is uploaded and linked. */
+  video_media_id?: InputMaybe<Order_By>;
 };
 
 /** aggregate min on columns */
@@ -23439,10 +23461,14 @@ export type Testimonials_Min_Fields = {
   status?: Maybe<Scalars['String']['output']>;
   /** FK to form_submissions - NULL for imports/manual. Access form via submission.form_id */
   submission_id?: Maybe<Scalars['String']['output']>;
+  /** Testimonial format: text (AI-assembled or manual) or video (uploaded file). Defaults to text. */
+  type?: Maybe<Scalars['String']['output']>;
   /** Last modification. Auto-updated by trigger */
   updated_at?: Maybe<Scalars['timestamptz']['output']>;
   /** FK to users - who last modified. NULL until first update */
   updated_by?: Maybe<Scalars['String']['output']>;
+  /** FK to media table for video testimonials. NULL for text testimonials. Set when video is uploaded and linked. */
+  video_media_id?: Maybe<Scalars['String']['output']>;
 };
 
 /** order by min() on columns of table "testimonials" */
@@ -23487,10 +23513,14 @@ export type Testimonials_Min_Order_By = {
   status?: InputMaybe<Order_By>;
   /** FK to form_submissions - NULL for imports/manual. Access form via submission.form_id */
   submission_id?: InputMaybe<Order_By>;
+  /** Testimonial format: text (AI-assembled or manual) or video (uploaded file). Defaults to text. */
+  type?: InputMaybe<Order_By>;
   /** Last modification. Auto-updated by trigger */
   updated_at?: InputMaybe<Order_By>;
   /** FK to users - who last modified. NULL until first update */
   updated_by?: InputMaybe<Order_By>;
+  /** FK to media table for video testimonials. NULL for text testimonials. Set when video is uploaded and linked. */
+  video_media_id?: InputMaybe<Order_By>;
 };
 
 /** response of any mutation on the table "testimonials" */
@@ -23543,9 +23573,12 @@ export type Testimonials_Order_By = {
   status?: InputMaybe<Order_By>;
   submission?: InputMaybe<Form_Submissions_Order_By>;
   submission_id?: InputMaybe<Order_By>;
+  type?: InputMaybe<Order_By>;
   updated_at?: InputMaybe<Order_By>;
   updated_by?: InputMaybe<Order_By>;
   updater?: InputMaybe<Users_Order_By>;
+  video_media?: InputMaybe<Media_Order_By>;
+  video_media_id?: InputMaybe<Order_By>;
   widget_placements_aggregate?: InputMaybe<Widget_Testimonials_Aggregate_Order_By>;
 };
 
@@ -23606,9 +23639,13 @@ export enum Testimonials_Select_Column {
   /** column name */
   SubmissionId = 'submission_id',
   /** column name */
+  Type = 'type',
+  /** column name */
   UpdatedAt = 'updated_at',
   /** column name */
-  UpdatedBy = 'updated_by'
+  UpdatedBy = 'updated_by',
+  /** column name */
+  VideoMediaId = 'video_media_id'
 }
 
 /** input type for updating data in table "testimonials" */
@@ -23655,10 +23692,14 @@ export type Testimonials_Set_Input = {
   status?: InputMaybe<Scalars['String']['input']>;
   /** FK to form_submissions - NULL for imports/manual. Access form via submission.form_id */
   submission_id?: InputMaybe<Scalars['String']['input']>;
+  /** Testimonial format: text (AI-assembled or manual) or video (uploaded file). Defaults to text. */
+  type?: InputMaybe<Scalars['String']['input']>;
   /** Last modification. Auto-updated by trigger */
   updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
   /** FK to users - who last modified. NULL until first update */
   updated_by?: InputMaybe<Scalars['String']['input']>;
+  /** FK to media table for video testimonials. NULL for text testimonials. Set when video is uploaded and linked. */
+  video_media_id?: InputMaybe<Scalars['String']['input']>;
 };
 
 /** aggregate stddev on columns */
@@ -23752,10 +23793,14 @@ export type Testimonials_Stream_Cursor_Value_Input = {
   status?: InputMaybe<Scalars['String']['input']>;
   /** FK to form_submissions - NULL for imports/manual. Access form via submission.form_id */
   submission_id?: InputMaybe<Scalars['String']['input']>;
+  /** Testimonial format: text (AI-assembled or manual) or video (uploaded file). Defaults to text. */
+  type?: InputMaybe<Scalars['String']['input']>;
   /** Last modification. Auto-updated by trigger */
   updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
   /** FK to users - who last modified. NULL until first update */
   updated_by?: InputMaybe<Scalars['String']['input']>;
+  /** FK to media table for video testimonials. NULL for text testimonials. Set when video is uploaded and linked. */
+  video_media_id?: InputMaybe<Scalars['String']['input']>;
 };
 
 /** aggregate sum on columns */
@@ -23816,9 +23861,13 @@ export enum Testimonials_Update_Column {
   /** column name */
   SubmissionId = 'submission_id',
   /** column name */
+  Type = 'type',
+  /** column name */
   UpdatedAt = 'updated_at',
   /** column name */
-  UpdatedBy = 'updated_by'
+  UpdatedBy = 'updated_by',
+  /** column name */
+  VideoMediaId = 'video_media_id'
 }
 
 export type Testimonials_Updates = {
@@ -25250,7 +25299,7 @@ export type Widgets = {
   testimonial_placements_aggregate: Widget_Testimonials_Aggregate;
   /** Color scheme: light (white bg) or dark (dark bg) */
   theme: Scalars['String']['output'];
-  /** Layout type: wall_of_love (grid), carousel (slider), single_quote (featured) */
+  /** Layout type: wall_of_love (masonry grid), carousel (horizontal slider), single_quote (featured testimonial), marquee (auto-scroll strip), rating_badge (compact aggregate rating), avatars_bar (hero social proof with overlapping avatars), toast_popup (floating notification overlay) */
   type: Scalars['String']['output'];
   /** Last modification timestamp. Auto-updated by trigger */
   updated_at: Scalars['timestamptz']['output'];
@@ -25478,7 +25527,7 @@ export type Widgets_Insert_Input = {
   testimonial_placements?: InputMaybe<Widget_Testimonials_Arr_Rel_Insert_Input>;
   /** Color scheme: light (white bg) or dark (dark bg) */
   theme?: InputMaybe<Scalars['String']['input']>;
-  /** Layout type: wall_of_love (grid), carousel (slider), single_quote (featured) */
+  /** Layout type: wall_of_love (masonry grid), carousel (horizontal slider), single_quote (featured testimonial), marquee (auto-scroll strip), rating_badge (compact aggregate rating), avatars_bar (hero social proof with overlapping avatars), toast_popup (floating notification overlay) */
   type?: InputMaybe<Scalars['String']['input']>;
   /** Last modification timestamp. Auto-updated by trigger */
   updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
@@ -25506,7 +25555,7 @@ export type Widgets_Max_Fields = {
   organization_id?: Maybe<Scalars['String']['output']>;
   /** Color scheme: light (white bg) or dark (dark bg) */
   theme?: Maybe<Scalars['String']['output']>;
-  /** Layout type: wall_of_love (grid), carousel (slider), single_quote (featured) */
+  /** Layout type: wall_of_love (masonry grid), carousel (horizontal slider), single_quote (featured testimonial), marquee (auto-scroll strip), rating_badge (compact aggregate rating), avatars_bar (hero social proof with overlapping avatars), toast_popup (floating notification overlay) */
   type?: Maybe<Scalars['String']['output']>;
   /** Last modification timestamp. Auto-updated by trigger */
   updated_at?: Maybe<Scalars['timestamptz']['output']>;
@@ -25532,7 +25581,7 @@ export type Widgets_Max_Order_By = {
   organization_id?: InputMaybe<Order_By>;
   /** Color scheme: light (white bg) or dark (dark bg) */
   theme?: InputMaybe<Order_By>;
-  /** Layout type: wall_of_love (grid), carousel (slider), single_quote (featured) */
+  /** Layout type: wall_of_love (masonry grid), carousel (horizontal slider), single_quote (featured testimonial), marquee (auto-scroll strip), rating_badge (compact aggregate rating), avatars_bar (hero social proof with overlapping avatars), toast_popup (floating notification overlay) */
   type?: InputMaybe<Order_By>;
   /** Last modification timestamp. Auto-updated by trigger */
   updated_at?: InputMaybe<Order_By>;
@@ -25559,7 +25608,7 @@ export type Widgets_Min_Fields = {
   organization_id?: Maybe<Scalars['String']['output']>;
   /** Color scheme: light (white bg) or dark (dark bg) */
   theme?: Maybe<Scalars['String']['output']>;
-  /** Layout type: wall_of_love (grid), carousel (slider), single_quote (featured) */
+  /** Layout type: wall_of_love (masonry grid), carousel (horizontal slider), single_quote (featured testimonial), marquee (auto-scroll strip), rating_badge (compact aggregate rating), avatars_bar (hero social proof with overlapping avatars), toast_popup (floating notification overlay) */
   type?: Maybe<Scalars['String']['output']>;
   /** Last modification timestamp. Auto-updated by trigger */
   updated_at?: Maybe<Scalars['timestamptz']['output']>;
@@ -25585,7 +25634,7 @@ export type Widgets_Min_Order_By = {
   organization_id?: InputMaybe<Order_By>;
   /** Color scheme: light (white bg) or dark (dark bg) */
   theme?: InputMaybe<Order_By>;
-  /** Layout type: wall_of_love (grid), carousel (slider), single_quote (featured) */
+  /** Layout type: wall_of_love (masonry grid), carousel (horizontal slider), single_quote (featured testimonial), marquee (auto-scroll strip), rating_badge (compact aggregate rating), avatars_bar (hero social proof with overlapping avatars), toast_popup (floating notification overlay) */
   type?: InputMaybe<Order_By>;
   /** Last modification timestamp. Auto-updated by trigger */
   updated_at?: InputMaybe<Order_By>;
@@ -25750,7 +25799,7 @@ export type Widgets_Set_Input = {
   show_ratings?: InputMaybe<Scalars['Boolean']['input']>;
   /** Color scheme: light (white bg) or dark (dark bg) */
   theme?: InputMaybe<Scalars['String']['input']>;
-  /** Layout type: wall_of_love (grid), carousel (slider), single_quote (featured) */
+  /** Layout type: wall_of_love (masonry grid), carousel (horizontal slider), single_quote (featured testimonial), marquee (auto-scroll strip), rating_badge (compact aggregate rating), avatars_bar (hero social proof with overlapping avatars), toast_popup (floating notification overlay) */
   type?: InputMaybe<Scalars['String']['input']>;
   /** Last modification timestamp. Auto-updated by trigger */
   updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
@@ -25835,7 +25884,7 @@ export type Widgets_Stream_Cursor_Value_Input = {
   show_ratings?: InputMaybe<Scalars['Boolean']['input']>;
   /** Color scheme: light (white bg) or dark (dark bg) */
   theme?: InputMaybe<Scalars['String']['input']>;
-  /** Layout type: wall_of_love (grid), carousel (slider), single_quote (featured) */
+  /** Layout type: wall_of_love (masonry grid), carousel (horizontal slider), single_quote (featured testimonial), marquee (auto-scroll strip), rating_badge (compact aggregate rating), avatars_bar (hero social proof with overlapping avatars), toast_popup (floating notification overlay) */
   type?: InputMaybe<Scalars['String']['input']>;
   /** Last modification timestamp. Auto-updated by trigger */
   updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
@@ -26268,9 +26317,9 @@ export type GetQuestionTypesQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type GetQuestionTypesQuery = { __typename?: 'query_root', question_types: Array<{ __typename?: 'question_types', id: string, unique_name: string, name: string, description?: string | null, category: string, input_component: string, answer_data_type: string, display_order: number, is_active: boolean, supports_min_length: boolean, supports_max_length: boolean, supports_min_value: boolean, supports_max_value: boolean, supports_options: boolean, supports_pattern: boolean, supports_file_types: boolean, supports_max_file_size: boolean, default_min_value?: number | null, default_max_value?: number | null }> };
 
-export type TestimonialBasicFragment = { __typename?: 'testimonials', id: string, organization_id: string, submission_id?: string | null, status: string, content?: string | null, rating?: number | null, customer_name: string, customer_email: string, customer_title?: string | null, customer_company?: string | null, customer_avatar_url?: string | null, customer_linkedin_url?: string | null, customer_twitter_url?: string | null, source: string, approved_by?: string | null, approved_at?: string | null, rejected_by?: string | null, rejected_at?: string | null, rejection_reason?: string | null, created_at: string, updated_at: string };
+export type TestimonialBasicFragment = { __typename?: 'testimonials', id: string, organization_id: string, submission_id?: string | null, status: string, type: string, content?: string | null, rating?: number | null, customer_name: string, customer_email: string, customer_title?: string | null, customer_company?: string | null, customer_avatar_url?: string | null, customer_linkedin_url?: string | null, customer_twitter_url?: string | null, source: string, approved_by?: string | null, approved_at?: string | null, rejected_by?: string | null, rejected_at?: string | null, rejection_reason?: string | null, created_at: string, updated_at: string, video_media?: { __typename?: 'media', id: string, status: string, duration_seconds?: number | null, thumbnail_path?: string | null, processing_metadata: any } | null };
 
-export type TestimonialWithFormFragment = { __typename?: 'testimonials', id: string, organization_id: string, submission_id?: string | null, status: string, content?: string | null, rating?: number | null, customer_name: string, customer_email: string, customer_title?: string | null, customer_company?: string | null, customer_avatar_url?: string | null, customer_linkedin_url?: string | null, customer_twitter_url?: string | null, source: string, approved_by?: string | null, approved_at?: string | null, rejected_by?: string | null, rejected_at?: string | null, rejection_reason?: string | null, created_at: string, updated_at: string, submission?: { __typename?: 'form_submissions', id: string, form_id: string, form: { __typename?: 'forms', id: string, name: string } } | null };
+export type TestimonialWithFormFragment = { __typename?: 'testimonials', id: string, organization_id: string, submission_id?: string | null, status: string, type: string, content?: string | null, rating?: number | null, customer_name: string, customer_email: string, customer_title?: string | null, customer_company?: string | null, customer_avatar_url?: string | null, customer_linkedin_url?: string | null, customer_twitter_url?: string | null, source: string, approved_by?: string | null, approved_at?: string | null, rejected_by?: string | null, rejected_at?: string | null, rejection_reason?: string | null, created_at: string, updated_at: string, submission?: { __typename?: 'form_submissions', id: string, form_id: string, form: { __typename?: 'forms', id: string, name: string } } | null, video_media?: { __typename?: 'media', id: string, status: string, duration_seconds?: number | null, thumbnail_path?: string | null, processing_metadata: any } | null };
 
 export type ApproveTestimonialMutationVariables = Exact<{
   id: Scalars['String']['input'];
@@ -26278,7 +26327,7 @@ export type ApproveTestimonialMutationVariables = Exact<{
 }>;
 
 
-export type ApproveTestimonialMutation = { __typename?: 'mutation_root', update_testimonials_by_pk?: { __typename?: 'testimonials', id: string, organization_id: string, submission_id?: string | null, status: string, content?: string | null, rating?: number | null, customer_name: string, customer_email: string, customer_title?: string | null, customer_company?: string | null, customer_avatar_url?: string | null, customer_linkedin_url?: string | null, customer_twitter_url?: string | null, source: string, approved_by?: string | null, approved_at?: string | null, rejected_by?: string | null, rejected_at?: string | null, rejection_reason?: string | null, created_at: string, updated_at: string } | null };
+export type ApproveTestimonialMutation = { __typename?: 'mutation_root', update_testimonials_by_pk?: { __typename?: 'testimonials', id: string, organization_id: string, submission_id?: string | null, status: string, type: string, content?: string | null, rating?: number | null, customer_name: string, customer_email: string, customer_title?: string | null, customer_company?: string | null, customer_avatar_url?: string | null, customer_linkedin_url?: string | null, customer_twitter_url?: string | null, source: string, approved_by?: string | null, approved_at?: string | null, rejected_by?: string | null, rejected_at?: string | null, rejection_reason?: string | null, created_at: string, updated_at: string, video_media?: { __typename?: 'media', id: string, status: string, duration_seconds?: number | null, thumbnail_path?: string | null, processing_metadata: any } | null } | null };
 
 export type RejectTestimonialMutationVariables = Exact<{
   id: Scalars['String']['input'];
@@ -26287,7 +26336,7 @@ export type RejectTestimonialMutationVariables = Exact<{
 }>;
 
 
-export type RejectTestimonialMutation = { __typename?: 'mutation_root', update_testimonials_by_pk?: { __typename?: 'testimonials', id: string, organization_id: string, submission_id?: string | null, status: string, content?: string | null, rating?: number | null, customer_name: string, customer_email: string, customer_title?: string | null, customer_company?: string | null, customer_avatar_url?: string | null, customer_linkedin_url?: string | null, customer_twitter_url?: string | null, source: string, approved_by?: string | null, approved_at?: string | null, rejected_by?: string | null, rejected_at?: string | null, rejection_reason?: string | null, created_at: string, updated_at: string } | null };
+export type RejectTestimonialMutation = { __typename?: 'mutation_root', update_testimonials_by_pk?: { __typename?: 'testimonials', id: string, organization_id: string, submission_id?: string | null, status: string, type: string, content?: string | null, rating?: number | null, customer_name: string, customer_email: string, customer_title?: string | null, customer_company?: string | null, customer_avatar_url?: string | null, customer_linkedin_url?: string | null, customer_twitter_url?: string | null, source: string, approved_by?: string | null, approved_at?: string | null, rejected_by?: string | null, rejected_at?: string | null, rejection_reason?: string | null, created_at: string, updated_at: string, video_media?: { __typename?: 'media', id: string, status: string, duration_seconds?: number | null, thumbnail_path?: string | null, processing_metadata: any } | null } | null };
 
 export type GetFormTestimonialsQueryVariables = Exact<{
   organizationId: Scalars['String']['input'];
@@ -26296,7 +26345,7 @@ export type GetFormTestimonialsQueryVariables = Exact<{
 }>;
 
 
-export type GetFormTestimonialsQuery = { __typename?: 'query_root', testimonials: Array<{ __typename?: 'testimonials', id: string, organization_id: string, submission_id?: string | null, status: string, content?: string | null, rating?: number | null, customer_name: string, customer_email: string, customer_title?: string | null, customer_company?: string | null, customer_avatar_url?: string | null, customer_linkedin_url?: string | null, customer_twitter_url?: string | null, source: string, approved_by?: string | null, approved_at?: string | null, rejected_by?: string | null, rejected_at?: string | null, rejection_reason?: string | null, created_at: string, updated_at: string, submission?: { __typename?: 'form_submissions', id: string, form_id: string, form: { __typename?: 'forms', id: string, name: string } } | null }> };
+export type GetFormTestimonialsQuery = { __typename?: 'query_root', testimonials: Array<{ __typename?: 'testimonials', id: string, organization_id: string, submission_id?: string | null, status: string, type: string, content?: string | null, rating?: number | null, customer_name: string, customer_email: string, customer_title?: string | null, customer_company?: string | null, customer_avatar_url?: string | null, customer_linkedin_url?: string | null, customer_twitter_url?: string | null, source: string, approved_by?: string | null, approved_at?: string | null, rejected_by?: string | null, rejected_at?: string | null, rejection_reason?: string | null, created_at: string, updated_at: string, submission?: { __typename?: 'form_submissions', id: string, form_id: string, form: { __typename?: 'forms', id: string, name: string } } | null, video_media?: { __typename?: 'media', id: string, status: string, duration_seconds?: number | null, thumbnail_path?: string | null, processing_metadata: any } | null }> };
 
 export type GetFormTestimonialsStatsQueryVariables = Exact<{
   organizationId: Scalars['String']['input'];
@@ -26311,7 +26360,7 @@ export type GetTestimonialQueryVariables = Exact<{
 }>;
 
 
-export type GetTestimonialQuery = { __typename?: 'query_root', testimonials_by_pk?: { __typename?: 'testimonials', id: string, organization_id: string, submission_id?: string | null, status: string, content?: string | null, rating?: number | null, customer_name: string, customer_email: string, customer_title?: string | null, customer_company?: string | null, customer_avatar_url?: string | null, customer_linkedin_url?: string | null, customer_twitter_url?: string | null, source: string, approved_by?: string | null, approved_at?: string | null, rejected_by?: string | null, rejected_at?: string | null, rejection_reason?: string | null, created_at: string, updated_at: string } | null };
+export type GetTestimonialQuery = { __typename?: 'query_root', testimonials_by_pk?: { __typename?: 'testimonials', id: string, organization_id: string, submission_id?: string | null, status: string, type: string, content?: string | null, rating?: number | null, customer_name: string, customer_email: string, customer_title?: string | null, customer_company?: string | null, customer_avatar_url?: string | null, customer_linkedin_url?: string | null, customer_twitter_url?: string | null, source: string, approved_by?: string | null, approved_at?: string | null, rejected_by?: string | null, rejected_at?: string | null, rejection_reason?: string | null, created_at: string, updated_at: string, video_media?: { __typename?: 'media', id: string, status: string, duration_seconds?: number | null, thumbnail_path?: string | null, processing_metadata: any } | null } | null };
 
 export type GetTestimonialsQueryVariables = Exact<{
   organizationId: Scalars['String']['input'];
@@ -26319,7 +26368,7 @@ export type GetTestimonialsQueryVariables = Exact<{
 }>;
 
 
-export type GetTestimonialsQuery = { __typename?: 'query_root', testimonials: Array<{ __typename?: 'testimonials', id: string, organization_id: string, submission_id?: string | null, status: string, content?: string | null, rating?: number | null, customer_name: string, customer_email: string, customer_title?: string | null, customer_company?: string | null, customer_avatar_url?: string | null, customer_linkedin_url?: string | null, customer_twitter_url?: string | null, source: string, approved_by?: string | null, approved_at?: string | null, rejected_by?: string | null, rejected_at?: string | null, rejection_reason?: string | null, created_at: string, updated_at: string }> };
+export type GetTestimonialsQuery = { __typename?: 'query_root', testimonials: Array<{ __typename?: 'testimonials', id: string, organization_id: string, submission_id?: string | null, status: string, type: string, content?: string | null, rating?: number | null, customer_name: string, customer_email: string, customer_title?: string | null, customer_company?: string | null, customer_avatar_url?: string | null, customer_linkedin_url?: string | null, customer_twitter_url?: string | null, source: string, approved_by?: string | null, approved_at?: string | null, rejected_by?: string | null, rejected_at?: string | null, rejection_reason?: string | null, created_at: string, updated_at: string, video_media?: { __typename?: 'media', id: string, status: string, duration_seconds?: number | null, thumbnail_path?: string | null, processing_metadata: any } | null }> };
 
 export type GetTestimonialsStatsQueryVariables = Exact<{
   organizationId: Scalars['String']['input'];
@@ -26334,7 +26383,7 @@ export type GetTestimonialsWithFormQueryVariables = Exact<{
 }>;
 
 
-export type GetTestimonialsWithFormQuery = { __typename?: 'query_root', testimonials: Array<{ __typename?: 'testimonials', id: string, organization_id: string, submission_id?: string | null, status: string, content?: string | null, rating?: number | null, customer_name: string, customer_email: string, customer_title?: string | null, customer_company?: string | null, customer_avatar_url?: string | null, customer_linkedin_url?: string | null, customer_twitter_url?: string | null, source: string, approved_by?: string | null, approved_at?: string | null, rejected_by?: string | null, rejected_at?: string | null, rejection_reason?: string | null, created_at: string, updated_at: string, submission?: { __typename?: 'form_submissions', id: string, form_id: string, form: { __typename?: 'forms', id: string, name: string } } | null }> };
+export type GetTestimonialsWithFormQuery = { __typename?: 'query_root', testimonials: Array<{ __typename?: 'testimonials', id: string, organization_id: string, submission_id?: string | null, status: string, type: string, content?: string | null, rating?: number | null, customer_name: string, customer_email: string, customer_title?: string | null, customer_company?: string | null, customer_avatar_url?: string | null, customer_linkedin_url?: string | null, customer_twitter_url?: string | null, source: string, approved_by?: string | null, approved_at?: string | null, rejected_by?: string | null, rejected_at?: string | null, rejection_reason?: string | null, created_at: string, updated_at: string, submission?: { __typename?: 'form_submissions', id: string, form_id: string, form: { __typename?: 'forms', id: string, name: string } } | null, video_media?: { __typename?: 'media', id: string, status: string, duration_seconds?: number | null, thumbnail_path?: string | null, processing_metadata: any } | null }> };
 
 export type UserBasicFragment = { __typename?: 'users', id: string, email: string, display_name?: string | null, avatar_url?: string | null, email_verified: boolean, locale: string, timezone: string, is_active: boolean, last_login_at?: string | null, created_at: string, updated_at: string };
 
@@ -26669,6 +26718,7 @@ export const TestimonialBasicFragmentDoc = gql`
   organization_id
   submission_id
   status
+  type
   content
   rating
   customer_name
@@ -26686,6 +26736,13 @@ export const TestimonialBasicFragmentDoc = gql`
   rejection_reason
   created_at
   updated_at
+  video_media {
+    id
+    status
+    duration_seconds
+    thumbnail_path
+    processing_metadata
+  }
 }
     `;
 export const TestimonialWithFormFragmentDoc = gql`

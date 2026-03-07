@@ -28287,12 +28287,22 @@ type testimonials {
   FK to form_submissions - NULL for imports/manual. Access form via submission.form_id
   """
   submission_id: String
+  """
+  Testimonial format: text (AI-assembled or manual) or video (uploaded file). Defaults to text.
+  """
+  type: String!
   """Last modification. Auto-updated by trigger"""
   updated_at: timestamptz!
   """FK to users - who last modified. NULL until first update"""
   updated_by: String
   """An object relationship"""
   updater: users
+  """An object relationship"""
+  video_media: media
+  """
+  FK to media table for video testimonials. NULL for text testimonials. Set when video is uploaded and linked.
+  """
+  video_media_id: String
   """An array relationship"""
   widget_placements(
     """distinct select on columns"""
@@ -28435,9 +28445,12 @@ input testimonials_bool_exp {
   status: String_comparison_exp
   submission: form_submissions_bool_exp
   submission_id: String_comparison_exp
+  type: String_comparison_exp
   updated_at: timestamptz_comparison_exp
   updated_by: String_comparison_exp
   updater: users_bool_exp
+  video_media: media_bool_exp
+  video_media_id: String_comparison_exp
   widget_placements: widget_testimonials_bool_exp
   widget_placements_aggregate: widget_testimonials_aggregate_bool_exp
 }
@@ -28544,11 +28557,20 @@ input testimonials_insert_input {
   FK to form_submissions - NULL for imports/manual. Access form via submission.form_id
   """
   submission_id: String
+  """
+  Testimonial format: text (AI-assembled or manual) or video (uploaded file). Defaults to text.
+  """
+  type: String
   """Last modification. Auto-updated by trigger"""
   updated_at: timestamptz
   """FK to users - who last modified. NULL until first update"""
   updated_by: String
   updater: users_obj_rel_insert_input
+  video_media: media_obj_rel_insert_input
+  """
+  FK to media table for video testimonials. NULL for text testimonials. Set when video is uploaded and linked.
+  """
+  video_media_id: String
   widget_placements: widget_testimonials_arr_rel_insert_input
 }
 
@@ -28604,10 +28626,18 @@ type testimonials_max_fields {
   FK to form_submissions - NULL for imports/manual. Access form via submission.form_id
   """
   submission_id: String
+  """
+  Testimonial format: text (AI-assembled or manual) or video (uploaded file). Defaults to text.
+  """
+  type: String
   """Last modification. Auto-updated by trigger"""
   updated_at: timestamptz
   """FK to users - who last modified. NULL until first update"""
   updated_by: String
+  """
+  FK to media table for video testimonials. NULL for text testimonials. Set when video is uploaded and linked.
+  """
+  video_media_id: String
 }
 
 """
@@ -28664,10 +28694,18 @@ input testimonials_max_order_by {
   FK to form_submissions - NULL for imports/manual. Access form via submission.form_id
   """
   submission_id: order_by
+  """
+  Testimonial format: text (AI-assembled or manual) or video (uploaded file). Defaults to text.
+  """
+  type: order_by
   """Last modification. Auto-updated by trigger"""
   updated_at: order_by
   """FK to users - who last modified. NULL until first update"""
   updated_by: order_by
+  """
+  FK to media table for video testimonials. NULL for text testimonials. Set when video is uploaded and linked.
+  """
+  video_media_id: order_by
 }
 
 """aggregate min on columns"""
@@ -28722,10 +28760,18 @@ type testimonials_min_fields {
   FK to form_submissions - NULL for imports/manual. Access form via submission.form_id
   """
   submission_id: String
+  """
+  Testimonial format: text (AI-assembled or manual) or video (uploaded file). Defaults to text.
+  """
+  type: String
   """Last modification. Auto-updated by trigger"""
   updated_at: timestamptz
   """FK to users - who last modified. NULL until first update"""
   updated_by: String
+  """
+  FK to media table for video testimonials. NULL for text testimonials. Set when video is uploaded and linked.
+  """
+  video_media_id: String
 }
 
 """
@@ -28782,10 +28828,18 @@ input testimonials_min_order_by {
   FK to form_submissions - NULL for imports/manual. Access form via submission.form_id
   """
   submission_id: order_by
+  """
+  Testimonial format: text (AI-assembled or manual) or video (uploaded file). Defaults to text.
+  """
+  type: order_by
   """Last modification. Auto-updated by trigger"""
   updated_at: order_by
   """FK to users - who last modified. NULL until first update"""
   updated_by: order_by
+  """
+  FK to media table for video testimonials. NULL for text testimonials. Set when video is uploaded and linked.
+  """
+  video_media_id: order_by
 }
 
 """
@@ -28843,9 +28897,12 @@ input testimonials_order_by {
   status: order_by
   submission: form_submissions_order_by
   submission_id: order_by
+  type: order_by
   updated_at: order_by
   updated_by: order_by
   updater: users_order_by
+  video_media: media_order_by
+  video_media_id: order_by
   widget_placements_aggregate: widget_testimonials_aggregate_order_by
 }
 
@@ -28908,9 +28965,13 @@ enum testimonials_select_column {
   """column name"""
   submission_id
   """column name"""
+  type
+  """column name"""
   updated_at
   """column name"""
   updated_by
+  """column name"""
+  video_media_id
 }
 
 """
@@ -28969,10 +29030,18 @@ input testimonials_set_input {
   FK to form_submissions - NULL for imports/manual. Access form via submission.form_id
   """
   submission_id: String
+  """
+  Testimonial format: text (AI-assembled or manual) or video (uploaded file). Defaults to text.
+  """
+  type: String
   """Last modification. Auto-updated by trigger"""
   updated_at: timestamptz
   """FK to users - who last modified. NULL until first update"""
   updated_by: String
+  """
+  FK to media table for video testimonials. NULL for text testimonials. Set when video is uploaded and linked.
+  """
+  video_media_id: String
 }
 
 """aggregate stddev on columns"""
@@ -29081,10 +29150,18 @@ input testimonials_stream_cursor_value_input {
   FK to form_submissions - NULL for imports/manual. Access form via submission.form_id
   """
   submission_id: String
+  """
+  Testimonial format: text (AI-assembled or manual) or video (uploaded file). Defaults to text.
+  """
+  type: String
   """Last modification. Auto-updated by trigger"""
   updated_at: timestamptz
   """FK to users - who last modified. NULL until first update"""
   updated_by: String
+  """
+  FK to media table for video testimonials. NULL for text testimonials. Set when video is uploaded and linked.
+  """
+  video_media_id: String
 }
 
 """aggregate sum on columns"""
@@ -29148,9 +29225,13 @@ enum testimonials_update_column {
   """column name"""
   submission_id
   """column name"""
+  type
+  """column name"""
   updated_at
   """column name"""
   updated_by
+  """column name"""
+  video_media_id
 }
 
 input testimonials_updates {
@@ -30732,7 +30813,7 @@ type widgets {
   """Color scheme: light (white bg) or dark (dark bg)"""
   theme: String!
   """
-  Layout type: wall_of_love (grid), carousel (slider), single_quote (featured)
+  Layout type: wall_of_love (masonry grid), carousel (horizontal slider), single_quote (featured testimonial), marquee (auto-scroll strip), rating_badge (compact aggregate rating), avatars_bar (hero social proof with overlapping avatars), toast_popup (floating notification overlay)
   """
   type: String!
   """Last modification timestamp. Auto-updated by trigger"""
@@ -30964,7 +31045,7 @@ input widgets_insert_input {
   """Color scheme: light (white bg) or dark (dark bg)"""
   theme: String
   """
-  Layout type: wall_of_love (grid), carousel (slider), single_quote (featured)
+  Layout type: wall_of_love (masonry grid), carousel (horizontal slider), single_quote (featured testimonial), marquee (auto-scroll strip), rating_badge (compact aggregate rating), avatars_bar (hero social proof with overlapping avatars), toast_popup (floating notification overlay)
   """
   type: String
   """Last modification timestamp. Auto-updated by trigger"""
@@ -30995,7 +31076,7 @@ type widgets_max_fields {
   """Color scheme: light (white bg) or dark (dark bg)"""
   theme: String
   """
-  Layout type: wall_of_love (grid), carousel (slider), single_quote (featured)
+  Layout type: wall_of_love (masonry grid), carousel (horizontal slider), single_quote (featured testimonial), marquee (auto-scroll strip), rating_badge (compact aggregate rating), avatars_bar (hero social proof with overlapping avatars), toast_popup (floating notification overlay)
   """
   type: String
   """Last modification timestamp. Auto-updated by trigger"""
@@ -31027,7 +31108,7 @@ input widgets_max_order_by {
   """Color scheme: light (white bg) or dark (dark bg)"""
   theme: order_by
   """
-  Layout type: wall_of_love (grid), carousel (slider), single_quote (featured)
+  Layout type: wall_of_love (masonry grid), carousel (horizontal slider), single_quote (featured testimonial), marquee (auto-scroll strip), rating_badge (compact aggregate rating), avatars_bar (hero social proof with overlapping avatars), toast_popup (floating notification overlay)
   """
   type: order_by
   """Last modification timestamp. Auto-updated by trigger"""
@@ -31057,7 +31138,7 @@ type widgets_min_fields {
   """Color scheme: light (white bg) or dark (dark bg)"""
   theme: String
   """
-  Layout type: wall_of_love (grid), carousel (slider), single_quote (featured)
+  Layout type: wall_of_love (masonry grid), carousel (horizontal slider), single_quote (featured testimonial), marquee (auto-scroll strip), rating_badge (compact aggregate rating), avatars_bar (hero social proof with overlapping avatars), toast_popup (floating notification overlay)
   """
   type: String
   """Last modification timestamp. Auto-updated by trigger"""
@@ -31089,7 +31170,7 @@ input widgets_min_order_by {
   """Color scheme: light (white bg) or dark (dark bg)"""
   theme: order_by
   """
-  Layout type: wall_of_love (grid), carousel (slider), single_quote (featured)
+  Layout type: wall_of_love (masonry grid), carousel (horizontal slider), single_quote (featured testimonial), marquee (auto-scroll strip), rating_badge (compact aggregate rating), avatars_bar (hero social proof with overlapping avatars), toast_popup (floating notification overlay)
   """
   type: order_by
   """Last modification timestamp. Auto-updated by trigger"""
@@ -31275,7 +31356,7 @@ input widgets_set_input {
   """Color scheme: light (white bg) or dark (dark bg)"""
   theme: String
   """
-  Layout type: wall_of_love (grid), carousel (slider), single_quote (featured)
+  Layout type: wall_of_love (masonry grid), carousel (horizontal slider), single_quote (featured testimonial), marquee (auto-scroll strip), rating_badge (compact aggregate rating), avatars_bar (hero social proof with overlapping avatars), toast_popup (floating notification overlay)
   """
   type: String
   """Last modification timestamp. Auto-updated by trigger"""
@@ -31371,7 +31452,7 @@ input widgets_stream_cursor_value_input {
   """Color scheme: light (white bg) or dark (dark bg)"""
   theme: String
   """
-  Layout type: wall_of_love (grid), carousel (slider), single_quote (featured)
+  Layout type: wall_of_love (masonry grid), carousel (horizontal slider), single_quote (featured testimonial), marquee (auto-scroll strip), rating_badge (compact aggregate rating), avatars_bar (hero social proof with overlapping avatars), toast_popup (floating notification overlay)
   """
   type: String
   """Last modification timestamp. Auto-updated by trigger"""

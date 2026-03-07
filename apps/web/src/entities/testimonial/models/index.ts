@@ -5,3 +5,4 @@ export type * from './mutations';
 export type TestimonialId = string;
 export type TestimonialStatus = 'pending' | 'approved' | 'rejected';
 export type TestimonialSource = 'form' | 'import' | 'manual';
+export type TestimonialType = 'text' | 'video';

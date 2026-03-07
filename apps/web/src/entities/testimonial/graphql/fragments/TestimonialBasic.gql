@@ -3,6 +3,7 @@ fragment TestimonialBasic on testimonials {
   organization_id
   submission_id
   status
+  type
   content
   rating
   customer_name
@@ -20,4 +21,11 @@ fragment TestimonialBasic on testimonials {
   rejection_reason
   created_at
   updated_at
+  video_media {
+    id
+    status
+    duration_seconds
+    thumbnail_path
+    processing_metadata
+  }
 }
