@@ -3,5 +3,5 @@ export type * from './mutations';
 
 // Utility types
 export type WidgetId = string;
-export type WidgetType = 'wall_of_love' | 'carousel' | 'single_quote';
+export type { WidgetType } from '../schemas/widgetSettings.schema';
 export type WidgetTheme = 'light' | 'dark';

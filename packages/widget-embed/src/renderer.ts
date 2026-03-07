@@ -1,4 +1,4 @@
-import type { WidgetData } from './types';
+import type { WidgetConfig, WidgetData, WidgetTestimonial } from './types';
 import baseStyles from './styles/base.css?inline';
 import { renderWallOfLove } from './components/WallOfLove';
 import { renderCarousel } from './components/Carousel';
@@ -6,11 +6,13 @@ import { renderSingleQuote } from './components/SingleQuote';
 import { createEmptyState } from './components/LoadingState';
 import { createErrorState } from './components/ErrorState';
 
-const renderers = {
+type WidgetRenderer = (testimonials: WidgetTestimonial[], config: WidgetConfig) => HTMLElement;
+
+const renderers: Partial<Record<WidgetConfig['type'], WidgetRenderer>> = {
   wall_of_love: renderWallOfLove,
   carousel: renderCarousel,
   single_quote: renderSingleQuote,
-} as const;
+};
 
 /**
  * Renders widget content into a Shadow DOM attached to the target element.

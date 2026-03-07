@@ -1,7 +1,16 @@
 import { ref, computed, watch, type Ref } from 'vue';
-import { useGetWidget, useCreateWidget, useUpdateWidget, useSyncWidgetTestimonials } from '@/entities/widget';
+import {
+  useGetWidget,
+  useCreateWidget,
+  useUpdateWidget,
+  useSyncWidgetTestimonials,
+  parseWidgetSettingsWithDefaults,
+  validateWidgetSettings,
+  getDefaultSettings,
+  type WidgetType,
+} from '@/entities/widget';
 import type { WidgetFormState } from '../models';
-import { DEFAULT_WIDGET_STATE } from '../models';
+import { DEFAULT_WIDGET_STATE } from '../constants';
 
 export function useWidgetBuilder(widgetId: Ref<string | null>) {
   const state = ref<WidgetFormState>({ ...DEFAULT_WIDGET_STATE });
@@ -34,7 +43,7 @@ export function useWidgetBuilder(widgetId: Ref<string | null>) {
       show_company: w.show_company,
       show_avatar: w.show_avatar,
       max_display: w.max_display ?? null,
-      settings: w.settings ?? {},
+      settings: parseWidgetSettingsWithDefaults(w.type as WidgetType, w.settings),
       is_active: w.is_active,
     };
     savedWidgetId.value = w.id;
@@ -44,6 +53,16 @@ export function useWidgetBuilder(widgetId: Ref<string | null>) {
     selectedTestimonialIds.value = placements.map((p) => p.testimonial_id);
   });
 
+  // Reset settings to defaults when widget type changes
+  watch(
+    () => state.value.type,
+    (newType, oldType) => {
+      if (oldType && newType !== oldType) {
+        state.value.settings = getDefaultSettings(newType);
+      }
+    },
+  );
+
   async function save(organizationId: string, userId: string) {
     isSaving.value = true;
     _skipWatchDuringSave.value = true;
@@ -52,6 +71,9 @@ export function useWidgetBuilder(widgetId: Ref<string | null>) {
     const testimonialIdsSnapshot = [...selectedTestimonialIds.value];
 
     try {
+      // Validate settings before persisting
+      validateWidgetSettings(state.value.type, state.value.settings);
+
       let resultWidgetId: string | null = null;
 
       if (isEditMode.value && widgetId.value) {

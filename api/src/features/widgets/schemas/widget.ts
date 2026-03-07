@@ -3,12 +3,21 @@
  */
 
 import { z } from '@hono/zod-openapi';
+import { WidgetSettingsSchema } from './widgetSettings';
 
 // =========================================================================
 // Enums
 // =========================================================================
 
-export const WidgetTypeSchema = z.enum(['wall_of_love', 'carousel', 'single_quote']).openapi({
+export const WidgetTypeSchema = z.enum([
+  'wall_of_love',
+  'carousel',
+  'single_quote',
+  'marquee',
+  'rating_badge',
+  'avatars_bar',
+  'toast_popup',
+]).openapi({
   example: 'wall_of_love',
   description: 'Widget layout type',
 });
@@ -52,7 +61,7 @@ export const WidgetResponseSchema = z.object({
   show_company: z.boolean(),
   show_avatar: z.boolean(),
   max_display: z.number().nullable(),
-  settings: z.any(),
+  settings: WidgetSettingsSchema,
   form_id: z.string().nullable(),
   is_active: z.boolean(),
   created_at: z.string(),
@@ -72,6 +81,12 @@ export const WidgetListResponseSchema = z.object({
   widgets: z.array(WidgetListItemSchema),
 }).openapi('WidgetListResponse');
 
+export const WidgetAggregatesSchema = z.object({
+  average_rating: z.number().nullable(),
+  total_count: z.number(),
+  rated_count: z.number(),
+}).openapi('WidgetAggregates');
+
 export const PublicWidgetResponseSchema = z.object({
   widget: z.object({
     id: z.string(),
@@ -83,7 +98,7 @@ export const PublicWidgetResponseSchema = z.object({
     show_company: z.boolean(),
     show_avatar: z.boolean(),
     max_display: z.number().nullable(),
-    settings: z.any(),
+    settings: WidgetSettingsSchema,
   }),
   testimonials: z.array(z.object({
     id: z.string(),
@@ -97,6 +112,7 @@ export const PublicWidgetResponseSchema = z.object({
     display_order: z.number(),
     is_featured: z.boolean(),
   })),
+  aggregates: WidgetAggregatesSchema.optional(),
 }).openapi('PublicWidgetResponse');
 
 // =========================================================================
@@ -116,7 +132,7 @@ export const CreateWidgetRequestSchema = z.object({
   show_company: z.boolean().optional().default(true),
   show_avatar: z.boolean().optional().default(true),
   max_display: z.number().int().positive().nullable().optional().default(null),
-  settings: z.record(z.any()).optional().default({}),
+  settings: WidgetSettingsSchema.optional(),
 }).openapi('CreateWidgetRequest');
 
 export const UpdateWidgetRequestSchema = z.object({
@@ -129,6 +145,6 @@ export const UpdateWidgetRequestSchema = z.object({
   show_company: z.boolean().optional(),
   show_avatar: z.boolean().optional(),
   max_display: z.number().int().positive().nullable().optional(),
-  settings: z.record(z.any()).optional(),
+  settings: WidgetSettingsSchema.optional(),
   is_active: z.boolean().optional(),
 }).openapi('UpdateWidgetRequest');

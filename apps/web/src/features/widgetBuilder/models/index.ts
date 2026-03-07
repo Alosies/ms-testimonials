@@ -1,4 +1,4 @@
-import type { WidgetType, WidgetTheme } from '@/entities/widget';
+import type { WidgetType, WidgetTheme, WidgetSettings } from '@/entities/widget';
 
 export interface WidgetFormState {
   name: string;
@@ -10,23 +10,9 @@ export interface WidgetFormState {
   show_company: boolean;
   show_avatar: boolean;
   max_display: number | null;
-  settings: Record<string, unknown>;
+  settings: WidgetSettings;
   is_active: boolean;
 }
-
-export const DEFAULT_WIDGET_STATE: WidgetFormState = {
-  name: '',
-  type: 'wall_of_love',
-  theme: 'light',
-  form_id: null,
-  show_ratings: true,
-  show_dates: false,
-  show_company: true,
-  show_avatar: true,
-  max_display: null,
-  settings: {},
-  is_active: true,
-};
 
 export interface TestimonialForSelector {
   id: string;

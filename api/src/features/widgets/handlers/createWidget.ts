@@ -10,6 +10,7 @@ import {
   type CreateWidgetMutation,
 } from '@/graphql/generated/operations';
 import { CreateWidgetRequestSchema, WidgetResponseSchema } from '../schemas/widget';
+import { getDefaultSettingsForType } from '../schemas/widgetSettings';
 import {
   ErrorResponseSchema,
   InternalErrorResponseSchema,
@@ -64,7 +65,14 @@ export async function createWidgetHandler(c: Context): Promise<Response> {
     return c.json({ error: 'Organization context required', code: 'FORBIDDEN' }, 403);
   }
 
-  const body = await c.req.json();
+  const rawBody = await c.req.json();
+  const parsed = CreateWidgetRequestSchema.safeParse(rawBody);
+
+  if (!parsed.success) {
+    return c.json({ error: 'Invalid request', code: 'VALIDATION_ERROR', details: parsed.error.flatten() }, 400);
+  }
+
+  const body = parsed.data;
 
   try {
     const { data, error } = await executeGraphQLAsAdmin<CreateWidgetMutation>(
@@ -73,16 +81,16 @@ export async function createWidgetHandler(c: Context): Promise<Response> {
         object: {
           name: body.name,
           type: body.type,
-          theme: body.theme ?? 'light',
+          theme: body.theme,
           organization_id: auth.organizationId,
           created_by: auth.userId,
           form_id: body.form_id ?? null,
-          show_ratings: body.show_ratings ?? true,
-          show_dates: body.show_dates ?? false,
-          show_company: body.show_company ?? true,
-          show_avatar: body.show_avatar ?? true,
-          max_display: body.max_display ?? null,
-          settings: body.settings ?? {},
+          show_ratings: body.show_ratings,
+          show_dates: body.show_dates,
+          show_company: body.show_company,
+          show_avatar: body.show_avatar,
+          max_display: body.max_display,
+          settings: body.settings ?? getDefaultSettingsForType(body.type),
           is_active: true,
         },
       }

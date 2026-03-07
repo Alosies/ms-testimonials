@@ -10,3 +10,4 @@
  */
 
 export * from './form_analytics_events';
+export * from './widgets';
