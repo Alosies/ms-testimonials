@@ -1,0 +1,8 @@
+# Create a test widget for E2E fixtures
+mutation CreateTestWidget($object: widgets_insert_input!) {
+  insert_widgets_one(object: $object) {
+    id
+    name
+    type
+  }
+}

@@ -1,0 +1,6 @@
+# Bulk insert widget-testimonial junction rows
+mutation InsertWidgetTestimonials($objects: [widget_testimonials_insert_input!]!) {
+  insert_widget_testimonials(objects: $objects) {
+    affected_rows
+  }
+}

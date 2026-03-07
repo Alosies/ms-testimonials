@@ -1,0 +1,6 @@
+# Delete test testimonials by IDs (for cleanup)
+mutation DeleteTestTestimonials($ids: [String!]!) {
+  delete_testimonials(where: { id: { _in: $ids } }) {
+    affected_rows
+  }
+}

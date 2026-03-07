@@ -1,0 +1,6 @@
+# Get testimonial IDs attached to a widget (for cleanup)
+query GetWidgetTestimonialIds($widget_id: String!) {
+  widget_testimonials(where: { widget_id: { _eq: $widget_id } }) {
+    testimonial_id
+  }
+}

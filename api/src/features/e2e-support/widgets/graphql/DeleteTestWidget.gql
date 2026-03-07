@@ -1,0 +1,6 @@
+# Delete a test widget by ID
+mutation DeleteTestWidget($widgetId: String!) {
+  delete_widgets_by_pk(id: $widgetId) {
+    id
+  }
+}

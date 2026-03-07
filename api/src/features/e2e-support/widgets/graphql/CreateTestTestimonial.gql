@@ -1,0 +1,6 @@
+# Create a test testimonial for E2E widget fixtures
+mutation CreateTestTestimonial($object: testimonials_insert_input!) {
+  insert_testimonials_one(object: $object) {
+    id
+  }
+}

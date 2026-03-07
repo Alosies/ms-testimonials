@@ -26432,6 +26432,48 @@ export type GetCreditTransactionsQueryVariables = Exact<{
 
 export type GetCreditTransactionsQuery = { __typename?: 'query_root', credit_transactions: Array<{ __typename?: 'credit_transactions', id: string, transaction_type: string, credits_amount: number, balance_after: number, description: string | null, created_at: string, user_id: string | null, user_email: string | null, form_id: string | null, form_name: string | null, ai_capability: { __typename?: 'ai_capabilities', name: string } | null, quality_level: { __typename?: 'quality_levels', name: string } | null }>, credit_transactions_aggregate: { __typename?: 'credit_transactions_aggregate', aggregate: { __typename?: 'credit_transactions_aggregate_fields', count: number } | null } };
 
+export type CreateTestTestimonialMutationVariables = Exact<{
+  object: Testimonials_Insert_Input;
+}>;
+
+
+export type CreateTestTestimonialMutation = { __typename?: 'mutation_root', insert_testimonials_one: { __typename?: 'testimonials', id: string } | null };
+
+export type CreateTestWidgetMutationVariables = Exact<{
+  object: Widgets_Insert_Input;
+}>;
+
+
+export type CreateTestWidgetMutation = { __typename?: 'mutation_root', insert_widgets_one: { __typename?: 'widgets', id: string, name: string, type: string } | null };
+
+export type DeleteTestTestimonialsMutationVariables = Exact<{
+  ids: Array<Scalars['String']['input']> | Scalars['String']['input'];
+}>;
+
+
+export type DeleteTestTestimonialsMutation = { __typename?: 'mutation_root', delete_testimonials: { __typename?: 'testimonials_mutation_response', affected_rows: number } | null };
+
+export type DeleteTestWidgetMutationVariables = Exact<{
+  widgetId: Scalars['String']['input'];
+}>;
+
+
+export type DeleteTestWidgetMutation = { __typename?: 'mutation_root', delete_widgets_by_pk: { __typename?: 'widgets', id: string } | null };
+
+export type GetWidgetTestimonialIdsQueryVariables = Exact<{
+  widget_id: Scalars['String']['input'];
+}>;
+
+
+export type GetWidgetTestimonialIdsQuery = { __typename?: 'query_root', widget_testimonials: Array<{ __typename?: 'widget_testimonials', testimonial_id: string }> };
+
+export type InsertWidgetTestimonialsMutationVariables = Exact<{
+  objects: Array<Widget_Testimonials_Insert_Input> | Widget_Testimonials_Insert_Input;
+}>;
+
+
+export type InsertWidgetTestimonialsMutation = { __typename?: 'mutation_root', insert_widget_testimonials: { __typename?: 'widget_testimonials_mutation_response', affected_rows: number } | null };
+
 export type CreateWidgetMutationVariables = Exact<{
   object: Widgets_Insert_Input;
 }>;
@@ -26987,6 +27029,50 @@ export const GetCreditTransactionsDocument = `
   }
 }
     `;
+export const CreateTestTestimonialDocument = `
+    mutation CreateTestTestimonial($object: testimonials_insert_input!) {
+  insert_testimonials_one(object: $object) {
+    id
+  }
+}
+    `;
+export const CreateTestWidgetDocument = `
+    mutation CreateTestWidget($object: widgets_insert_input!) {
+  insert_widgets_one(object: $object) {
+    id
+    name
+    type
+  }
+}
+    `;
+export const DeleteTestTestimonialsDocument = `
+    mutation DeleteTestTestimonials($ids: [String!]!) {
+  delete_testimonials(where: {id: {_in: $ids}}) {
+    affected_rows
+  }
+}
+    `;
+export const DeleteTestWidgetDocument = `
+    mutation DeleteTestWidget($widgetId: String!) {
+  delete_widgets_by_pk(id: $widgetId) {
+    id
+  }
+}
+    `;
+export const GetWidgetTestimonialIdsDocument = `
+    query GetWidgetTestimonialIds($widget_id: String!) {
+  widget_testimonials(where: {widget_id: {_eq: $widget_id}}) {
+    testimonial_id
+  }
+}
+    `;
+export const InsertWidgetTestimonialsDocument = `
+    mutation InsertWidgetTestimonials($objects: [widget_testimonials_insert_input!]!) {
+  insert_widget_testimonials(objects: $objects) {
+    affected_rows
+  }
+}
+    `;
 export const CreateWidgetDocument = `
     mutation CreateWidget($object: widgets_insert_input!) {
   insert_widgets_one(object: $object) {
@@ -27264,6 +27350,24 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
     },
     GetCreditTransactions(variables: GetCreditTransactionsQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<GetCreditTransactionsQuery> {
       return withWrapper((wrappedRequestHeaders) => client.request<GetCreditTransactionsQuery>({ document: GetCreditTransactionsDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'GetCreditTransactions', 'query', variables);
+    },
+    CreateTestTestimonial(variables: CreateTestTestimonialMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<CreateTestTestimonialMutation> {
+      return withWrapper((wrappedRequestHeaders) => client.request<CreateTestTestimonialMutation>({ document: CreateTestTestimonialDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'CreateTestTestimonial', 'mutation', variables);
+    },
+    CreateTestWidget(variables: CreateTestWidgetMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<CreateTestWidgetMutation> {
+      return withWrapper((wrappedRequestHeaders) => client.request<CreateTestWidgetMutation>({ document: CreateTestWidgetDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'CreateTestWidget', 'mutation', variables);
+    },
+    DeleteTestTestimonials(variables: DeleteTestTestimonialsMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<DeleteTestTestimonialsMutation> {
+      return withWrapper((wrappedRequestHeaders) => client.request<DeleteTestTestimonialsMutation>({ document: DeleteTestTestimonialsDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'DeleteTestTestimonials', 'mutation', variables);
+    },
+    DeleteTestWidget(variables: DeleteTestWidgetMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<DeleteTestWidgetMutation> {
+      return withWrapper((wrappedRequestHeaders) => client.request<DeleteTestWidgetMutation>({ document: DeleteTestWidgetDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'DeleteTestWidget', 'mutation', variables);
+    },
+    GetWidgetTestimonialIds(variables: GetWidgetTestimonialIdsQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<GetWidgetTestimonialIdsQuery> {
+      return withWrapper((wrappedRequestHeaders) => client.request<GetWidgetTestimonialIdsQuery>({ document: GetWidgetTestimonialIdsDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'GetWidgetTestimonialIds', 'query', variables);
+    },
+    InsertWidgetTestimonials(variables: InsertWidgetTestimonialsMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<InsertWidgetTestimonialsMutation> {
+      return withWrapper((wrappedRequestHeaders) => client.request<InsertWidgetTestimonialsMutation>({ document: InsertWidgetTestimonialsDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'InsertWidgetTestimonials', 'mutation', variables);
     },
     CreateWidget(variables: CreateWidgetMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<CreateWidgetMutation> {
       return withWrapper((wrappedRequestHeaders) => client.request<CreateWidgetMutation>({ document: CreateWidgetDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'CreateWidget', 'mutation', variables);

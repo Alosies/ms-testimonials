@@ -8,3 +8,4 @@ export { createForm, createBranchedForm, createChoiceQuestionForm, deleteForm } 
 export { getOrganization } from './organizations';
 export { cleanup } from './cleanup';
 export { createFormResponses } from './form-responses';
+export { createWidget, deleteWidget } from './widgets';
