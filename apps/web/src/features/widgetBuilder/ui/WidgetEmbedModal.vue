@@ -79,6 +79,7 @@ async function copyToClipboard() {
 
       <p
         v-if="widgetType === 'toast_popup'"
+        :data-testid="widgetsTestIds.embedToastNote"
         class="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-md p-2"
       >
         Toast popups render as fixed overlays — place the embed code anywhere on

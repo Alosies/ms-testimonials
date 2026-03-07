@@ -3,6 +3,7 @@ import { computed } from 'vue';
 import { Label, Switch } from '@testimonials/ui';
 import type { WidgetFormState } from '../../models';
 import type { MarqueeSettings } from '@/entities/widget';
+import { widgetsTestIds } from '@/shared/constants/testIds';
 
 const props = defineProps<{
   state: WidgetFormState;
@@ -24,7 +25,7 @@ function updateSetting(patch: Partial<MarqueeSettings>) {
 
 <template>
   <div class="space-y-3">
-    <Label class="text-sm font-medium block">Marquee Settings</Label>
+    <Label class="text-sm font-medium block" :data-testid="widgetsTestIds.settingsHeading">Marquee Settings</Label>
 
     <div class="flex items-center justify-between">
       <Label class="text-sm text-muted-foreground">Direction</Label>
@@ -33,8 +34,10 @@ function updateSetting(patch: Partial<MarqueeSettings>) {
           v-for="dir in (['left', 'right'] as const)"
           :key="dir"
           type="button"
+          :data-testid="widgetsTestIds.marqueeDirection"
           class="rounded-md border px-3 py-1 text-xs transition-all capitalize"
           :class="settings.direction === dir ? 'ring-2 ring-primary border-primary' : 'border-border'"
+          :data-selected="settings.direction === dir ? 'true' : undefined"
           @click="updateSetting({ direction: dir })"
         >
           {{ dir }}
@@ -49,8 +52,10 @@ function updateSetting(patch: Partial<MarqueeSettings>) {
           v-for="style in (['compact', 'full'] as const)"
           :key="style"
           type="button"
+          :data-testid="widgetsTestIds.marqueeCardStyle"
           class="rounded-md border px-3 py-1 text-xs transition-all capitalize"
           :class="settings.card_style === style ? 'ring-2 ring-primary border-primary' : 'border-border'"
+          :data-selected="settings.card_style === style ? 'true' : undefined"
           @click="updateSetting({ card_style: style })"
         >
           {{ style }}

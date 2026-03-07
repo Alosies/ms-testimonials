@@ -20,6 +20,7 @@ export const widgetsTestIds = {
 
   // Type Selector
   typeSelector: 'widget-type-selector',
+  typeCategory: 'widget-type-category',
   typeOption: 'widget-type-option',
 
   // Settings Panel
@@ -33,6 +34,20 @@ export const widgetsTestIds = {
   switchIsActive: 'widget-switch-is-active',
   maxDisplayInput: 'widget-max-display-input',
 
+  // Builder tabs
+  tabContent: 'widget-tab-content',
+  tabDesign: 'widget-tab-design',
+
+  // Type-specific settings
+  settingsHeading: 'widget-settings-heading',
+  marqueeDirection: 'widget-marquee-direction',
+  marqueeCardStyle: 'widget-marquee-card-style',
+  toastPosition: 'widget-toast-position',
+  toastAnimation: 'widget-toast-animation',
+
+  // Sidebar navigation
+  navWidgets: 'nav-widgets',
+
   // Testimonial Selector
   testimonialRow: 'widget-testimonial-row',
 
@@ -43,6 +58,7 @@ export const widgetsTestIds = {
   embedModal: 'widget-embed-modal',
   embedCode: 'widget-embed-code',
   embedCopyButton: 'widget-embed-copy-button',
+  embedToastNote: 'widget-embed-toast-note',
 
   // Confirmation Modal
   confirmationModal: 'confirmation-modal',

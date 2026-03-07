@@ -3,6 +3,7 @@ import { computed } from 'vue';
 import { Input, Label, Switch } from '@testimonials/ui';
 import type { WidgetFormState } from '../../models';
 import type { AvatarsBarSettings } from '@/entities/widget';
+import { widgetsTestIds } from '@/shared/constants/testIds';
 
 const props = defineProps<{
   state: WidgetFormState;
@@ -24,7 +25,7 @@ function updateSetting(patch: Partial<AvatarsBarSettings>) {
 
 <template>
   <div class="space-y-3">
-    <Label class="text-sm font-medium block">Avatars Bar Settings</Label>
+    <Label class="text-sm font-medium block" :data-testid="widgetsTestIds.settingsHeading">Avatars Bar Settings</Label>
 
     <div class="flex items-center justify-between">
       <Label class="text-sm text-muted-foreground">Avatar size</Label>

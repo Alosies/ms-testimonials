@@ -29,6 +29,7 @@ function update(patch: Partial<WidgetFormState>) {
           type="button"
           class="flex-1 rounded-lg border p-3 text-center text-sm transition-all"
           :class="state.theme === 'light' ? 'ring-2 ring-primary border-primary' : 'border-border'"
+          :data-selected="state.theme === 'light' ? 'true' : undefined"
           :data-testid="widgetsTestIds.themeLight"
           @click="update({ theme: 'light' })"
         >
@@ -39,6 +40,7 @@ function update(patch: Partial<WidgetFormState>) {
           type="button"
           class="flex-1 rounded-lg border p-3 text-center text-sm transition-all"
           :class="state.theme === 'dark' ? 'ring-2 ring-primary border-primary' : 'border-border'"
+          :data-selected="state.theme === 'dark' ? 'true' : undefined"
           :data-testid="widgetsTestIds.themeDark"
           @click="update({ theme: 'dark' })"
         >

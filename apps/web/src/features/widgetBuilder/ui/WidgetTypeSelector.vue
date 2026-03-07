@@ -104,7 +104,7 @@ const categories: TypeCategory[] = [
     <div class="space-y-5" :data-testid="widgetsTestIds.typeSelector">
       <div v-for="category in categories" :key="category.label">
         <div class="mb-2">
-          <p class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          <p class="text-xs font-semibold uppercase tracking-wide text-muted-foreground" :data-testid="widgetsTestIds.typeCategory">
             {{ category.label }}
           </p>
           <p class="text-xs text-muted-foreground/70">{{ category.description }}</p>
@@ -116,6 +116,7 @@ const categories: TypeCategory[] = [
             type="button"
             :data-testid="widgetsTestIds.typeOption"
             :data-widget-type="t.value"
+            :data-selected="modelValue === t.value ? 'true' : undefined"
             class="flex flex-col items-center gap-2 rounded-lg border p-3 text-center transition-all hover:shadow-sm"
             :class="[
               modelValue === t.value ? t.selectedClass : 'border-border hover:border-border/80',

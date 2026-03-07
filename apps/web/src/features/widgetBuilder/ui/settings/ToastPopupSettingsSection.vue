@@ -3,6 +3,7 @@ import { computed } from 'vue';
 import { Input, Label, Switch } from '@testimonials/ui';
 import type { WidgetFormState } from '../../models';
 import type { ToastPopupSettings } from '@/entities/widget';
+import { widgetsTestIds } from '@/shared/constants/testIds';
 
 const props = defineProps<{
   state: WidgetFormState;
@@ -35,7 +36,7 @@ function formatSeconds(ms: number): string {
 
 <template>
   <div class="space-y-3">
-    <Label class="text-sm font-medium block">Toast Popup Settings</Label>
+    <Label class="text-sm font-medium block" :data-testid="widgetsTestIds.settingsHeading">Toast Popup Settings</Label>
 
     <div class="flex items-center justify-between">
       <Label class="text-sm text-muted-foreground">Position</Label>
@@ -44,8 +45,10 @@ function formatSeconds(ms: number): string {
           v-for="pos in positionOptions"
           :key="pos.value"
           type="button"
+          :data-testid="widgetsTestIds.toastPosition"
           class="rounded-md border px-2 py-1 text-[11px] transition-all"
           :class="settings.position === pos.value ? 'ring-2 ring-primary border-primary' : 'border-border'"
+          :data-selected="settings.position === pos.value ? 'true' : undefined"
           @click="updateSetting({ position: pos.value })"
         >
           {{ pos.label }}
@@ -60,8 +63,10 @@ function formatSeconds(ms: number): string {
           v-for="anim in (['slide', 'fade'] as const)"
           :key="anim"
           type="button"
+          :data-testid="widgetsTestIds.toastAnimation"
           class="rounded-md border px-3 py-1 text-xs transition-all capitalize"
           :class="settings.animate_in === anim ? 'ring-2 ring-primary border-primary' : 'border-border'"
+          :data-selected="settings.animate_in === anim ? 'true' : undefined"
           @click="updateSetting({ animate_in: anim })"
         >
           {{ anim }}

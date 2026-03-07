@@ -146,7 +146,7 @@ function handleUpdateState(newState: WidgetFormState) {
           <!-- Tabbed sections -->
           <Tabs default-value="content">
             <TabsList class="w-full">
-              <TabsTrigger value="content" class="flex-1 gap-1.5">
+              <TabsTrigger value="content" class="flex-1 gap-1.5" :data-testid="widgetsTestIds.tabContent">
                 Content
                 <span
                   v-if="selectedTestimonialIds.length > 0"
@@ -155,7 +155,7 @@ function handleUpdateState(newState: WidgetFormState) {
                   {{ selectedTestimonialIds.length }}
                 </span>
               </TabsTrigger>
-              <TabsTrigger value="design" class="flex-1">Design</TabsTrigger>
+              <TabsTrigger value="design" class="flex-1" :data-testid="widgetsTestIds.tabDesign">Design</TabsTrigger>
             </TabsList>
             <TabsContent value="content" class="space-y-6 mt-4">
               <WidgetFormSelector v-model="state.form_id" :locked-form-id="lockedFormId" />
